@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { type ReactElement, useState } from 'react';
 import logo from './logo.svg';
 import './App.css';
@@ -11,7 +12,6 @@ interface Item {
 function App(): ReactElement {
   const [show, setShow] = useState(false);
   const { data, isLoading, isError } = useQuery('get_all_items', fetchItems);
-  const items: Item[] = data;
   return (
     <>
       <div className="App">
@@ -34,13 +34,13 @@ function App(): ReactElement {
             Get all Items
           </button>
         </header>
-        {show && itemComponent(items, isLoading, isError)}
+        {show && itemComponent(data, isLoading, isError)}
       </div>
     </>
   );
 }
 
-function itemComponent(items: Item[], isLoading: boolean, isError: boolean) {
+function itemComponent(data: any, isLoading: boolean, isError: boolean) {
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -48,6 +48,15 @@ function itemComponent(items: Item[], isLoading: boolean, isError: boolean) {
   if (isError) {
     return <div>Error fetching data.</div>;
   }
+
+  console.log(data);
+
+  const items: Item[] = data.map(({ item_name, is_selected }) => ({
+    name: item_name,
+    isSelected: is_selected
+  }));
+
+  console.log(items);
 
   const renderedOutput = items.map((item: Item, index: number) => (
     <div key={index}>
