@@ -3,6 +3,11 @@ const bodyParser = require('body-parser')
 const app = express()
 const db = require('./queries')
 const port = 3000
+const cors = require("cors");
+
+app.use(cors({
+    origin: 'https://shoppingo-api.onrender.com'
+}));
 
 app.use(bodyParser.json())
 app.use(
