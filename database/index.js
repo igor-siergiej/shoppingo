@@ -7,7 +7,7 @@ const cors = require("cors");
 
 
 const allowCrossDomain = (req, res, next) => {
-  res.header(`Access-Control-Allow-Origin`, `https://shoppingo-api.onrender.com`);
+  res.header(`Access-Control-Allow-Origin`, 'https://im-shoppingo.netlify.app', 'http://localhost:3000');
   res.header(`Access-Control-Allow-Methods`, `GET,PUT,POST,DELETE`);
   next();
 };
