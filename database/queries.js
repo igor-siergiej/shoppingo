@@ -9,7 +9,10 @@ const pool = new Pool({
 
 const getUsers = (request, response) => {
     pool.query(`
-        SELECT * FROM shopping_list.items`
+    SELECT json_build_object(
+        'itemName', items.item_name,
+        'isSelected', items.is_selected
+    ) FROM shopping_list.items;`
         , (error, results) => {
             if (error) {
                 throw error
