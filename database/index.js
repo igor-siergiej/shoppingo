@@ -2,17 +2,14 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const app = express()
 const db = require('./queries')
-const port = 3000
+const port = 3001
 const cors = require("cors");
 
+var corsOptions = {
+  origin: ["https://im-shoppingo.netlify.app","http://localhost:3000"]
+  }
 
-const allowCrossDomain = (req, res, next) => {
-  res.header(`Access-Control-Allow-Origin`, 'https://im-shoppingo.netlify.app', 'http://localhost:3000');
-  res.header(`Access-Control-Allow-Methods`, `GET,PUT,POST,DELETE`);
-  next();
-};
-
-app.use(allowCrossDomain);
+app.use(cors(corsOptions));
 
 app.use(bodyParser.json())
 app.use(
