@@ -9,13 +9,7 @@ const pool = new Pool({
 
 const getUsers = (request, response) => {
     pool.query(`
-        SELECT json_agg(
-            json_build_object(
-                'name', item_name,
-                'isSelected', is_selected
-            )
-        ) as item_list
-        FROM shopping_list.items`
+        SELECT * FROM shopping_list.items`
         , (error, results) => {
             if (error) {
                 throw error

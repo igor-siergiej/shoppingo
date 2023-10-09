@@ -53,7 +53,7 @@ function itemComponent(data: any, isLoading: boolean, isError: boolean) {
   return (
     <div>
       {data.map((item: Item) => (
-        <div key={item.itemName}>{item.isSelected}</div>
+        <div key={item.itemName}>{item.itemName}</div>
       ))}
     </div>
   );
