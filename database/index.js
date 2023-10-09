@@ -5,9 +5,14 @@ const db = require('./queries')
 const port = 3000
 const cors = require("cors");
 
-app.use(cors({
-    origin: 'https://shoppingo-api.onrender.com'
-}));
+
+const allowCrossDomain = (req, res, next) => {
+  res.header(`Access-Control-Allow-Origin`, `https://shoppingo-api.onrender.com`);
+  res.header(`Access-Control-Allow-Methods`, `GET,PUT,POST,DELETE`);
+  next();
+};
+
+app.use(allowCrossDomain);
 
 app.use(bodyParser.json())
 app.use(
