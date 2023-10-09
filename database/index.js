@@ -5,9 +5,20 @@ const db = require('./queries')
 const port = 3000
 const cors = require("cors");
 
-var corsOptions = {
-  origin: ["https://im-shoppingo.netlify.app","http://localhost:3000"]
-  }
+const allowedOrigins = [
+  'https://im-shoppingo.netlify.app',
+  'http://localhost:3000',
+];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (allowedOrigins.includes(origin) || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+};
 
 app.use(cors(corsOptions));
 
