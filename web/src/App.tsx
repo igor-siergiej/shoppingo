@@ -4,13 +4,14 @@ import './App.css';
 import { useQuery } from 'react-query';
 
 interface Item {
-  itemName: string;
-  isSelected: false;
+  name: string;
+  isSelected: boolean;
 }
 
 function App(): ReactElement {
   const [show, setShow] = useState(false);
-  const { data, isLoading, isError } = useQuery('yourQueryKey', fetchItems);
+  const { data, isLoading, isError } = useQuery('get_all_items', fetchItems);
+  const items: Item[] = data;
   return (
     <>
       <div className="App">
@@ -33,13 +34,13 @@ function App(): ReactElement {
             Get all Items
           </button>
         </header>
-        {show && itemComponent(data, isLoading, isError)}
+        {show && itemComponent(items, isLoading, isError)}
       </div>
     </>
   );
 }
 
-function itemComponent(data: any, isLoading: boolean, isError: boolean) {
+function itemComponent(items: Item[], isLoading: boolean, isError: boolean) {
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -48,15 +49,13 @@ function itemComponent(data: any, isLoading: boolean, isError: boolean) {
     return <div>Error fetching data.</div>;
   }
 
-  console.log(data);
-
-  return (
-    <div>
-      {data.map((item: Item) => (
-        <div key={item.itemName}>{item.itemName}</div>
-      ))}
+  const renderedOutput = items.map((item: Item, index: number) => (
+    <div key={index}>
+      {index}: {item.name}
     </div>
-  );
+  ));
+
+  return <div>{renderedOutput}</div>;
 }
 
 async function fetchItems() {
