@@ -1,6 +1,4 @@
-/* eslint-disable @typescript-eslint/naming-convention */
-import { type ReactElement, useState } from 'react';
-import logo from './logo.svg';
+import { type ReactElement } from 'react';
 import './App.css';
 import { useQuery } from 'react-query';
 
@@ -10,32 +8,10 @@ interface Item {
 }
 
 function App(): ReactElement {
-    const [show, setShow] = useState(false);
     const { data, isLoading, isError } = useQuery('get_all_items', fetchItems);
     return (
         <>
-            <div className="App">
-                <header className="App-header">
-                    <img src={logo.toString()} className="App-logo" alt="logo" />
-                    <p>
-                        Edit <code>src/App.tsx</code> and save to reload.
-                    </p>
-                    <a
-                        className="App-link"
-                        href="https://reactjs.org"
-                        target="_blank"
-                        rel="noopener noreferrer">
-                        Learn React
-                    </a>
-                    <button
-                        onClick={() => {
-                            setShow(!show);
-                        }}>
-                        Get all Items
-                    </button>
-                </header>
-                {show && itemComponent(data, isLoading, isError)}
-            </div>
+            <div className="App">{itemComponent(data, isLoading, isError)}</div>
         </>
     );
 }
