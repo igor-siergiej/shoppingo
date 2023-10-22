@@ -1,22 +1,21 @@
-import { type ReactElement } from 'react';
+import { type ReactElement, useState, useEffect } from 'react';
 import './App.css';
 import { useQuery } from 'react-query';
-
-interface Item {
-    name: string;
-    selected: boolean;
-}
+import { FormGroup } from '@mui/material';
+import { getItems } from './api';
+import ItemCheckBoxList from './components/ItemCheckBoxList';
+import { type Item } from './types';
 
 function App(): ReactElement {
-    const { data, isLoading, isError } = useQuery('get_all_items', fetchItems);
-    return (
-        <>
-            <div className="App">{itemComponent(data, isLoading, isError)}</div>
-        </>
-    );
-}
+    const { data, isLoading, isError } = useQuery('getItems', getItems);
+    const [items, setItems] = useState<Item[]>([]);
 
-function itemComponent(data: any, isLoading: boolean, isError: boolean) {
+    useEffect(() => {
+        if (!isLoading) {
+            setItems(itemData);
+        }
+    }, [data]);
+
     if (isLoading) {
         return <div>Loading...</div>;
     }
@@ -25,25 +24,24 @@ function itemComponent(data: any, isLoading: boolean, isError: boolean) {
         return <div>Error fetching data.</div>;
     }
 
-    console.log(data);
+    const itemData = data as Item[];
 
-    const renderedOutput = data.map((item: Item, index: number) => (
-        <div key={index}>
-            {index}: {item.name}, {item.selected ? 'true' : 'false'}
-        </div>
-    ));
+    const handleOnChange = (inputItem: Item) => {
+        const itemIndex = items.indexOf(inputItem);
+        items[itemIndex].selected = !inputItem.selected;
+        const newItems = [...items];
+        setItems(newItems);
+    };
 
-    return <div>{renderedOutput}</div>;
-}
-
-const URL = 'https://shoppingo-api.onrender.com';
-
-async function fetchItems() {
-    const response = await fetch(`${URL}/items`);
-    if (!response.ok) {
-        throw new Error('Network response was not ok');
-    }
-    return await response.json();
+    return (
+        <>
+            <FormGroup>
+                <ItemCheckBoxList
+                    items={itemData}
+                    handleOnChange={handleOnChange}></ItemCheckBoxList>
+            </FormGroup>
+        </>
+    );
 }
 
 export default App;

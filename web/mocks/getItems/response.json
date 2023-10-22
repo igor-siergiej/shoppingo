@@ -1,0 +1,18 @@
+[
+    {
+        "name": "ham",
+        "selected": true
+    },
+    {
+        "name": "cheese",
+        "selected": true
+    },
+    {
+        "name": "bread",
+        "selected": true
+    },
+    {
+        "name": "turkey",
+        "selected": false
+    }
+]
