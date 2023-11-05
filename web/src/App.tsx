@@ -1,10 +1,12 @@
 import { type ReactElement, useState, useEffect } from 'react';
 import './App.css';
 import { useQuery } from 'react-query';
-import { FormGroup } from '@mui/material';
+import { FormGroup, Box } from '@mui/material';
 import { getItems } from './api';
 import ItemCheckBoxList from './components/ItemCheckBoxList';
 import { type Item } from './types';
+import AddIcon from '@mui/icons-material/Add';
+import IconButton from '@mui/material/IconButton';
 
 function App(): ReactElement {
     const { data, isLoading, isError } = useQuery('getItems', getItems);
@@ -35,11 +37,28 @@ function App(): ReactElement {
 
     return (
         <>
-            <FormGroup>
+            <FormGroup
+                sx={{
+                    display: 'flex'
+                }}>
                 <ItemCheckBoxList
                     items={itemData}
                     handleOnChange={handleOnChange}></ItemCheckBoxList>
             </FormGroup>
+            <Box
+                sx={{
+                    mb: '0.5em',
+                    pl: '0.5em',
+                    border: 3,
+                    borderColor: '#c8e4be',
+                    backgroundColor: '#d8f7cd',
+                    borderRadius: '10px',
+                    alignContent: 'center'
+                }}>
+                <IconButton>
+                    <AddIcon />
+                </IconButton>
+            </Box>
         </>
     );
 }
