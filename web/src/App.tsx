@@ -1,12 +1,12 @@
 import { type ReactElement, useState, useEffect } from 'react';
 import './App.css';
 import { useQuery } from 'react-query';
-import { FormGroup, Box, Toolbar, AppBar, Typography } from '@mui/material';
+import { FormGroup, Box } from '@mui/material';
 import { getItems } from './api';
 import ItemCheckBoxList from './components/ItemCheckBoxList';
+import Appbar from './components/Appbar/appbar';
 import { type Item } from './types';
 import AddIcon from '@mui/icons-material/Add';
-import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
 
 function App(): ReactElement {
@@ -38,27 +38,7 @@ function App(): ReactElement {
 
     return (
         <>
-            <Box
-                sx={{
-                    flexGrow: 1,
-                    mb: '0.5em'
-                }}>
-                <AppBar
-                    position="static"
-                    sx={{
-                        backgroundColor: '#618c63',
-                        textAlign: 'center'
-                    }}>
-                    <Toolbar>
-                        <Typography variant="h6" sx={{ flexGrow: 1 }}>
-                            Shoppingo
-                        </Typography>
-                        <IconButton color="inherit">
-                            <DeleteIcon />
-                        </IconButton>
-                    </Toolbar>
-                </AppBar>
-            </Box>
+            <Appbar />
             <FormGroup
                 sx={{
                     display: 'flex'
