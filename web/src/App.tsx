@@ -1,13 +1,12 @@
 import { type ReactElement, useState, useEffect } from 'react';
 import './App.css';
 import { useQuery } from 'react-query';
-import { FormGroup, Box } from '@mui/material';
+import { FormGroup, Button } from '@mui/material';
 import { getItems } from './api';
 import ItemCheckBoxList from './components/ItemCheckBoxList';
 import Appbar from './components/Appbar/appbar';
 import { type Item } from './types';
 import AddIcon from '@mui/icons-material/Add';
-import IconButton from '@mui/material/IconButton';
 
 function App(): ReactElement {
     const { data, isLoading, isError } = useQuery('getItems', getItems);
@@ -47,20 +46,17 @@ function App(): ReactElement {
                     items={itemData}
                     handleOnChange={handleOnChange}></ItemCheckBoxList>
             </FormGroup>
-            <Box
+            <Button
                 sx={{
                     mb: '0.5em',
                     pl: '0.5em',
                     border: 3,
-                    borderColor: '#c8e4be',
-                    backgroundColor: '#d8f7cd',
                     borderRadius: '10px',
-                    textAlign: 'center'
+                    textAlign: 'center',
+                    width: '100%'
                 }}>
-                <IconButton>
-                    <AddIcon />
-                </IconButton>
-            </Box>
+                <AddIcon sx={{ color: 'black' }} />
+            </Button>
         </>
     );
 }
