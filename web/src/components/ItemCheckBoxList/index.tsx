@@ -12,11 +12,11 @@ const ItemCheckBoxList = ({ items, handleOnChange }: ItemCheckBoxListProps) => {
         <Box
             key={item.name}
             sx={{
-                mb: '0.5em',
-                pl: '0.5em',
-                border: 3,
-                borderColor: theme.palette.primary.dark,
                 backgroundColor: theme.palette.primary.light,
+                mb: '0.5em',
+                border: 3,
+                borderColor: theme.palette.primary.contrastText,
+                pl: '0.5em',
                 borderRadius: '10px'
             }}>
             <FormControlLabel

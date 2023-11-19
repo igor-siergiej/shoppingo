@@ -1,6 +1,7 @@
 import { Box, Toolbar, AppBar, Typography } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { green } from '@mui/material/colors';
 
 function Appbar() {
     return (
@@ -13,11 +14,11 @@ function Appbar() {
                 <AppBar
                     position="static"
                     sx={{
-                        backgroundColor: '#618c63',
+                        backgroundColor: green[400],
                         textAlign: 'center'
                     }}>
                     <Toolbar>
-                        <Typography variant="h6" sx={{ flexGrow: 1 }}>
+                        <Typography variant="h5" sx={{ flexGrow: 1 }}>
                             Shoppingo
                         </Typography>
                         <IconButton color="inherit">
