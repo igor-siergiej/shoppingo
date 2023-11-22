@@ -1,11 +1,7 @@
 import { FormControlLabel, Checkbox, Box } from '@mui/material';
 import { type Item } from '../../types';
 import theme from '../../theme';
-
-interface ItemCheckBoxListProps {
-    items: Item[];
-    handleOnChange: (arg0: Item) => void;
-}
+import { type ItemCheckBoxListProps } from './types';
 
 const ItemCheckBoxList = ({ items, handleOnChange }: ItemCheckBoxListProps) => {
     const renderedOutput = items.map((item: Item) => (
@@ -24,7 +20,7 @@ const ItemCheckBoxList = ({ items, handleOnChange }: ItemCheckBoxListProps) => {
                     <Checkbox
                         size="medium"
                         color="secondary"
-                        checked={item.selected}
+                        checked={item.isSelected}
                         onChange={() => {
                             handleOnChange(item);
                         }}

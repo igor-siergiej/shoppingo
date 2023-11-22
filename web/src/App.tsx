@@ -1,8 +1,7 @@
 import { type ReactElement, useState, useEffect } from 'react';
-import './App.css';
 import { useQuery } from 'react-query';
 import { Box, Button, FormGroup, TextField } from '@mui/material';
-import { getItems } from './api';
+import { getItemsQuery } from './api';
 import ItemCheckBoxList from './components/ItemCheckBoxList';
 import Appbar from './components/Appbar';
 import { type Item } from './types';
@@ -12,16 +11,9 @@ import CheckIcon from '@mui/icons-material/Check';
 import theme from './theme';
 
 function App(): ReactElement {
-    const { data, isLoading, isError } = useQuery('getItems', getItems);
-    const [items, setItems] = useState<Item[]>([]);
+    const { data, isLoading, isError } = useQuery({ ...getItemsQuery() });
     const [open, setOpen] = useState(false);
-    const [itemName, setItemName] = useState('');
-
-    useEffect(() => {
-        if (!isLoading) {
-            setItems(itemData);
-        }
-    }, [data]);
+    const [newItemName, setNewItemName] = useState('');
 
     if (isLoading) {
         return <div>Loading...</div>;
@@ -31,14 +23,11 @@ function App(): ReactElement {
         return <div>Error fetching data.</div>;
     }
 
-    const itemData = data as Item[];
+    if (!data) {
+        return <div>Loading...</div>;
+    }
 
-    const handleOnChange = (inputItem: Item) => {
-        const itemIndex = items.indexOf(inputItem);
-        items[itemIndex].selected = !inputItem.selected;
-        const newItems = [...items];
-        setItems(newItems);
-    };
+    const handleOnChange = (inputItem: Item) => {};
 
     const AddButton = () => {
         return (
@@ -106,16 +95,14 @@ function App(): ReactElement {
                 sx={{
                     display: 'flex'
                 }}>
-                <ItemCheckBoxList
-                    items={itemData}
-                    handleOnChange={handleOnChange}></ItemCheckBoxList>
+                <ItemCheckBoxList items={data} handleOnChange={handleOnChange}></ItemCheckBoxList>
                 {open ? (
                     <>
                         <TextField
                             size="small"
-                            value={itemName}
+                            value={newItemName}
                             onChange={(event) => {
-                                setItemName(event.target.value);
+                                setNewItemName(event.target.value);
                             }}
                             sx={{
                                 backgroundColor: theme.palette.primary.light,
