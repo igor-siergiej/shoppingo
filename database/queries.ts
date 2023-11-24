@@ -29,10 +29,9 @@ const getAllItems = (request: Request, response: Response): void => {
 
 const addItem = (request: Request, response: Response) => {
   const itemName = request.params.itemName;
-  const isSelected = request.params.isSelected;
   pool.query(
     `
-    SELECT shopping_list.add_item(${itemName + "," + isSelected});
+    SELECT shopping_list.add_item(${itemName});
     `,
     (error: Error, results: QueryResult) => {
       if (error) {
