@@ -37,7 +37,7 @@ const addItem = (request: Request, response: Response) => {
       if (error) {
         throw error;
       }
-      response.status(200).json(results.rows[0].get_all_items);
+      response.status(200);
     }
   );
 };
