@@ -31,7 +31,7 @@ const addItem = (request: Request, response: Response) => {
   const itemName = request.params.itemName;
   pool.query(
     `
-    SELECT shopping_list.add_item(${itemName});
+    CALL shopping_list.add_item(${itemName});
     `,
     (error: Error, results: QueryResult) => {
       if (error) {
