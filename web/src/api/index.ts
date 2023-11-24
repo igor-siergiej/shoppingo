@@ -14,3 +14,11 @@ export const getItems = async (): Promise<Item[]> => {
     }
     return await response.json();
 };
+
+export const addItem = async (itemName: string, isSelected: boolean) => {
+    const response = await fetch(`${URLPath}/add/${itemName}/${isSelected}`);
+    if (!response.ok) {
+        throw new Error('Network response was not ok');
+    }
+    return await response.json();
+};

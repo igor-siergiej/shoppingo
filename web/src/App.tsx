@@ -1,7 +1,7 @@
 import { type ReactElement, useState, useEffect } from 'react';
 import { useQuery } from 'react-query';
 import { Box, Button, FormGroup, TextField } from '@mui/material';
-import { getItemsQuery } from './api';
+import { getItemsQuery, addItem } from './api';
 import ItemCheckBoxList from './components/ItemCheckBoxList';
 import Appbar from './components/Appbar';
 import { type Item } from './types';
@@ -72,6 +72,7 @@ function App(): ReactElement {
         return (
             <Button
                 onClick={() => {
+                    addItem(newItemName, false);
                     setOpen(false);
                 }}
                 variant="contained"
