@@ -7,7 +7,7 @@ jest.mock('../src/api', () => {
     const getItemsResponse = require('../mocks/getItems/response.json');
 
     return {
-        getItems: jest.fn().mockResolvedValue(getItemsResponse)
+        getItems: jest.fn().mockResolvedValue(getItemsResponse),
     };
 });
 

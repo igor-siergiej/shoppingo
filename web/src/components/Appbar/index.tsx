@@ -9,14 +9,16 @@ function Appbar() {
             <Box
                 sx={{
                     flexGrow: 1,
-                    mb: '0.5em'
-                }}>
+                    mb: '0.5em',
+                }}
+            >
                 <AppBar
                     position="static"
                     sx={{
                         backgroundColor: green[400],
-                        textAlign: 'center'
-                    }}>
+                        textAlign: 'center',
+                    }}
+                >
                     <Toolbar>
                         <Typography variant="h5" sx={{ flexGrow: 1 }}>
                             Shoppingo

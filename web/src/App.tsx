@@ -1,10 +1,9 @@
-import { type ReactElement, useState, useEffect } from 'react';
+import { type ReactElement, useState } from 'react';
 import { useQuery } from 'react-query';
 import { Box, Button, FormGroup, TextField } from '@mui/material';
 import { getItemsQuery, addItem } from './api';
 import ItemCheckBoxList from './components/ItemCheckBoxList';
 import Appbar from './components/Appbar';
-import { type Item } from './types';
 import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
 import CheckIcon from '@mui/icons-material/Check';
@@ -27,7 +26,7 @@ function App(): ReactElement {
         return <div>Loading...</div>;
     }
 
-    const handleOnChange = (inputItem: Item) => {};
+    const handleOnChange = () => {};
 
     const AddButton = () => {
         return (
@@ -41,8 +40,9 @@ function App(): ReactElement {
                     borderRadius: '10px',
                     textAlign: 'center',
                     width: '100%',
-                    backgroundColor: theme.palette.primary.light
-                }}>
+                    backgroundColor: theme.palette.primary.light,
+                }}
+            >
                 <AddIcon />
             </Button>
         );
@@ -61,8 +61,9 @@ function App(): ReactElement {
                     borderRadius: '10px',
                     textAlign: 'center',
                     ml: '0.5em',
-                    flex: 1
-                }}>
+                    flex: 1,
+                }}
+            >
                 <CloseIcon />
             </Button>
         );
@@ -82,8 +83,9 @@ function App(): ReactElement {
                     borderRadius: '10px',
                     textAlign: 'center',
                     mr: '0.5em',
-                    flex: 1
-                }}>
+                    flex: 1,
+                }}
+            >
                 <CheckIcon />
             </Button>
         );
@@ -94,9 +96,13 @@ function App(): ReactElement {
             <Appbar />
             <FormGroup
                 sx={{
-                    display: 'flex'
-                }}>
-                <ItemCheckBoxList items={data} handleOnChange={handleOnChange}></ItemCheckBoxList>
+                    display: 'flex',
+                }}
+            >
+                <ItemCheckBoxList
+                    items={data}
+                    handleOnChange={handleOnChange}
+                ></ItemCheckBoxList>
                 {open ? (
                     <>
                         <TextField
@@ -108,7 +114,7 @@ function App(): ReactElement {
                             sx={{
                                 backgroundColor: theme.palette.primary.light,
                                 borderRadius: '10px',
-                                mb: '0.5em'
+                                mb: '0.5em',
                             }}
                             color="primary"
                             label="Add New Item"

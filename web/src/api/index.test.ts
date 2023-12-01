@@ -2,11 +2,8 @@ import { getItems } from '.';
 import getItemsResponse from '../../mocks/getItems/response.json';
 
 jest.mock('.', () => {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const getItemsResponse = require('../../mocks/getItems/response.json');
-
     return {
-        getItems: jest.fn().mockResolvedValue(getItemsResponse)
+        getItems: jest.fn().mockResolvedValue(getItemsResponse),
     };
 });
 

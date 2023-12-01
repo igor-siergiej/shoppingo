@@ -4,7 +4,7 @@ const URLPath = 'https://shoppingo-api.onrender.com';
 
 export const getItemsQuery = () => ({
     queryKey: ['items'],
-    queryFn: async () => await getItems()
+    queryFn: async () => await getItems(),
 });
 
 export const getItems = async (): Promise<Item[]> => {

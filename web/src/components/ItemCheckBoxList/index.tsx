@@ -13,8 +13,9 @@ const ItemCheckBoxList = ({ items, handleOnChange }: ItemCheckBoxListProps) => {
                 border: 3,
                 borderColor: theme.palette.primary.contrastText,
                 pl: '0.5em',
-                borderRadius: '10px'
-            }}>
+                borderRadius: '10px',
+            }}
+        >
             <FormControlLabel
                 control={
                     <Checkbox

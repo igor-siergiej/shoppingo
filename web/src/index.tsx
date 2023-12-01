@@ -8,11 +8,13 @@ const queryClient = new QueryClient({
     defaultOptions: {
         queries: {
             refetchOnWindowFocus: false,
-            retry: false
-        }
-    }
+            retry: false,
+        },
+    },
 });
-const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
+const root = ReactDOM.createRoot(
+    document.getElementById('root') as HTMLElement
+);
 
 root.render(
     <ThemeProvider theme={theme}>
