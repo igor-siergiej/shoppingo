@@ -10,13 +10,16 @@ export const getItemsQuery = () => ({
 export const getItems = async (): Promise<Item[]> => {
     const response = await fetch(`${URLPath}/items`);
     if (!response.ok) {
+        console.log(response);
         throw new Error('Network response was not ok');
     }
     return await response.json();
 };
 
-export const addItem = async (itemName: string, isSelected: boolean) => {
-    const response = await fetch(`${URLPath}/add/${itemName}/${isSelected}`);
+export const addItem = async (itemName: string) => {
+    const response = await fetch(`${URLPath}/items/${itemName}`, {
+        method: 'PUT',
+    });
     if (!response.ok) {
         throw new Error('Network response was not ok');
     }

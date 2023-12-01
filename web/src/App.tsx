@@ -10,11 +10,13 @@ import CheckIcon from '@mui/icons-material/Check';
 import theme from './theme';
 
 function App(): ReactElement {
-    const { data, isLoading, isError } = useQuery({ ...getItemsQuery() });
+    const { data, isLoading, isError, isRefetching, refetch } = useQuery({
+        ...getItemsQuery(),
+    });
     const [open, setOpen] = useState(false);
     const [newItemName, setNewItemName] = useState('');
 
-    if (isLoading) {
+    if (isLoading || isRefetching) {
         return <div>Loading...</div>;
     }
 
@@ -72,9 +74,11 @@ function App(): ReactElement {
     const AcceptButton = () => {
         return (
             <Button
-                onClick={() => {
-                    addItem(newItemName, false);
+                onClick={async () => {
+                    await addItem(newItemName);
+                    refetch();
                     setOpen(false);
+                    setNewItemName('');
                 }}
                 variant="contained"
                 sx={{
