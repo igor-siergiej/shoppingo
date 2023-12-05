@@ -25,3 +25,13 @@ export const addItem = async (itemName: string) => {
     }
     return await response.json();
 };
+
+export const updateSelected = async (itemName: string, selected: boolean) => {
+    const response = await fetch(`${URLPath}/items/${itemName}/${selected}`, {
+        method: 'POST',
+    });
+    if (!response.ok) {
+        throw new Error('Network response was not ok');
+    }
+    return await response.json();
+};

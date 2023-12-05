@@ -1,13 +1,14 @@
 import { type ReactElement, useState } from 'react';
 import { useQuery } from 'react-query';
 import { Box, Button, FormGroup, TextField } from '@mui/material';
-import { getItemsQuery, addItem } from './api';
+import { getItemsQuery, addItem, updateSelected } from './api';
 import ItemCheckBoxList from './components/ItemCheckBoxList';
 import Appbar from './components/Appbar';
 import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
 import CheckIcon from '@mui/icons-material/Check';
 import theme from './theme';
+import { Item } from './types';
 
 function App(): ReactElement {
     const { data, isLoading, isError, isRefetching, refetch } = useQuery({
@@ -28,7 +29,10 @@ function App(): ReactElement {
         return <div>Loading...</div>;
     }
 
-    const handleOnChange = () => {};
+    const handleOnChange = async (item: Item) => {
+        await updateSelected(item.name, !item.isSelected);
+        refetch();
+    };
 
     const AddButton = () => {
         return (
