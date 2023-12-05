@@ -1,8 +1,8 @@
 import ReactDOM from 'react-dom/client';
-import App from './App';
+import App from './components/App/App';
 import { QueryClient, QueryClientProvider } from 'react-query';
-import { ThemeProvider } from '@mui/material';
-import theme from './theme';
+import { ThemeProvider } from '@mui/material/styles';
+import theme from './style/theme';
 
 const queryClient = new QueryClient({
     defaultOptions: {

@@ -1,9 +1,10 @@
-import { getItems } from '.';
 import getItemsResponse from '../../mocks/getItems/response.json';
+import { describe, expect, it, vi } from 'vitest';
+import { getItems } from '.';
 
-jest.mock('.', () => {
+vi.mock('.', () => {
     return {
-        getItems: jest.fn().mockResolvedValue(getItemsResponse),
+        getItems: vi.fn().mockResolvedValue(getItemsResponse),
     };
 });
 

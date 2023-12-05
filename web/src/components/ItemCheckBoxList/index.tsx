@@ -1,25 +1,28 @@
-import { FormControlLabel, Checkbox, Box } from '@mui/material';
+import { FormControlLabel, Checkbox, Box, Divider } from '@mui/material';
 import { type Item } from '../../types';
-import theme from '../../theme';
 import { type ItemCheckBoxListProps } from './types';
+
+import CircleCheckedFilled from '@mui/icons-material/CheckCircle';
+import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 
 const ItemCheckBoxList = ({ items, handleOnChange }: ItemCheckBoxListProps) => {
     const renderedOutput = items.map((item: Item) => (
         <Box
             key={item.name}
             sx={{
-                backgroundColor: theme.palette.primary.light,
+                mt: '0.5em',
                 mb: '0.5em',
-                border: 3,
-                borderColor: theme.palette.primary.contrastText,
                 pl: '0.5em',
-                borderRadius: '10px',
             }}
         >
             <FormControlLabel
+                sx={{ alignItems: 'center', pb: '1em' }}
                 control={
                     <Checkbox
-                        size="medium"
+                        icon={<RadioButtonUncheckedIcon />}
+                        checkedIcon={<CircleCheckedFilled />}
+                        sx={{ transform: 'scale(1.5)', pr: '1.5em' }}
+                        size="small"
                         color="secondary"
                         checked={item.isSelected}
                         onChange={() => {
@@ -29,9 +32,10 @@ const ItemCheckBoxList = ({ items, handleOnChange }: ItemCheckBoxListProps) => {
                 }
                 label={item.name}
             />
+            <Divider />
         </Box>
     ));
-    return <>{renderedOutput}</>;
+    return renderedOutput;
 };
 
 export default ItemCheckBoxList;
