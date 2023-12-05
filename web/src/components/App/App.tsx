@@ -1,12 +1,13 @@
 import { type ReactElement, useState } from 'react';
 import { useQuery } from 'react-query';
 import { Box, Button, FormGroup, TextField, Toolbar } from '@mui/material';
-import { getItemsQuery, addItem } from '../../api';
+import { getItemsQuery, addItem, updateSelected } from '../../api';
 import ItemCheckBoxList from '../ItemCheckBoxList';
 import Appbar from '../Appbar';
 import AddIcon from '@mui/icons-material/Add';
 import AcceptButton from '../AcceptButton';
 import CancelButton from '../CancelButton';
+import { Item } from '../../types';
 
 function App(): ReactElement {
     const { data, isLoading, isError, isRefetching, refetch } = useQuery({
@@ -15,19 +16,14 @@ function App(): ReactElement {
     const [open, setOpen] = useState(false);
     const [newItemName, setNewItemName] = useState('');
 
-    if (isLoading || isRefetching) {
-        return <div>Loading...</div>;
-    }
-
     if (isError) {
         return <div>Error fetching data.</div>;
     }
 
-    if (!data) {
-        return <div>Loading...</div>;
-    }
-
-    const handleOnChange = () => {};
+    const handleOnChange = async (item: Item) => {
+        await updateSelected(item.name, !item.isSelected);
+        refetch();
+    };
 
     const AddButton = () => {
         return (
@@ -65,10 +61,15 @@ function App(): ReactElement {
                     pb: '10em',
                 }}
             >
-                <ItemCheckBoxList
-                    items={data}
-                    handleOnChange={handleOnChange}
-                ></ItemCheckBoxList>
+                {data && !isLoading && !isRefetching ? (
+                    <ItemCheckBoxList
+                        items={data}
+                        handleOnChange={handleOnChange}
+                    ></ItemCheckBoxList>
+                ) : (
+                    <div>Loading...</div>
+                )}
+
                 {open ? (
                     <>
                         <TextField
