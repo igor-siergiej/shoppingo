@@ -13,7 +13,7 @@ const pool = new Pool({
   ssl: true,
 });
 
-const getAllItems = (request: Request, response: Response): void => {
+export const getAllItems = (request: Request, response: Response): void => {
   pool.query(
     `
     SELECT shopping_list.get_all_items();
@@ -27,7 +27,7 @@ const getAllItems = (request: Request, response: Response): void => {
   );
 };
 
-const addItem = (request: Request, response: Response) => {
+export const addItem = (request: Request, response: Response) => {
   const itemName = request.params.itemName;
   pool.query(
     `
@@ -42,4 +42,18 @@ const addItem = (request: Request, response: Response) => {
   );
 };
 
-export { getAllItems, addItem };
+export const editItem = (request: Request, response: Response) => {
+  const isSelected = request.params.isSelected;
+  const itemName = request.params.itemName;
+  pool.query(
+    `
+    CALL shopping_list.upsert_item('${itemName}', '${isSelected}');
+    `,
+    (error: Error, results: QueryResult) => {
+      if (error) {
+        throw error;
+      }
+      response.status(200).json(results);
+    }
+  );
+};
