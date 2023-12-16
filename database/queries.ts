@@ -4,16 +4,11 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const { PGHOST, PGDATABASE, PGUSER, PGPASSWORD } = process.env;
-
 const pool = new Pool({
-  user: PGUSER,
-  host: PGHOST,
-  database: PGDATABASE,
-  password: PGPASSWORD,
-  port: 5432,
-  ssl: true,
+  connectionString: process.env.NEON_DB_CONNECTION_STRING,
+  ssl: true, // use an encrypted connection
 });
+
 
 
 export const getAllItems = (request: Request, response: Response): void => {
