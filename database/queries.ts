@@ -36,7 +36,7 @@ export const addItem = (request: Request, response: Response) => {
   const dateAdded = request.body.dateAdded
   pool.query(
     `
-    CALL shopping_list.add_item('${itemName}',${dateAdded});
+    CALL shopping_list.add_item('${itemName}','${dateAdded}');
     `,
     (error: Error, results: QueryResult) => {
       if (error) {
