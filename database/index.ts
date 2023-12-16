@@ -34,7 +34,7 @@ app.use(
 );
 
 app.get("/items", getAllItems);
-app.put("/items/:itemName", addItem);
+app.put("/items", addItem);
 app.post("/items/:itemName/:isSelected", editItem);
 
 app.listen(port, () => {

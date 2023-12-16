@@ -1,5 +1,5 @@
 import { Pool, QueryResult } from "pg";
-import express, { Express, Request, Response, response } from "express";
+import  { Request, Response } from "express";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -28,10 +28,11 @@ export const getAllItems = (request: Request, response: Response): void => {
 };
 
 export const addItem = (request: Request, response: Response) => {
-  const itemName = request.params.itemName;
+  const itemName = request.body.itemName;
+  const dateAdded = request.body.dateAdded
   pool.query(
     `
-    CALL shopping_list.add_item('${itemName}');
+    CALL shopping_list.add_item('${itemName}',${dateAdded});
     `,
     (error: Error, results: QueryResult) => {
       if (error) {
