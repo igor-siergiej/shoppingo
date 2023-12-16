@@ -24,7 +24,7 @@ export const getAllItems = (request: Request, response: Response): void => {
       if (error) {
         throw error;
       }
-      response.json({message: `Got all items successfully.`})
+      response.json(results)
     }
   );
 };
