@@ -6,7 +6,6 @@ dotenv.config();
 
 const pool = new Pool({
   connectionString: process.env.NEON_DB_CONNECTION_STRING,
-  ssl: true, // use an encrypted connection
 });
 
 
