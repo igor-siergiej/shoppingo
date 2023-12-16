@@ -4,12 +4,14 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+const { PGHOST, PGDATABASE, PGUSER, PGPASSWORD } = process.env;
+
 const pool = new Pool({
-  user: process.env.PGUSER,
-  host: process.env.PGHOST,
-  database: process.env.PGDATABASE,
-  password: process.env.PGPASSWORD,
-  port: parseInt("5432", 10),
+  user: PGUSER,
+  host: PGHOST,
+  database: PGDATABASE,
+  password: PGPASSWORD,
+  port: 5432,
   ssl: true,
 });
 
