@@ -24,7 +24,7 @@ export const getAllItems = (request: Request, response: Response): void => {
       if (error) {
         throw error;
       }
-      response.json(results)
+      response.json(results.rows[0].get_all_items)
     }
   );
 };
