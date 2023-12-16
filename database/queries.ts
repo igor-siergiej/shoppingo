@@ -15,8 +15,6 @@ const pool = new Pool({
   ssl: true,
 });
 
-
-
 export const getAllItems = (request: Request, response: Response): void => {
   pool.query(
     `
@@ -26,7 +24,7 @@ export const getAllItems = (request: Request, response: Response): void => {
       if (error) {
         throw error;
       }
-      response.status(200).json(results.rows[0].get_all_items);
+      response.json({message: `Got all items successfully.`})
     }
   );
 };
@@ -42,7 +40,7 @@ export const addItem = (request: Request, response: Response) => {
       if (error) {
         throw error;
       }
-      response.status(200).json(results);
+      response.json({message: `Added item ${itemName} successfully.`})
     }
   );
 };
@@ -58,7 +56,7 @@ export const editItem = (request: Request, response: Response) => {
       if (error) {
         throw error;
       }
-      response.status(200).json(results);
+      response.json(results);
     }
   );
 };
