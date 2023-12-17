@@ -1,6 +1,14 @@
 import { type ReactElement, useState } from 'react';
 import { useQuery } from 'react-query';
-import { Box, Button, FormGroup, TextField, Toolbar } from '@mui/material';
+import {
+    Box,
+    Button,
+    CircularProgress,
+    FormGroup,
+    TextField,
+    Toolbar,
+    Typography,
+} from '@mui/material';
 import { getItemsQuery, addItem, updateSelected } from '../../api';
 import ItemCheckBoxList from '../ItemCheckBoxList';
 import Appbar from '../Appbar';
@@ -10,7 +18,7 @@ import CancelButton from '../CancelButton';
 import { Item } from '../../types';
 
 function App(): ReactElement {
-    const { data, isLoading, isError, isRefetching, refetch } = useQuery({
+    const { data, isLoading, isError, refetch } = useQuery({
         ...getItemsQuery(),
     });
     const [open, setOpen] = useState(false);
@@ -18,6 +26,10 @@ function App(): ReactElement {
 
     if (isError) {
         return <div>Error fetching data.</div>;
+    }
+
+    if (isLoading) {
+        return <CircularProgress />;
     }
 
     const handleOnChange = async (item: Item) => {
@@ -61,13 +73,13 @@ function App(): ReactElement {
                     pb: '10em',
                 }}
             >
-                {data && !isLoading && !isRefetching ? (
+                {data ? (
                     <ItemCheckBoxList
                         items={data}
                         handleOnChange={handleOnChange}
                     ></ItemCheckBoxList>
                 ) : (
-                    <div>Loading...</div>
+                    <Typography>No items in list</Typography>
                 )}
 
                 {open ? (

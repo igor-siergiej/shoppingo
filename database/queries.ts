@@ -29,34 +29,43 @@ export const getAllItems = (request: Request, response: Response): void => {
   );
 };
 
-export const addItem = (request: Request, response: Response) => {
-  const itemName = request.body.itemName;
-  const dateAdded = request.body.dateAdded
-  pool.query(
-    `
-    CALL shopping_list.add_item('${itemName}','${dateAdded}');
-    `,
-    (error: Error, results: QueryResult) => {
-      if (error) {
-        throw error;
-      }
-      response.json({message: `Added item ${itemName} successfully.`})
-    }
-  );
+export const addItem = async (request: Request, response: Response) => {
+  try {
+  const { itemName, dateAdded } = request.body;
+
+  console.log(itemName,dateAdded)
+  if (!itemName || !dateAdded) {
+    return response.status(400).json({ error: 'Item name and date added are required.' });
+  }
+
+  const result = pool.query('CALL shopping_list.add_item($1, $2)',[itemName, dateAdded]);
+
+  response.json({ message: `Item ${itemName} added successfully.` });
+
+} catch (error) {
+  console.error('Error executing PostgreSQL query:', error);
+  response.status(500).json({ error: 'Internal Server Error' });
+}
+
 };
 
-export const editItem = (request: Request, response: Response) => {
-  const isSelected = request.params.isSelected;
-  const itemName = request.params.itemName;
-  pool.query(
-    `
-    CALL shopping_list.upsert_item('${itemName}', '${isSelected}');
-    `,
-    (error: Error, results: QueryResult) => {
-      if (error) {
-        throw error;
-      }
-      response.json(results);
-    }
-  );
+export const updateItem = async (request: Request, response: Response) => {
+  try {
+  const { itemName, isSelected } = request.body;
+
+  console.log(itemName,isSelected)
+  if (!itemName || isSelected === null || isSelected === undefined) {
+    return response.status(400).json({ error: 'Item name and is selected are required.' });
+  }
+
+  const result = await pool.query('CALL shopping_list.upsert_item($1, $2)',[itemName, isSelected]);
+
+  response.json({message: `Successfully updated item: ${itemName}` });
+
+} catch (error) {
+  console.error('Error executing PostgreSQL query:', error);
+  response.status(500).json({ error: 'Internal Server Error' });
+}
+
+
 };
