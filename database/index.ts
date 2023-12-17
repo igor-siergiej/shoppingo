@@ -4,7 +4,7 @@ import cors from "cors";
 import { addItem, updateItem, getAllItems } from "./queries";
 
 const app: Application = express();
-const port = 3000;
+const port = 3001;
 
 const allowedOrigins: string[] = [
   "https://im-shoppingo.netlify.app",
