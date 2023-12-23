@@ -1,7 +1,7 @@
 import { type Item } from '../types';
 
-//const URLPath = 'https://shoppingo-api.onrender.com';
-const URLPath = 'http://localhost:3001';
+const URLPath = 'https://shoppingo-api.onrender.com';
+//const URLPath = 'http://localhost:3001';
 
 export const getItemsQuery = () => ({
     queryKey: ['items'],
