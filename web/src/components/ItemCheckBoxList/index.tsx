@@ -1,37 +1,59 @@
-import { FormControlLabel, Checkbox, Box, Divider } from '@mui/material';
+import {
+    FormControlLabel,
+    Checkbox,
+    Box,
+    Divider,
+    IconButton,
+} from '@mui/material';
 import { type Item } from '../../types';
 import { type ItemCheckBoxListProps } from './types';
-
+import ClearIcon from '@mui/icons-material/Clear';
 import CircleCheckedFilled from '@mui/icons-material/CheckCircle';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 
-const ItemCheckBoxList = ({ items, handleOnChange }: ItemCheckBoxListProps) => {
+const ItemCheckBoxList = ({
+    items,
+    handleUpdate,
+    handleRemove,
+}: ItemCheckBoxListProps) => {
     const renderedOutput = items.map((item: Item) => (
         <Box
             key={item.name}
             sx={{
-                mt: '0.5em',
-                mb: '0.5em',
-                pl: '0.5em',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                pb: '0.5em',
             }}
         >
             <FormControlLabel
-                sx={{ alignItems: 'center', pb: '1em' }}
+                sx={{ flexGrow: 1 }}
                 control={
                     <Checkbox
                         icon={<RadioButtonUncheckedIcon />}
                         checkedIcon={<CircleCheckedFilled />}
-                        sx={{ transform: 'scale(1.5)', pr: '1.5em' }}
-                        size="small"
+                        size="medium"
+                        sx={{ pt: '0.3em' }}
                         color="secondary"
                         checked={item.isSelected}
                         onChange={() => {
-                            handleOnChange(item);
+                            handleUpdate(item);
                         }}
                     />
                 }
                 label={item.name}
             />
+
+            <IconButton
+                sx={{}}
+                color="inherit"
+                onClick={() => {
+                    handleRemove(item);
+                }}
+            >
+                <ClearIcon />
+            </IconButton>
+
             <Divider />
         </Box>
     ));

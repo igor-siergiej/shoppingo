@@ -4,8 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "build": "npx tsc",
-    "start": "node build/index.js"
+    "start": "npx tsc && node build/index.js"
   },
   "dependencies": {
     "cors": "^2.8.5",

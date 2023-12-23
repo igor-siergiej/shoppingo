@@ -43,7 +43,7 @@ app.get("/items", getAllItems);
 app.put("/items", addItem);
 app.post("/items", updateItem);
 app.delete("/items", deleteAll);
-app.delete("/items:itemName", deleteItem);
+app.delete("/items/:itemName", deleteItem);
 
 app.listen(port, () => {
   console.log(`App running on port ${port}.`);

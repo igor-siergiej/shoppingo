@@ -9,7 +9,13 @@ import {
     Toolbar,
     Typography,
 } from '@mui/material';
-import { getItemsQuery, addItem, updateSelected } from '../../api';
+import {
+    getItemsQuery,
+    addItem,
+    updateSelected,
+    deleteItem,
+    deleteAll,
+} from '../../api';
 import ItemCheckBoxList from '../ItemCheckBoxList';
 import Appbar from '../Appbar';
 import AddIcon from '@mui/icons-material/Add';
@@ -32,8 +38,19 @@ function App(): ReactElement {
         return <CircularProgress />;
     }
 
-    const handleOnChange = async (item: Item) => {
+    const handleUpdate = async (item: Item) => {
         await updateSelected(item.name, !item.isSelected);
+        refetch();
+    };
+
+    const handleRemove = async (item: Item) => {
+        console.log(item);
+        await deleteItem(item.name);
+        refetch();
+    };
+
+    const handleRemoveAll = async () => {
+        await deleteAll();
         refetch();
     };
 
@@ -58,14 +75,14 @@ function App(): ReactElement {
 
     const handleAddItem = async () => {
         await addItem(newItemName);
-        refetch();
         setOpen(false);
         setNewItemName('');
+        refetch();
     };
 
     return (
         <>
-            <Appbar />
+            <Appbar handleRemoveAll={handleRemoveAll} />
             <Toolbar />
             <FormGroup
                 sx={{
@@ -76,7 +93,8 @@ function App(): ReactElement {
                 {data ? (
                     <ItemCheckBoxList
                         items={data}
-                        handleOnChange={handleOnChange}
+                        handleUpdate={handleUpdate}
+                        handleRemove={handleRemove}
                     ></ItemCheckBoxList>
                 ) : (
                     <Typography>No items in list</Typography>

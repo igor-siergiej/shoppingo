@@ -78,12 +78,13 @@ export const updateItem = async (request: Request, response: Response) => {
 export const deleteItem = async (request: Request, response: Response) => {
   try {
     const { itemName } = request.params;
+    console.log(itemName);
 
     if (!itemName === null || itemName === undefined) {
       return response.status(400).json({ error: "Item name is required." });
     }
 
-    const result = await pool.query("CALL shopping_list.deleteItem($1)", [
+    const result = await pool.query("CALL shopping_list.delete_item($1)", [
       itemName,
     ]);
 
@@ -96,7 +97,7 @@ export const deleteItem = async (request: Request, response: Response) => {
 
 export const deleteAll = async (request: Request, response: Response) => {
   try {
-    const result = await pool.query("CALL shopping_list.deleteAll()");
+    const result = await pool.query("CALL shopping_list.delete_all()");
 
     response.json({ message: `Successfully deleted items.` });
   } catch (error) {

@@ -1,6 +1,7 @@
 import { type Item } from '../types';
 
-const URLPath = 'https://shoppingo-api.onrender.com';
+//const URLPath = 'https://shoppingo-api.onrender.com';
+const URLPath = 'http://localhost:3001';
 
 export const getItemsQuery = () => ({
     queryKey: ['items'],
@@ -87,6 +88,60 @@ export const updateSelected = async (itemName: string, isSelected: boolean) => {
         }
     } catch (error) {
         console.error('Error updating item:', error);
+        // Handle unexpected errors
+    }
+};
+
+export const deleteItem = async (itemName: string) => {
+    try {
+        const response = await fetch(`${URLPath}/items/${itemName}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            console.log(data);
+            // Handle success, e.g., update state or show a success message
+        } else {
+            console.error(
+                'Failed to delete item:',
+                response.status,
+                response.statusText
+            );
+            // Handle failure, e.g., show an error message
+        }
+    } catch (error) {
+        console.error('Error deleting item:', error);
+        // Handle unexpected errors
+    }
+};
+
+export const deleteAll = async () => {
+    try {
+        const response = await fetch(`${URLPath}/items`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            console.log(data);
+            // Handle success, e.g., update state or show a success message
+        } else {
+            console.error(
+                'Failed to delete items:',
+                response.status,
+                response.statusText
+            );
+            // Handle failure, e.g., show an error message
+        }
+    } catch (error) {
+        console.error('Error deleting items:', error);
         // Handle unexpected errors
     }
 };

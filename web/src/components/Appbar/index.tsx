@@ -3,7 +3,11 @@ import IconButton from '@mui/material/IconButton';
 import DeleteIcon from '@mui/icons-material/Delete';
 import logo from '../../../iconLogo.png';
 
-function Appbar() {
+export interface AppbarProps {
+    handleRemoveAll: () => void;
+}
+
+function Appbar({ handleRemoveAll }: AppbarProps) {
     return (
         <>
             <Box>
@@ -21,7 +25,12 @@ function Appbar() {
                             Shoppingo
                         </Typography>
 
-                        <IconButton color="inherit">
+                        <IconButton
+                            color="inherit"
+                            onClick={() => {
+                                handleRemoveAll();
+                            }}
+                        >
                             <DeleteIcon />
                         </IconButton>
                     </Toolbar>
