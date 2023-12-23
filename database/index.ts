@@ -1,7 +1,13 @@
 import express, { Application } from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
-import { addItem, updateItem, getAllItems } from "./queries";
+import {
+  addItem,
+  updateItem,
+  getAllItems,
+  deleteItem,
+  deleteAll,
+} from "./queries";
 
 const app: Application = express();
 const port = 3001;
@@ -36,6 +42,8 @@ app.use(
 app.get("/items", getAllItems);
 app.put("/items", addItem);
 app.post("/items", updateItem);
+app.delete("/items", deleteAll);
+app.delete("/items:itemName", deleteItem);
 
 app.listen(port, () => {
   console.log(`App running on port ${port}.`);
