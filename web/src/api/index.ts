@@ -1,7 +1,8 @@
 import { type Item } from '../types';
+import { MethodType, MakeRequestProps } from './types';
 
-//const URLPath = 'https://shoppingo-api.onrender.com';
-const URLPath = 'http://localhost:3001';
+const URLPath = 'https://shoppingo-api.onrender.com';
+//const URLPath = 'http://localhost:3001';
 
 export const getItemsQuery = () => ({
     queryKey: ['items'],
@@ -66,20 +67,6 @@ export const deleteAll = async () => {
         operationString: 'delete items',
     });
 };
-
-enum MethodType {
-    GET = 'GET',
-    PUT = 'PUT',
-    POST = 'POST',
-    DELETE = 'DELETE',
-}
-
-interface MakeRequestProps {
-    URL: string;
-    method: MethodType;
-    operationString: string;
-    body?: BodyInit;
-}
 
 export const makeRequest = async ({
     URL,
