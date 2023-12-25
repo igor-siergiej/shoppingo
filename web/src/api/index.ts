@@ -9,16 +9,28 @@ export const getItemsQuery = () => ({
 });
 
 export const getItems = async (): Promise<Item[]> => {
-    const response = await fetch(`${URLPath}/items`);
-    if (!response.ok) {
-        console.log(response);
-        throw new Error('Network response was not ok');
+    try {
+        const response = await fetch(`${URLPath}/items`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            return data;
+        } else {
+            throw new Error(
+                `Failed to add item: ${response.status}: ${response.statusText}`
+            );
+        }
+    } catch (error) {
+        throw new Error(`Error adding item: ${error}`);
     }
-    return await response.json();
 };
 
-const generateTimestamp = (): string => {
-    const now = new Date();
+const generateTimestamp = (now: Date): string => {
     const year = now.getFullYear();
     const month = (now.getMonth() + 1).toString().padStart(2, '0');
     const day = now.getDate().toString().padStart(2, '0');
@@ -30,7 +42,7 @@ const generateTimestamp = (): string => {
 
 export const addItem = async (itemName: string) => {
     try {
-        const dateAdded = generateTimestamp();
+        const dateAdded = generateTimestamp(new Date());
 
         const response = await fetch(`${URLPath}/items`, {
             method: 'PUT',
@@ -43,21 +55,15 @@ export const addItem = async (itemName: string) => {
             }),
         });
 
-        if (response.ok) {
-            const data = await response.json();
-            console.log(data);
-            // Handle success, e.g., update state or show a success message
-        } else {
+        if (!response.ok) {
             console.error(
                 'Failed to add item:',
                 response.status,
                 response.statusText
             );
-            // Handle failure, e.g., show an error message
         }
     } catch (error) {
         console.error('Error adding item:', error);
-        // Handle unexpected errors
     }
 };
 
@@ -74,21 +80,15 @@ export const updateSelected = async (itemName: string, isSelected: boolean) => {
             }),
         });
 
-        if (response.ok) {
-            const data = await response.json();
-            console.log(data);
-            // Handle success, e.g., update state or show a success message
-        } else {
+        if (!response.ok) {
             console.error(
                 'Failed to update item:',
                 response.status,
                 response.statusText
             );
-            // Handle failure, e.g., show an error message
         }
     } catch (error) {
         console.error('Error updating item:', error);
-        // Handle unexpected errors
     }
 };
 
@@ -101,21 +101,15 @@ export const deleteItem = async (itemName: string) => {
             },
         });
 
-        if (response.ok) {
-            const data = await response.json();
-            console.log(data);
-            // Handle success, e.g., update state or show a success message
-        } else {
+        if (!response.ok) {
             console.error(
                 'Failed to delete item:',
                 response.status,
                 response.statusText
             );
-            // Handle failure, e.g., show an error message
         }
     } catch (error) {
         console.error('Error deleting item:', error);
-        // Handle unexpected errors
     }
 };
 
@@ -128,20 +122,14 @@ export const deleteAll = async () => {
             },
         });
 
-        if (response.ok) {
-            const data = await response.json();
-            console.log(data);
-            // Handle success, e.g., update state or show a success message
-        } else {
+        if (!response.ok) {
             console.error(
                 'Failed to delete items:',
                 response.status,
                 response.statusText
             );
-            // Handle failure, e.g., show an error message
         }
     } catch (error) {
         console.error('Error deleting items:', error);
-        // Handle unexpected errors
     }
 };

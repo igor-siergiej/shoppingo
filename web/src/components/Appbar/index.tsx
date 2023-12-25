@@ -2,10 +2,7 @@ import { Box, Toolbar, AppBar, Typography } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
 import DeleteIcon from '@mui/icons-material/Delete';
 import logo from '../../../iconLogo.png';
-
-export interface AppbarProps {
-    handleRemoveAll: () => void;
-}
+import { AppbarProps } from './types';
 
 function Appbar({ handleRemoveAll }: AppbarProps) {
     return (
