@@ -1,34 +1,20 @@
-import { type ReactElement, useState } from 'react';
+import { type ReactElement } from 'react';
 import { useQuery } from 'react-query';
 import {
-    Box,
-    Button,
     CircularProgress,
     FormGroup,
-    TextField,
     Toolbar,
     Typography,
 } from '@mui/material';
-import {
-    getItemsQuery,
-    addItem,
-    updateSelected,
-    deleteItem,
-    deleteAll,
-} from '../../api';
+import { getItemsQuery, deleteAll, addItem } from '../../api';
 import ItemCheckBoxList from '../ItemCheckBoxList';
 import Appbar from '../Appbar';
-import AddIcon from '@mui/icons-material/Add';
-import AcceptButton from '../AcceptButton';
-import CancelButton from '../CancelButton';
-import { Item } from '../../types';
+import NewItemForm from '../NewItemForm';
 
 function App(): ReactElement {
     const { data, isLoading, isError, refetch } = useQuery({
         ...getItemsQuery(),
     });
-    const [open, setOpen] = useState(false);
-    const [newItemName, setNewItemName] = useState('');
 
     if (isError) {
         return <div>Error fetching data.</div>;
@@ -38,44 +24,8 @@ function App(): ReactElement {
         return <CircularProgress />;
     }
 
-    const handleUpdate = async (item: Item) => {
-        await updateSelected(item.name, !item.isSelected);
-        await refetch();
-    };
-
-    const handleRemove = async (item: Item) => {
-        await deleteItem(item.name);
-        await refetch();
-    };
-
     const handleRemoveAll = async () => {
         await deleteAll();
-        await refetch();
-    };
-
-    const AddButton = () => {
-        return (
-            <Button
-                onClick={() => {
-                    setOpen(!open);
-                }}
-                variant="contained"
-                sx={{
-                    border: 3,
-                    borderRadius: '10px',
-                    textAlign: 'center',
-                    width: '100%',
-                }}
-            >
-                <AddIcon />
-            </Button>
-        );
-    };
-
-    const handleAddItem = async () => {
-        await addItem(newItemName);
-        setOpen(false);
-        setNewItemName('');
         await refetch();
     };
 
@@ -86,57 +36,28 @@ function App(): ReactElement {
             <FormGroup
                 sx={{
                     display: 'flex',
-                    pb: '10em',
                 }}
             >
                 {data ? (
                     <ItemCheckBoxList
                         items={data}
-                        handleUpdate={handleUpdate}
-                        handleRemove={handleRemove}
+                        refetch={refetch}
                     ></ItemCheckBoxList>
                 ) : (
-                    <Typography>No items in list</Typography>
-                )}
-
-                {open ? (
-                    <>
-                        <TextField
-                            size="small"
-                            value={newItemName}
-                            onChange={(event) => {
-                                setNewItemName(event.target.value);
-                            }}
-                            sx={{
-                                borderRadius: '10px',
-                                mb: '0.5em',
-                            }}
-                            color="primary"
-                            label="Add New Item"
-                            variant="filled"
-                            inputRef={(input) => {
-                                if (input != null) {
-                                    input.focus();
-                                }
-                            }}
-                        />
-                        <Box sx={{ width: '100%', display: 'flex' }}>
-                            <AcceptButton
-                                handleClick={() => {
-                                    handleAddItem();
-                                }}
-                            />
-                            <CancelButton
-                                handleClick={() => {
-                                    setOpen(false);
-                                }}
-                            />
-                        </Box>
-                    </>
-                ) : (
-                    <AddButton />
+                    <Typography
+                        sx={{ textAlign: 'center', pb: '1em', pt: '1em' }}
+                    >
+                        This list is empty...
+                    </Typography>
                 )}
             </FormGroup>
+
+            <NewItemForm
+                handleAdd={async (itemName) => {
+                    await addItem(itemName);
+                    await refetch();
+                }}
+            />
         </>
     );
 }

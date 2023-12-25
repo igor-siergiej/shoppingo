@@ -26,7 +26,7 @@ const generateTimestamp = (now: Date): string => {
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 };
 
-export const addItem = async (itemName: string) => {
+export const addItem = async (itemName: string): Promise<unknown> => {
     const dateAdded = generateTimestamp(new Date());
     return await makeRequest({
         URL: `${URLPath}/items`,

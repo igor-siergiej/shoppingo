@@ -15,7 +15,7 @@ const pool = new Pool({
   ssl: true,
 });
 
-export const getAllItems = (request: Request, response: Response): void => {
+export const getAllItems = (request: Request, response: Response) => {
   pool.query(
     `
     SELECT shopping_list.get_all_items();
@@ -55,7 +55,6 @@ export const updateItem = async (request: Request, response: Response) => {
   try {
     const { itemName, isSelected } = request.body;
 
-    console.log(itemName, isSelected);
     if (!itemName || isSelected === null || isSelected === undefined) {
       return response
         .status(400)

@@ -4,7 +4,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import logo from '../../../iconLogo.png';
 import { AppbarProps } from './types';
 
-function Appbar({ handleRemoveAll }: AppbarProps) {
+const Appbar = ({ handleRemoveAll }: AppbarProps) => {
     return (
         <>
             <Box>
@@ -35,6 +35,6 @@ function Appbar({ handleRemoveAll }: AppbarProps) {
             </Box>
         </>
     );
-}
+};
 
 export default Appbar;
