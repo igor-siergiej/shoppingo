@@ -33,7 +33,6 @@ export const addItem = async (request: Request, response: Response) => {
   try {
     const { itemName, dateAdded } = request.body;
 
-    console.log(itemName, dateAdded);
     if (!itemName || !dateAdded) {
       return response
         .status(400)

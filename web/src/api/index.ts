@@ -1,7 +1,7 @@
 import { type Item } from '../types';
 
-const URLPath = 'https://shoppingo-api.onrender.com';
-//const URLPath = 'http://localhost:3001';
+//const URLPath = 'https://shoppingo-api.onrender.com';
+const URLPath = 'http://localhost:3001';
 
 export const getItemsQuery = () => ({
     queryKey: ['items'],
@@ -9,25 +9,11 @@ export const getItemsQuery = () => ({
 });
 
 export const getItems = async (): Promise<Item[]> => {
-    try {
-        const response = await fetch(`${URLPath}/items`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-            return data;
-        } else {
-            throw new Error(
-                `Failed to add item: ${response.status}: ${response.statusText}`
-            );
-        }
-    } catch (error) {
-        throw new Error(`Error adding item: ${error}`);
-    }
+    return await makeRequest({
+        URL: `${URLPath}/items`,
+        method: MethodType.GET,
+        operationString: 'get items',
+    });
 };
 
 const generateTimestamp = (now: Date): string => {
@@ -41,95 +27,87 @@ const generateTimestamp = (now: Date): string => {
 };
 
 export const addItem = async (itemName: string) => {
-    try {
-        const dateAdded = generateTimestamp(new Date());
-
-        const response = await fetch(`${URLPath}/items`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                itemName,
-                dateAdded,
-            }),
-        });
-
-        if (!response.ok) {
-            console.error(
-                'Failed to add item:',
-                response.status,
-                response.statusText
-            );
-        }
-    } catch (error) {
-        console.error('Error adding item:', error);
-    }
+    const dateAdded = generateTimestamp(new Date());
+    return await makeRequest({
+        URL: `${URLPath}/items`,
+        method: MethodType.PUT,
+        operationString: 'add item',
+        body: JSON.stringify({
+            itemName,
+            dateAdded,
+        }),
+    });
 };
 
 export const updateSelected = async (itemName: string, isSelected: boolean) => {
-    try {
-        const response = await fetch(`${URLPath}/items`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                itemName,
-                isSelected,
-            }),
-        });
-
-        if (!response.ok) {
-            console.error(
-                'Failed to update item:',
-                response.status,
-                response.statusText
-            );
-        }
-    } catch (error) {
-        console.error('Error updating item:', error);
-    }
+    return await makeRequest({
+        URL: `${URLPath}/items`,
+        method: MethodType.POST,
+        operationString: 'update item',
+        body: JSON.stringify({
+            itemName,
+            isSelected,
+        }),
+    });
 };
 
 export const deleteItem = async (itemName: string) => {
-    try {
-        const response = await fetch(`${URLPath}/items/${itemName}`, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
-
-        if (!response.ok) {
-            console.error(
-                'Failed to delete item:',
-                response.status,
-                response.statusText
-            );
-        }
-    } catch (error) {
-        console.error('Error deleting item:', error);
-    }
+    return await makeRequest({
+        URL: `${URLPath}/items/${itemName}`,
+        method: MethodType.DELETE,
+        operationString: 'delete item',
+    });
 };
 
 export const deleteAll = async () => {
+    return await makeRequest({
+        URL: `${URLPath}/items`,
+        method: MethodType.DELETE,
+        operationString: 'delete items',
+    });
+};
+
+enum MethodType {
+    GET = 'GET',
+    PUT = 'PUT',
+    POST = 'POST',
+    DELETE = 'DELETE',
+}
+
+interface MakeRequestProps {
+    URL: string;
+    method: MethodType;
+    operationString: string;
+    body?: BodyInit;
+}
+
+export const makeRequest = async ({
+    URL,
+    method,
+    operationString,
+    body,
+}: MakeRequestProps) => {
     try {
-        const response = await fetch(`${URLPath}/items`, {
-            method: 'DELETE',
+        const response = await fetch(URL, {
+            method: method,
             headers: {
                 'Content-Type': 'application/json',
             },
+            body: body,
         });
 
-        if (!response.ok) {
+        if (response.ok) {
+            const data = await response.json();
+            console.log(data);
+            return data;
+        } else {
             console.error(
-                'Failed to delete items:',
+                `Failed to ${operationString}:`,
                 response.status,
                 response.statusText
             );
         }
     } catch (error) {
-        console.error('Error deleting items:', error);
+        throw new Error(`Error while trying to ${operationString}: ${error}`);
     }
 };

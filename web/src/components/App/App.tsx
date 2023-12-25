@@ -40,18 +40,17 @@ function App(): ReactElement {
 
     const handleUpdate = async (item: Item) => {
         await updateSelected(item.name, !item.isSelected);
-        refetch();
+        await refetch();
     };
 
     const handleRemove = async (item: Item) => {
-        console.log(item);
         await deleteItem(item.name);
-        refetch();
+        await refetch();
     };
 
     const handleRemoveAll = async () => {
         await deleteAll();
-        refetch();
+        await refetch();
     };
 
     const AddButton = () => {
@@ -77,7 +76,7 @@ function App(): ReactElement {
         await addItem(newItemName);
         setOpen(false);
         setNewItemName('');
-        refetch();
+        await refetch();
     };
 
     return (
@@ -115,6 +114,11 @@ function App(): ReactElement {
                             color="primary"
                             label="Add New Item"
                             variant="filled"
+                            inputRef={(input) => {
+                                if (input != null) {
+                                    input.focus();
+                                }
+                            }}
                         />
                         <Box sx={{ width: '100%', display: 'flex' }}>
                             <AcceptButton

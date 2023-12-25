@@ -4,14 +4,16 @@ import { getItems } from '.';
 
 vi.mock('.', () => {
     return {
-        getItems: vi.fn().mockResolvedValue(getItemsResponse),
+        fetch: vi.fn().mockResolvedValue(getItemsResponse),
     };
 });
 
-describe('When getItems function is called', () => {
+describe('Given getItems', () => {
     it('Should return the mock data', async () => {
         const items = await getItems();
 
         expect(items).toEqual(getItemsResponse);
     });
+
+    it('Should return ');
 });
