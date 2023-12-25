@@ -3,10 +3,7 @@ import AcceptButton from '../AcceptButton';
 import CancelButton from '../CancelButton';
 import { useState } from 'react';
 import AddButton from '../AddButton';
-
-export interface NewItemFormProps {
-    handleAdd: (itemName: string) => Promise<void>;
-}
+import { NewItemFormProps } from './types';
 
 const NewItemForm = ({ handleAdd }: NewItemFormProps) => {
     const [open, setOpen] = useState(false);

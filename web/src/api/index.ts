@@ -93,8 +93,13 @@ export const makeRequest = async ({
                 response.status,
                 response.statusText
             );
+            throw new Error(
+                `Response was not ok ${response.status}: ${response.statusText}`
+            );
         }
-    } catch (error) {
-        throw new Error(`Error while trying to ${operationString}: ${error}`);
+    } catch (error: any) {
+        throw new Error(
+            `Error while trying to ${operationString}: ${error.message}`
+        );
     }
 };

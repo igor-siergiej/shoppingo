@@ -1,18 +1,17 @@
 [
     {
-        "name": "ham",
-        "selected": true
+        "name": "test1",
+        "isSelected": false,
+        "dateAdded": "2023-12-25T20:35:16"
     },
     {
-        "name": "cheese",
-        "selected": true
+        "name": "test2",
+        "isSelected": true,
+        "dateAdded": "2023-12-25T22:34:47"
     },
     {
-        "name": "bread",
-        "selected": true
-    },
-    {
-        "name": "turkey",
-        "selected": false
+        "name": "test3",
+        "isSelected": false,
+        "dateAdded": "2023-12-25T22:34:50"
     }
 ]
