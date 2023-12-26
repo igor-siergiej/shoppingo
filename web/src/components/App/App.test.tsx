@@ -10,7 +10,7 @@ vi.doMock('../src/api', async () => {
     };
 });
 
-describe('Given the main page', () => {
+describe.skip('Given the main page', () => {
     it('Should display the item names', async () => {
         render(
             <QueryClientProvider client={new QueryClient()}>

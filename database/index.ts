@@ -4,9 +4,12 @@ import cors from "cors";
 import {
   addItem,
   updateItem,
-  getAllItems,
   deleteItem,
-  deleteAll,
+  getItemsInList,
+  getAllLists,
+  addList,
+  deleteList,
+  clearList,
 } from "./queries";
 
 const app: Application = express();
@@ -39,11 +42,17 @@ app.use(
   })
 );
 
-app.get("/items", getAllItems);
+app.get("/items", getItemsInList);
+app.get("/lists", getAllLists);
+
+app.put("/lists", addList);
 app.put("/items", addItem);
+
 app.post("/items", updateItem);
-app.delete("/items", deleteAll);
-app.delete("/items/:itemName", deleteItem);
+
+app.delete("/lists/:listName", deleteList);
+app.delete("/items/:itemName/:listName", deleteItem);
+app.delete("/clear/:listName", clearList);
 
 app.listen(port, () => {
   console.log(`App running on port ${port}.`);
