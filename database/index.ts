@@ -42,7 +42,7 @@ app.use(
   })
 );
 
-app.get("/items", getItemsInList);
+app.get("/items/:listName", getItemsInList);
 app.get("/lists", getAllLists);
 
 app.put("/lists", addList);

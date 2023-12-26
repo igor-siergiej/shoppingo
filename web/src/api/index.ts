@@ -1,30 +1,46 @@
-import { type Item } from '../types';
+import { List } from '../types';
 import { MethodType, MakeRequestProps } from './types';
 
 const URLPath = 'https://shoppingo-api.onrender.com';
 //const URLPath = 'http://localhost:3001';
 
-export const getItemsQuery = () => ({
+export const getItemsQuery = (listName: string) => ({
     queryKey: ['items'],
-    queryFn: async () => await getItems(),
+    queryFn: async () => await getItems(listName),
 });
 
-export const getItems = async (): Promise<Item[]> => {
+export const getItems = async (listName: string): Promise<List> => {
     return await makeRequest({
-        URL: `${URLPath}/items`,
+        URL: `${URLPath}/items/${listName}`,
         method: MethodType.GET,
         operationString: 'get items',
     });
 };
 
-const generateTimestamp = (now: Date): string => {
-    const year = now.getFullYear();
-    const month = (now.getMonth() + 1).toString().padStart(2, '0');
-    const day = now.getDate().toString().padStart(2, '0');
-    const hours = now.getHours().toString().padStart(2, '0');
-    const minutes = now.getMinutes().toString().padStart(2, '0');
-    const seconds = now.getSeconds().toString().padStart(2, '0');
-    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+export const getListsQuery = () => ({
+    queryKey: ['lists'],
+    queryFn: async () => await getLists(),
+});
+
+export const getLists = async (): Promise<List[]> => {
+    return await makeRequest({
+        URL: `${URLPath}/lists`,
+        method: MethodType.GET,
+        operationString: 'get lists',
+    });
+};
+
+export const addList = async (listName: string): Promise<unknown> => {
+    const dateAdded = generateTimestamp(new Date());
+    return await makeRequest({
+        URL: `${URLPath}/lists`,
+        method: MethodType.PUT,
+        operationString: 'add item',
+        body: JSON.stringify({
+            listName,
+            dateAdded,
+        }),
+    });
 };
 
 export const addItem = async (itemName: string): Promise<unknown> => {
@@ -40,7 +56,11 @@ export const addItem = async (itemName: string): Promise<unknown> => {
     });
 };
 
-export const updateSelected = async (itemName: string, isSelected: boolean) => {
+export const updateSelected = async (
+    itemName: string,
+    isSelected: boolean,
+    listName: string
+) => {
     return await makeRequest({
         URL: `${URLPath}/items`,
         method: MethodType.POST,
@@ -48,23 +68,32 @@ export const updateSelected = async (itemName: string, isSelected: boolean) => {
         body: JSON.stringify({
             itemName,
             isSelected,
+            listName,
         }),
     });
 };
 
-export const deleteItem = async (itemName: string) => {
+export const deleteItem = async (itemName: string, listName: string) => {
     return await makeRequest({
-        URL: `${URLPath}/items/${itemName}`,
+        URL: `${URLPath}/items/${itemName}/${listName}`,
         method: MethodType.DELETE,
         operationString: 'delete item',
     });
 };
 
-export const deleteAll = async () => {
+export const deleteList = async (listName: string) => {
     return await makeRequest({
-        URL: `${URLPath}/items`,
+        URL: `${URLPath}/lists/${listName}`,
         method: MethodType.DELETE,
-        operationString: 'delete items',
+        operationString: 'delete list',
+    });
+};
+
+export const clearList = async (listName: string) => {
+    return await makeRequest({
+        URL: `${URLPath}/clear/${listName}`,
+        method: MethodType.DELETE,
+        operationString: 'clear the list',
     });
 };
 
@@ -102,4 +131,14 @@ export const makeRequest = async ({
             `Error while trying to ${operationString}: ${error.message}`
         );
     }
+};
+
+const generateTimestamp = (now: Date): string => {
+    const year = now.getFullYear();
+    const month = (now.getMonth() + 1).toString().padStart(2, '0');
+    const day = now.getDate().toString().padStart(2, '0');
+    const hours = now.getHours().toString().padStart(2, '0');
+    const minutes = now.getMinutes().toString().padStart(2, '0');
+    const seconds = now.getSeconds().toString().padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 };
