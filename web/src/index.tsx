@@ -1,8 +1,10 @@
 import ReactDOM from 'react-dom/client';
-import App from './components/App/App';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { ThemeProvider } from '@mui/material/styles';
 import theme from './style/theme';
+import { RouterProvider, createBrowserRouter } from 'react-router-dom';
+import ItemsPage from './pages/ItemsPage';
+import ListPage from './pages/ListsPage';
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -12,6 +14,18 @@ const queryClient = new QueryClient({
         },
     },
 });
+
+const router = createBrowserRouter([
+    {
+        path: '/',
+        element: <ListPage />,
+    },
+    {
+        path: 'list/:listName',
+        element: <ItemsPage />,
+    },
+]);
+
 const root = ReactDOM.createRoot(
     document.getElementById('root') as HTMLElement
 );
@@ -19,7 +33,7 @@ const root = ReactDOM.createRoot(
 root.render(
     <ThemeProvider theme={theme}>
         <QueryClientProvider client={queryClient}>
-            <App />
+            <RouterProvider router={router} />
         </QueryClientProvider>
     </ThemeProvider>
 );

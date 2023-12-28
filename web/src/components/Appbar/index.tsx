@@ -1,16 +1,33 @@
-import { Box, Toolbar, AppBar, Typography } from '@mui/material';
+import { Box, Toolbar, AppBar, Typography, Button } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
 import DeleteIcon from '@mui/icons-material/Delete';
 import logo from '../../../iconLogo.png';
 import { AppbarProps } from './types';
 
-const Appbar = ({ handleRemoveAll }: AppbarProps) => {
+const Appbar = ({ handleRemoveAll, handleGoToListsScreen }: AppbarProps) => {
     return (
         <>
             <Box>
                 <AppBar>
                     <Toolbar>
-                        <img src={logo} alt="App Logo" height={40} width={40} />
+                        {handleGoToListsScreen ? (
+                            <Button
+                                variant="contained"
+                                onClick={() => {
+                                    handleGoToListsScreen();
+                                }}
+                            >
+                                Go Back
+                            </Button>
+                        ) : (
+                            <img
+                                src={logo}
+                                alt="App Logo"
+                                height={40}
+                                width={40}
+                            />
+                        )}
+
                         <Typography
                             variant="h5"
                             sx={{
@@ -22,14 +39,16 @@ const Appbar = ({ handleRemoveAll }: AppbarProps) => {
                             Shoppingo
                         </Typography>
 
-                        <IconButton
-                            color="inherit"
-                            onClick={() => {
-                                handleRemoveAll();
-                            }}
-                        >
-                            <DeleteIcon />
-                        </IconButton>
+                        {handleRemoveAll && (
+                            <IconButton
+                                color="inherit"
+                                onClick={() => {
+                                    handleRemoveAll();
+                                }}
+                            >
+                                <DeleteIcon />
+                            </IconButton>
+                        )}
                     </Toolbar>
                 </AppBar>
             </Box>

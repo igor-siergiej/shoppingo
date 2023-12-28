@@ -31,6 +31,7 @@ export const getAllLists = (request: Request, response: Response) => {
 
 export const getItemsInList = (request: Request, response: Response) => {
   const { listName } = request.params;
+  console.log(listName)
 
   if (!listName) {
     return response.status(400).json({ error: "List name is required." });
@@ -51,17 +52,18 @@ export const getItemsInList = (request: Request, response: Response) => {
 
 export const addItem = async (request: Request, response: Response) => {
   try {
-    const { itemName, dateAdded } = request.body;
+    const { itemName, dateAdded, listName } = request.body;
 
-    if (!itemName || !dateAdded) {
+    if (!itemName || !dateAdded || !listName) {
       return response
         .status(400)
         .json({ error: "Item name and date added are required." });
     }
 
-    await pool.query("CALL shopping_list.add_item($1, $2)", [
+    await pool.query("CALL shopping_list.add_item($1, $2, $3)", [
       itemName,
       dateAdded,
+      listName
     ]);
 
     response.json({ message: `Item ${itemName} added successfully.` });
@@ -151,8 +153,7 @@ export const deleteList = async (request: Request, response: Response) => {
   }
   try {
     await pool.query("CALL shopping_list.delete_list($1)", [listName]);
-
-    response.json({ message: `Successfully deleted items.` });
+    response.json({ message: `Successfully deleted list: ${listName}` });
   } catch (error) {
     console.error("Error executing PostgreSQL query:", error);
     response.status(500).json({ error: "Internal Server Error" });

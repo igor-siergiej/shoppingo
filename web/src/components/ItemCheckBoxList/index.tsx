@@ -12,7 +12,11 @@ import CircleCheckedFilled from '@mui/icons-material/CheckCircle';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import { deleteItem, updateSelected } from '../../api';
 
-const ItemCheckBoxList = ({ items, refetch }: ItemCheckBoxListProps) => {
+const ItemCheckBoxList = ({
+    items,
+    refetch,
+    listName,
+}: ItemCheckBoxListProps) => {
     const renderedOutput = items.map((item: Item) => (
         <Box
             key={item.name}
@@ -34,7 +38,11 @@ const ItemCheckBoxList = ({ items, refetch }: ItemCheckBoxListProps) => {
                         color="secondary"
                         checked={item.isSelected}
                         onChange={async () => {
-                            await updateSelected(item.name, !item.isSelected);
+                            await updateSelected(
+                                item.name,
+                                !item.isSelected,
+                                listName
+                            );
                             refetch();
                         }}
                     />
@@ -46,7 +54,7 @@ const ItemCheckBoxList = ({ items, refetch }: ItemCheckBoxListProps) => {
                 sx={{}}
                 color="inherit"
                 onClick={async () => {
-                    await deleteItem(item.name);
+                    await deleteItem(item.name, listName);
                     refetch();
                 }}
             >

@@ -1,4 +1,3 @@
-import { type ReactElement } from 'react';
 import { useQuery } from 'react-query';
 import {
     CircularProgress,
@@ -6,14 +5,14 @@ import {
     Toolbar,
     Typography,
 } from '@mui/material';
-import { getItemsQuery, deleteAll, addItem } from '../../api';
-import ItemCheckBoxList from '../ItemCheckBoxList';
-import Appbar from '../Appbar';
-import NewItemForm from '../NewItemForm';
+import { addList, getListsQuery } from '../../api';
+import Appbar from '../../components/Appbar';
+import NewItemForm from '../../components/NewItemForm';
+import ListsList from '../../components/ListsList';
 
-function App(): ReactElement {
+const ListsPage = () => {
     const { data, isLoading, isError, refetch } = useQuery({
-        ...getItemsQuery(),
+        ...getListsQuery(),
     });
 
     if (isError) {
@@ -24,14 +23,9 @@ function App(): ReactElement {
         return <CircularProgress />;
     }
 
-    const handleRemoveAll = async () => {
-        await deleteAll();
-        await refetch();
-    };
-
     return (
         <>
-            <Appbar handleRemoveAll={handleRemoveAll} />
+            <Appbar />
             <Toolbar />
             <FormGroup
                 sx={{
@@ -39,10 +33,7 @@ function App(): ReactElement {
                 }}
             >
                 {data ? (
-                    <ItemCheckBoxList
-                        items={data}
-                        refetch={refetch}
-                    ></ItemCheckBoxList>
+                    <ListsList lists={data} refetch={refetch} />
                 ) : (
                     <Typography
                         sx={{ textAlign: 'center', pb: '1em', pt: '1em' }}
@@ -53,13 +44,13 @@ function App(): ReactElement {
             </FormGroup>
 
             <NewItemForm
-                handleAdd={async (itemName) => {
-                    await addItem(itemName);
+                handleAdd={async (listName) => {
+                    await addList(listName);
                     await refetch();
                 }}
             />
         </>
     );
-}
+};
 
-export default App;
+export default ListsPage;

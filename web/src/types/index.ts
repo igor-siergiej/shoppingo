@@ -6,6 +6,5 @@ export interface Item {
 
 export interface List {
     name: string;
-    items: Item[];
     dateAdded: Date;
 }

@@ -1,3 +1,4 @@
 export interface AppbarProps {
-    handleRemoveAll: () => void;
+    handleRemoveAll?: () => void;
+    handleGoToListsScreen?: () => void;
 }

@@ -1,15 +1,15 @@
-import { List } from '../types';
+import { Item, List } from '../types';
 import { MethodType, MakeRequestProps } from './types';
 
-const URLPath = 'https://shoppingo-api.onrender.com';
-//const URLPath = 'http://localhost:3001';
+//const URLPath = 'https://shoppingo-api.onrender.com';
+const URLPath = 'http://localhost:3001';
 
 export const getItemsQuery = (listName: string) => ({
-    queryKey: ['items'],
+    queryKey: [listName],
     queryFn: async () => await getItems(listName),
 });
 
-export const getItems = async (listName: string): Promise<List> => {
+export const getItems = async (listName: string): Promise<Item[]> => {
     return await makeRequest({
         URL: `${URLPath}/items/${listName}`,
         method: MethodType.GET,
@@ -43,7 +43,10 @@ export const addList = async (listName: string): Promise<unknown> => {
     });
 };
 
-export const addItem = async (itemName: string): Promise<unknown> => {
+export const addItem = async (
+    itemName: string,
+    listName: string
+): Promise<unknown> => {
     const dateAdded = generateTimestamp(new Date());
     return await makeRequest({
         URL: `${URLPath}/items`,
@@ -52,6 +55,7 @@ export const addItem = async (itemName: string): Promise<unknown> => {
         body: JSON.stringify({
             itemName,
             dateAdded,
+            listName,
         }),
     });
 };
