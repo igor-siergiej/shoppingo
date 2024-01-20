@@ -6,7 +6,7 @@ import {
     Toolbar,
     Typography,
 } from '@mui/material';
-import { addItem, clearList, getItemsQuery } from '../../api';
+import { addItem, clearList, getListQuery } from '../../api';
 import Appbar from '../../components/Appbar';
 import ItemCheckBoxList from '../../components/ItemCheckBoxList';
 import NewItemForm from '../../components/NewItemForm';
@@ -20,14 +20,14 @@ const ItemsPage = () => {
     }
 
     const { data, isLoading, isError, refetch } = useQuery({
-        ...getItemsQuery(listName),
+        ...getListQuery(listName),
     });
 
     if (isError) {
         return <div>Error fetching data.</div>;
     }
 
-    if (isLoading) {
+    if (isLoading || !data) {
         return <CircularProgress />;
     }
 
@@ -50,7 +50,7 @@ const ItemsPage = () => {
                     display: 'flex',
                 }}
             >
-                {data ? (
+                {data.length > 0 ? (
                     <ItemCheckBoxList
                         items={data}
                         refetch={refetch}

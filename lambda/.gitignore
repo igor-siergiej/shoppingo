@@ -26,4 +26,4 @@ build-ssr
 
 package-lock.json
 yarn.lock
-.env
+

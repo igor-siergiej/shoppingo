@@ -1,19 +1,19 @@
 import { Item, List } from '../types';
 import { MethodType, MakeRequestProps } from './types';
 
-const URLPath = 'https://shoppingo-api.onrender.com';
-//const URLPath = 'http://localhost:3001';
+const { VITE_AWS_URL } = import.meta.env;
+//const VITE_AWS_URL = 'http://localhost:3001';
 
-export const getItemsQuery = (listName: string) => ({
+export const getListQuery = (listName: string) => ({
     queryKey: [listName],
-    queryFn: async () => await getItems(listName),
+    queryFn: async () => await getList(listName),
 });
 
-export const getItems = async (listName: string): Promise<Item[]> => {
+export const getList = async (listName: string): Promise<Item[]> => {
     return await makeRequest({
-        URL: `${URLPath}/items/${listName}`,
+        URL: `${VITE_AWS_URL}/lists/${listName}`,
         method: MethodType.GET,
-        operationString: 'get items',
+        operationString: 'get list',
     });
 };
 
@@ -24,7 +24,7 @@ export const getListsQuery = () => ({
 
 export const getLists = async (): Promise<List[]> => {
     return await makeRequest({
-        URL: `${URLPath}/lists`,
+        URL: `${VITE_AWS_URL}/lists`,
         method: MethodType.GET,
         operationString: 'get lists',
     });
@@ -33,11 +33,11 @@ export const getLists = async (): Promise<List[]> => {
 export const addList = async (listName: string): Promise<unknown> => {
     const dateAdded = generateTimestamp(new Date());
     return await makeRequest({
-        URL: `${URLPath}/lists`,
+        URL: `${VITE_AWS_URL}/lists`,
         method: MethodType.PUT,
-        operationString: 'add item',
+        operationString: 'add list',
         body: JSON.stringify({
-            listName,
+            name: listName,
             dateAdded,
         }),
     });
@@ -49,37 +49,34 @@ export const addItem = async (
 ): Promise<unknown> => {
     const dateAdded = generateTimestamp(new Date());
     return await makeRequest({
-        URL: `${URLPath}/items`,
+        URL: `${VITE_AWS_URL}/lists/${listName}/items`,
         method: MethodType.PUT,
         operationString: 'add item',
         body: JSON.stringify({
             itemName,
             dateAdded,
-            listName,
         }),
     });
 };
 
-export const updateSelected = async (
+export const updateItem = async (
     itemName: string,
     isSelected: boolean,
     listName: string
 ) => {
     return await makeRequest({
-        URL: `${URLPath}/items`,
+        URL: `${VITE_AWS_URL}/lists/${listName}/items/${itemName}`,
         method: MethodType.POST,
         operationString: 'update item',
         body: JSON.stringify({
-            itemName,
             isSelected,
-            listName,
         }),
     });
 };
 
 export const deleteItem = async (itemName: string, listName: string) => {
     return await makeRequest({
-        URL: `${URLPath}/items/${itemName}/${listName}`,
+        URL: `${VITE_AWS_URL}/lists/${listName}/items/${itemName}`,
         method: MethodType.DELETE,
         operationString: 'delete item',
     });
@@ -87,7 +84,7 @@ export const deleteItem = async (itemName: string, listName: string) => {
 
 export const deleteList = async (listName: string) => {
     return await makeRequest({
-        URL: `${URLPath}/lists/${listName}`,
+        URL: `${VITE_AWS_URL}/lists/${listName}`,
         method: MethodType.DELETE,
         operationString: 'delete list',
     });
@@ -95,7 +92,7 @@ export const deleteList = async (listName: string) => {
 
 export const clearList = async (listName: string) => {
     return await makeRequest({
-        URL: `${URLPath}/clear/${listName}`,
+        URL: `${VITE_AWS_URL}/lists/${listName}/clear`,
         method: MethodType.DELETE,
         operationString: 'clear the list',
     });

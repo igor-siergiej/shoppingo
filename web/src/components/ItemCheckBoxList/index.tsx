@@ -10,7 +10,7 @@ import { type ItemCheckBoxListProps } from './types';
 import ClearIcon from '@mui/icons-material/Clear';
 import CircleCheckedFilled from '@mui/icons-material/CheckCircle';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
-import { deleteItem, updateSelected } from '../../api';
+import { deleteItem, updateItem } from '../../api';
 
 const ItemCheckBoxList = ({
     items,
@@ -38,7 +38,7 @@ const ItemCheckBoxList = ({
                         color="secondary"
                         checked={item.isSelected}
                         onChange={async () => {
-                            await updateSelected(
+                            await updateItem(
                                 item.name,
                                 !item.isSelected,
                                 listName
