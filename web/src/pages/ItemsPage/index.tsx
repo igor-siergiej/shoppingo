@@ -10,6 +10,7 @@ import { addItem, clearList, getListQuery } from '../../api';
 import Appbar from '../../components/Appbar';
 import ItemCheckBoxList from '../../components/ItemCheckBoxList';
 import NewItemForm from '../../components/NewItemForm';
+import { Layout } from '../../components/Layout';
 
 const ItemsPage = () => {
     const { listName } = useParams();
@@ -37,7 +38,7 @@ const ItemsPage = () => {
     };
 
     return (
-        <>
+        <Layout>
             <Appbar
                 handleRemoveAll={handleClearList}
                 handleGoToListsScreen={() => {
@@ -71,7 +72,7 @@ const ItemsPage = () => {
                     await refetch();
                 }}
             />
-        </>
+        </Layout>
     );
 };
 

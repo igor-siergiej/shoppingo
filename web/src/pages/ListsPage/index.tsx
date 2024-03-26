@@ -9,6 +9,7 @@ import { addList, getListsQuery } from '../../api';
 import Appbar from '../../components/Appbar';
 import NewItemForm from '../../components/NewItemForm';
 import ListsList from '../../components/ListsList';
+import { Layout } from '../../components/Layout';
 
 const ListsPage = () => {
     const { data, isLoading, isError, refetch } = useQuery({
@@ -24,7 +25,7 @@ const ListsPage = () => {
     }
 
     return (
-        <>
+        <Layout>
             <Appbar />
             <Toolbar />
             <FormGroup
@@ -49,7 +50,7 @@ const ListsPage = () => {
                     await refetch();
                 }}
             />
-        </>
+        </Layout>
     );
 };
 
