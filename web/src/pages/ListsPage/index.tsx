@@ -2,6 +2,7 @@ import { useQuery } from 'react-query';
 import {
     CircularProgress,
     FormGroup,
+    Skeleton,
     Toolbar,
     Typography,
 } from '@mui/material';
@@ -21,7 +22,13 @@ const ListsPage = () => {
     }
 
     if (isLoading) {
-        return <CircularProgress />;
+        return (
+            <>
+                {[1, 2, 3, 4, 5].map((value) => {
+                    return <Skeleton key={value} animation="wave" />;
+                })}
+            </>
+        );
     }
 
     return (

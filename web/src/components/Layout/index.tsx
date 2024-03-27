@@ -11,6 +11,7 @@ export const Layout = ({ children }: LayoutProps) => {
             <Box
                 m={'auto'}
                 sx={{
+                    pt: '1em',
                     maxWidth: '500px',
                 }}
             >
