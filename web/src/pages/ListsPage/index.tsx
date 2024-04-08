@@ -1,40 +1,19 @@
 import { useQuery } from 'react-query';
-import {
-    CircularProgress,
-    FormGroup,
-    Skeleton,
-    Toolbar,
-    Typography,
-} from '@mui/material';
+import { FormGroup, Toolbar, Typography } from '@mui/material';
 import { addList, getListsQuery } from '../../api';
 import Appbar from '../../components/Appbar';
 import NewItemForm from '../../components/NewItemForm';
 import ListsList from '../../components/ListsList';
 import { Layout } from '../../components/Layout';
+import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 
 const ListsPage = () => {
     const { data, isLoading, isError, refetch } = useQuery({
         ...getListsQuery(),
     });
 
-    if (isError) {
-        return <div>Error fetching data.</div>;
-    }
-
-    if (isLoading) {
-        return (
-            <>
-                {[1, 2, 3, 4, 5].map((value) => {
-                    return <Skeleton key={value} animation="wave" />;
-                })}
-            </>
-        );
-    }
-
-    return (
-        <Layout>
-            <Appbar />
-            <Toolbar />
+    const pageContent = (
+        <>
             <FormGroup
                 sx={{
                     display: 'flex',
@@ -57,6 +36,18 @@ const ListsPage = () => {
                     await refetch();
                 }}
             />
+        </>
+    );
+
+    const errorPageContent = <div>Error has occured</div>;
+
+    return (
+        <Layout>
+            <Appbar />
+            <Toolbar />
+            {isError && errorPageContent}
+            {isLoading && <LoadingSkeleton />}
+            {!isLoading && !isError && pageContent}
         </Layout>
     );
 };
