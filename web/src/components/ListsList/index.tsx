@@ -18,6 +18,7 @@ const ListsList = ({ lists, refetch }: ListsListProps) => {
             }}
         >
             <Button
+                sx={{ flexGrow: 1 }}
                 onClick={() => {
                     navigate(`/list/${list.name}`);
                 }}
