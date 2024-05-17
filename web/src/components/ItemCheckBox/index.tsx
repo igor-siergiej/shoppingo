@@ -27,14 +27,14 @@ const ItemCheckBox = ({ item, listName, refetch }: ItemCheckBoxProps) => {
     const handleUpdateItem = async () => {
         setIsUpdateLoading(true);
         await updateItem(item.name, !item.isSelected, listName);
-        refetch();
+        await refetch();
         setIsUpdateLoading(false);
     };
 
     const handleDeleteItem = async () => {
         setIsDeleteLoading(true);
         await deleteItem(item.name, listName);
-        refetch();
+        await refetch();
         setIsDeleteLoading(false);
     };
 
