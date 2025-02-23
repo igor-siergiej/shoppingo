@@ -6,7 +6,7 @@ const app: Application = express();
 const port = 3001;
 
 const allowedOrigins: string[] = [
-    "https://im-shoppingo.netlify.app",
+    "https://shoppingo.imapps.co.uk",
     "http://localhost:3000",
 ];
 
@@ -36,5 +36,5 @@ app.use(
 
 
 app.listen(port, () => {
-    console.log(`App running on port ${port}.`);
+    console.log(`Shoppingo Api server running on port ${port}.`);
 });
