@@ -1,8 +1,7 @@
 import { Item, List } from '../types';
 import { MethodType, MakeRequestProps } from './types';
 
-const { VITE_AWS_URL } = import.meta.env;
-//const VITE_AWS_URL = 'http://localhost:3001';
+const { VITE_API_URL } = import.meta.env;
 
 export const getListQuery = (listName: string) => ({
     queryKey: [listName],
@@ -11,7 +10,7 @@ export const getListQuery = (listName: string) => ({
 
 export const getList = async (listName: string): Promise<Item[]> => {
     return await makeRequest({
-        URL: `${VITE_AWS_URL}/lists/${listName}`,
+        URL: `${VITE_API_URL}/lists/${listName}`,
         method: MethodType.GET,
         operationString: 'get list',
     });
@@ -24,7 +23,7 @@ export const getListsQuery = () => ({
 
 export const getLists = async (): Promise<List[]> => {
     return await makeRequest({
-        URL: `${VITE_AWS_URL}/lists`,
+        URL: `${VITE_API_URL}/lists`,
         method: MethodType.GET,
         operationString: 'get lists',
     });
@@ -33,7 +32,7 @@ export const getLists = async (): Promise<List[]> => {
 export const addList = async (listName: string): Promise<unknown> => {
     const dateAdded = generateTimestamp(new Date());
     return await makeRequest({
-        URL: `${VITE_AWS_URL}/lists`,
+        URL: `${VITE_API_URL}/lists`,
         method: MethodType.PUT,
         operationString: 'add list',
         body: JSON.stringify({
@@ -49,7 +48,7 @@ export const addItem = async (
 ): Promise<unknown> => {
     const dateAdded = generateTimestamp(new Date());
     return await makeRequest({
-        URL: `${VITE_AWS_URL}/lists/${listName}/items`,
+        URL: `${VITE_API_URL}/lists/${listName}/items`,
         method: MethodType.PUT,
         operationString: 'add item',
         body: JSON.stringify({
@@ -65,7 +64,7 @@ export const updateItem = async (
     listName: string
 ) => {
     return await makeRequest({
-        URL: `${VITE_AWS_URL}/lists/${listName}/items/${itemName}`,
+        URL: `${VITE_API_URL}/lists/${listName}/items/${itemName}`,
         method: MethodType.POST,
         operationString: 'update item',
         body: JSON.stringify({
@@ -76,7 +75,7 @@ export const updateItem = async (
 
 export const deleteItem = async (itemName: string, listName: string) => {
     return await makeRequest({
-        URL: `${VITE_AWS_URL}/lists/${listName}/items/${itemName}`,
+        URL: `${VITE_API_URL}/lists/${listName}/items/${itemName}`,
         method: MethodType.DELETE,
         operationString: 'delete item',
     });
@@ -84,7 +83,7 @@ export const deleteItem = async (itemName: string, listName: string) => {
 
 export const deleteList = async (listName: string) => {
     return await makeRequest({
-        URL: `${VITE_AWS_URL}/lists/${listName}`,
+        URL: `${VITE_API_URL}/lists/${listName}`,
         method: MethodType.DELETE,
         operationString: 'delete list',
     });
@@ -92,7 +91,7 @@ export const deleteList = async (listName: string) => {
 
 export const clearList = async (listName: string) => {
     return await makeRequest({
-        URL: `${VITE_AWS_URL}/lists/${listName}/clear`,
+        URL: `${VITE_API_URL}/lists/${listName}/clear`,
         method: MethodType.DELETE,
         operationString: 'clear the list',
     });
