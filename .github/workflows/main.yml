@@ -1,0 +1,33 @@
+name: pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: self-hosted
+
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: yarn install web
+        run: |
+          cd web
+          yarn install
+
+      - name: yarn build
+        env:
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+        run: |
+          cd web
+          rm -f .env
+          touch .env
+          echo "VITE_API_URL=%VITE_API_URL%" >> .env
+          yarn build
+
+      - name: deploy
+        run: |
+          cd web
+          cp -r build/* /var/www/shoppingo.imapps.co.uk/html
