@@ -30,4 +30,4 @@ jobs:
       - name: deploy
         run: |
           cd web
-          cp -r build/* /var/www/shoppingo.imapps.co.uk/html
+          cp -r build/* /var/www/shoppingo.imapps.co.uk
