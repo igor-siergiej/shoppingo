@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "scripts": {
     "start": "ts-node-dev --watch 'src/**/*.ts' src/index.ts",
-    "build": "tsc --pretty --skipLibCheck"
+    "build": "tsc --pretty --skipLibCheck",
+    "postBuild": "cp package.json build/package.json && cd dist && yarn"
   },
   "dependencies": {
     "@types/cors": "^2.8.17",
