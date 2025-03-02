@@ -1,14 +1,21 @@
 import { Request, Response } from "express";
+import { DependencyContainer } from "../../lib/dependencyContainer";
+import { DependencyToken } from "../../lib/dependencyContainer/types";
+import { CollectionName } from "../../database/types";
 
 const getList = async (req: Request, res: Response) => {
-    const database = req.app.locals.database
-    const { listName } = req.params;
+    const { name } = req?.params;
 
-    const collection = database.collection('lists');
+    const database = DependencyContainer.getInstance().resolve(DependencyToken.Database);
 
-    const list = await collection.find({ name: listName })
+    //TODO: do some actual error handling maybe lol
 
-    res.send(list).status(200)
+    const collection = database.getCollection(CollectionName.Lists);
+
+    const list = await collection.findOne({ name });
+
+    console.log(list)
+    res.send(list).status(200);
 }
 
 export default getList;

@@ -1,10 +1,14 @@
 import express, { Application } from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
-import { getDatabase } from "./db";
 import getLists from "./endpoints/getLists";
-import { Db } from "mongodb/mongodb";
 import getList from "./endpoints/getList";
+import deleteList from "./endpoints/deleteList";
+import addList from "./endpoints/addList";
+import addItem from "./endpoints/addItem";
+import { registerDepdendencies } from "./dependencies";
+import { DependencyContainer } from "./lib/dependencyContainer";
+import { DependencyToken } from "./lib/dependencyContainer/types";
 
 const port = 4001;
 
@@ -27,37 +31,41 @@ const corsOptions: cors.CorsOptions = {
     },
 };
 
-export let database: Db;
-
 export const onStartup = async () => {
-    const app: Application = express();
+    try {
+        const app: Application = express();
 
-    const database = await getDatabase()
-    app.locals.database = database
+        registerDepdendencies()
 
-    app.use(cors(corsOptions));
-    app.use(bodyParser.json());
-    app.use(
-        bodyParser.urlencoded({
-            extended: true,
-        })
-    );
+        const database = DependencyContainer.getInstance().resolve(DependencyToken.Database);
 
-    app.get("/items/:listName", getList);
-    app.get("/lists", getLists);
+        await database.connect();
 
-    // app.put("/lists", addList);
-    // app.put("/items", addItem);
-    //
-    // app.post("/items", updateItem);
-    //
-    // app.delete("/lists/:listName", deleteList);
-    // app.delete("/items/:itemName/:listName", deleteItem);
-    // app.delete("/clear/:listName", clearList);
+        app.use(cors(corsOptions));
+        app.use(bodyParser.json());
+        app.use(
+            bodyParser.urlencoded({
+                extended: true,
+            })
+        );
 
-    app.listen(port, () => {
-        console.log(`Shoppingo Api server running on port ${port}.`);
-    });
+        app.get("/lists/:name", getList);
+        app.get("/lists", getLists);
+        app.delete("/lists/:name", deleteList);
+        app.put("/lists", addList);
+
+        app.put("/items", addItem);
+        // app.post("/items", updateItem);
+        // app.delete("/items/:itemName/:listName", deleteItem);
+        // app.delete("/clear/:listName", clearList);
+
+        app.listen(port, () => {
+            console.log(`Shoppingo Api server running on port ${port}.`);
+        });
+    } catch (error) {
+        console.error('Encountered an error on start up', error)
+        process.exit(1)
+    }
 }
 
 onStartup()
