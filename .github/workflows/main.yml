@@ -35,6 +35,7 @@ jobs:
       - name: deploy api
         run: |
           cd api
+          yarn install
           yarn build
           echo ${{ secrets.PASS }} | sudo -S systemctl stop shoppingo-api-server.service
           echo ${{ secrets.PASS }} | sudo -S cp build /usr/local/bin/shoppingo-api-server
