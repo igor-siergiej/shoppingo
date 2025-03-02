@@ -55,12 +55,12 @@ export const onStartup = async () => {
             next();
         });
 
-        app.get("/lists/:name", getList);
-        app.get("/lists", getLists);
-        app.delete("/lists/:name", deleteList);
-        app.put("/lists", addList);
+        app.get("/api/lists/:name", getList);
+        app.get("/api/lists", getLists);
+        app.delete("/api/lists/:name", deleteList);
+        app.put("/api/lists", addList);
 
-        app.put("/items", addItem);
+        app.put("/api/items", addItem);
         // app.post("/items", updateItem);
         // app.delete("/items/:itemName/:listName", deleteItem);
         // app.delete("/clear/:listName", clearList);
