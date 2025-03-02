@@ -9,8 +9,9 @@ import addItem from "./endpoints/addItem";
 import { registerDepdendencies } from "./dependencies";
 import { DependencyContainer } from "./lib/dependencyContainer";
 import { DependencyToken } from "./lib/dependencyContainer/types";
+import 'dotenv/config'
 
-const port = 4001;
+const port = process.env.PORT;
 
 const allowedOrigins: string[] = [
     "https://shoppingo.imapps.co.uk",
