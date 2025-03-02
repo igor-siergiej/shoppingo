@@ -50,6 +50,11 @@ export const onStartup = async () => {
             })
         );
 
+        app.use((req, res, next) => {
+            console.log(req);
+            next();
+        });
+
         app.get("/lists/:name", getList);
         app.get("/lists", getLists);
         app.delete("/lists/:name", deleteList);
