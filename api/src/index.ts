@@ -51,7 +51,7 @@ export const onStartup = async () => {
         );
 
         app.use((req, res, next) => {
-            console.log(req);
+            //TODO: do some logging here
             next();
         });
 
