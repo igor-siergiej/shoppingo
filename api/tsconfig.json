@@ -12,6 +12,7 @@
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "baseUrl": "./",
+    "skipLibCheck": true,
     "paths": {
       "*": [
         "node_modules/*"
