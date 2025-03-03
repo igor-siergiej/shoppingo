@@ -39,4 +39,4 @@ jobs:
           yarn build
           yarn postBuild
           echo ${{ secrets.PASS }} | sudo -S cp -a build/. /usr/local/bin/shoppingo-api-server
-          echo ${{ secrets.PASS }} | sudo -S systemctl restart api-server.service
+          echo ${{ secrets.PASS }} | sudo -S systemctl restart shoppingo-api-server.service
