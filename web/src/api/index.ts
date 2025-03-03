@@ -101,8 +101,9 @@ export const makeRequest = async ({
     operationString,
     body,
 }: MakeRequestProps) => {
+    const requestUrl = window.location.hostname + URL;
     try {
-        const response = await fetch(URL, {
+        const response = await fetch(requestUrl, {
             method: method,
             headers: {
                 'Content-Type': 'application/json',

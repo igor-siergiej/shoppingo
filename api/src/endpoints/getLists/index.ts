@@ -8,6 +8,7 @@ const getLists = async (req: Request, res: Response) => {
 
     //TODO: do some actual error handling maybe lol
 
+    console.log(CollectionName.Lists)
     const collection = database.getCollection(CollectionName.Lists);
 
     const results = await collection.find({}).toArray();
