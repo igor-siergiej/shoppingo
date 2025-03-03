@@ -5,6 +5,7 @@ import { CollectionName } from "../../database/types";
 
 const getList = async (req: Request, res: Response) => {
     const { name } = req?.params;
+
     const database = DependencyContainer.getInstance().resolve(DependencyToken.Database);
 
     //TODO: do some actual error handling maybe lol
@@ -13,7 +14,6 @@ const getList = async (req: Request, res: Response) => {
 
     const list = await collection.deleteOne({ name });
 
-    console.log(list)
     res.send(list).status(200);
 }
 

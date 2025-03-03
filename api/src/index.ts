@@ -60,7 +60,7 @@ export const onStartup = async () => {
         app.delete("/api/lists/:name", deleteList);
         app.put("/api/lists", addList);
 
-        app.put("/api/items", addItem);
+        app.put("/api/lists/:listName/items", addItem);
         // app.post("/items", updateItem);
         // app.delete("/items/:itemName/:listName", deleteItem);
         // app.delete("/clear/:listName", clearList);

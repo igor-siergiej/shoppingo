@@ -4,16 +4,18 @@ import { DependencyToken } from "../../lib/dependencyContainer/types";
 import { CollectionName } from "../../database/types";
 
 const addItem = async (req: Request, res: Response) => {
+    const { listName } = req?.params;
+    const { name, dateAdded } = req?.body;
+
     const database = DependencyContainer.getInstance().resolve(DependencyToken.Database);
-    console.log('database:')
 
     //TODO: do some actual error handling maybe lol
 
     const collection = database.getCollection(CollectionName.Lists);
 
-    const list = await collection.findOne({ name });
+    const list = await collection.findOneAndUpdate({ name: listName },
+        { $push: { items: { name, dateAdded } } as never });
 
-    console.log(list)
     res.send(list).status(200);
 }
 

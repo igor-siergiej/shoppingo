@@ -14,7 +14,6 @@ const getList = async (req: Request, res: Response) => {
 
     const list = await collection.findOne({ name });
 
-    console.log(list)
     res.send(list).status(200);
 }
 

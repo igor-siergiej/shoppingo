@@ -1,7 +1,7 @@
 import { Collection, Document } from "mongodb/mongodb";
 
 export enum CollectionName {
-    Lists = 'Lists'
+    Lists = 'lists'
 }
 
 export interface IDatabase {
