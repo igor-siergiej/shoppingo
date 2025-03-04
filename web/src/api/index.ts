@@ -8,7 +8,7 @@ export const getListQuery = (listName: string) => ({
 
 export const getList = async (listName: string): Promise<Item[]> => {
     return await makeRequest({
-        URL: `api/lists/${listName}`,
+        URL: `/api/lists/${listName}`,
         method: MethodType.GET,
         operationString: 'get list',
     });
@@ -21,7 +21,7 @@ export const getListsQuery = () => ({
 
 export const getLists = async (): Promise<List[]> => {
     return await makeRequest({
-        URL: `api/lists`,
+        URL: `/api/lists`,
         method: MethodType.GET,
         operationString: 'get lists',
     });
@@ -30,7 +30,7 @@ export const getLists = async (): Promise<List[]> => {
 export const addList = async (listName: string): Promise<unknown> => {
     const dateAdded = generateTimestamp(new Date());
     return await makeRequest({
-        URL: `api/lists`,
+        URL: `/api/lists`,
         method: MethodType.PUT,
         operationString: 'add list',
         body: JSON.stringify({
@@ -46,7 +46,7 @@ export const addItem = async (
 ): Promise<unknown> => {
     const dateAdded = generateTimestamp(new Date());
     return await makeRequest({
-        URL: `api/lists/${listName}/items`,
+        URL: `/api/lists/${listName}/items`,
         method: MethodType.PUT,
         operationString: 'add item',
         body: JSON.stringify({
@@ -62,7 +62,7 @@ export const updateItem = async (
     listName: string
 ) => {
     return await makeRequest({
-        URL: `api/lists/${listName}/items/${itemName}`,
+        URL: `/api/lists/${listName}/items/${itemName}`,
         method: MethodType.POST,
         operationString: 'update item',
         body: JSON.stringify({
@@ -73,7 +73,7 @@ export const updateItem = async (
 
 export const deleteItem = async (itemName: string, listName: string) => {
     return await makeRequest({
-        URL: `api/lists/${listName}/items/${itemName}`,
+        URL: `/api/lists/${listName}/items/${itemName}`,
         method: MethodType.DELETE,
         operationString: 'delete item',
     });
@@ -81,7 +81,7 @@ export const deleteItem = async (itemName: string, listName: string) => {
 
 export const deleteList = async (listName: string) => {
     return await makeRequest({
-        URL: `api/lists/${listName}`,
+        URL: `/api/lists/${listName}`,
         method: MethodType.DELETE,
         operationString: 'delete list',
     });
@@ -89,7 +89,7 @@ export const deleteList = async (listName: string) => {
 
 export const clearList = async (listName: string) => {
     return await makeRequest({
-        URL: `api/lists/${listName}/clear`,
+        URL: `/api/lists/${listName}/clear`,
         method: MethodType.DELETE,
         operationString: 'clear the list',
     });
