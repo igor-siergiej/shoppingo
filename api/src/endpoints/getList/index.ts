@@ -14,7 +14,7 @@ const getList = async (req: Request, res: Response) => {
 
     const list = await collection.findOne({ name });
 
-    res.send(list).status(200);
+    res.send(list.items).status(200);
 }
 
 export default getList;
