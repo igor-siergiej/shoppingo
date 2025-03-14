@@ -16,6 +16,10 @@ jobs:
         run: |
           yarn
 
+      - name: build types
+        run: |
+          yarn workspace types build
+
       - name: build web 
         env:
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
