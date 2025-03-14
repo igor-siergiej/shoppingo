@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "composite": true,
+        "declaration": true,
+        "declarationMap": true,
+        "sourceMap": true,
+        "rootDir": "./",
+        "outDir": "build"
+    },
+    "include": [
+        "./src",
+        "./index.ts"
+    ]
+}

@@ -6,37 +6,32 @@ on:
       - main
 
 jobs:
-  build:
+  deploy app:
     runs-on: self-hosted
 
     steps:
       - uses: actions/checkout@v1
 
-      - name: yarn install web
+      - name: yarn install workspace
         run: |
-          cd web
-          yarn install
+          yarn
 
-      - name: yarn build
+      - name: build web 
         env:
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
         run: |
-          cd web
-          rm -f .env
-          touch .env
-          echo "VITE_API_URL=%VITE_API_URL%" >> .env
-          yarn build
+          yarn workspace web build 
 
       - name: deploy
         run: |
-          cd web
-          cp -r build/* /var/www/shoppingo.imapps.co.uk
+          cp -r packages/web/build/* /var/www/shoppingo.imapps.co.uk
       
+      - name: build api
+        run: | 
+          yarn workspace api build
+          yarn workspace api postBuild
+
       - name: deploy api
         run: |
-          cd api
-          yarn install
-          yarn build
-          yarn postBuild
-          echo ${{ secrets.PASS }} | sudo -S cp -a build/. /usr/local/bin/shoppingo-api-server
+          echo ${{ secrets.PASS }} | sudo -S cp -a packages/api/build/. /usr/local/bin/shoppingo-api-server
           echo ${{ secrets.PASS }} | sudo -S systemctl restart shoppingo-api-server.service

@@ -1,0 +1,46 @@
+{
+    "compilerOptions": {
+        "composite": true,
+        "target": "ESNext",
+        "useDefineForClassFields": true,
+        "lib": [
+            "DOM",
+            "DOM.Iterable",
+            "ESNext"
+        ],
+        "rootDir": "src",
+        "allowJs": false,
+        "skipLibCheck": true,
+        "esModuleInterop": false,
+        "allowSyntheticDefaultImports": true,
+        "strict": true,
+        "forceConsistentCasingInFileNames": true,
+        "module": "ESNext",
+        "moduleResolution": "Node",
+        "resolveJsonModule": true,
+        "types": [
+            "vitest/globals",
+            "@testing-library/jest-dom"
+        ],
+        "isolatedModules": true,
+        "noEmit": true,
+        "jsx": "react-jsx",
+        "paths": {
+            "@mui/styled-engine": [
+                "./node_modules/@mui/styled-engine-sc"
+            ]
+        }
+    },
+    "include": [
+        "src",
+        "eslintrc.js"
+    ],
+    "references": [
+        {
+            "path": "./tsconfig.node.json"
+        },
+        {
+            "path": "../types"
+        }
+    ]
+}
