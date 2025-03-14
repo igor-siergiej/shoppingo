@@ -33,7 +33,6 @@ jobs:
       - name: build api
         run: | 
           yarn workspace api build
-          yarn workspace api postBuild
 
       - name: deploy api
         run: |
