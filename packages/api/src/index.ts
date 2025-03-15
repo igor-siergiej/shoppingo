@@ -29,8 +29,7 @@ const corsOptions: cors.CorsOptions = {
         }
         if (allowedOrigins.includes(origin) || !origin) {
             callback(null, true);
-        }
-        else {
+        } else {
             callback(new Error('Not allowed by CORS'));
         }
     },
@@ -72,13 +71,12 @@ export const onStartup = async () => {
 
         app.delete('/api/lists/:listName/items/:itemName', deleteItem);
 
-        app.delete('/api/clear/:listName', clearList);
+        app.delete('/api/lists/:listName/clear', clearList);
 
         app.listen(port, () => {
             console.log(`Shoppingo Api server running on port ${port}.`);
         });
-    }
-    catch (error) {
+    } catch (error) {
         console.error('Encountered an error on start up', error);
         process.exit(1);
     }
