@@ -9,6 +9,7 @@ export default tseslint.config(
     tseslint.configs.stylistic,
     tseslint.configs.recommended,
     stylistic.configs.customize({
+        braceStyle: '1tbs',
         commaDangle: 'only-multiline',
         indent: 4,
         quotes: 'single',

@@ -5,7 +5,7 @@ import { CollectionName } from '../../database/types';
 
 const addItem = async (req: Request, res: Response) => {
     const { listName } = req.params;
-    const { name, dateAdded } = req.body;
+    const { itemName, dateAdded } = req.body;
 
     const database = DependencyContainer.getInstance().resolve(DependencyToken.Database);
 
@@ -14,7 +14,7 @@ const addItem = async (req: Request, res: Response) => {
     const collection = database.getCollection(CollectionName.Lists);
 
     const list = await collection.findOneAndUpdate({ name: listName },
-        { $push: { items: { name, dateAdded } } as never });
+        { $push: { items: { name: itemName, dateAdded, isSelected: false } } });
 
     res.send(list).status(200);
 };

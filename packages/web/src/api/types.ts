@@ -1,5 +1,5 @@
 export interface MakeRequestProps {
-    URL: string;
+    pathname: string;
     method: MethodType;
     operationString: string;
     body?: BodyInit;

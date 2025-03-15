@@ -10,6 +10,9 @@ import { registerDepdendencies } from './dependencies';
 import { DependencyContainer } from './lib/dependencyContainer';
 import { DependencyToken } from './lib/dependencyContainer/types';
 import 'dotenv/config';
+import updateItem from './endpoints/updateItem';
+import deleteItem from './endpoints/deleteItem';
+import clearList from './endpoints/clearList';
 
 const port = process.env.PORT;
 
@@ -56,15 +59,20 @@ export const onStartup = async () => {
             next();
         });
 
+        // TODO: move these out to another directory and remove the leading /api/
+
         app.get('/api/lists/:name', getList);
         app.get('/api/lists', getLists);
         app.delete('/api/lists/:name', deleteList);
         app.put('/api/lists', addList);
 
         app.put('/api/lists/:listName/items', addItem);
-        // app.post("/items", updateItem);
-        // app.delete("/items/:itemName/:listName", deleteItem);
-        // app.delete("/clear/:listName", clearList);
+
+        app.post('/api/lists/:listName/items/:itemName', updateItem);
+
+        app.delete('/api/lists/:listName/items/:itemName', deleteItem);
+
+        app.delete('/api/clear/:listName', clearList);
 
         app.listen(port, () => {
             console.log(`Shoppingo Api server running on port ${port}.`);
