@@ -96,6 +96,14 @@ export const clearList = async (listName: string) => {
     });
 };
 
+export const clearSelected = async (listName: string) => {
+    return await makeRequest({
+        pathname: `/api/lists/${listName}/clearSelected`,
+        method: MethodType.DELETE,
+        operationString: 'clear selected items'
+    });
+};
+
 const generateTimestamp = (now: Date): string => {
     const year = now.getFullYear();
     const month = (now.getMonth() + 1).toString().padStart(2, '0');

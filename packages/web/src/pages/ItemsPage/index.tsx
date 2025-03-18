@@ -1,7 +1,7 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from 'react-query';
 import { FormGroup, Toolbar, Typography } from '@mui/material';
-import { addItem, clearList, getListQuery } from '../../api';
+import { addItem, clearList, clearSelected, getListQuery } from '../../api';
 import Appbar from '../../components/Appbar';
 import ItemCheckBoxList from '../../components/ItemCheckBoxList';
 import NewItemForm from '../../components/NewItemForm';
@@ -61,9 +61,15 @@ const ItemsPage = () => {
         await refetch();
     };
 
+    const handleClearSelected = async () => {
+        await clearSelected(listName);
+        await refetch();
+    };
+
     return (
         <Layout>
             <Appbar
+                handleClearSelected={handleClearSelected}
                 handleRemoveAll={handleClearList}
                 handleGoToListsScreen={() => {
                     navigate('/');
