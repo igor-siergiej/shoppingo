@@ -20,8 +20,7 @@ export const makeRequest = async ({
 
         if (response.ok) {
             return await response.json();
-        }
-        else {
+        } else {
             console.error(
                 `Failed to ${operationString}:`,
                 response.status,
@@ -31,8 +30,7 @@ export const makeRequest = async ({
                 `Response was not ok ${response.status}: ${response.statusText}`
             );
         }
-    }
-    catch (error: unknown) {
+    } catch (error: unknown) {
         if (error instanceof Error) {
             throw new Error(
                 `Error while trying to ${operationString}: ${error.message}`
