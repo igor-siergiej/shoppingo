@@ -3,6 +3,9 @@
     "version": "1.0.0",
     "private": true,
     "type": "module",
+    "scripts": {
+        "start": "yarn workspace api start & yarn workspace web start"
+    },
     "workspaces": [
         "packages/*"
     ],

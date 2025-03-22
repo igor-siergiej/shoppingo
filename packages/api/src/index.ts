@@ -13,6 +13,7 @@ import 'dotenv/config';
 import updateItem from './endpoints/updateItem';
 import deleteItem from './endpoints/deleteItem';
 import clearList from './endpoints/clearList';
+import deleteSelected from './endpoints/deleteChecked';
 
 const port = process.env.PORT;
 
@@ -72,6 +73,8 @@ export const onStartup = async () => {
         app.delete('/api/lists/:listName/items/:itemName', deleteItem);
 
         app.delete('/api/lists/:listName/clear', clearList);
+
+        app.delete('/api/lists/:listName/clearSelected', deleteSelected);
 
         app.listen(port, () => {
             console.log(`Shoppingo Api server running on port ${port}.`);
