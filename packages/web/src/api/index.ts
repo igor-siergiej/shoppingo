@@ -1,4 +1,4 @@
-import { Item, List } from 'types';
+import { Item, List } from '@shoppingo/types';
 import { MethodType } from './types';
 import { makeRequest } from './makeRequest';
 

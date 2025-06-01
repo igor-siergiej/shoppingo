@@ -16,8 +16,8 @@
         "rootDir": "./src",
         "skipLibCheck": true,
         "paths": {
-            "*": [
-                "node_modules/*"
+            "@shoppingo/types": [
+                "../types/src"
             ]
         }
     },

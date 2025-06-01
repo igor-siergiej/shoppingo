@@ -1,7 +1,7 @@
 import { Box, IconButton, Divider, Button } from '@mui/material';
 import { deleteList } from '../../api';
 import ClearIcon from '@mui/icons-material/Clear';
-import { List } from 'types';
+import { List } from '@shoppingo/types';
 import { ListsListProps } from './types';
 import { useNavigate } from 'react-router-dom';
 

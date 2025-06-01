@@ -1,5 +1,5 @@
 import { Collection } from 'mongodb/mongodb';
-import { List } from 'types';
+import { List } from '@shoppingo/types';
 
 export enum CollectionName {
     Lists = 'lists'

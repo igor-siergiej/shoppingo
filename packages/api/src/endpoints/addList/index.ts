@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { DependencyContainer } from '../../lib/dependencyContainer';
 import { CollectionName } from '../../database/types';
 import { DependencyToken } from '../../lib/dependencyContainer/types';
-import { List } from 'types';
+import { List } from '@shoppingo/types';
 import { ObjectId } from 'mongodb';
 
 const addList = async (req: Request, res: Response) => {

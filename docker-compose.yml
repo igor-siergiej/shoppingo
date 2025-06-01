@@ -1,0 +1,37 @@
+services:
+  shoppingo-mongodb:
+    image: mongodb/mongodb-community-server
+    container_name: shoppingo-mongodb
+    ports:
+      - '27018:27017'
+    volumes:
+      - shoppingo-mongo-data:/data/db
+
+  shoppingo-api:
+    build:
+      context: .
+      dockerfile: packages/api/Dockerfile
+    env_file:
+      - .env
+    container_name: shoppingo-api
+    ports:
+      - '4001:4001'
+    depends_on:
+      - shoppingo-mongodb
+
+  shoppingo-web:
+    build:
+      context: .
+      dockerfile: packages/web/Dockerfile
+      args:
+         VITE_API_URL: ${VITE_API_URL}
+    container_name: shoppingo-web 
+    env_file:
+    - .env
+    ports:
+      - '4000:80'
+    depends_on:
+      - shoppingo-api
+
+volumes:
+  shoppingo-mongo-data:

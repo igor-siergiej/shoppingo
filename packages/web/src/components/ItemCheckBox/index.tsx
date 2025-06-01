@@ -8,7 +8,7 @@ import {
 } from '@mui/material';
 import { updateItem, deleteItem } from '../../api';
 import { useState } from 'react';
-import { Item } from 'types';
+import { Item } from '@shoppingo/types';
 import CircleCheckedFilled from '@mui/icons-material/CheckCircle';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import ClearIcon from '@mui/icons-material/Clear';

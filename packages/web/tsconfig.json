@@ -28,6 +28,9 @@
         "paths": {
             "@mui/styled-engine": [
                 "./node_modules/@mui/styled-engine-sc"
+            ],
+            "@shoppingo/types": [
+                "../types/src"
             ]
         }
     },

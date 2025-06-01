@@ -8,7 +8,6 @@
         "outDir": "build"
     },
     "include": [
-        "./src",
-        "./index.ts"
+        "./src"
     ]
 }

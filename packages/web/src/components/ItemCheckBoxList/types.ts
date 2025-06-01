@@ -1,4 +1,4 @@
-import { Item } from 'types';
+import { Item } from '@shoppingo/types';
 
 export interface ItemCheckBoxListProps {
     items: Array<Item>;

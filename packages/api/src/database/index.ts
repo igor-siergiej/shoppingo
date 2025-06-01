@@ -1,7 +1,7 @@
 import { MongoClient, Db } from 'mongodb';
 import 'dotenv/config';
 import { CollectionName, IDatabase } from './types';
-import { List } from 'types';
+import { List } from '@shoppingo/types';
 
 export class Database implements IDatabase {
     private client: MongoClient;
@@ -32,8 +32,7 @@ export class Database implements IDatabase {
             await this.client.connect();
 
             this.databaseInstance = this.client.db(databaseName);
-        }
-        catch (e) {
+        } catch (e) {
             console.error(e);
         }
     };
