@@ -1,4 +1,4 @@
-name: pipeline
+name: Deploy 
 
 on:
   push:
@@ -6,35 +6,26 @@ on:
       - main
 
 jobs:
-  deploy-app:
+  deploy:
     runs-on: self-hosted
 
     steps:
-      - uses: actions/checkout@v1
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-      - name: yarn install workspace
+      - name: Write .env from Secrets
         run: |
-          yarn
+          echo "VITE_API_URL=${{ secrets.VITE_API_URL }}" > .env
+          echo "CONNECTION_URI=${{ secrets.CONNECTION_URI }}" >> .env
+          echo "DATABASE_NAME=${{ secrets.DATABASE_NAME }}" >> .env
+          echo "PORT=${{ secrets.PORT }}" >> .env
 
-      - name: build types
+      - name: Build Docker images with Compose
         run: |
-          yarn workspace types build
+          docker compose build
 
-      - name: build web 
-        env:
-          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+      - name: Restart services with Compose
         run: |
-          yarn workspace web build 
+          docker compose down
+          docker compose up -d
 
-      - name: deploy
-        run: |
-          cp -r packages/web/build/* /var/www/shoppingo.imapps.co.uk
-      
-      - name: build api
-        run: | 
-          yarn workspace api build
-
-      - name: deploy api
-        run: |
-          echo ${{ secrets.PASS }} | sudo -S cp -a packages/api/build/. /usr/local/bin/shoppingo-api-server
-          echo ${{ secrets.PASS }} | sudo -S systemctl restart shoppingo-api-server.service
