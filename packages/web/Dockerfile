@@ -6,9 +6,10 @@ ENV VITE_API_URL=$VITE_API_URL
 WORKDIR /app
 
 COPY package.json yarn.lock ./
-COPY packages/web/package.json ./web/
-COPY packages/api/package.json ./api/
-COPY packages/types/package.json ./types/
+
+COPY packages/types/package.json packages/types/package.json
+COPY packages/api/package.json packages/api/package.json
+COPY packages/web/package.json packages/web/package.json
 
 RUN yarn install --frozen-lockfile
 
