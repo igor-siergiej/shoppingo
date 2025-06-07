@@ -3,9 +3,8 @@ FROM node:22
 WORKDIR /app
 
 COPY package.json yarn.lock ./
-COPY packages/web/package.json ./web/
-COPY packages/api/package.json ./api/
-COPY packages/types/package.json ./types/
+
+COPY packages ./packages
 
 RUN yarn install --frozen-lockfile
 
