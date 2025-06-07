@@ -22,7 +22,7 @@ jobs:
 
       - name: Build Docker images with Compose
         run: |
-          docker compose build shoppingo-api
+          docker compose build --no-cache shoppingo-api
 
       - name: Restart services with Compose
         run: |
