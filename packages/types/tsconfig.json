@@ -5,9 +5,14 @@
         "declarationMap": true,
         "sourceMap": true,
         "rootDir": "./",
-        "outDir": "build"
+        "outDir": "build",
+        "skipLibCheck": true,
+        "strict": true,
+        "module": "ESNext",
+        "moduleResolution": "Node",
+        "target": "ESNext"
     },
     "include": [
-        "./src"
+        "src"
     ]
 }
