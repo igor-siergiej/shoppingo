@@ -4,7 +4,9 @@ WORKDIR /app
 
 COPY package.json yarn.lock ./
 
-COPY packages ./packages
+COPY packages/types/package.json packages/types/package.json
+COPY packages/api/package.json packages/api/package.json
+COPY packages/web/package.json packages/web/package.json
 
 RUN yarn install --frozen-lockfile
 
