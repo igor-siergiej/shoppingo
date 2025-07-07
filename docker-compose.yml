@@ -18,6 +18,9 @@ services:
       - '4001:4001'
     depends_on:
       - shoppingo-mongodb
+    labels:
+      logging_job: "shoppingo-api"
+      logging_stack: "shoppingo"
 
   shoppingo-web:
     build:
