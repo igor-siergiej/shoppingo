@@ -14,8 +14,8 @@ services:
     env_file:
       - .env
     container_name: shoppingo-api
-    ports:
-      - '4001:4001'
+    expose:
+      - '4001'
     depends_on:
       - shoppingo-mongodb
     labels:
@@ -31,8 +31,8 @@ services:
     container_name: shoppingo-web 
     env_file:
     - .env
-    ports:
-      - '4000:80'
+    expose:
+      - '80'
     depends_on:
       - shoppingo-api
 
