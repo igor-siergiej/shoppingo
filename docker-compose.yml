@@ -21,6 +21,8 @@ services:
     labels:
       logging_job: "shoppingo-api"
       logging_stack: "shoppingo"
+    networks:
+      - proxy 
 
   shoppingo-web:
     build:
@@ -35,6 +37,8 @@ services:
       - '80'
     depends_on:
       - shoppingo-api
+    networks:
+      - proxy 
 
 volumes:
   shoppingo-mongo-data:
