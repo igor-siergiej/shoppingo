@@ -6,6 +6,8 @@ services:
       - '27018:27017'
     volumes:
       - shoppingo-mongo-data:/data/db
+    networks:
+      - internal
 
   shoppingo-api:
     build:
@@ -22,6 +24,7 @@ services:
       logging_job: "shoppingo-api"
       logging_stack: "shoppingo"
     networks:
+      - internal
       - proxy 
 
   shoppingo-web:
@@ -41,6 +44,8 @@ services:
       - proxy 
 
 networks:
+  internal:
+    driver: bridge
   proxy:
     external: true
 
