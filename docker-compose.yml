@@ -42,7 +42,7 @@ services:
 
 networks:
   proxy:
-    driver: bridge
+    external: true
 
 volumes:
   shoppingo-mongo-data:
