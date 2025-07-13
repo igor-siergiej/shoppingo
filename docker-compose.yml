@@ -40,5 +40,9 @@ services:
     networks:
       - proxy 
 
+networks:
+  proxy:
+    driver: bridge
+
 volumes:
   shoppingo-mongo-data:
