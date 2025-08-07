@@ -15,7 +15,6 @@
         "@mui/material": "^5.14.14",
         "@mui/styled-engine-sc": "^6.0.0-alpha.2",
         "@mui/styles": "^5.14.20",
-        "@shoppingo/types": "*",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "react-query": "^3.39.3",

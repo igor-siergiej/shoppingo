@@ -11,11 +11,13 @@ COPY packages/types/package.json packages/types/package.json
 COPY packages/api/package.json packages/api/package.json
 COPY packages/web/package.json packages/web/package.json
 
-RUN yarn install --frozen-lockfile
+RUN corepack enable && corepack prepare yarn@4.9.2 --activate
+
+RUN yarn install --immutable
 
 COPY . .
 
-RUN yarn workspace @shoppingo/types build
+RUN yarn install --immutable
 
 RUN yarn workspace @shoppingo/web build
 
