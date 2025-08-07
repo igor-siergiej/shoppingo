@@ -1,12 +1,11 @@
 import { Trash2, CheckCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import logo from '../../../iconLogo.png';
 import { AppbarProps } from './types';
 
 const Appbar = ({ handleClearSelected, handleRemoveAll, handleGoToListsScreen }: AppbarProps) => {
     return (
         <header className="bg-primary text-primary-foreground shadow-md">
-            <div className="container mx-auto px-4">
+            <div className="w-full px-4">
                 <div className="flex items-center justify-between h-16">
                     {handleGoToListsScreen
                         ? (
@@ -19,13 +18,7 @@ const Appbar = ({ handleClearSelected, handleRemoveAll, handleGoToListsScreen }:
                                     Go Back
                                 </Button>
                             )
-                        : (
-                                <img
-                                    src={logo}
-                                    alt="App Logo"
-                                    className="h-10 w-10"
-                                />
-                            )}
+                        : null}
 
                     <h1 className="text-2xl font-bold flex-grow text-center">
                         Shoppingo

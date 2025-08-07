@@ -1,5 +1,4 @@
 import { useQuery } from 'react-query';
-import { FormGroup, Toolbar, Typography } from '@mui/material';
 import { addList, getListsQuery } from '../../api';
 import Appbar from '../../components/Appbar';
 import NewItemForm from '../../components/NewItemForm';
@@ -14,23 +13,17 @@ const ListsPage = () => {
 
     const pageContent = (
         <>
-            <FormGroup
-                sx={{
-                    display: 'flex',
-                }}
-            >
+            <div className="flex flex-col">
                 {data
                     ? (
                             <ListsList lists={data} refetch={refetch} />
                         )
                     : (
-                            <Typography
-                                sx={{ textAlign: 'center', pb: '1em', pt: '1em' }}
-                            >
+                            <p className="text-center pb-4 pt-4">
                                 This list is empty...
-                            </Typography>
+                            </p>
                         )}
-            </FormGroup>
+            </div>
 
             <NewItemForm
                 handleAdd={async (listName) => {
@@ -44,13 +37,14 @@ const ListsPage = () => {
     const errorPageContent = <div>Error has occured</div>;
 
     return (
-        <Layout>
+        <>
             <Appbar />
-            <Toolbar />
-            {isError && errorPageContent}
-            {isLoading && <LoadingSkeleton />}
-            {!isLoading && !isError && pageContent}
-        </Layout>
+            <Layout>
+                {isError && errorPageContent}
+                {isLoading && <LoadingSkeleton />}
+                {!isLoading && !isError && pageContent}
+            </Layout>
+        </>
     );
 };
 

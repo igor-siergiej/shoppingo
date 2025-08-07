@@ -1,18 +1,10 @@
-import {
-    Box,
-    FormControlLabel,
-    Checkbox,
-    IconButton,
-    Divider,
-    CircularProgress,
-} from '@mui/material';
 import { updateItem, deleteItem } from '../../api';
 import { useState } from 'react';
 import { Item } from '@shoppingo/types';
-import CircleCheckedFilled from '@mui/icons-material/CheckCircle';
-import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
-import ClearIcon from '@mui/icons-material/Clear';
-import theme from '../../style/theme';
+import { X, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 
 export interface ItemCheckBoxProps {
     item: Item;
@@ -39,62 +31,47 @@ const ItemCheckBox = ({ item, listName, refetch }: ItemCheckBoxProps) => {
     };
 
     return (
-        <Box
+        <div
             key={item.name}
-            sx={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                pb: '0.5em',
-            }}
+            className="flex items-center w-full pb-2"
         >
-            <FormControlLabel
-                sx={{ flexGrow: 1 }}
-                control={
-                    isUpdateLoading
-                        ? (
-                                <Loading />
-                            )
-                        : (
-                                <Checkbox
-                                    icon={<RadioButtonUncheckedIcon />}
-                                    checkedIcon={<CircleCheckedFilled />}
-                                    size="medium"
-                                    sx={{ pt: '0.3em' }}
-                                    color="secondary"
-                                    checked={item.isSelected}
-                                    onChange={handleUpdateItem}
-                                />
-                            )
-                }
-                label={item.name}
-            />
+            <div className="flex items-center space-x-2 flex-1">
+                {isUpdateLoading
+                    ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                        )
+                    : (
+                            <Checkbox
+                                id={`checkbox-${item.name}`}
+                                checked={item.isSelected}
+                                onCheckedChange={handleUpdateItem}
+                            />
+                        )}
+                <Label
+                    htmlFor={`checkbox-${item.name}`}
+                    className={`w-full cursor-pointer ${item.isSelected ? 'line-through text-muted-foreground' : ''}`}
+                >
+                    {item.name}
+                </Label>
+            </div>
 
             {isDeleteLoading
                 ? (
-                        <Loading />
+                        <Loader2 className="h-4 w-4 animate-spin" />
                     )
                 : (
-                        <IconButton sx={{}} color="inherit" onClick={handleDeleteItem}>
-                            <ClearIcon />
-                        </IconButton>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={handleDeleteItem}
+                        >
+                            <X className="h-4 w-4" />
+                        </Button>
                     )}
 
-            <Divider />
-        </Box>
+            <div className="border-t border-border w-full mt-2" />
+        </div>
     );
 };
 
 export default ItemCheckBox;
-
-export const Loading = () => {
-    return (
-        <Box
-            sx={{
-                color: theme.palette.primary.main,
-            }}
-        >
-            <CircularProgress size="2rem" />
-        </Box>
-    );
-};

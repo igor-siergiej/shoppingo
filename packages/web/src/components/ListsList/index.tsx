@@ -1,24 +1,20 @@
-import { Box, IconButton, Divider, Button } from '@mui/material';
 import { deleteList } from '../../api';
-import ClearIcon from '@mui/icons-material/Clear';
+import { X } from 'lucide-react';
 import { List } from '@shoppingo/types';
 import { ListsListProps } from './types';
 import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 
 const ListsList = ({ lists, refetch }: ListsListProps) => {
     const navigate = useNavigate();
     const renderedOutput = lists.map((list: List) => (
-        <Box
+        <div
             key={list.name}
-            sx={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                pb: '0.5em',
-            }}
+            className="flex items-center w-full pb-2"
         >
             <Button
-                sx={{ flexGrow: 1 }}
+                variant="ghost"
+                className="w-full justify-start"
                 onClick={() => {
                     navigate(`/list/${list.name}`);
                 }}
@@ -26,18 +22,18 @@ const ListsList = ({ lists, refetch }: ListsListProps) => {
                 {list.name}
             </Button>
 
-            <IconButton
-                sx={{}}
-                color="inherit"
+            <Button
+                variant="ghost"
+                size="icon"
                 onClick={async () => {
                     await deleteList(list.name);
                     refetch();
                 }}
             >
-                <ClearIcon />
-            </IconButton>
-            <Divider />
-        </Box>
+                <X className="h-4 w-4" />
+            </Button>
+            <div className="border-t border-border w-full mt-2" />
+        </div>
     ));
     return renderedOutput;
 };

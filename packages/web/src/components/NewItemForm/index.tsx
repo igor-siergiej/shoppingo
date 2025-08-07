@@ -1,8 +1,8 @@
-import { TextField, Box } from '@mui/material';
-import AcceptButton from '../AcceptButton';
-import CancelButton from '../CancelButton';
-import { useState } from 'react';
-import AddButton from '../AddButton';
+import { useState, useRef, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Check, X, Plus } from 'lucide-react';
 import { NewItemFormProps } from './types';
 
 const NewItemForm = ({ handleAdd }: NewItemFormProps) => {
@@ -14,36 +14,38 @@ const NewItemForm = ({ handleAdd }: NewItemFormProps) => {
         return newName.length === 0;
     };
 
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        if (open && inputRef.current) {
+            inputRef.current.focus();
+        }
+    }, [open]);
+
     return open
         ? (
                 <>
-                    <TextField
-                        size="small"
-                        value={newName}
-                        autoComplete="off"
-                        error={error}
-                        onChange={(event) => {
-                            setError(false);
-                            setNewName(event.target.value);
-                        }}
-                        sx={{
-                            borderRadius: '10px',
-                            mb: '0.5em',
-                            width: '100%',
-                        }}
-                        color="primary"
-                        label="Add New Item"
-                        helperText={error ? 'Name cannot be blank.' : ''}
-                        variant="filled"
-                        inputRef={(input) => {
-                            if (input != null) {
-                                input.focus();
-                            }
-                        }}
-                    />
-                    <Box sx={{ width: '100%', display: 'flex', pb: '10em' }}>
-                        <AcceptButton
-                            handleClick={async () => {
+                    <div className="space-y-2 mb-4">
+                        <Label htmlFor="new-item">Add New Item</Label>
+                        <Input
+                            id="new-item"
+                            ref={inputRef}
+                            value={newName}
+                            autoComplete="off"
+                            className={error ? 'border-destructive' : ''}
+                            onChange={(event) => {
+                                setError(false);
+                                setNewName(event.target.value);
+                            }}
+                            placeholder="Enter item name..."
+                        />
+                        {error && (
+                            <p className="text-sm text-destructive">Name cannot be blank.</p>
+                        )}
+                    </div>
+                    <div className="flex gap-2 pb-10">
+                        <Button
+                            onClick={async () => {
                                 if (validateForm()) {
                                     setError(true);
                                     return;
@@ -52,21 +54,36 @@ const NewItemForm = ({ handleAdd }: NewItemFormProps) => {
                                 setOpen(false);
                                 setNewName('');
                             }}
-                        />
-                        <CancelButton
-                            handleClick={() => {
+                            className="flex-1"
+                        >
+                            <Check className="h-4 w-4" />
+                            Accept
+                        </Button>
+                        <Button
+                            variant="outline"
+                            onClick={() => {
                                 setOpen(false);
+                                setNewName('');
+                                setError(false);
                             }}
-                        />
-                    </Box>
+                            className="flex-1"
+                        >
+                            <X className="h-4 w-4" />
+                            Cancel
+                        </Button>
+                    </div>
                 </>
             )
         : (
-                <AddButton
-                    handleClick={() => {
+                <Button
+                    onClick={() => {
                         setOpen(true);
                     }}
-                />
+                    className="w-full"
+                >
+                    <Plus className="h-4 w-4" />
+                    Add Item
+                </Button>
             );
 };
 

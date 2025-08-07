@@ -1,6 +1,5 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from 'react-query';
-import { FormGroup, Toolbar, Typography } from '@mui/material';
 import { addItem, clearList, clearSelected, getListQuery } from '../../api';
 import Appbar from '../../components/Appbar';
 import ItemCheckBoxList from '../../components/ItemCheckBoxList';
@@ -24,11 +23,7 @@ const ItemsPage = () => {
 
     const pageContent = (
         <>
-            <FormGroup
-                sx={{
-                    display: 'flex',
-                }}
-            >
+            <div className="flex flex-col">
                 {data
                     ? (
                             <ItemCheckBoxList
@@ -39,13 +34,11 @@ const ItemsPage = () => {
                             </ItemCheckBoxList>
                         )
                     : (
-                            <Typography
-                                sx={{ textAlign: 'center', pb: '1em', pt: '1em' }}
-                            >
+                            <p className="text-center pb-4 pt-4">
                                 This list is empty...
-                            </Typography>
+                            </p>
                         )}
-            </FormGroup>
+            </div>
 
             <NewItemForm
                 handleAdd={async (itemName) => {
@@ -67,7 +60,7 @@ const ItemsPage = () => {
     };
 
     return (
-        <Layout>
+        <>
             <Appbar
                 handleClearSelected={handleClearSelected}
                 handleRemoveAll={handleClearList}
@@ -75,12 +68,12 @@ const ItemsPage = () => {
                     navigate('/');
                 }}
             />
-            <Toolbar />
-
-            {isLoading && <LoadingSkeleton />}
-            {isError && errorPageContent}
-            {!isLoading && !isError && data && pageContent}
-        </Layout>
+            <Layout>
+                {isLoading && <LoadingSkeleton />}
+                {isError && errorPageContent}
+                {!isLoading && !isError && data && pageContent}
+            </Layout>
+        </>
     );
 };
 
