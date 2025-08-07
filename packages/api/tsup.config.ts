@@ -9,5 +9,6 @@ export default defineConfig({
     shims: false,
     sourcemap: true,
     clean: true,
-    dts: false
+    dts: false,
+    noExternal: ['express', 'body-parser', 'cors', 'dotenv', 'mongodb']
 });
