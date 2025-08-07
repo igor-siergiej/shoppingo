@@ -1,4 +1,3 @@
-import { Box } from '@mui/material';
 import { ReactNode } from 'react';
 
 interface LayoutProps {
@@ -7,16 +6,8 @@ interface LayoutProps {
 
 export const Layout = ({ children }: LayoutProps) => {
     return (
-        <>
-            <Box
-                m="auto"
-                sx={{
-                    pt: '1em',
-                    maxWidth: '500px',
-                }}
-            >
-                {children}
-            </Box>
-        </>
+        <div className="mx-auto pt-4 max-w-[500px]">
+            {children}
+        </div>
     );
 };

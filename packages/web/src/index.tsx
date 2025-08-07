@@ -1,7 +1,5 @@
 import ReactDOM from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from 'react-query';
-import { ThemeProvider } from '@mui/material/styles';
-import theme from './style/theme';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import './index.css';
 import ItemsPage from './pages/ItemsPage';
@@ -32,9 +30,7 @@ const root = ReactDOM.createRoot(
 );
 
 root.render(
-    <ThemeProvider theme={theme}>
-        <QueryClientProvider client={queryClient}>
-            <RouterProvider router={router} />
-        </QueryClientProvider>
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} />
+    </QueryClientProvider>
 );

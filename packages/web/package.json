@@ -9,12 +9,6 @@
         "preview": "vite preview"
     },
     "dependencies": {
-        "@emotion/react": "^11.11.1",
-        "@emotion/styled": "^11.11.0",
-        "@mui/icons-material": "^5.14.16",
-        "@mui/material": "^5.14.14",
-        "@mui/styled-engine-sc": "^6.0.0-alpha.2",
-        "@mui/styles": "^5.14.20",
         "@radix-ui/react-checkbox": "^1.3.2",
         "@radix-ui/react-label": "^2.1.7",
         "@radix-ui/react-slot": "^1.2.3",

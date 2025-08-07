@@ -1,14 +1,11 @@
-import { Skeleton } from '@mui/material';
-
 export const LoadingSkeleton = () => {
     return (
         <>
             {[1, 2, 3, 4, 5].map((value) => {
                 return (
-                    <Skeleton
+                    <div
                         key={value}
-                        animation="wave"
-                        sx={{ height: '48px' }}
+                        className="h-12 bg-gray-200 animate-pulse rounded mb-2"
                     />
                 );
             })}

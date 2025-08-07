@@ -10,7 +10,7 @@ const Appbar = ({ handleClearSelected, handleRemoveAll, handleGoToListsScreen }:
                     {handleGoToListsScreen
                         ? (
                                 <Button
-                                    variant="secondary"
+                                    className="bg-dark-green text-dark-green-foreground hover:bg-dark-green/90"
                                     onClick={() => {
                                         handleGoToListsScreen();
                                     }}
