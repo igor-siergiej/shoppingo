@@ -20,6 +20,9 @@
             ],
             "@shoppingo/types": [
                 "../types/src"
+            ],
+            "@/*": [
+                "./src/*"
             ]
         }
     },

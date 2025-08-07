@@ -1,72 +1,66 @@
-import { Box, Toolbar, AppBar, Typography, Button } from '@mui/material';
-import IconButton from '@mui/material/IconButton';
-import DeleteIcon from '@mui/icons-material/Delete';
-import RemoveDoneIcon from '@mui/icons-material/RemoveDone';
+import { Trash2, CheckCheck } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import logo from '../../../iconLogo.png';
 import { AppbarProps } from './types';
 
 const Appbar = ({ handleClearSelected, handleRemoveAll, handleGoToListsScreen }: AppbarProps) => {
     return (
-        <>
-            <Box>
-                <AppBar>
-                    <Toolbar>
-                        {handleGoToListsScreen
-                            ? (
-                                    <Button
-                                        variant="contained"
-                                        onClick={() => {
-                                            handleGoToListsScreen();
-                                        }}
-                                    >
-                                        Go Back
-                                    </Button>
-                                )
-                            : (
-                                    <img
-                                        src={logo}
-                                        alt="App Logo"
-                                        height={40}
-                                        width={40}
-                                    />
-                                )}
+        <header className="bg-primary text-primary-foreground shadow-md">
+            <div className="container mx-auto px-4">
+                <div className="flex items-center justify-between h-16">
+                    {handleGoToListsScreen
+                        ? (
+                                <Button
+                                    variant="secondary"
+                                    onClick={() => {
+                                        handleGoToListsScreen();
+                                    }}
+                                >
+                                    Go Back
+                                </Button>
+                            )
+                        : (
+                                <img
+                                    src={logo}
+                                    alt="App Logo"
+                                    className="h-10 w-10"
+                                />
+                            )}
 
-                        <Typography
-                            variant="h5"
-                            sx={{
-                                pt: '0.25em',
-                                flexGrow: 1,
-                                textAlign: 'center',
-                            }}
-                        >
-                            Shoppingo
-                        </Typography>
+                    <h1 className="text-2xl font-bold flex-grow text-center">
+                        Shoppingo
+                    </h1>
 
+                    <div className="flex items-center space-x-2">
                         {handleRemoveAll && (
-                            <IconButton
-                                color="inherit"
+                            <Button
+                                variant="ghost"
+                                size="icon"
                                 onClick={() => {
                                     handleRemoveAll();
                                 }}
+                                className="text-primary-foreground hover:bg-primary-foreground/10"
                             >
-                                <DeleteIcon />
-                            </IconButton>
+                                <Trash2 className="h-5 w-5" />
+                            </Button>
                         )}
 
                         {handleClearSelected && (
-                            <IconButton
-                                color="inherit"
+                            <Button
+                                variant="ghost"
+                                size="icon"
                                 onClick={() => {
                                     handleClearSelected();
                                 }}
+                                className="text-primary-foreground hover:bg-primary-foreground/10"
                             >
-                                <RemoveDoneIcon />
-                            </IconButton>
+                                <CheckCheck className="h-5 w-5" />
+                            </Button>
                         )}
-                    </Toolbar>
-                </AppBar>
-            </Box>
-        </>
+                    </div>
+                </div>
+            </div>
+        </header>
     );
 };
 

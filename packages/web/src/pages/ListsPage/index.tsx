@@ -6,6 +6,7 @@ import NewItemForm from '../../components/NewItemForm';
 import ListsList from '../../components/ListsList';
 import { Layout } from '../../components/Layout';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
+import { Button } from '@/components/ui/button';
 
 const ListsPage = () => {
     const { data, isLoading, isError, refetch } = useQuery({

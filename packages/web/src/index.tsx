@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from 'react-query';
 import { ThemeProvider } from '@mui/material/styles';
 import theme from './style/theme';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
+import './index.css';
 import ItemsPage from './pages/ItemsPage';
 import ListPage from './pages/ListsPage';
 
