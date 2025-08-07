@@ -12,27 +12,31 @@ const ListsList = ({ lists, refetch }: ListsListProps) => {
             key={list.name}
             className="flex items-center w-full pb-2"
         >
-            <Button
-                variant="ghost"
-                className="w-full justify-start"
-                onClick={() => {
-                    navigate(`/list/${list.name}`);
-                }}
-            >
-                {list.name}
-            </Button>
+            <div className="flex-1">
+                <Button
+                    variant="ghost"
+                    className="w-full justify-center text-center"
+                    onClick={() => {
+                        navigate(`/list/${list.name}`);
+                    }}
+                >
+                    {list.name}
+                </Button>
+            </div>
 
-            <Button
-                variant="ghost"
-                size="icon"
-                onClick={async () => {
-                    await deleteList(list.name);
-                    refetch();
-                }}
-            >
-                <X className="h-4 w-4" />
-            </Button>
-            <div className="border-t border-border w-full mt-2" />
+            <div className="flex items-center pl-2">
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={async () => {
+                        await deleteList(list.name);
+                        refetch();
+                    }}
+                    className="h-8 w-8"
+                >
+                    <X className="h-4 w-4" />
+                </Button>
+            </div>
         </div>
     ));
     return renderedOutput;
