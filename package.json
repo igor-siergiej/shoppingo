@@ -5,7 +5,6 @@
     "repository": "git@github.com:igor-siergiej/shoppingo.git",
     "author": "Igor Siergiej <igorsiergiej@gmail.com>",
     "license": "MIT",
-    "type": "module",
     "scripts": {
         "start:web": "dotenv -e .env -- yarn workspace @shoppingo/web start",
         "start:api": "dotenv -e .env -- yarn workspace @shoppingo/api start",
