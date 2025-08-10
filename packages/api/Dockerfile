@@ -34,7 +34,7 @@ ENV YARN_NODE_LINKER=node-modules
 
 RUN corepack enable && corepack prepare yarn@4.9.2 --activate
 
-RUN yarn install --immutable --production
+RUN yarn workspaces focus @shoppingo/api --production
 
 COPY --from=builder /app/packages/api/build ./build
 
