@@ -22,28 +22,18 @@ const port = process.env.PORT;
 const allowedOrigins: Array<string> = [
     'https://shoppingo.imapps.co.uk',
     'http://shoppingo.imapps.staging',
-    'https://shoppingo.imapps.staging',
     'http://localhost:4000',
-    'http://localhost:3000',
 ];
 
 const corsOptions: cors.CorsOptions = {
     origin: function (origin, callback) {
-        // Allow requests with no origin (like mobile apps or curl requests)
         if (!origin) {
-            console.log('CORS: Allowing request with no origin');
             callback(null, true);
             return;
         }
-
-        console.log('CORS: Checking origin:', origin);
-        console.log('CORS: Allowed origins:', allowedOrigins);
-
         if (allowedOrigins.includes(origin)) {
-            console.log('CORS: Origin allowed:', origin);
             callback(null, true);
         } else {
-            console.log('CORS: Origin rejected:', origin);
             callback(new Error('Not allowed by CORS'));
         }
     },
@@ -74,28 +64,24 @@ export const onStartup = async () => {
             })
         );
 
-        app.use((req, res, next) => {
-            // TODO: do some logging here
-            next();
-        });
+        // API routes
+        app.get('/api/lists/:name', getList);
+        app.get('/api/lists', getLists);
+        app.delete('/api/lists/:name', deleteList);
+        app.put('/api/lists', addList);
 
-        app.get('/lists/:name', getList);
-        app.get('/lists', getLists);
-        app.delete('/lists/:name', deleteList);
-        app.put('/lists', addList);
+        app.put('/api/lists/:listName/items', addItem);
 
-        app.put('/lists/:listName/items', addItem);
+        app.post('/api/lists/:listName/items/:itemName', updateItem);
 
-        app.post('/lists/:listName/items/:itemName', updateItem);
+        app.delete('/api/lists/:listName/items/:itemName', deleteItem);
 
-        app.delete('/lists/:listName/items/:itemName', deleteItem);
+        app.delete('/api/lists/:listName/clear', clearList);
 
-        app.delete('/lists/:listName/clear', clearList);
-
-        app.delete('/lists/:listName/clearSelected', deleteSelected);
+        app.delete('/api/lists/:listName/clearSelected', deleteSelected);
 
         app.listen(port, () => {
-            console.log(`Shoppingo Api server running on port ${port}.`);
+            console.log(`Shoppingo API server running on port ${port}`);
         });
     } catch (error) {
         console.error('Encountered an error on start up', error);
