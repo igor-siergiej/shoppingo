@@ -22,21 +22,34 @@ const port = process.env.PORT;
 const allowedOrigins: Array<string> = [
     'https://shoppingo.imapps.co.uk',
     'http://shoppingo.imapps.staging',
+    'https://shoppingo.imapps.staging',
     'http://localhost:4000',
+    'http://localhost:3000',
 ];
 
 const corsOptions: cors.CorsOptions = {
     origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
         if (!origin) {
+            console.log('CORS: Allowing request with no origin');
             callback(null, true);
             return;
         }
-        if (allowedOrigins.includes(origin) || !origin) {
+
+        console.log('CORS: Checking origin:', origin);
+        console.log('CORS: Allowed origins:', allowedOrigins);
+
+        if (allowedOrigins.includes(origin)) {
+            console.log('CORS: Origin allowed:', origin);
             callback(null, true);
         } else {
+            console.log('CORS: Origin rejected:', origin);
             callback(new Error('Not allowed by CORS'));
         }
     },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
 };
 
 export const onStartup = async () => {
@@ -46,6 +59,10 @@ export const onStartup = async () => {
         registerDepdendencies();
 
         const database = DependencyContainer.getInstance().resolve(DependencyToken.Database);
+
+        if (!database) {
+            throw new Error('Database dependency not found');
+        }
 
         await database.connect();
 
