@@ -22,10 +22,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Configure Yarn for Docker
-        run: |
-          echo "nodeLinker: node-modules" > .yarnrc.yml
-
       - name: Set semantic version
         id: version
         run: |
@@ -75,10 +71,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Configure Yarn for Docker
-        run: |
-          echo "nodeLinker: node-modules" > .yarnrc.yml
-
       - name: Install dependencies
         run: yarn install --immutable
 
@@ -98,10 +90,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Configure Yarn for Docker
-        run: |
-          echo "nodeLinker: node-modules" > .yarnrc.yml
-
       - name: Build and push shoppingo-api
         run: |
           docker build -f packages/api/Dockerfile -t 192.168.68.54:31834/shoppingo-api:${{ needs.setup.outputs.version }} -t 192.168.68.54:31834/shoppingo-api:latest .
@@ -117,10 +105,6 @@ jobs:
 
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Configure Yarn for Docker
-        run: |
-          echo "nodeLinker: node-modules" > .yarnrc.yml
 
       - name: Build and push shoppingo-web
         run: |

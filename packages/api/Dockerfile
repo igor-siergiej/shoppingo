@@ -26,11 +26,15 @@ WORKDIR /app
 
 COPY package.json yarn.lock ./
 
+COPY packages/types/package.json packages/types/package.json
+COPY packages/api/package.json packages/api/package.json
+COPY packages/web/package.json packages/web/package.json
+
+ENV YARN_NODE_LINKER=node-modules
+
 RUN corepack enable && corepack prepare yarn@4.9.2 --activate
 
-COPY packages/api/package.json packages/api/package.json
-
-RUN yarn workspaces focus @shoppingo/api --production
+RUN yarn install --immutable --production
 
 COPY --from=builder /app/packages/api/build ./build
 
