@@ -1,7 +1,9 @@
-import { MongoClient, Db } from 'mongodb';
 import 'dotenv/config';
-import { CollectionName, IDatabase } from './types';
+
 import { List } from '@shoppingo/types';
+import { Db, MongoClient } from 'mongodb';
+
+import { CollectionName, IDatabase } from './types';
 
 export class Database implements IDatabase {
     private client: MongoClient;

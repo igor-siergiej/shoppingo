@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
+
+import { CollectionName } from '../../database/types';
 import { DependencyContainer } from '../../lib/dependencyContainer';
 import { DependencyToken } from '../../lib/dependencyContainer/types';
-import { CollectionName } from '../../database/types';
 
 const updateItem = async (req: Request, res: Response) => {
     const { listName, itemName } = req.params;
@@ -19,8 +20,7 @@ const updateItem = async (req: Request, res: Response) => {
                 ...item,
                 isSelected
             };
-        }
-        else {
+        } else {
             return item;
         }
     });

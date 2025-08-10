@@ -6,6 +6,7 @@
         "build": "tsup"
     },
     "dependencies": {
+        "@shoppingo/types": "workspace:*",
         "body-parser": "^1.20.3",
         "cors": "^2.8.5",
         "dotenv": "^16.4.7",

@@ -1,9 +1,10 @@
-import { Request, Response } from 'express';
-import { DependencyContainer } from '../../lib/dependencyContainer';
-import { CollectionName } from '../../database/types';
-import { DependencyToken } from '../../lib/dependencyContainer/types';
 import { List } from '@shoppingo/types';
+import { Request, Response } from 'express';
 import { ObjectId } from 'mongodb';
+
+import { CollectionName } from '../../database/types';
+import { DependencyContainer } from '../../lib/dependencyContainer';
+import { DependencyToken } from '../../lib/dependencyContainer/types';
 
 const addList = async (req: Request, res: Response) => {
     const { name, dateAdded } = req.body;

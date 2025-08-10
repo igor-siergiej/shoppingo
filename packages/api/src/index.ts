@@ -1,24 +1,27 @@
-import express, { Application } from 'express';
+import 'dotenv/config';
+
 import bodyParser from 'body-parser';
 import cors from 'cors';
-import getLists from './endpoints/getLists';
-import getList from './endpoints/getList';
-import deleteList from './endpoints/deleteList';
-import addList from './endpoints/addList';
-import addItem from './endpoints/addItem';
+import express, { Application } from 'express';
+
 import { registerDepdendencies } from './dependencies';
-import { DependencyContainer } from './lib/dependencyContainer';
-import { DependencyToken } from './lib/dependencyContainer/types';
-import 'dotenv/config';
-import updateItem from './endpoints/updateItem';
-import deleteItem from './endpoints/deleteItem';
+import addItem from './endpoints/addItem';
+import addList from './endpoints/addList';
 import clearList from './endpoints/clearList';
 import deleteSelected from './endpoints/deleteChecked';
+import deleteItem from './endpoints/deleteItem';
+import deleteList from './endpoints/deleteList';
+import getList from './endpoints/getList';
+import getLists from './endpoints/getLists';
+import updateItem from './endpoints/updateItem';
+import { DependencyContainer } from './lib/dependencyContainer';
+import { DependencyToken } from './lib/dependencyContainer/types';
 
 const port = process.env.PORT;
 
 const allowedOrigins: Array<string> = [
     'https://shoppingo.imapps.co.uk',
+    'https://shoppingo.imapps.staging',
     'http://localhost:4000',
 ];
 
@@ -59,22 +62,20 @@ export const onStartup = async () => {
             next();
         });
 
-        // TODO: move these out to another directory and remove the leading /api/
+        app.get('/lists/:name', getList);
+        app.get('/lists', getLists);
+        app.delete('/lists/:name', deleteList);
+        app.put('/lists', addList);
 
-        app.get('/api/lists/:name', getList);
-        app.get('/api/lists', getLists);
-        app.delete('/api/lists/:name', deleteList);
-        app.put('/api/lists', addList);
+        app.put('/lists/:listName/items', addItem);
 
-        app.put('/api/lists/:listName/items', addItem);
+        app.post('/lists/:listName/items/:itemName', updateItem);
 
-        app.post('/api/lists/:listName/items/:itemName', updateItem);
+        app.delete('/lists/:listName/items/:itemName', deleteItem);
 
-        app.delete('/api/lists/:listName/items/:itemName', deleteItem);
+        app.delete('/lists/:listName/clear', clearList);
 
-        app.delete('/api/lists/:listName/clear', clearList);
-
-        app.delete('/api/lists/:listName/clearSelected', deleteSelected);
+        app.delete('/lists/:listName/clearSelected', deleteSelected);
 
         app.listen(port, () => {
             console.log(`Shoppingo Api server running on port ${port}.`);

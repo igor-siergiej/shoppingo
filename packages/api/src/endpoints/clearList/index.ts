@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
-import { DependencyContainer } from '../../lib/dependencyContainer';
+
 import { CollectionName } from '../../database/types';
+import { DependencyContainer } from '../../lib/dependencyContainer';
 import { DependencyToken } from '../../lib/dependencyContainer/types';
 
 const clearList = async (req: Request, res: Response) => {

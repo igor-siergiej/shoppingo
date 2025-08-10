@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
+
+import { CollectionName } from '../../database/types';
 import { DependencyContainer } from '../../lib/dependencyContainer';
 import { DependencyToken } from '../../lib/dependencyContainer/types';
-import { CollectionName } from '../../database/types';
 
 const getLists = async (req: Request, res: Response) => {
     const database = DependencyContainer.getInstance().resolve(DependencyToken.Database);
