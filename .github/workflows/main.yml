@@ -22,6 +22,10 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Configure Yarn for Docker
+        run: |
+          echo "nodeLinker: node-modules" > .yarnrc.yml
+
       - name: Set semantic version
         id: version
         run: |
@@ -59,7 +63,7 @@ jobs:
           echo "New version: $NEW_VERSION"
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install --immutable
 
   lint:
     runs-on: [self-hosted, linux, x64]
@@ -71,11 +75,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Configure Yarn for Docker
+        run: |
+          echo "nodeLinker: node-modules" > .yarnrc.yml
+
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install --immutable
 
       - name: Lint code
-        run: yarn eslint . --cache --cache-location .eslintcache
+        run: yarn eslint . 
 
       - name: Type check
         run: yarn tsc --noEmit
@@ -89,6 +97,10 @@ jobs:
 
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Configure Yarn for Docker
+        run: |
+          echo "nodeLinker: node-modules" > .yarnrc.yml
 
       - name: Build and push shoppingo-api
         run: |
@@ -105,6 +117,10 @@ jobs:
 
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Configure Yarn for Docker
+        run: |
+          echo "nodeLinker: node-modules" > .yarnrc.yml
 
       - name: Build and push shoppingo-web
         run: |

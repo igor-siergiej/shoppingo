@@ -25,7 +25,9 @@ export default tseslint.config(
             '**/.yarn/**',
             '**/test-results/**',
             '**/playwright-report/**',
-            '**/*.tsbuildinfo'
+            '**/*.tsbuildinfo',
+            '**/.pnp.*',
+            '**/*.pnp.*'
         ]
     },
 
