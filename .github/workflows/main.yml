@@ -117,9 +117,6 @@ jobs:
     needs: [setup, build-api, build-web]
     if: github.ref == 'refs/heads/main'
     steps:
-      - name: Enable Corepack
-        run: corepack enable
-
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
