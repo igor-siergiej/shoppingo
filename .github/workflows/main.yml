@@ -124,12 +124,12 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PAT_TOKEN }}
 
       - name: Create git tag
         run: |
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "github-actions[bot]"
+          git config --global user.email "shoppingo-bot@users.noreply.github.com"
+          git config --global user.name "shoppingo-bot"
           git tag ${{ needs.setup.outputs.version }}
           git push origin ${{ needs.setup.outputs.version }}
 
