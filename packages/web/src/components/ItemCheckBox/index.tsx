@@ -1,10 +1,12 @@
-import { updateItem, deleteItem } from '../../api';
-import { useState } from 'react';
 import { Item } from '@shoppingo/types';
-import { X, Loader2 } from 'lucide-react';
+import { Loader2, X } from 'lucide-react';
+import { useState } from 'react';
+
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+
+import { deleteItem, updateItem } from '../../api';
 
 export interface ItemCheckBoxProps {
     item: Item;

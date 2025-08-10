@@ -1,16 +1,13 @@
 import { MakeRequestProps } from '../types';
 
-const origin = import.meta.env.VITE_API_URL;
-
 export const makeRequest = async ({
     pathname,
     method,
     operationString,
     body,
 }: MakeRequestProps) => {
-    const url = origin + pathname;
     try {
-        const response = await fetch(url, {
+        const response = await fetch(pathname, {
             method: method,
             headers: {
                 'Content-Type': 'application/json',

@@ -1,6 +1,7 @@
 import { Item } from '@shoppingo/types';
-import { ItemCheckBoxListProps } from './types';
+
 import ItemCheckBox from '../ItemCheckBox';
+import { ItemCheckBoxListProps } from './types';
 
 const ItemCheckBoxList = ({
     items,

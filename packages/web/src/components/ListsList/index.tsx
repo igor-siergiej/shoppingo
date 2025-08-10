@@ -1,9 +1,11 @@
-import { deleteList } from '../../api';
-import { X } from 'lucide-react';
 import { List } from '@shoppingo/types';
-import { ListsListProps } from './types';
+import { X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+
 import { Button } from '@/components/ui/button';
+
+import { deleteList } from '../../api';
+import { ListsListProps } from './types';
 
 const ListsList = ({ lists, refetch }: ListsListProps) => {
     const navigate = useNavigate();

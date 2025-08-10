@@ -1,6 +1,7 @@
 import { Item, List } from '@shoppingo/types';
-import { MethodType } from './types';
+
 import { makeRequest } from './makeRequest';
+import { MethodType } from './types';
 
 export const getListQuery = (listName: string) => ({
     queryKey: [listName],
@@ -22,7 +23,7 @@ export const getListsQuery = () => ({
 
 export const getLists = async (): Promise<Array<List>> => {
     return await makeRequest({
-        pathname: `/api/lists`,
+        pathname: '/api/lists',
         method: MethodType.GET,
         operationString: 'get lists',
     });
@@ -31,7 +32,7 @@ export const getLists = async (): Promise<Array<List>> => {
 export const addList = async (listName: string): Promise<unknown> => {
     const dateAdded = generateTimestamp(new Date());
     return await makeRequest({
-        pathname: `/api/lists`,
+        pathname: '/api/lists',
         method: MethodType.PUT,
         operationString: 'add list',
         body: JSON.stringify({

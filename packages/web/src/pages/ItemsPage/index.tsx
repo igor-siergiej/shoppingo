@@ -1,23 +1,24 @@
-import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from 'react-query';
+import { useNavigate, useParams } from 'react-router-dom';
+
 import { addItem, clearList, clearSelected, getListQuery } from '../../api';
 import Appbar from '../../components/Appbar';
 import ItemCheckBoxList from '../../components/ItemCheckBoxList';
-import NewItemForm from '../../components/NewItemForm';
 import { Layout } from '../../components/Layout';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
+import NewItemForm from '../../components/NewItemForm';
 
 const ItemsPage = () => {
     const { listName } = useParams();
     const navigate = useNavigate();
 
-    if (!listName) {
-        return <div>Need a valid list name</div>;
-    }
-
     const { data, isLoading, isError, refetch } = useQuery({
         ...getListQuery(listName),
     });
+
+    if (!listName) {
+        return <div>Need a valid list name</div>;
+    }
 
     const errorPageContent = <div>Error fetching data.</div>;
 

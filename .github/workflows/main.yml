@@ -1,4 +1,4 @@
-name: Deploy 
+name: CI/CD Pipeline
 
 on:
   push:
@@ -9,9 +9,61 @@ on:
       - main
 
 jobs:
-  deploy:
+  setup:
     runs-on: [self-hosted, linux, x64]
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - name: Enable Corepack
+        run: corepack enable
 
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set semantic version
+        id: version
+        run: |
+          # Get the latest version from git tags
+          LATEST_VERSION=$(git tag --sort=-version:refname | head -n1)
+          
+          # If no tags exist, start with 0.1.0
+          if [ -z "$LATEST_VERSION" ]; then
+            LATEST_VERSION="0.1.0"
+          fi
+          
+          # Parse major, minor, patch
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$LATEST_VERSION"
+          
+          # Check commit message for version bump indicators
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          
+          if [[ "$COMMIT_MSG" == *"[major]"* ]]; then
+            MAJOR=$((MAJOR + 1))
+            MINOR=0
+            PATCH=0
+          elif [[ "$COMMIT_MSG" == *"[minor]"* ]]; then
+            MINOR=$((MINOR + 1))
+            PATCH=0
+          elif [[ "$COMMIT_MSG" == *"[patch]"* ]] || [[ "$COMMIT_MSG" == *"[fix]"* ]]; then
+            PATCH=$((PATCH + 1))
+          else
+            # Default to patch increment
+            PATCH=$((PATCH + 1))
+          fi
+          
+          NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "Previous version: $LATEST_VERSION"
+          echo "New version: $NEW_VERSION"
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+  lint:
+    runs-on: [self-hosted, linux, x64]
+    needs: setup
     steps:
       - name: Enable Corepack
         run: corepack enable
@@ -19,19 +71,63 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Write .env from Secrets
-        run: |
-          echo "VITE_API_URL=${{ secrets.VITE_API_URL }}" > .env
-          echo "CONNECTION_URI=${{ secrets.CONNECTION_URI }}" >> .env
-          echo "DATABASE_NAME=${{ secrets.DATABASE_NAME }}" >> .env
-          echo "PORT=${{ secrets.PORT }}" >> .env
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
 
-      - name: Build Docker images with Compose
-        run: |
-          docker compose build
+      - name: Lint code
+        run: yarn eslint . --cache --cache-location .eslintcache
 
-      - name: Restart services with Compose
+      - name: Type check
+        run: yarn tsc --noEmit
+
+  build-api:
+    runs-on: [self-hosted, linux, x64]
+    needs: [setup, lint]
+    steps:
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build and push shoppingo-api
         run: |
-          docker compose down
-          docker compose up -d
+          docker build -f packages/api/Dockerfile -t 192.168.68.54:31834/shoppingo-api:${{ needs.setup.outputs.version }} -t 192.168.68.54:31834/shoppingo-api:latest .
+          docker push 192.168.68.54:31834/shoppingo-api:${{ needs.setup.outputs.version }}
+          docker push 192.168.68.54:31834/shoppingo-api:latest
+
+  build-web:
+    runs-on: [self-hosted, linux, x64]
+    needs: [setup, lint]
+    steps:
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build and push shoppingo-web
+        run: |
+          docker build -f packages/web/Dockerfile -t 192.168.68.54:31834/shoppingo-web:${{ needs.setup.outputs.version }} -t 192.168.68.54:31834/shoppingo-web:latest .
+          docker push 192.168.68.54:31834/shoppingo-web:${{ needs.setup.outputs.version }}
+          docker push 192.168.68.54:31834/shoppingo-web:latest
+
+  push-tag:
+    runs-on: [self-hosted, linux, x64]
+    needs: [setup, build-api, build-web]
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create git tag
+        run: |
+          git tag ${{ needs.setup.outputs.version }}
+          git push origin ${{ needs.setup.outputs.version }}
+
 

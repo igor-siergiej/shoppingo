@@ -1,10 +1,11 @@
 import { useQuery } from 'react-query';
+
 import { addList, getListsQuery } from '../../api';
 import Appbar from '../../components/Appbar';
-import NewItemForm from '../../components/NewItemForm';
-import ListsList from '../../components/ListsList';
 import { Layout } from '../../components/Layout';
+import ListsList from '../../components/ListsList';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
+import NewItemForm from '../../components/NewItemForm';
 
 const ListsPage = () => {
     const { data, isLoading, isError, refetch } = useQuery({

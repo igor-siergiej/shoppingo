@@ -1,7 +1,9 @@
+import './index.css';
+
 import ReactDOM from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from 'react-query';
-import { RouterProvider, createBrowserRouter } from 'react-router-dom';
-import './index.css';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+
 import ItemsPage from './pages/ItemsPage';
 import ListPage from './pages/ListsPage';
 

@@ -1,5 +1,7 @@
-import { Trash2, CheckCheck } from 'lucide-react';
+import { CheckCheck, Trash2 } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
+
 import { AppbarProps } from './types';
 
 const Appbar = ({ handleClearSelected, handleRemoveAll, handleGoToListsScreen }: AppbarProps) => {
