@@ -133,4 +133,23 @@ jobs:
           git tag ${{ needs.setup.outputs.version }}
           git push origin ${{ needs.setup.outputs.version }}
 
+      - name: Update ArgoCD GitOps
+        run: |
+          # Clone the argonaut repository
+          git clone https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/igor-siergiej/argonaut.git argonaut-repo
+          cd argonaut-repo
+          
+          # Configure git
+          git config user.email "shoppingo-bot@users.noreply.github.com"
+          git config user.name "shoppingo-bot"
+          
+          # Update the staging deployment with new image versions
+          sed -i "s|192.168.68.54:31834/shoppingo-api:.*|192.168.68.54:31834/shoppingo-api:${{ needs.setup.outputs.version }}|g" apps/shoppingo/overlays/staging/patch-deployment.yaml
+          sed -i "s|192.168.68.54:31834/shoppingo-web:.*|192.168.68.54:31834/shoppingo-web:${{ needs.setup.outputs.version }}|g" apps/shoppingo/overlays/staging/patch-deployment.yaml
+          
+          # Commit and push changes
+          git add apps/shoppingo/overlays/staging/patch-deployment.yaml
+          git commit -m "Update shoppingo staging to version ${{ needs.setup.outputs.version }}"
+          git push origin main
+
 

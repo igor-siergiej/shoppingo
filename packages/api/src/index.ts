@@ -21,7 +21,7 @@ const port = process.env.PORT;
 
 const allowedOrigins: Array<string> = [
     'https://shoppingo.imapps.co.uk',
-    'https://shoppingo.imapps.staging',
+    'http://shoppingo.imapps.staging',
     'http://localhost:4000',
 ];
 
