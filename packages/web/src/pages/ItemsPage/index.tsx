@@ -5,7 +5,7 @@ import { addItem, clearList, clearSelected, getListQuery } from '../../api';
 import Appbar from '../../components/Appbar';
 import ItemCheckBoxList from '../../components/ItemCheckBoxList';
 import { Layout } from '../../components/Layout';
-import { LoadingSkeleton } from '../../components/LoadingSkeleton';
+import { ItemsSkeleton } from '../../components/LoadingSkeleton';
 import ToolBar from '../../components/ToolBar';
 
 const ItemsPage = () => {
@@ -64,7 +64,7 @@ const ItemsPage = () => {
         <>
             <Appbar />
             <Layout>
-                {isLoading && <LoadingSkeleton />}
+                {isLoading && <ItemsSkeleton />}
                 {isError && errorPageContent}
                 {!isLoading && !isError && data && pageContent}
             </Layout>

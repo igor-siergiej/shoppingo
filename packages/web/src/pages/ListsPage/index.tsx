@@ -4,7 +4,7 @@ import { addList, getListsQuery } from '../../api';
 import Appbar from '../../components/Appbar';
 import { Layout } from '../../components/Layout';
 import ListsList from '../../components/ListsList';
-import { LoadingSkeleton } from '../../components/LoadingSkeleton';
+import { ListsSkeleton } from '../../components/LoadingSkeleton';
 import ToolBar from '../../components/ToolBar';
 
 const ListsPage = () => {
@@ -38,7 +38,7 @@ const ListsPage = () => {
             <Appbar />
             <Layout>
                 {isError && errorPageContent}
-                {isLoading && <LoadingSkeleton />}
+                {isLoading && <ListsSkeleton />}
                 {!isLoading && !isError && pageContent}
             </Layout>
 

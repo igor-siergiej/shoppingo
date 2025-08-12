@@ -6,7 +6,6 @@ import {
     Drawer,
     DrawerClose,
     DrawerContent,
-    DrawerDescription,
     DrawerFooter,
     DrawerHeader,
     DrawerTitle,
@@ -68,9 +67,6 @@ const AddItemDrawer = ({ handleAdd, placeholder = 'Enter item name...' }: AddIte
                     <div className="mx-auto w-full max-w-sm">
                         <DrawerHeader>
                             <DrawerTitle>Add New Item</DrawerTitle>
-                            <DrawerDescription>
-                                Enter the name of the item you want to add to your list.
-                            </DrawerDescription>
                         </DrawerHeader>
                         <div className="p-4 pb-0">
                             <div className="space-y-2">
