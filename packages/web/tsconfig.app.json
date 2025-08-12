@@ -1,0 +1,22 @@
+{
+    "extends": "../../tsconfig.json",
+    "compilerOptions": {
+      "jsx": "react-jsx",
+      "useDefineForClassFields": true,
+      "isolatedModules": true,
+      "noEmit": true,
+      "types": ["vite/client", "vitest/globals", "@testing-library/jest-dom"],
+      "paths": {
+        "@shoppingo/types": ["../types/src"],
+        "@/*": ["./src/*"]
+      }
+    },
+    "include": [
+      "src",
+      "vite-env.d.ts"
+, "tsconfig.node.json"    ],
+    "references": [
+      { "path": "../types" }
+    ]
+  }
+  

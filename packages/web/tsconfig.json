@@ -1,36 +1,7 @@
 {
-    "extends": "../../tsconfig.json",
-    "compilerOptions": {
-        "useDefineForClassFields": true,
-        "allowJs": false,
-        "allowSyntheticDefaultImports": true,
-        "forceConsistentCasingInFileNames": true,
-        "isolatedModules": true,
-        "noEmit": true,
-        "emitDeclarationOnly": false,
-        "jsx": "react-jsx",
-        "outDir": "./build",
-        "types": [
-            "vitest/globals",
-            "@testing-library/jest-dom"
-        ],
-        "paths": {
-            "@shoppingo/types": [
-                "../types/src"
-            ],
-            "@/*": [
-                "./src/*"
-            ]
-        }
-    },
-    "include": [
-        "src",
-        "eslintrc.js",
-        "vite-env.d.ts"
-    ],
+    "files": [],
     "references": [
-        {
-            "path": "../types"
-        }
+      { "path": "./tsconfig.app.json" },
+      { "path": "./tsconfig.node.json" }
     ]
 }
