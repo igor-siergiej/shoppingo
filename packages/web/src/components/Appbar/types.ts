@@ -1,5 +1,1 @@
-export interface AppbarProps {
-    handleClearSelected?: () => void;
-    handleRemoveAll?: () => void;
-    handleGoToListsScreen?: () => void;
-}
+export type AppbarProps = object;

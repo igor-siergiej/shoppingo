@@ -5,7 +5,7 @@ import Appbar from '../../components/Appbar';
 import { Layout } from '../../components/Layout';
 import ListsList from '../../components/ListsList';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
-import NewItemForm from '../../components/NewItemForm';
+import ToolBar from '../../components/ToolBar';
 
 const ListsPage = () => {
     const { data, isLoading, isError, refetch } = useQuery({
@@ -13,27 +13,23 @@ const ListsPage = () => {
     });
 
     const pageContent = (
-        <>
-            <div className="flex flex-col">
-                {data
-                    ? (
-                            <ListsList lists={data} refetch={refetch} />
-                        )
-                    : (
-                            <p className="text-center pb-4 pt-4">
-                                This list is empty...
-                            </p>
-                        )}
-            </div>
-
-            <NewItemForm
-                handleAdd={async (listName) => {
-                    await addList(listName);
-                    await refetch();
-                }}
-            />
-        </>
+        <div className="flex flex-col">
+            {data
+                ? (
+                        <ListsList lists={data} refetch={refetch} />
+                    )
+                : (
+                        <p className="text-center pb-4 pt-4">
+                            This list is empty...
+                        </p>
+                    )}
+        </div>
     );
+
+    const handleAddList = async (listName: string) => {
+        await addList(listName);
+        await refetch();
+    };
 
     const errorPageContent = <div>Error has occured</div>;
 
@@ -45,6 +41,11 @@ const ListsPage = () => {
                 {isLoading && <LoadingSkeleton />}
                 {!isLoading && !isError && pageContent}
             </Layout>
+
+            <ToolBar
+                handleAdd={handleAddList}
+                placeholder="Enter list name..."
+            />
         </>
     );
 };

@@ -8,7 +8,7 @@ const ItemCheckBoxList = ({
     refetch,
     listName,
 }: ItemCheckBoxListProps) => {
-    const renderedOutput = items.sort((a, b) => a.isSelected === b.isSelected ? 0 : a.isSelected ? 1 : -1).map((item: Item, index) => (
+    const renderedOutput = items.sort((a, b) => a.isSelected === b.isSelected ? 0 : a.isSelected ? -1 : 1).map((item: Item, index) => (
         <ItemCheckBox
             item={item}
             listName={listName}

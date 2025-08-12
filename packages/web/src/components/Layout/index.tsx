@@ -6,8 +6,10 @@ interface LayoutProps {
 
 export const Layout = ({ children }: LayoutProps) => {
     return (
-        <div className="mx-auto pt-2 px-4 max-w-[500px]">
-            {children}
+        <div className="fixed top-16 bottom-32 left-0 right-0 px-4 max-w-[500px] mx-auto">
+            <div className="h-full overflow-y-auto flex flex-col-reverse">
+                {children}
+            </div>
         </div>
     );
 };

@@ -6,7 +6,7 @@ import Appbar from '../../components/Appbar';
 import ItemCheckBoxList from '../../components/ItemCheckBoxList';
 import { Layout } from '../../components/Layout';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
-import NewItemForm from '../../components/NewItemForm';
+import ToolBar from '../../components/ToolBar';
 
 const ItemsPage = () => {
     const { listName } = useParams();
@@ -23,31 +23,22 @@ const ItemsPage = () => {
     const errorPageContent = <div>Error fetching data.</div>;
 
     const pageContent = (
-        <>
-            <div className="flex flex-col">
-                {data
-                    ? (
-                            <ItemCheckBoxList
-                                items={data}
-                                refetch={refetch}
-                                listName={listName}
-                            >
-                            </ItemCheckBoxList>
-                        )
-                    : (
-                            <p className="text-center pb-4 pt-4">
-                                This list is empty...
-                            </p>
-                        )}
-            </div>
-
-            <NewItemForm
-                handleAdd={async (itemName) => {
-                    await addItem(itemName, listName);
-                    await refetch();
-                }}
-            />
-        </>
+        <div className="flex flex-col">
+            {data
+                ? (
+                        <ItemCheckBoxList
+                            items={data}
+                            refetch={refetch}
+                            listName={listName}
+                        >
+                        </ItemCheckBoxList>
+                    )
+                : (
+                        <p className="text-center pb-4 pt-4">
+                            This list is empty...
+                        </p>
+                    )}
+        </div>
     );
 
     const handleClearList = async () => {
@@ -60,20 +51,31 @@ const ItemsPage = () => {
         await refetch();
     };
 
+    const handleAddItem = async (itemName: string) => {
+        await addItem(itemName, listName);
+        await refetch();
+    };
+
+    const handleGoBack = () => {
+        navigate('/');
+    };
+
     return (
         <>
-            <Appbar
-                handleClearSelected={handleClearSelected}
-                handleRemoveAll={handleClearList}
-                handleGoToListsScreen={() => {
-                    navigate('/');
-                }}
-            />
+            <Appbar />
             <Layout>
                 {isLoading && <LoadingSkeleton />}
                 {isError && errorPageContent}
                 {!isLoading && !isError && data && pageContent}
             </Layout>
+
+            <ToolBar
+                handleAdd={handleAddItem}
+                handleGoBack={handleGoBack}
+                handleClearSelected={handleClearSelected}
+                handleRemoveAll={handleClearList}
+                placeholder="Enter item name..."
+            />
         </>
     );
 };
