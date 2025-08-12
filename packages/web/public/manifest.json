@@ -1,0 +1,16 @@
+{
+  "name": "Shoppingo",
+  "short_name": "Shoppingo",
+  "description": "Shopping list app",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#22c55e",
+  "icons": [
+    {
+      "src": "iconLogo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}

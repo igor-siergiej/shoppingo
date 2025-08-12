@@ -6,6 +6,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
 import ItemsPage from './pages/ItemsPage';
 import ListPage from './pages/ListsPage';
+import { registerPWA } from './pwa';
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -30,6 +31,8 @@ const router = createBrowserRouter([
 const root = ReactDOM.createRoot(
     document.getElementById('root') as HTMLElement
 );
+
+registerPWA();
 
 root.render(
     <QueryClientProvider client={queryClient}>
