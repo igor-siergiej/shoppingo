@@ -6,7 +6,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
 import ItemsPage from './pages/ItemsPage';
 import ListPage from './pages/ListsPage';
-import { registerPWA } from './pwa';
+import { listenForInstallPrompt, registerPWA } from './pwa';
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -33,6 +33,7 @@ const root = ReactDOM.createRoot(
 );
 
 registerPWA();
+listenForInstallPrompt();
 
 root.render(
     <QueryClientProvider client={queryClient}>
