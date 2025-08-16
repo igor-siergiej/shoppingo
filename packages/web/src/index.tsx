@@ -6,6 +6,9 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
 import ItemsPage from './pages/ItemsPage';
 import ListPage from './pages/ListsPage';
+import LoginPage from './pages/LoginPage';
+import { ProtectedRoute } from './components/ProtectedRoute';
+import { RootLayout } from './components/RootLayout';
 import { listenForInstallPrompt, registerPWA } from './pwa';
 
 const queryClient = new QueryClient({
@@ -19,12 +22,30 @@ const queryClient = new QueryClient({
 
 const router = createBrowserRouter([
     {
-        path: '/',
-        element: <ListPage />,
+        path: '/login',
+        element: (
+            <RootLayout showLayout={false}>
+                <LoginPage />
+            </RootLayout>
+        ),
     },
     {
-        path: 'list/:listName',
-        element: <ItemsPage />,
+        path: '/',
+        element: (
+            <ProtectedRoute>
+                <RootLayout />
+            </ProtectedRoute>
+        ),
+        children: [
+            {
+                index: true,
+                element: <ListPage />,
+            },
+            {
+                path: 'list/:listName',
+                element: <ItemsPage />,
+            },
+        ],
     },
 ]);
 

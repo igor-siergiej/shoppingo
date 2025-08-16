@@ -1,8 +1,6 @@
 import { useQuery } from 'react-query';
 
 import { addList, getListsQuery } from '../../api';
-import Appbar from '../../components/Appbar';
-import { Layout } from '../../components/Layout';
 import ListsList from '../../components/ListsList';
 import { ListsSkeleton } from '../../components/LoadingSkeleton';
 import ToolBar from '../../components/ToolBar';
@@ -35,12 +33,9 @@ const ListsPage = () => {
 
     return (
         <>
-            <Appbar />
-            <Layout>
-                {isError && errorPageContent}
-                {isLoading && <ListsSkeleton />}
-                {!isLoading && !isError && pageContent}
-            </Layout>
+            {isError && errorPageContent}
+            {isLoading && <ListsSkeleton />}
+            {!isLoading && !isError && pageContent}
 
             <ToolBar
                 handleAdd={handleAddList}

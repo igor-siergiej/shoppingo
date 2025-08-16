@@ -2,9 +2,7 @@ import { useQuery } from 'react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { addItem, clearList, clearSelected, getListQuery } from '../../api';
-import Appbar from '../../components/Appbar';
 import ItemCheckBoxList from '../../components/ItemCheckBoxList';
-import { Layout } from '../../components/Layout';
 import { ItemsSkeleton } from '../../components/LoadingSkeleton';
 import ToolBar from '../../components/ToolBar';
 
@@ -62,12 +60,9 @@ const ItemsPage = () => {
 
     return (
         <>
-            <Appbar />
-            <Layout>
-                {isLoading && <ItemsSkeleton />}
-                {isError && errorPageContent}
-                {!isLoading && !isError && data && pageContent}
-            </Layout>
+            {isLoading && <ItemsSkeleton />}
+            {isError && errorPageContent}
+            {!isLoading && !isError && data && pageContent}
 
             <ToolBar
                 handleAdd={handleAddItem}
