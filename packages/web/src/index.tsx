@@ -7,6 +7,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import ItemsPage from './pages/ItemsPage';
 import ListPage from './pages/ListsPage';
 import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { RootLayout } from './components/RootLayout';
 import { listenForInstallPrompt, registerPWA } from './pwa';
@@ -26,6 +27,14 @@ const router = createBrowserRouter([
         element: (
             <RootLayout showLayout={false}>
                 <LoginPage />
+            </RootLayout>
+        ),
+    },
+    {
+        path: '/register',
+        element: (
+            <RootLayout showLayout={false}>
+                <RegisterPage />
             </RootLayout>
         ),
     },
