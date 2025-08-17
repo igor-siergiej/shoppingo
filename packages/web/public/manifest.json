@@ -7,6 +7,12 @@
   "background_color": "#ffffff",
   "theme_color": "#22c55e",
   "scope": "/",
+  "lang": "en",
+  "dir": "ltr",
+  "orientation": "portrait-primary",
+  "categories": ["productivity", "utilities"],
+  "prefer_related_applications": false,
+  "related_applications": [],
   "icons": [
     {
       "src": "/iconLogo.png",
