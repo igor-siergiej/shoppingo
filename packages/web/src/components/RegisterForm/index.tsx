@@ -3,7 +3,7 @@ import { Button } from "../ui/button"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../ui/card"
 import { Input } from "../ui/input"
 import { Label } from "../ui/label"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
 import { useAuth } from "../../context/AuthContext"
 
