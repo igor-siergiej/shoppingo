@@ -4,18 +4,21 @@ import { CollectionName } from '../../database/types';
 import { DependencyContainer } from '../../lib/dependencyContainer';
 import { DependencyToken } from '../../lib/dependencyContainer/types';
 
-const getList = async (req: Request, res: Response) => {
-    const { name } = req.params;
+const deleteList = async (req: Request, res: Response) => {
+    const { title } = req.params;
 
     const database = DependencyContainer.getInstance().resolve(DependencyToken.Database);
 
-    // TODO: do some actual error handling maybe lol
+    if (!database) {
+        res.status(500).json({ error: 'Database not available' });
+        return;
+    }
 
     const collection = database.getCollection(CollectionName.Lists);
 
-    const list = await collection.deleteOne({ name });
+    const list = await collection.deleteOne({ title });
 
     res.send(list).status(200);
 };
 
-export default getList;
+export default deleteList;

@@ -6,7 +6,14 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
 import ItemsPage from './pages/ItemsPage';
 import ListPage from './pages/ListsPage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import { ProtectedRoute } from './components/ProtectedRoute';
+import { RootLayout } from './components/RootLayout';
+import { AuthProvider } from './context/AuthContext';
 import { listenForInstallPrompt, registerPWA } from './pwa';
+import { UserProvider } from './context/UserContext';
+import AppInitializer from './components/AppInitializer';
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -19,12 +26,38 @@ const queryClient = new QueryClient({
 
 const router = createBrowserRouter([
     {
-        path: '/',
-        element: <ListPage />,
+        path: '/login',
+        element: (
+            <RootLayout showLayout={false}>
+                <LoginPage />
+            </RootLayout>
+        ),
     },
     {
-        path: 'list/:listName',
-        element: <ItemsPage />,
+        path: '/register',
+        element: (
+            <RootLayout showLayout={false}>
+                <RegisterPage />
+            </RootLayout>
+        ),
+    },
+    {
+        path: '/',
+        element: (
+            <ProtectedRoute>
+                <RootLayout />
+            </ProtectedRoute>
+        ),
+        children: [
+            {
+                index: true,
+                element: <ListPage />,
+            },
+            {
+                path: 'list/:listTitle',
+                element: <ItemsPage />,
+            },
+        ],
     },
 ]);
 
@@ -37,6 +70,12 @@ listenForInstallPrompt();
 
 root.render(
     <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
+        <UserProvider>
+             <AuthProvider>
+                <AppInitializer>
+                    <RouterProvider router={router} />
+                </AppInitializer>
+            </AuthProvider>
+        </UserProvider>
     </QueryClientProvider>
 );

@@ -5,7 +5,7 @@ import { DependencyContainer } from '../../lib/dependencyContainer';
 import { DependencyToken } from '../../lib/dependencyContainer/types';
 
 const getList = async (req: Request, res: Response) => {
-    const { name } = req.params;
+    const { title } = req.params;
 
     const database = DependencyContainer.getInstance().resolve(DependencyToken.Database);
 
@@ -13,7 +13,7 @@ const getList = async (req: Request, res: Response) => {
 
     const collection = database.getCollection(CollectionName.Lists);
 
-    const list = await collection.findOne({ name });
+    const list = await collection.findOne({ title });
 
     res.send(list.items).status(200);
 };

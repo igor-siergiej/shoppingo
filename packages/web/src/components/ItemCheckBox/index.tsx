@@ -11,24 +11,24 @@ import { deleteItem, updateItem } from '../../api';
 
 export interface ItemCheckBoxProps {
     item: Item;
-    listName: string;
+    listTitle: string;
     refetch: () => void;
 }
 
-const ItemCheckBox = ({ item, listName, refetch }: ItemCheckBoxProps) => {
+const ItemCheckBox = ({ item, listTitle, refetch }: ItemCheckBoxProps) => {
     const [isUpdateLoading, setIsUpdateLoading] = useState(false);
     const [isDeleteLoading, setIsDeleteLoading] = useState(false);
 
     const handleUpdateItem = async () => {
         setIsUpdateLoading(true);
-        await updateItem(item.name, !item.isSelected, listName);
+        await updateItem(item.name, !item.isSelected, listTitle);
         await refetch();
         setIsUpdateLoading(false);
     };
 
     const handleDeleteItem = async () => {
         setIsDeleteLoading(true);
-        await deleteItem(item.name, listName);
+        await deleteItem(item.name, listTitle);
         await refetch();
         setIsDeleteLoading(false);
     };

@@ -1,13 +1,13 @@
 import { useQuery } from 'react-query';
 
 import { addList, getListsQuery } from '../../api';
-import Appbar from '../../components/Appbar';
-import { Layout } from '../../components/Layout';
 import ListsList from '../../components/ListsList';
 import { ListsSkeleton } from '../../components/LoadingSkeleton';
 import ToolBar from '../../components/ToolBar';
+import { useUser } from '../../context/UserContext';
 
 const ListsPage = () => {
+    const { user } = useUser();
     const { data, isLoading, isError, refetch } = useQuery({
         ...getListsQuery(),
     });
@@ -26,21 +26,26 @@ const ListsPage = () => {
         </div>
     );
 
-    const handleAddList = async (listName: string) => {
-        await addList(listName);
-        await refetch();
+    const handleAddList = async (listTitle: string) => {
+        if (!user) {
+            console.error('No user logged in');
+            return;
+        }
+        try {
+            await addList(listTitle, user);
+            await refetch();
+        } catch (error) {
+            console.error('Error adding list:', error);
+        }
     };
 
     const errorPageContent = <div>Error has occured</div>;
 
     return (
         <>
-            <Appbar />
-            <Layout>
-                {isError && errorPageContent}
-                {isLoading && <ListsSkeleton />}
-                {!isLoading && !isError && pageContent}
-            </Layout>
+            {isError && errorPageContent}
+            {isLoading && <ListsSkeleton />}
+            {!isLoading && !isError && pageContent}
 
             <ToolBar
                 handleAdd={handleAddList}

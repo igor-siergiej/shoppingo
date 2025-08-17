@@ -1,4 +1,4 @@
-import { List } from '@shoppingo/types';
+import { ListResponse } from '@shoppingo/types';
 import { X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -10,9 +10,9 @@ import { ListsListProps } from './types';
 
 const ListsList = ({ lists, refetch }: ListsListProps) => {
     const navigate = useNavigate();
-    const renderedOutput = lists.map((list: List) => (
+    const renderedOutput = lists.map((list: ListResponse) => (
         <Card
-            key={list.name}
+            key={list.title}
             className="mb-2 transition-all duration-200 bg-background hover:bg-accent/50 py-0"
         >
             <CardContent className="flex items-center justify-between p-0.5 ">
@@ -21,10 +21,10 @@ const ListsList = ({ lists, refetch }: ListsListProps) => {
                         variant="ghost"
                         className="w-full justify-start text-left text-base font-medium"
                         onClick={() => {
-                            navigate(`/list/${list.name}`);
+                            navigate(`/list/${list.title}`);
                         }}
                     >
-                        {list.name}
+                        {list.title}
                     </Button>
                 </div>
 
@@ -33,7 +33,7 @@ const ListsList = ({ lists, refetch }: ListsListProps) => {
                         variant="ghost"
                         size="icon"
                         onClick={async () => {
-                            await deleteList(list.name);
+                            await deleteList(list.title);
                             refetch();
                         }}
                         className="h-12 w-12 hover:bg-destructive/10 hover:text-destructive"

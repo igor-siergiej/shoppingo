@@ -2,22 +2,20 @@ import { useQuery } from 'react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { addItem, clearList, clearSelected, getListQuery } from '../../api';
-import Appbar from '../../components/Appbar';
 import ItemCheckBoxList from '../../components/ItemCheckBoxList';
-import { Layout } from '../../components/Layout';
 import { ItemsSkeleton } from '../../components/LoadingSkeleton';
 import ToolBar from '../../components/ToolBar';
 
 const ItemsPage = () => {
-    const { listName } = useParams();
+    const { listTitle } = useParams();
     const navigate = useNavigate();
 
     const { data, isLoading, isError, refetch } = useQuery({
-        ...getListQuery(listName),
+        ...getListQuery(listTitle),
     });
 
-    if (!listName) {
-        return <div>Need a valid list name</div>;
+    if (!listTitle) {
+        return <div>Need a valid list title</div>;
     }
 
     const errorPageContent = <div>Error fetching data.</div>;
@@ -29,7 +27,7 @@ const ItemsPage = () => {
                         <ItemCheckBoxList
                             items={data}
                             refetch={refetch}
-                            listName={listName}
+                            listTitle={listTitle}
                         >
                         </ItemCheckBoxList>
                     )
@@ -42,17 +40,17 @@ const ItemsPage = () => {
     );
 
     const handleClearList = async () => {
-        await clearList(listName);
+        await clearList(listTitle);
         await refetch();
     };
 
     const handleClearSelected = async () => {
-        await clearSelected(listName);
+        await clearSelected(listTitle);
         await refetch();
     };
 
     const handleAddItem = async (itemName: string) => {
-        await addItem(itemName, listName);
+        await addItem(itemName, listTitle);
         await refetch();
     };
 
@@ -62,12 +60,9 @@ const ItemsPage = () => {
 
     return (
         <>
-            <Appbar />
-            <Layout>
-                {isLoading && <ItemsSkeleton />}
-                {isError && errorPageContent}
-                {!isLoading && !isError && data && pageContent}
-            </Layout>
+            {isLoading && <ItemsSkeleton />}
+            {isError && errorPageContent}
+            {!isLoading && !isError && data && pageContent}
 
             <ToolBar
                 handleAdd={handleAddItem}
