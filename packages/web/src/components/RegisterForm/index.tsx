@@ -3,8 +3,9 @@ import { Button } from "../ui/button"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../ui/card"
 import { Input } from "../ui/input"
 import { Label } from "../ui/label"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
+import { useAuth } from "../../context/AuthContext"
 
 export function RegisterForm({
   className,
@@ -13,34 +14,58 @@ export function RegisterForm({
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [repeatPassword, setRepeatPassword] = useState("");
-  const [error, setError] = useState("");
+  const [validationError, setValidationError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
+  const { login } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setValidationError("");
+    setError(null);
     
     // Validate passwords match
     if (password !== repeatPassword) {
-      setError("Passwords do not match");
+      setValidationError("Passwords do not match");
       return;
     }
     
     // Validate password length
     if (password.length < 6) {
-      setError("Password must be at least 6 characters long");
+      setValidationError("Password must be at least 6 characters long");
       return;
     }
     
-    // Simple registration logic - in a real app, you'd send this to your backend
-    if (username && password) {
-      // Set authentication state (in a real app, you'd wait for backend confirmation)
-      localStorage.setItem('isAuthenticated', 'true');
+    setIsLoading(true);
+    
+    try {
+      const response = await fetch(`${import.meta.env.VITE_AUTH_URL}/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ username, password }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Registration failed');
+      }
+
+      const data = await response.json();
+      login(data.token);
       
       // Redirect to the page they were trying to access, or home
       const from = location.state?.from?.pathname || '/';
       navigate(from, { replace: true });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Registration failed';
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -89,14 +114,14 @@ export function RegisterForm({
                   required 
                 />
               </div>
-              {error && (
+              {(validationError || error) && (
                 <div className="text-sm text-red-600 bg-red-50 p-3 rounded-md">
-                  {error}
+                  {validationError || error}
                 </div>
               )}
               <div className="flex flex-col gap-3">
-                <Button type="submit" className="w-full">
-                  Create Account
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? 'Creating Account...' : 'Create Account'}
                 </Button>
               </div>
             </div>

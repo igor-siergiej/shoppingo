@@ -10,7 +10,10 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { RootLayout } from './components/RootLayout';
+import { AuthProvider } from './context/AuthContext';
 import { listenForInstallPrompt, registerPWA } from './pwa';
+import { UserProvider } from './context/UserContext';
+import AppInitializer from './components/AppInitializer';
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -67,6 +70,12 @@ listenForInstallPrompt();
 
 root.render(
     <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
+        <UserProvider>
+             <AuthProvider>
+                <AppInitializer>
+                    <RouterProvider router={router} />
+                </AppInitializer>
+            </AuthProvider>
+        </UserProvider>
     </QueryClientProvider>
 );

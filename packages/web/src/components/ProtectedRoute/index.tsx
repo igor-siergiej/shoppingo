@@ -1,4 +1,5 @@
 import { Navigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 interface ProtectedRouteProps {
     children: React.ReactNode;
@@ -6,10 +7,7 @@ interface ProtectedRouteProps {
 
 export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     const location = useLocation();
-    
-    // For now, we'll use a simple localStorage check
-    // In a real app, you'd want to check against your auth service
-    const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+    const { isAuthenticated } = useAuth();
     
     if (!isAuthenticated) {
         // Redirect to login page with the current location as the return path

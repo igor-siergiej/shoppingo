@@ -1,12 +1,14 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../ui/button';
 import { LogOut } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 const Appbar = () => {
     const navigate = useNavigate();
+    const { logout } = useAuth();
 
-    const handleLogout = () => {
-        localStorage.removeItem('isAuthenticated');
+    const handleLogout = async () => {
+        await logout();
         navigate('/login');
     };
 
