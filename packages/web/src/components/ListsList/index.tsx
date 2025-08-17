@@ -1,4 +1,4 @@
-import { List } from '@shoppingo/types';
+import { ListResponse } from '@shoppingo/types';
 import { X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -10,7 +10,7 @@ import { ListsListProps } from './types';
 
 const ListsList = ({ lists, refetch }: ListsListProps) => {
     const navigate = useNavigate();
-    const renderedOutput = lists.map((list: List) => (
+    const renderedOutput = lists.map((list: ListResponse) => (
         <Card
             key={list.title}
             className="mb-2 transition-all duration-200 bg-background hover:bg-accent/50 py-0"

@@ -4,8 +4,10 @@ import { addList, getListsQuery } from '../../api';
 import ListsList from '../../components/ListsList';
 import { ListsSkeleton } from '../../components/LoadingSkeleton';
 import ToolBar from '../../components/ToolBar';
+import { useUser } from '../../context/UserContext';
 
 const ListsPage = () => {
+    const { user } = useUser();
     const { data, isLoading, isError, refetch } = useQuery({
         ...getListsQuery(),
     });
@@ -25,8 +27,16 @@ const ListsPage = () => {
     );
 
     const handleAddList = async (listTitle: string) => {
-        await addList(listTitle);
-        await refetch();
+        if (!user) {
+            console.error('No user logged in');
+            return;
+        }
+        try {
+            await addList(listTitle, user);
+            await refetch();
+        } catch (error) {
+            console.error('Error adding list:', error);
+        }
     };
 
     const errorPageContent = <div>Error has occured</div>;

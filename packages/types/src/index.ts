@@ -13,6 +13,14 @@ export interface List {
     users: Array<User>;
 }
 
+export interface ListResponse {
+    id: string;
+    title: string;
+    dateAdded: Date;
+    items: Array<Item>;
+    users: Array<{ username: string }>;
+}
+
 export interface User {
     id: string;
     username: string;

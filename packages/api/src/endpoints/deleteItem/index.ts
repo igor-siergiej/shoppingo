@@ -5,7 +5,7 @@ import { DependencyContainer } from '../../lib/dependencyContainer';
 import { DependencyToken } from '../../lib/dependencyContainer/types';
 
 const deleteItem = async (req: Request, res: Response) => {
-    const { listTitle, itemName } = req.params;
+    const { title, itemName } = req.params;
 
     const database = DependencyContainer.getInstance().resolve(DependencyToken.Database);
 
@@ -16,7 +16,7 @@ const deleteItem = async (req: Request, res: Response) => {
 
     const collection = database.getCollection(CollectionName.Lists);
 
-    const list = await collection.findOne({ title: listTitle });
+    const list = await collection.findOne({ title });
 
     if (!list) {
         res.status(404).json({ error: 'List not found' });
@@ -30,7 +30,7 @@ const deleteItem = async (req: Request, res: Response) => {
         items: updatedItems
     };
 
-    const replacedList = await collection.findOneAndReplace({ title: listTitle }, updatedList);
+    const replacedList = await collection.findOneAndReplace({ title }, updatedList);
 
     res.send(replacedList).status(200);
 };

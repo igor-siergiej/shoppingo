@@ -21,7 +21,6 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
     const updateUserFromToken = useCallback((token: string) => {
         const userInfo = extractUserFromToken(token);
-        console.log('userInfo', userInfo);
         if (userInfo) {
             setUser(userInfo);
         } else {

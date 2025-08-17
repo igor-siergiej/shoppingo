@@ -1,6 +1,6 @@
-import { List } from '@shoppingo/types';
+import { ListResponse } from '@shoppingo/types';
 
 export interface ListsListProps {
-    lists: Array<List>;
+    lists: Array<ListResponse>;
     refetch: () => void;
 }

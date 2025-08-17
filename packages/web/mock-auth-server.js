@@ -15,7 +15,17 @@ app.use(bodyParser.json());
 const users = new Map();
 
 const generateMockToken = (username) => {
-    return `mock-jwt-token-${username}-${Date.now()}`;
+    // Create a proper JWT-like structure with user data
+    const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+    const payload = btoa(JSON.stringify({
+        username: username,
+        id: `user-${username}`,
+        exp: Math.floor(Date.now() / 1000) + 3600, // 1 hour from now
+        iat: Math.floor(Date.now() / 1000)
+    }));
+    const signature = btoa('mock-signature');
+    
+    return `${header}.${payload}.${signature}`;
 };
 
 app.post('/login', (req, res) => {
@@ -69,7 +79,8 @@ app.post('/logout', (req, res) => {
 app.post('/refresh', (req, res) => {
     console.log('Mock token refresh request');
     
-    const newToken = `mock-jwt-token-refreshed-${Date.now()}`;
+    // Generate a new token with a default user (you might want to extract from the request)
+    const newToken = generateMockToken('mockuser');
     
     res.status(200).json({
         accessToken: newToken,

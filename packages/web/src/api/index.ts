@@ -1,4 +1,4 @@
-import { Item, List } from '@shoppingo/types';
+import { Item, ListResponse, User } from '@shoppingo/types';
 
 import { makeRequest } from './makeRequest';
 import { MethodType } from './types';
@@ -21,7 +21,7 @@ export const getListsQuery = () => ({
     queryFn: async () => await getLists(),
 });
 
-export const getLists = async (): Promise<Array<List>> => {
+export const getLists = async (): Promise<Array<ListResponse>> => {
     return await makeRequest({
         pathname: '/api/lists',
         method: MethodType.GET,
@@ -29,17 +29,25 @@ export const getLists = async (): Promise<Array<List>> => {
     });
 };
 
-export const addList = async (listTitle: string): Promise<unknown> => {
+export const addList = async (listTitle: string, user: User): Promise<unknown> => {
     const dateAdded = generateTimestamp(new Date());
-    return await makeRequest({
-        pathname: '/api/lists',
-        method: MethodType.PUT,
-        operationString: 'add list',
-        body: JSON.stringify({
-            title: listTitle,
-            dateAdded,
-        }),
-    });
+    const requestBody = {
+        title: listTitle,
+        dateAdded,
+        user,
+    };
+    
+    try {
+        const result = await makeRequest({
+            pathname: '/api/lists',
+            method: MethodType.PUT,
+            operationString: 'add list',
+            body: JSON.stringify(requestBody),
+        });
+        return result;
+    } catch (error) {
+        throw error;
+    }
 };
 
 export const addItem = async (

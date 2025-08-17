@@ -6,16 +6,19 @@ import { DependencyToken } from '../../lib/dependencyContainer/types';
 import { ObjectId } from 'mongodb';
 
 const addItem = async (req: Request, res: Response) => {
-    const { listTitle } = req.params;
+    const { title } = req.params;
     const { itemName, dateAdded } = req.body;
 
     const database = DependencyContainer.getInstance().resolve(DependencyToken.Database);
 
-    // TODO: do some actual error handling maybe lol
+    if (!database) {
+        res.status(500).json({ error: 'Database not available' });
+        return;
+    }
 
     const collection = database.getCollection(CollectionName.Lists);
 
-    const list = await collection.findOneAndUpdate({ title: listTitle },
+    const list = await collection.findOneAndUpdate({ title },
         { $push: { items: { id: (new ObjectId()).toString(), name: itemName, dateAdded, isSelected: false } } });
 
     res.send(list).status(200);
