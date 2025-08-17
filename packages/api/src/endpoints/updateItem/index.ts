@@ -5,14 +5,14 @@ import { DependencyContainer } from '../../lib/dependencyContainer';
 import { DependencyToken } from '../../lib/dependencyContainer/types';
 
 const updateItem = async (req: Request, res: Response) => {
-    const { listName, itemName } = req.params;
+    const { listTitle, itemName } = req.params;
     const { isSelected } = req.body;
 
     const database = DependencyContainer.getInstance().resolve(DependencyToken.Database);
 
     const collection = database.getCollection(CollectionName.Lists);
 
-    const list = await collection.findOne({ name: listName });
+    const list = await collection.findOne({ title: listTitle });
 
     const updatedItems = list.items.map((item) => {
         if (item.name === itemName) {
@@ -30,7 +30,7 @@ const updateItem = async (req: Request, res: Response) => {
         items: updatedItems
     };
 
-    await collection.findOneAndReplace({ name: listName }, updatedList);
+    await collection.findOneAndReplace({ title: listTitle }, updatedList);
 
     res.status(200).send(JSON.stringify('Updated Successfully'));
 };

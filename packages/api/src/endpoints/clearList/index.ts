@@ -5,13 +5,13 @@ import { DependencyContainer } from '../../lib/dependencyContainer';
 import { DependencyToken } from '../../lib/dependencyContainer/types';
 
 const clearList = async (req: Request, res: Response) => {
-    const { listName } = req.params;
+    const { listTitle } = req.params;
 
     const database = DependencyContainer.getInstance().resolve(DependencyToken.Database);
 
     const collection = database.getCollection(CollectionName.Lists);
 
-    const result = await collection.findOneAndUpdate({ name: listName }, { $set: { items: [] } });
+    const result = await collection.findOneAndUpdate({ title: listTitle }, { $set: { items: [] } });
 
     res.send(result).status(200);
 };

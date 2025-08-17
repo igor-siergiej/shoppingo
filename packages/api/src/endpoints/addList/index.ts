@@ -1,23 +1,24 @@
 import { List } from '@shoppingo/types';
 import { Request, Response } from 'express';
-import { ObjectId } from 'mongodb';
 
 import { CollectionName } from '../../database/types';
 import { DependencyContainer } from '../../lib/dependencyContainer';
 import { DependencyToken } from '../../lib/dependencyContainer/types';
+import { ObjectId } from 'mongodb';
 
 const addList = async (req: Request, res: Response) => {
-    const { name, dateAdded } = req.body;
+    const { title, dateAdded } = req.body;
 
     const database = DependencyContainer.getInstance().resolve(DependencyToken.Database);
 
     const collection = database.getCollection(CollectionName.Lists);
 
     const list: List = {
-        _id: new ObjectId(),
-        name,
+        id: (new ObjectId()).toString(),
+        title,
         dateAdded,
-        items: []
+        items: [],
+        users: []
     };
 
     const result = await collection.insertOne(list);

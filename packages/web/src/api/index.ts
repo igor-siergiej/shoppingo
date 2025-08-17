@@ -3,14 +3,14 @@ import { Item, List } from '@shoppingo/types';
 import { makeRequest } from './makeRequest';
 import { MethodType } from './types';
 
-export const getListQuery = (listName: string) => ({
-    queryKey: [listName],
-    queryFn: async () => await getList(listName),
+export const getListQuery = (listTitle: string) => ({
+    queryKey: [listTitle],
+    queryFn: async () => await getList(listTitle),
 });
 
-export const getList = async (listName: string): Promise<Array<Item>> => {
+export const getList = async (listTitle: string): Promise<Array<Item>> => {
     return await makeRequest({
-        pathname: `/api/lists/${listName}`,
+        pathname: `/api/lists/${listTitle}`,
         method: MethodType.GET,
         operationString: 'get list',
     });
@@ -29,14 +29,14 @@ export const getLists = async (): Promise<Array<List>> => {
     });
 };
 
-export const addList = async (listName: string): Promise<unknown> => {
+export const addList = async (listTitle: string): Promise<unknown> => {
     const dateAdded = generateTimestamp(new Date());
     return await makeRequest({
         pathname: '/api/lists',
         method: MethodType.PUT,
         operationString: 'add list',
         body: JSON.stringify({
-            name: listName,
+            title: listTitle,
             dateAdded,
         }),
     });
@@ -44,11 +44,11 @@ export const addList = async (listName: string): Promise<unknown> => {
 
 export const addItem = async (
     itemName: string,
-    listName: string
+    listTitle: string
 ): Promise<unknown> => {
     const dateAdded = generateTimestamp(new Date());
     return await makeRequest({
-        pathname: `/api/lists/${listName}/items`,
+        pathname: `/api/lists/${listTitle}/items`,
         method: MethodType.PUT,
         operationString: 'add item',
         body: JSON.stringify({
@@ -61,10 +61,10 @@ export const addItem = async (
 export const updateItem = async (
     itemName: string,
     isSelected: boolean,
-    listName: string
+    listTitle: string
 ) => {
     return await makeRequest({
-        pathname: `/api/lists/${listName}/items/${itemName}`,
+        pathname: `/api/lists/${listTitle}/items/${itemName}`,
         method: MethodType.POST,
         operationString: 'update item',
         body: JSON.stringify({
@@ -73,33 +73,33 @@ export const updateItem = async (
     });
 };
 
-export const deleteItem = async (itemName: string, listName: string) => {
+export const deleteItem = async (itemName: string, listTitle: string) => {
     return await makeRequest({
-        pathname: `/api/lists/${listName}/items/${itemName}`,
+        pathname: `/api/lists/${listTitle}/items/${itemName}`,
         method: MethodType.DELETE,
         operationString: 'delete item',
     });
 };
 
-export const deleteList = async (listName: string) => {
+export const deleteList = async (listTitle: string) => {
     return await makeRequest({
-        pathname: `/api/lists/${listName}`,
+        pathname: `/api/lists/${listTitle}`,
         method: MethodType.DELETE,
         operationString: 'delete list',
     });
 };
 
-export const clearList = async (listName: string) => {
+export const clearList = async (listTitle: string) => {
     return await makeRequest({
-        pathname: `/api/lists/${listName}/clear`,
+        pathname: `/api/lists/${listTitle}/clear`,
         method: MethodType.DELETE,
         operationString: 'clear the list',
     });
 };
 
-export const clearSelected = async (listName: string) => {
+export const clearSelected = async (listTitle: string) => {
     return await makeRequest({
-        pathname: `/api/lists/${listName}/clearSelected`,
+        pathname: `/api/lists/${listTitle}/clearSelected`,
         method: MethodType.DELETE,
         operationString: 'clear selected items'
     });

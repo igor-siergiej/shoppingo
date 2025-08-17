@@ -5,13 +5,13 @@ import { DependencyContainer } from '../../lib/dependencyContainer';
 import { DependencyToken } from '../../lib/dependencyContainer/types';
 
 const deleteSelected = async (req: Request, res: Response) => {
-    const { listName } = req.params;
+    const { listTitle } = req.params;
 
     const database = DependencyContainer.getInstance().resolve(DependencyToken.Database);
 
     const collection = database.getCollection(CollectionName.Lists);
 
-    const list = await collection.findOne({ name: listName });
+    const list = await collection.findOne({ title: listTitle });
 
     const updatedItems = list.items.reduce((acc, item) => {
         if (item.isSelected) {
@@ -26,7 +26,7 @@ const deleteSelected = async (req: Request, res: Response) => {
         items: updatedItems
     };
 
-    const replacedList = await collection.findOneAndReplace({ name: listName }, updatedList);
+    const replacedList = await collection.findOneAndReplace({ title: listTitle }, updatedList);
 
     res.send(replacedList).status(200);
 };

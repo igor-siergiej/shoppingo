@@ -24,8 +24,8 @@ const ListsPage = () => {
         </div>
     );
 
-    const handleAddList = async (listName: string) => {
-        await addList(listName);
+    const handleAddList = async (listTitle: string) => {
+        await addList(listTitle);
         await refetch();
     };
 

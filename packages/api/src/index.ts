@@ -65,20 +65,20 @@ export const onStartup = async () => {
         );
 
         // API routes
-        app.get('/api/lists/:name', getList);
+        app.get('/api/lists/:title', getList);
         app.get('/api/lists', getLists);
-        app.delete('/api/lists/:name', deleteList);
+        app.delete('/api/lists/:title', deleteList);
         app.put('/api/lists', addList);
 
-        app.put('/api/lists/:listName/items', addItem);
+        app.put('/api/lists/:listTitle/items', addItem);
 
-        app.post('/api/lists/:listName/items/:itemName', updateItem);
+        app.post('/api/lists/:listTitle/items/:itemName', updateItem);
 
-        app.delete('/api/lists/:listName/items/:itemName', deleteItem);
+        app.delete('/api/lists/:listTitle/items/:itemName', deleteItem);
 
-        app.delete('/api/lists/:listName/clear', clearList);
+        app.delete('/api/lists/:listTitle/clear', clearList);
 
-        app.delete('/api/lists/:listName/clearSelected', deleteSelected);
+        app.delete('/api/lists/:listTitle/clearSelected', deleteSelected);
 
         app.listen(port, () => {
             console.log(`Shoppingo API server running on port ${port}`);
