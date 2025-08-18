@@ -10,7 +10,9 @@
         "start:web:with-mock": "dotenv -e .env -- yarn workspace @shoppingo/web start:with-mock",
         "start:api": "dotenv -e .env -- yarn workspace @shoppingo/api start",
         "start": "yarn start:web & yarn start:api",
-        "start:with-mock": "yarn start:web:with-mock & yarn start:api"
+        "start:with-mock": "yarn start:web:with-mock & yarn start:api",
+        "lint": "eslint . --ext .ts,.tsx",
+        "lint:fix": "eslint . --ext .ts,.tsx --fix"
     },
     "workspaces": [
         "packages/*"

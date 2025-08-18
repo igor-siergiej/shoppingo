@@ -16,6 +16,7 @@ export const tryRefreshToken = async (): Promise<string | null> => {
         }
 
         const data: RefreshTokenResponse = await response.json();
+
         return data.accessToken;
     } catch {
         return null;
@@ -43,6 +44,7 @@ export const refreshAccessToken = async (): Promise<string> => {
         }
 
         const data: RefreshTokenResponse = await response.json();
+
         return data.accessToken;
     } catch (error) {
         clearRefreshTokenCookie();
@@ -61,8 +63,10 @@ export const withTokenRefresh = async <T>(
         if (error instanceof Error && error.message.includes('401')) {
             try {
                 const newAccessToken = await tryRefreshToken();
+
                 if (newAccessToken) {
                     onTokenRefresh(newAccessToken);
+
                     return await requestFn();
                 } else {
                     onTokenClear();
@@ -75,6 +79,7 @@ export const withTokenRefresh = async <T>(
                 throw refreshError;
             }
         }
+
         throw error;
     }
 };

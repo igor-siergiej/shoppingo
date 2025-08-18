@@ -36,18 +36,15 @@ export const addList = async (listTitle: string, user: User): Promise<unknown> =
         dateAdded,
         user,
     };
-    
-    try {
-        const result = await makeRequest({
-            pathname: '/api/lists',
-            method: MethodType.PUT,
-            operationString: 'add list',
-            body: JSON.stringify(requestBody),
-        });
-        return result;
-    } catch (error) {
-        throw error;
-    }
+
+    const result = await makeRequest({
+        pathname: '/api/lists',
+        method: MethodType.PUT,
+        operationString: 'add list',
+        body: JSON.stringify(requestBody)
+    });
+
+    return result;
 };
 
 export const addItem = async (
@@ -55,6 +52,7 @@ export const addItem = async (
     listTitle: string
 ): Promise<unknown> => {
     const dateAdded = generateTimestamp(new Date());
+
     return await makeRequest({
         pathname: `/api/lists/${listTitle}/items`,
         method: MethodType.PUT,
@@ -120,5 +118,6 @@ const generateTimestamp = (now: Date): string => {
     const hours = now.getHours().toString().padStart(2, '0');
     const minutes = now.getMinutes().toString().padStart(2, '0');
     const seconds = now.getSeconds().toString().padStart(2, '0');
+
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 };

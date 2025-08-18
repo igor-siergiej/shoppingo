@@ -44,6 +44,7 @@ const ListsList = ({ lists, refetch }: ListsListProps) => {
             </CardContent>
         </Card>
     ));
+
     return renderedOutput;
 };
 

@@ -64,7 +64,9 @@ export const useTokenRefresh = () => {
 
         try {
             const newAccessToken = await refreshPromiseRef.current;
+
             refreshPromiseRef.current = null;
+
             return newAccessToken;
         } catch (error) {
             refreshPromiseRef.current = null;
