@@ -16,6 +16,7 @@ const ItemCheckBoxList = ({
             key={index}
         />
     ));
+
     return renderedOutput;
 };
 

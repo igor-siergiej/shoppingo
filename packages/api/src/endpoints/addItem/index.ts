@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
+import { ObjectId } from 'mongodb';
 
 import { CollectionName } from '../../database/types';
 import { DependencyContainer } from '../../lib/dependencyContainer';
 import { DependencyToken } from '../../lib/dependencyContainer/types';
-import { ObjectId } from 'mongodb';
 
 const addItem = async (req: Request, res: Response) => {
     const { title } = req.params;
@@ -13,6 +13,7 @@ const addItem = async (req: Request, res: Response) => {
 
     if (!database) {
         res.status(500).json({ error: 'Database not available' });
+
         return;
     }
 

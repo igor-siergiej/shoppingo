@@ -11,6 +11,7 @@ const clearList = async (req: Request, res: Response) => {
 
     if (!database) {
         res.status(500).json({ error: 'Database not available' });
+
         return;
     }
 

@@ -39,8 +39,10 @@ const AddItemDrawer = ({ handleAdd, placeholder = 'Enter item name...' }: AddIte
     const handleSubmit = async () => {
         if (validateForm()) {
             setError(true);
+
             return;
         }
+
         await handleAdd(newName.trim());
         setNewName('');
         setError(false);
