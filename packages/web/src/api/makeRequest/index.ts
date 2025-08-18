@@ -5,9 +5,18 @@ export const makeRequest = async ({
     method,
     operationString,
     body,
+    queryParams,
 }: MakeRequestProps) => {
     try {
-        const response = await fetch(pathname, {
+        let url = pathname;
+
+        if (queryParams) {
+            const searchParams = new URLSearchParams(queryParams);
+
+            url = `${pathname}?${searchParams.toString()}`;
+        }
+
+        const response = await fetch(url, {
             method: method,
             headers: {
                 'Content-Type': 'application/json',

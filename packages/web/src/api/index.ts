@@ -16,14 +16,14 @@ export const getList = async (listTitle: string): Promise<Array<Item>> => {
     });
 };
 
-export const getListsQuery = () => ({
-    queryKey: ['lists'],
-    queryFn: async () => await getLists(),
+export const getListsQuery = (userId: string) => ({
+    queryKey: ['lists', userId],
+    queryFn: async () => await getLists(userId),
 });
 
-export const getLists = async (): Promise<Array<ListResponse>> => {
+export const getLists = async (userId: string): Promise<Array<ListResponse>> => {
     return await makeRequest({
-        pathname: '/api/lists',
+        pathname: `/api/lists/${userId}`,
         method: MethodType.GET,
         operationString: 'get lists',
     });

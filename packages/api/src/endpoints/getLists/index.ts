@@ -6,6 +6,14 @@ import { DependencyContainer } from '../../lib/dependencyContainer';
 import { DependencyToken } from '../../lib/dependencyContainer/types';
 
 const getLists = async (req: Request, res: Response) => {
+    const { userId } = req.params;
+
+    if (!userId) {
+        res.status(400).json({ error: 'userId is required' });
+
+        return;
+    }
+
     const database = DependencyContainer.getInstance().resolve(DependencyToken.Database);
 
     if (!database) {
@@ -16,7 +24,7 @@ const getLists = async (req: Request, res: Response) => {
 
     const collection = database.getCollection(CollectionName.Lists);
 
-    const results = await collection.find({}).toArray();
+    const results = await collection.find({ 'users.id': userId }).toArray();
 
     const maskedResults: Array<ListResponse> = results.map(list => ({
         ...list,

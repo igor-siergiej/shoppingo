@@ -3,6 +3,7 @@ export interface MakeRequestProps {
     method: MethodType;
     operationString: string;
     body?: BodyInit;
+    queryParams?: Record<string, string>;
 }
 
 export enum MethodType {

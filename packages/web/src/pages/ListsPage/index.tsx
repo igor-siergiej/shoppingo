@@ -9,8 +9,13 @@ import { useUser } from '../../context/UserContext';
 const ListsPage = () => {
     const { user } = useUser();
     const { data, isLoading, isError, refetch } = useQuery({
-        ...getListsQuery(),
+        ...getListsQuery(user?.id || ''),
+        enabled: !!user?.id,
     });
+
+    if (!user?.id) {
+        return <div>User not available</div>;
+    }
 
     const pageContent = (
         <div className="flex flex-col">
