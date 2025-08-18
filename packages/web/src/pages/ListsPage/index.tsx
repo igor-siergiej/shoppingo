@@ -29,8 +29,10 @@ const ListsPage = () => {
     const handleAddList = async (listTitle: string) => {
         if (!user) {
             console.error('No user logged in');
+
             return;
         }
+
         try {
             await addList(listTitle, user);
             await refetch();

@@ -77,11 +77,13 @@ function RippleButton({
 }: RippleButtonProps) {
     const [ripples, setRipples] = React.useState<Array<Ripple>>([]);
     const buttonRef = React.useRef<HTMLButtonElement>(null);
+
     React.useImperativeHandle(ref, () => buttonRef.current as HTMLButtonElement);
 
     const createRipple = React.useCallback(
         (event: React.MouseEvent<HTMLButtonElement>) => {
             const button = buttonRef.current;
+
             if (!button) return;
 
             const rect = button.getBoundingClientRect();

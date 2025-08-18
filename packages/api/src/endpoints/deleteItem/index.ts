@@ -11,6 +11,7 @@ const deleteItem = async (req: Request, res: Response) => {
 
     if (!database) {
         res.status(500).json({ error: 'Database not available' });
+
         return;
     }
 
@@ -20,6 +21,7 @@ const deleteItem = async (req: Request, res: Response) => {
 
     if (!list) {
         res.status(404).json({ error: 'List not found' });
+
         return;
     }
 

@@ -86,8 +86,10 @@ export default function ToolBar({
     const handleSubmit = async () => {
         if (validateForm()) {
             setError(true);
+
             return;
         }
+
         await handleAdd(newName.trim());
         setNewName('');
         setError(false);
@@ -287,6 +289,7 @@ export default function ToolBar({
                                             if (active === 1) {
                                                 setIsOpen(false);
                                                 setActive(null);
+
                                                 return;
                                             }
 

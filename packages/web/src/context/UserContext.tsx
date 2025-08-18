@@ -21,6 +21,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
     const updateUserFromToken = useCallback((token: string) => {
         const userInfo = extractUserFromToken(token);
+
         if (userInfo) {
             setUser(userInfo);
         } else {
@@ -42,8 +43,10 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
 export const useUser = () => {
     const context = useContext(UserContext);
+
     if (!context) {
         throw new Error('useUser must be used within a UserProvider');
     }
+
     return context;
 };

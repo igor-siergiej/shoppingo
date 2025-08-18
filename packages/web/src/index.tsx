@@ -4,16 +4,16 @@ import ReactDOM from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
+import AppInitializer from './components/AppInitializer';
+import { ProtectedRoute } from './components/ProtectedRoute';
+import { RootLayout } from './components/RootLayout';
+import { AuthProvider } from './context/AuthContext';
+import { UserProvider } from './context/UserContext';
 import ItemsPage from './pages/ItemsPage';
 import ListPage from './pages/ListsPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
-import { ProtectedRoute } from './components/ProtectedRoute';
-import { RootLayout } from './components/RootLayout';
-import { AuthProvider } from './context/AuthContext';
 import { listenForInstallPrompt, registerPWA } from './pwa';
-import { UserProvider } from './context/UserContext';
-import AppInitializer from './components/AppInitializer';
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -71,7 +71,7 @@ listenForInstallPrompt();
 root.render(
     <QueryClientProvider client={queryClient}>
         <UserProvider>
-             <AuthProvider>
+            <AuthProvider>
                 <AppInitializer>
                     <RouterProvider router={router} />
                 </AppInitializer>

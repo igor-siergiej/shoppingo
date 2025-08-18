@@ -58,8 +58,10 @@ export default function ToolBar({
     const handleSubmit = async () => {
         if (validateForm()) {
             setError(true);
+
             return;
         }
+
         await handleAdd(newName.trim());
         setNewName('');
         setError(false);

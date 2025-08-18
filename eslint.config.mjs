@@ -1,16 +1,16 @@
 import eslint from '@eslint/js';
-import tseslint from 'typescript-eslint';
 import stylistic from '@stylistic/eslint-plugin';
+import tseslint from 'typescript-eslint';
 
+import importPlugin from 'eslint-plugin-import';
+import jsxA11y from 'eslint-plugin-jsx-a11y';
 import react from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
-import jsxA11y from 'eslint-plugin-jsx-a11y';
-import importPlugin from 'eslint-plugin-import';
 import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import unusedImports from 'eslint-plugin-unused-imports';
 
-import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -63,6 +63,20 @@ export default tseslint.config(
                 semi: true,
                 jsx: true,
             }).rules,
+            
+            // Extra line formatting rules
+            '@stylistic/no-multiple-empty-lines': ['error', { max: 1, maxEOF: 0 }],
+            '@stylistic/no-trailing-spaces': 'error',
+            '@stylistic/eol-last': 'error',
+            '@stylistic/padding-line-between-statements': [
+                'error',
+                { blankLine: 'always', prev: '*', next: 'return' },
+                { blankLine: 'always', prev: ['const', 'let', 'var'], next: '*' },
+                { blankLine: 'any', prev: ['const', 'let', 'var'], next: ['const', 'let', 'var'] },
+                { blankLine: 'always', prev: 'directive', next: '*' },
+                { blankLine: 'always', prev: 'block', next: '*' },
+                { blankLine: 'always', prev: 'block-like', next: '*' },
+            ],
             // TypeScript-specific rules (these override the extended configs)
             '@typescript-eslint/array-type': ['error', { default: 'generic', readonly: 'generic' }],
             '@typescript-eslint/consistent-type-definitions': ['error', 'interface'],

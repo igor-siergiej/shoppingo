@@ -10,6 +10,7 @@ export const useTokenInitialization = () => {
     const initializeToken = useCallback(async () => {
         try {
             const newAccessToken = await tryRefreshToken();
+
             if (newAccessToken) {
                 login(newAccessToken);
             } else {
