@@ -66,9 +66,8 @@ export const onStartup = async () => {
             })
         );
 
-        // API routes
-        app.get('/api/lists/:title', getList);
-        app.get('/api/lists/:userId', getLists);
+        app.get('/api/lists/title/:title', getList);
+        app.get('/api/lists/user/:userId', getLists);
         app.delete('/api/lists/:title', deleteList);
         app.put('/api/lists', addList);
 

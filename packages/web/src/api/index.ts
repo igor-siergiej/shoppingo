@@ -10,7 +10,7 @@ export const getListQuery = (listTitle: string) => ({
 
 export const getList = async (listTitle: string): Promise<Array<Item>> => {
     return await makeRequest({
-        pathname: `/api/lists/${listTitle}`,
+        pathname: `/api/lists/title/${listTitle}`,
         method: MethodType.GET,
         operationString: 'get list',
     });
@@ -23,7 +23,7 @@ export const getListsQuery = (userId: string) => ({
 
 export const getLists = async (userId: string): Promise<Array<ListResponse>> => {
     return await makeRequest({
-        pathname: `/api/lists/${userId}`,
+        pathname: `/api/lists/user/${userId}`,
         method: MethodType.GET,
         operationString: 'get lists',
     });
