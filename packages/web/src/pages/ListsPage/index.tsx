@@ -17,17 +17,45 @@ const ListsPage = () => {
         return <div>User not available</div>;
     }
 
+    // Separate lists into "Your Lists" and "Shared Lists"
+    const yourLists = data?.filter(list =>
+        list.users.length === 1
+        && list.users[0].username === user.username
+    ) || [];
+
+    const sharedLists = data?.filter(list =>
+        !(list.users.length === 1 && list.users[0].username === user.username)
+    ) || [];
+
     const pageContent = (
-        <div className="flex flex-col">
-            {data
-                ? (
-                        <ListsList lists={data} refetch={refetch} />
-                    )
-                : (
-                        <p className="text-center pb-4 pt-4">
-                            This list is empty...
-                        </p>
-                    )}
+        <div className="flex flex-col space-y-6">
+            {/* Your Lists Section */}
+            <div>
+                <h2 className="text-lg font-semibold mb-3 text-foreground">Your Lists</h2>
+                {yourLists.length > 0
+                    ? (
+                            <ListsList lists={yourLists} refetch={refetch} />
+                        )
+                    : (
+                            <p className="text-center pb-4 pt-4 text-muted-foreground">
+                                You haven't created any lists yet...
+                            </p>
+                        )}
+            </div>
+
+            {/* Shared Lists Section */}
+            <div>
+                <h2 className="text-lg font-semibold mb-3 text-foreground">Shared Lists</h2>
+                {sharedLists.length > 0
+                    ? (
+                            <ListsList lists={sharedLists} refetch={refetch} />
+                        )
+                    : (
+                            <p className="text-center pb-4 pt-4 text-muted-foreground">
+                                No shared lists available...
+                            </p>
+                        )}
+            </div>
         </div>
     );
 
