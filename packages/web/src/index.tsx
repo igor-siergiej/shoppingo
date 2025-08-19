@@ -44,9 +44,11 @@ const router = createBrowserRouter([
     {
         path: '/',
         element: (
-            <ProtectedRoute>
-                <RootLayout />
-            </ProtectedRoute>
+            <AppInitializer>
+                <ProtectedRoute>
+                    <RootLayout />
+                </ProtectedRoute>
+            </AppInitializer>
         ),
         children: [
             {
@@ -72,9 +74,7 @@ root.render(
     <QueryClientProvider client={queryClient}>
         <UserProvider>
             <AuthProvider>
-                <AppInitializer>
-                    <RouterProvider router={router} />
-                </AppInitializer>
+                <RouterProvider router={router} />
             </AuthProvider>
         </UserProvider>
     </QueryClientProvider>

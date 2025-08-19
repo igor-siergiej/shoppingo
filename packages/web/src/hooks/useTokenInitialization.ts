@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { tryRefreshToken } from '../utils/tokenUtils';
 
 export const useTokenInitialization = () => {
-    const { login } = useAuth();
+    const { login, isAuthenticated } = useAuth();
     const [isInitializing, setIsInitializing] = useState(true);
 
     const initializeToken = useCallback(async () => {
@@ -13,19 +13,21 @@ export const useTokenInitialization = () => {
 
             if (newAccessToken) {
                 login(newAccessToken);
-            } else {
-                console.log('No valid refresh token found');
             }
         } catch {
-            console.log('Token refresh failed');
+            localStorage.removeItem('accessToken');
         } finally {
             setIsInitializing(false);
         }
     }, [login]);
 
     useEffect(() => {
-        initializeToken();
-    }, [initializeToken]);
+        if (!isAuthenticated) {
+            initializeToken();
+        } else {
+            setIsInitializing(false);
+        }
+    }, [initializeToken, isAuthenticated, isInitializing]);
 
     return { isInitializing };
 };

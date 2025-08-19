@@ -1,4 +1,4 @@
-import React, { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 import { useUser } from './UserContext';
 
@@ -12,7 +12,12 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-    const [accessToken, setAccessToken] = useState<string | null>(null);
+    const [accessToken, setAccessToken] = useState<string | null>(() => {
+        // Initialize from localStorage if available
+        const stored = localStorage.getItem('accessToken');
+
+        return stored || null;
+    });
     const { updateUserFromToken, clearUser } = useUser();
 
     useEffect(() => {
@@ -25,30 +30,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const login = useCallback((token: string) => {
         setAccessToken(token);
+        localStorage.setItem('accessToken', token);
     }, []);
 
     const logout = useCallback(async () => {
         try {
-            // Make request to logout endpoint to invalidate session
             await fetch(`/auth/logout`, {
                 method: 'POST',
                 credentials: 'include',
             });
         } catch (error) {
-            // Even if logout request fails, we still want to clear local auth
             console.error('Logout request failed:', error);
         } finally {
-            // Always clear the access token locally
             setAccessToken(null);
+            localStorage.removeItem('accessToken');
         }
     }, []);
 
-    const contextValue = useMemo(() => ({
-        accessToken,
-        isAuthenticated: !!accessToken,
-        login,
-        logout
-    }), [accessToken, login, logout]);
+    const contextValue = useMemo(() => {
+        const isAuth = !!accessToken;
+
+        return {
+            accessToken,
+            isAuthenticated: isAuth,
+            login,
+            logout
+        };
+    }, [accessToken, login, logout]);
 
     return (
         <AuthContext.Provider value={contextValue}>
