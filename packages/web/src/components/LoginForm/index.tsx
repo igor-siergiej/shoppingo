@@ -27,7 +27,7 @@ export function LoginForm({
         setError(null);
 
         try {
-            const response = await fetch(`${import.meta.env.VITE_AUTH_URL}/login`, {
+            const response = await fetch(`/auth/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

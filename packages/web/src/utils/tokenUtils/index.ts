@@ -6,7 +6,7 @@ export interface RefreshTokenResponse {
 
 export const tryRefreshToken = async (): Promise<string | null> => {
     try {
-        const response = await fetch(`${import.meta.env.VITE_AUTH_URL}/refresh`, {
+        const response = await fetch(`/auth/refresh`, {
             method: 'POST',
             credentials: 'include',
         });
@@ -29,7 +29,7 @@ export const clearRefreshTokenCookie = (): void => {
 
 export const refreshAccessToken = async (): Promise<string> => {
     try {
-        const response = await fetch(`${import.meta.env.VITE_AUTH_URL}/refresh`, {
+        const response = await fetch(`/auth/refresh`, {
             method: 'POST',
             credentials: 'include',
         });

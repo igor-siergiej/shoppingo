@@ -27,7 +27,10 @@ const getLists = async (req: Request, res: Response) => {
     const results = await collection.find({ 'users.id': userId }).toArray();
 
     const maskedResults: Array<ListResponse> = results.map(list => ({
-        ...list,
+        id: list.id,
+        title: list.title,
+        dateAdded: list.dateAdded,
+        items: list.items,
         users: list.users.map(user => ({ username: user.username }))
     }));
 

@@ -20,6 +20,12 @@ export default defineConfig({
                 changeOrigin: false,
                 secure: false,
             },
+            '/auth': {
+                target: 'http://localhost:4002',
+                changeOrigin: false,
+                secure: false,
+                rewrite: path => path.replace(/^\/auth/, ''),
+            },
         },
     },
 });

@@ -30,7 +30,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const logout = useCallback(async () => {
         try {
             // Make request to logout endpoint to invalidate session
-            await fetch(`${import.meta.env.VITE_AUTH_URL}/logout`, {
+            await fetch(`/auth/logout`, {
                 method: 'POST',
                 credentials: 'include',
             });

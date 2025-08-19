@@ -27,7 +27,7 @@ export const useTokenRefresh = () => {
 
     const performTokenRefresh = useCallback(async (): Promise<string> => {
         try {
-            const response = await fetch(`${import.meta.env.VITE_AUTH_URL}/refresh`, {
+            const response = await fetch(`/auth/refresh`, {
                 method: 'POST',
                 credentials: 'include', // Include cookies
             });
