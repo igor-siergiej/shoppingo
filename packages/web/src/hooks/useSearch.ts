@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { SearchResult } from '@/components/SearchResults';
 
+import { getAuthUrl } from '../utils/config';
+
 export const useSearch = () => {
     const [query, setQuery] = useState('');
     const [results, setResults] = useState<SearchResult>({
@@ -29,7 +31,7 @@ export const useSearch = () => {
         setError(null);
 
         try {
-            const response = await fetch(`${import.meta.env.VITE_AUTH_URL}/search?q=${encodeURIComponent(searchQuery)}`, {
+            const response = await fetch(`${getAuthUrl()}/search?q=${encodeURIComponent(searchQuery)}`, {
                 method: 'GET',
                 credentials: 'include',
             });

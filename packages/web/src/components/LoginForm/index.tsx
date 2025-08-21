@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
 import { useAuth } from '../../context/AuthContext';
+import { getAuthUrl } from '../../utils/config';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Input } from '../ui/input';
@@ -27,7 +28,7 @@ export function LoginForm({
         setError(null);
 
         try {
-            const response = await fetch(`${import.meta.env.VITE_AUTH_URL}/login`, {
+            const response = await fetch(`${getAuthUrl()}/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

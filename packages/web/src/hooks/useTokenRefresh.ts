@@ -1,6 +1,7 @@
 import { useCallback, useRef } from 'react';
 
 import { useAuth } from '../context/AuthContext';
+import { getAuthUrl } from '../utils/config';
 
 export interface RefreshTokenResponse {
     accessToken: string;
@@ -27,7 +28,7 @@ export const useTokenRefresh = () => {
 
     const performTokenRefresh = useCallback(async (): Promise<string> => {
         try {
-            const response = await fetch(`${import.meta.env.VITE_AUTH_URL}/refresh`, {
+            const response = await fetch(`${getAuthUrl()}/refresh`, {
                 method: 'POST',
                 credentials: 'include', // Include cookies
             });
