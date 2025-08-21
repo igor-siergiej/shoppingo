@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, CheckCheck, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, CheckCheck, Plus, Search, Trash2, User } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -16,7 +16,11 @@ import {
     DrawerTrigger,
 } from '@/components/ui/drawer';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { RippleButton } from '@/components/ui/ripple';
+
+import { useSearch } from '../../hooks/useSearch';
+import { SearchResults } from '../SearchResults';
 
 interface ToolBarProps {
     handleAdd: (name: string) => Promise<void>;
@@ -39,9 +43,14 @@ export default function ToolBar({
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [newName, setNewName] = useState('');
     const [error, setError] = useState(false);
+    const [selectedUsers, setSelectedUsers] = useState<Array<{ id: string; username: string }>>([]);
     const inputRef = useRef<HTMLInputElement>(null);
 
     const isItemsPage = location.pathname.includes('/list/');
+    const isListsPage = location.pathname === '/';
+
+    // Search functionality
+    const { query, setQuery, results, isLoading, error: searchError, clearResults } = useSearch();
 
     useEffect(() => {
         if (isDrawerOpen && inputRef.current) {
@@ -71,7 +80,23 @@ export default function ToolBar({
     const handleCancel = () => {
         setNewName('');
         setError(false);
+        setSelectedUsers([]);
+        setQuery('');
+        clearResults();
         setIsDrawerOpen(false);
+    };
+
+    const handleUserSelect = (username: string) => {
+        if (!selectedUsers.find(u => u.username === username)) {
+            setSelectedUsers([...selectedUsers, { id: username, username }]);
+        }
+
+        setQuery('');
+        clearResults();
+    };
+
+    const removeSelectedUser = (userId: string) => {
+        setSelectedUsers(selectedUsers.filter(u => u.username !== userId));
     };
 
     return (
@@ -93,10 +118,15 @@ export default function ToolBar({
                                 <DrawerContent>
                                     <div className="mx-auto w-full max-w-sm">
                                         <DrawerHeader>
-                                            <DrawerTitle>Add New Item</DrawerTitle>
+                                            <DrawerTitle>
+                                                {isListsPage ? 'Add New List' : 'Add New Item'}
+                                            </DrawerTitle>
                                         </DrawerHeader>
-                                        <div className="p-2 pb-0">
+                                        <div className="p-4 pb-0 space-y-4">
                                             <div className="space-y-2">
+                                                <Label htmlFor="new-item">
+                                                    {isListsPage ? 'List Name' : 'Item Name'}
+                                                </Label>
                                                 <Input
                                                     id="new-item"
                                                     ref={inputRef}
@@ -121,10 +151,64 @@ export default function ToolBar({
                                                     <p className="text-sm text-destructive">Name cannot be blank.</p>
                                                 )}
                                             </div>
+
+                                            {/* Search functionality for lists page */}
+                                            {isListsPage && (
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="search-users">Search Users to Share With</Label>
+                                                    <div className="relative">
+                                                        <div className="relative">
+                                                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                                            <Input
+                                                                id="search-users"
+                                                                value={query}
+                                                                onChange={e => setQuery(e.target.value)}
+                                                                placeholder="Search users..."
+                                                                className="pl-10"
+                                                            />
+                                                        </div>
+                                                        <SearchResults
+                                                            results={results}
+                                                            isLoading={isLoading}
+                                                            error={searchError}
+                                                            onSelect={handleUserSelect}
+                                                            onClose={clearResults}
+                                                        />
+                                                    </div>
+
+                                                    {/* Selected users */}
+                                                    {selectedUsers.length > 0 && (
+                                                        <div className="space-y-2">
+                                                            <Label className="text-sm text-muted-foreground">
+                                                                Selected Users:
+                                                            </Label>
+                                                            <div className="flex flex-wrap gap-2">
+                                                                {selectedUsers.map(user => (
+                                                                    <div
+                                                                        key={user.id}
+                                                                        className="flex items-center gap-1 bg-secondary text-secondary-foreground px-2 py-1 rounded-md text-sm"
+                                                                    >
+                                                                        <User className="h-3 w-3" />
+                                                                        <span>{user.username}</span>
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="sm"
+                                                                            className="h-4 w-4 p-0 hover:bg-secondary-foreground/20"
+                                                                            onClick={() => removeSelectedUser(user.id)}
+                                                                        >
+                                                                            ×
+                                                                        </Button>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
                                         </div>
                                         <DrawerFooter>
                                             <Button onClick={handleSubmit}>
-                                                Add Item
+                                                {isListsPage ? 'Add List' : 'Add Item'}
                                             </Button>
                                             <DrawerClose asChild>
                                                 <Button variant="outline" onClick={handleCancel}>
