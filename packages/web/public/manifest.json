@@ -4,8 +4,8 @@
   "description": "Shopping list app",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#22c55e",
+  "background_color": "#e0d6c9",
+  "theme_color": "#2e7d32",
   "scope": "/",
   "lang": "en",
   "dir": "ltr",
@@ -15,16 +15,16 @@
   "related_applications": [],
   "icons": [
     {
-      "src": "/iconLogo.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/iconLogo.png",
+      "src": "/logo-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }

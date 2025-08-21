@@ -17,9 +17,10 @@ interface SearchResultsProps {
     error: string | null;
     onSelect: (username: string) => void;
     onClose: () => void;
+    query: string; // Add query prop to check length
 }
 
-export const SearchResults = ({ results, isLoading, error, onSelect, onClose }: SearchResultsProps) => {
+export const SearchResults = ({ results, isLoading, error, onSelect, onClose, query }: SearchResultsProps) => {
     const containerRef = useRef<HTMLDivElement>(null);
 
     // Close results when clicking outside
@@ -51,6 +52,16 @@ export const SearchResults = ({ results, isLoading, error, onSelect, onClose }: 
             <div className="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded-md shadow-lg z-50">
                 <div className="p-4 text-center text-destructive text-sm">
                     {error}
+                </div>
+            </div>
+        );
+    }
+
+    if (query.trim().length > 0 && query.trim().length < 2) {
+        return (
+            <div className="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded-md shadow-lg z-50">
+                <div className="p-4 text-center text-muted-foreground text-sm">
+                    Please enter at least 2 characters to search
                 </div>
             </div>
         );

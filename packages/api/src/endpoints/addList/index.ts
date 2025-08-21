@@ -7,7 +7,7 @@ import { DependencyContainer } from '../../lib/dependencyContainer';
 import { DependencyToken } from '../../lib/dependencyContainer/types';
 
 const addList = async (req: Request, res: Response) => {
-    const { title, dateAdded, user } = req.body;
+    const { title, dateAdded, user, selectedUsers } = req.body;
 
     const database = DependencyContainer.getInstance().resolve(DependencyToken.Database);
 
@@ -19,12 +19,14 @@ const addList = async (req: Request, res: Response) => {
 
     const collection = database.getCollection(CollectionName.Lists);
 
+    const users = selectedUsers ? [...selectedUsers, user] : [user];
+
     const list: List = {
         id: (new ObjectId()).toString(),
         title,
         dateAdded,
         items: [],
-        users: user ? [user] : []
+        users
     };
 
     const result = await collection.insertOne(list);

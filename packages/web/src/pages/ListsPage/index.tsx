@@ -59,7 +59,7 @@ const ListsPage = () => {
         </div>
     );
 
-    const handleAddList = async (listTitle: string) => {
+    const handleAddList = async (listTitle: string, selectedUsers?: Array<string>) => {
         if (!user) {
             console.error('No user logged in');
 
@@ -67,7 +67,7 @@ const ListsPage = () => {
         }
 
         try {
-            await addList(listTitle, user);
+            await addList(listTitle, user, selectedUsers);
             await refetch();
         } catch (error) {
             console.error('Error adding list:', error);

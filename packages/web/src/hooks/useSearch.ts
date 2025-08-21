@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { SearchResult } from '@/components/SearchResults';
+import { getAuthUrl } from '@/utils/config';
 
-import { getAuthUrl } from '../utils/config';
+import { makeRequest } from '../api/makeRequest';
+import { MethodType } from '../api/types';
 
 export const useSearch = () => {
     const [query, setQuery] = useState('');
@@ -16,7 +18,9 @@ export const useSearch = () => {
     const [error, setError] = useState<string | null>(null);
 
     const searchUsers = useCallback(async (searchQuery: string) => {
-        if (!searchQuery.trim()) {
+        const trimmedQuery = searchQuery.trim();
+
+        if (!trimmedQuery || trimmedQuery.length < 2) {
             setResults({
                 success: 'false',
                 usernames: [],
@@ -31,16 +35,11 @@ export const useSearch = () => {
         setError(null);
 
         try {
-            const response = await fetch(`${getAuthUrl()}/search?q=${encodeURIComponent(searchQuery)}`, {
-                method: 'GET',
-                credentials: 'include',
+            const data = await makeRequest({
+                pathname: `${getAuthUrl()}/search?q=${encodeURIComponent(searchQuery)}`,
+                method: MethodType.GET,
+                operationString: 'search users',
             });
-
-            if (!response.ok) {
-                throw new Error('Search failed');
-            }
-
-            const data = await response.json();
 
             setResults(data);
         } catch (err) {

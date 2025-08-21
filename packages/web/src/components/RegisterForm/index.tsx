@@ -63,7 +63,7 @@ export function RegisterForm({
 
             const data = await response.json();
 
-            login(data.token);
+            login(data.accessToken);
 
             // Redirect to the page they were trying to access, or home
             const from = location.state?.from?.pathname || '/';

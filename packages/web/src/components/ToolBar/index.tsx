@@ -23,7 +23,7 @@ import { useSearch } from '../../hooks/useSearch';
 import { SearchResults } from '../SearchResults';
 
 interface ToolBarProps {
-    handleAdd: (name: string) => Promise<void>;
+    handleAdd: (name: string, selectedUsers?: Array<string>) => Promise<void>;
     handleGoBack?: () => void;
     handleClearSelected?: () => void;
     handleRemoveAll?: () => void;
@@ -43,7 +43,7 @@ export default function ToolBar({
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [newName, setNewName] = useState('');
     const [error, setError] = useState(false);
-    const [selectedUsers, setSelectedUsers] = useState<Array<{ id: string; username: string }>>([]);
+    const [selectedUsers, setSelectedUsers] = useState<Array<string>>([]);
     const inputRef = useRef<HTMLInputElement>(null);
 
     const isItemsPage = location.pathname.includes('/list/');
@@ -71,9 +71,10 @@ export default function ToolBar({
             return;
         }
 
-        await handleAdd(newName.trim());
+        await handleAdd(newName.trim(), selectedUsers);
         setNewName('');
         setError(false);
+        setSelectedUsers([]);
         setIsDrawerOpen(false);
     };
 
@@ -87,16 +88,16 @@ export default function ToolBar({
     };
 
     const handleUserSelect = (username: string) => {
-        if (!selectedUsers.find(u => u.username === username)) {
-            setSelectedUsers([...selectedUsers, { id: username, username }]);
+        if (!selectedUsers.includes(username)) {
+            setSelectedUsers([...selectedUsers, username]);
         }
 
         setQuery('');
         clearResults();
     };
 
-    const removeSelectedUser = (userId: string) => {
-        setSelectedUsers(selectedUsers.filter(u => u.username !== userId));
+    const removeSelectedUser = (username: string) => {
+        setSelectedUsers(selectedUsers.filter(u => u !== username));
     };
 
     return (
@@ -173,6 +174,7 @@ export default function ToolBar({
                                                             error={searchError}
                                                             onSelect={handleUserSelect}
                                                             onClose={clearResults}
+                                                            query={query}
                                                         />
                                                     </div>
 
@@ -183,18 +185,18 @@ export default function ToolBar({
                                                                 Selected Users:
                                                             </Label>
                                                             <div className="flex flex-wrap gap-2">
-                                                                {selectedUsers.map(user => (
+                                                                {selectedUsers.map(username => (
                                                                     <div
-                                                                        key={user.id}
+                                                                        key={username}
                                                                         className="flex items-center gap-1 bg-secondary text-secondary-foreground px-2 py-1 rounded-md text-sm"
                                                                     >
                                                                         <User className="h-3 w-3" />
-                                                                        <span>{user.username}</span>
+                                                                        <span>{username}</span>
                                                                         <Button
                                                                             variant="ghost"
                                                                             size="sm"
                                                                             className="h-4 w-4 p-0 hover:bg-secondary-foreground/20"
-                                                                            onClick={() => removeSelectedUser(user.id)}
+                                                                            onClick={() => removeSelectedUser(username)}
                                                                         >
                                                                             ×
                                                                         </Button>

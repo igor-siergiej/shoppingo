@@ -29,12 +29,13 @@ export const getLists = async (userId: string): Promise<Array<ListResponse>> => 
     });
 };
 
-export const addList = async (listTitle: string, user: User): Promise<unknown> => {
+export const addList = async (listTitle: string, user: User, selectedUsers?: Array<string>): Promise<unknown> => {
     const dateAdded = generateTimestamp(new Date());
     const requestBody = {
         title: listTitle,
         dateAdded,
         user,
+        selectedUsers: selectedUsers || [],
     };
 
     const result = await makeRequest({

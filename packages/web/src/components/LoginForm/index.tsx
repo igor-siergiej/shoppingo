@@ -45,7 +45,14 @@ export function LoginForm({
 
             const data = await response.json();
 
-            login(data.token);
+            console.log('Login response:', data);
+
+            if (!data.token && !data.accessToken) {
+                console.error('No token found in response:', data);
+                throw new Error('Login successful but no token received');
+            }
+
+            login(data.token || data.accessToken);
 
             // Redirect to the page they were trying to access, or home
             const from = location.state?.from?.pathname || '/';
