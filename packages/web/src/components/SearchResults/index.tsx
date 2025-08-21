@@ -63,9 +63,9 @@ export const SearchResults = ({ results, isLoading, error, onSelect, onClose }: 
     return (
         <div
             ref={containerRef}
-            className="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded-md shadow-lg z-50 max-h-60"
+            className="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded-md shadow-lg z-50 max-h-80"
         >
-            <ScrollArea className="max-h-60">
+            <ScrollArea className="max-h-80">
                 <div className="p-1">
                     {results.usernames.map(username => (
                         <Button

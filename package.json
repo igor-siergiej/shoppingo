@@ -6,7 +6,7 @@
     "author": "Igor Siergiej <igorsiergiej@gmail.com>",
     "license": "MIT",
     "scripts": {
-        "start:web": "dotenv -e .env -- yarn workspace @shoppingo/web start",
+        "start:web": "yarn workspace @shoppingo/web start",
         "start:web:with-mock": "dotenv -e .env -- yarn workspace @shoppingo/web start:with-mock",
         "start:api": "dotenv -e .env -- yarn workspace @shoppingo/api start",
         "start": "yarn start:web & yarn start:api",

@@ -8,8 +8,6 @@ const Appbar = () => {
     const navigate = useNavigate();
     const { logout } = useAuth();
 
-    console.log(import.meta.env.VITE_AUTH_URL);
-
     const handleLogout = async () => {
         await logout();
         navigate('/login');
