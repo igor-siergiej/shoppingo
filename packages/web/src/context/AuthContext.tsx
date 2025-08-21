@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const logout = useCallback(async () => {
         try {
-            await fetch(`/auth/logout`, {
+            await fetch(`${import.meta.env.VITE_AUTH_URL}/logout`, {
                 method: 'POST',
                 credentials: 'include',
             });

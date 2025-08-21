@@ -45,7 +45,7 @@ export function RegisterForm({
         setIsLoading(true);
 
         try {
-            const response = await fetch(`/auth/register`, {
+            const response = await fetch(`${import.meta.env.VITE_AUTH_URL}/register`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
