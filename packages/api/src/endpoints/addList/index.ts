@@ -22,16 +22,56 @@ const addList = async (req: Request, res: Response) => {
     let users: Array<User> = [];
 
     if (selectedUsers && selectedUsers.length > 0) {
-        users = await fetch(`${process.env.AUTH_URL}/users`, {
-            method: 'POST',
-            body: JSON.stringify({ usernames: selectedUsers }),
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        }).then(res => res.json()).then(data => data.users) as Array<User>;
+        try {
+            console.log(`Fetching users from ${process.env.AUTH_URL}/users with usernames:`, selectedUsers);
 
-        if (!users || users.length === 0) {
-            res.status(500).json({ error: 'Failed to fetch users' });
+            const response = await fetch(`${process.env.AUTH_URL}/users`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ usernames: selectedUsers })
+            });
+
+            if (!response.ok) {
+                console.error(`Auth service responded with status: ${response.status}`);
+
+                const errorText = await response.text();
+
+                console.error('Auth service error response:', errorText);
+
+                res.status(502).json({ error: `Auth service error: ${response.status}` });
+
+                return;
+            }
+
+            const data = await response.json();
+
+            console.log('Auth service response:', data);
+
+            if (!data.success) {
+                console.error('Auth service returned success: false', data);
+
+                res.status(502).json({ error: 'Auth service returned error', details: data.message });
+
+                return;
+            }
+
+            users = data.users || [];
+
+            if (!users || users.length === 0) {
+                console.warn('No users found for usernames:', selectedUsers);
+
+                res.status(400).json({ error: 'No users found for the provided usernames' });
+
+                return;
+            }
+
+            console.log(`Successfully fetched ${users.length} users`);
+        } catch (error) {
+            console.error('Error fetching users from auth service:', error);
+
+            res.status(502).json({ error: 'Failed to fetch users from auth service' });
 
             return;
         }
