@@ -29,10 +29,9 @@ const AddItemDrawer = ({ handleAdd, placeholder = 'Enter item name...' }: AddIte
 
     useEffect(() => {
         if (isOpen && inputRef.current) {
-            // Small delay to ensure drawer is open before focusing
             setTimeout(() => {
                 inputRef.current?.focus();
-            }, 100);
+            }, 50);
         }
     }, [isOpen]);
 
