@@ -17,6 +17,8 @@ jobs:
     with:
       app_name: shoppingo-web
       registry: 192.168.68.54:31834
+      dockerfile: packages/web/Dockerfile
+      context_path: packages/web
 
   build-api:
     needs: ci
@@ -24,6 +26,8 @@ jobs:
     with:
       app_name: shoppingo-api
       registry: 192.168.68.54:31834
+      dockerfile: packages/api/Dockerfile
+      context_path: packages/api
 
   gitops-web:
     needs: build-web
