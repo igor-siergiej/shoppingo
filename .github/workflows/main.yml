@@ -33,6 +33,6 @@ jobs:
     with:
       app_name: shoppingo
       registry: 192.168.68.54:31834
-      version: ${{ needs.build-api.outputs.version }}
+      version: ${{ needs.build-web.outputs.version }}
     secrets:
       PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
