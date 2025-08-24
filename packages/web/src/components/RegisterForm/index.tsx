@@ -29,14 +29,12 @@ export function RegisterForm({
         setValidationError('');
         setError(null);
 
-        // Validate passwords match
         if (password !== repeatPassword) {
             setValidationError('Passwords do not match');
 
             return;
         }
 
-        // Validate password length
         if (password.length < 6) {
             setValidationError('Password must be at least 6 characters long');
 
