@@ -11,19 +11,36 @@ jobs:
   ci:
     uses: igor-siergiej/im-apps-utils/.github/workflows/ci.yml@main
 
-  build:
+  build-web:
     needs: ci
     uses: igor-siergiej/im-apps-utils/.github/workflows/docker-build.yml@main
     with:
-      app_name: shoppingo
+      app_name: shoppingo-web
       registry: 192.168.68.54:31834
 
-  gitops:
-    needs: build
+  build-api:
+    needs: ci
+    uses: igor-siergiej/im-apps-utils/.github/workflows/docker-build.yml@main
+    with:
+      app_name: shoppingo-api
+      registry: 192.168.68.54:31834
+
+  gitops-web:
+    needs: build-web
     uses: igor-siergiej/im-apps-utils/.github/workflows/gitops-update.yml@main
     with:
-      app_name: shoppingo
+      app_name: shoppingo-web
       registry: 192.168.68.54:31834
-      version: ${{ needs.build.outputs.version }}
+      version: ${{ needs.build-web.outputs.version }}
+    secrets:
+      PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
+
+  gitops-api:
+    needs: build-api
+    uses: igor-siergiej/im-apps-utils/.github/workflows/gitops-update.yml@main
+    with:
+      app_name: shoppingo-api
+      registry: 192.168.68.54:31834
+      version: ${{ needs.build-api.outputs.version }}
     secrets:
       PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
