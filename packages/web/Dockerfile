@@ -6,12 +6,15 @@ ENV VITE_AUTH_URL=$VITE_AUTH_URL
 WORKDIR /app
 
 COPY package.json yarn.lock ./
+COPY .yarnrc.yml ./.yarnrc.yml
 
 COPY packages/types/package.json packages/types/package.json
 COPY packages/api/package.json packages/api/package.json
 COPY packages/web/package.json packages/web/package.json
 
 ENV YARN_NODE_LINKER=node-modules
+ARG PAT_TOKEN
+ENV PAT_TOKEN=$PAT_TOKEN
 
 RUN corepack enable && corepack prepare yarn@4.9.2 --activate
 
