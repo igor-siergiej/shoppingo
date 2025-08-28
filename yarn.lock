@@ -831,6 +831,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@igor-siergiej/api-utils@npm:0.0.4":
+  version: 0.0.4
+  resolution: "@igor-siergiej/api-utils@npm:0.0.4::__archiveUrl=https%3A%2F%2Fnpm.pkg.github.com%2Fdownload%2F%40igor-siergiej%2Fapi-utils%2F0.0.4%2Fc0a73e0b5515bbbb9dd9ff7edf95a4b6449ceaf0"
+  dependencies:
+    mongodb: "npm:^6.19.0"
+  checksum: 10c0/38cc8da9e75b1243e37d6333f7205bb167e8f4315dcf79641378ea96797e46668c2f5453aac3765330f89df7cc865bc49cf79365d9c19f05d689f2048d1314d0
+  languageName: node
+  linkType: hard
+
 "@inquirer/confirm@npm:^5.0.0":
   version: 5.1.14
   resolution: "@inquirer/confirm@npm:5.1.14"
@@ -1682,6 +1691,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@shoppingo/api@workspace:packages/api"
   dependencies:
+    "@igor-siergiej/api-utils": "npm:0.0.4"
     "@shoppingo/types": "workspace:*"
     "@types/cors": "npm:^2.8.17"
     "@types/express": "npm:^5.0.0"
@@ -6895,6 +6905,40 @@ __metadata:
     socks:
       optional: true
   checksum: 10c0/063c70b72d5e3a75bf2edb9743113a7006864d7a501086d417036371c341bd6ea3d27a01cb78b187f8eca5633eaade3ca9793c63f08ed5df50edfd1696ccc426
+  languageName: node
+  linkType: hard
+
+"mongodb@npm:^6.19.0":
+  version: 6.19.0
+  resolution: "mongodb@npm:6.19.0"
+  dependencies:
+    "@mongodb-js/saslprep": "npm:^1.1.9"
+    bson: "npm:^6.10.4"
+    mongodb-connection-string-url: "npm:^3.0.0"
+  peerDependencies:
+    "@aws-sdk/credential-providers": ^3.188.0
+    "@mongodb-js/zstd": ^1.1.0 || ^2.0.0
+    gcp-metadata: ^5.2.0
+    kerberos: ^2.0.1
+    mongodb-client-encryption: ">=6.0.0 <7"
+    snappy: ^7.3.2
+    socks: ^2.7.1
+  peerDependenciesMeta:
+    "@aws-sdk/credential-providers":
+      optional: true
+    "@mongodb-js/zstd":
+      optional: true
+    gcp-metadata:
+      optional: true
+    kerberos:
+      optional: true
+    mongodb-client-encryption:
+      optional: true
+    snappy:
+      optional: true
+    socks:
+      optional: true
+  checksum: 10c0/b25d6bedbb3d85b059fc6aa1e48d585722945b5fdf96cf6767a48069c13636e5e1d004908b1f095f580d0d03c8973c37f55325ce659a8c7f35c7414be23627fc
   languageName: node
   linkType: hard
 

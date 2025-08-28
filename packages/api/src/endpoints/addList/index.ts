@@ -2,14 +2,14 @@ import { List, User } from '@shoppingo/types';
 import { Request, Response } from 'express';
 import { ObjectId } from 'mongodb';
 
-import { CollectionName } from '../../database/types';
-import { DependencyContainer } from '../../lib/dependencyContainer';
-import { DependencyToken } from '../../lib/dependencyContainer/types';
+import { config } from '../../config';
+import { dependencyContainer } from '../../dependencies';
+import { CollectionNames, DependencyToken } from '../../dependencies/types';
 
 const addList = async (req: Request, res: Response) => {
     const { title, dateAdded, user, selectedUsers } = req.body;
 
-    const database = DependencyContainer.getInstance().resolve(DependencyToken.Database);
+    const database = dependencyContainer.resolve(DependencyToken.Database);
 
     if (!database) {
         res.status(500).json({ error: 'Database not available' });
@@ -17,15 +17,13 @@ const addList = async (req: Request, res: Response) => {
         return;
     }
 
-    const collection = database.getCollection(CollectionName.Lists);
+    const collection = database.getCollection(CollectionNames.List);
 
     let users: Array<User> = [];
 
     if (selectedUsers && selectedUsers.length > 0) {
         try {
-            console.log(`Fetching users from ${process.env.AUTH_URL}/users with usernames:`, selectedUsers);
-
-            const response = await fetch(`${process.env.AUTH_URL}/users`, {
+            const response = await fetch(`${config.get('authUrl')}/users`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

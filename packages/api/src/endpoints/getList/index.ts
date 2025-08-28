@@ -1,19 +1,22 @@
 import { Request, Response } from 'express';
 
-import { CollectionName } from '../../database/types';
-import { DependencyContainer } from '../../lib/dependencyContainer';
-import { DependencyToken } from '../../lib/dependencyContainer/types';
+import { dependencyContainer } from '../../dependencies';
+import { CollectionNames, DependencyToken } from '../../dependencies/types';
 
 const getList = async (req: Request, res: Response) => {
     const { title } = req.params;
 
-    const database = DependencyContainer.getInstance().resolve(DependencyToken.Database);
+    const database = dependencyContainer.resolve(DependencyToken.Database);
 
-    // TODO: do some actual error handling maybe lol
-
-    const collection = database.getCollection(CollectionName.Lists);
+    const collection = database.getCollection(CollectionNames.List);
 
     const list = await collection.findOne({ title });
+
+    if (!list) {
+        res.status(404).json({ error: 'List not found' });
+
+        return;
+    }
 
     res.send(list.items).status(200);
 };

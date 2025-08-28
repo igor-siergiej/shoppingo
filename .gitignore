@@ -6,6 +6,5 @@ build
 .env
 tsconfig.tsbuildinfo
 .yarn/releases/
-.yarnrc.yml
 .pnp.*
 .vscode

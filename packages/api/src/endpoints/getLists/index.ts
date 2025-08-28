@@ -1,9 +1,8 @@
 import { ListResponse } from '@shoppingo/types';
 import { Request, Response } from 'express';
 
-import { CollectionName } from '../../database/types';
-import { DependencyContainer } from '../../lib/dependencyContainer';
-import { DependencyToken } from '../../lib/dependencyContainer/types';
+import { dependencyContainer } from '../../dependencies';
+import { CollectionNames, DependencyToken } from '../../dependencies/types';
 
 const getLists = async (req: Request, res: Response) => {
     const { userId } = req.params;
@@ -14,7 +13,7 @@ const getLists = async (req: Request, res: Response) => {
         return;
     }
 
-    const database = DependencyContainer.getInstance().resolve(DependencyToken.Database);
+    const database = dependencyContainer.resolve(DependencyToken.Database);
 
     if (!database) {
         res.status(500).json({ error: 'Database not available' });
@@ -22,7 +21,7 @@ const getLists = async (req: Request, res: Response) => {
         return;
     }
 
-    const collection = database.getCollection(CollectionName.Lists);
+    const collection = database.getCollection(CollectionNames.List);
 
     const results = await collection.find({ 'users.id': userId }).toArray();
 
