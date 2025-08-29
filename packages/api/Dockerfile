@@ -13,7 +13,13 @@ ENV YARN_NODE_LINKER=node-modules
 
 RUN corepack enable && corepack prepare yarn@4.9.2 --activate
 
+RUN --mount=type=secret,id=PAT_TOKEN,required \
+  sh -c 'export PAT_TOKEN="$(cat /run/secrets/PAT_TOKEN)" && yarn install --immutable'
+
 COPY . .
+
+RUN --mount=type=secret,id=PAT_TOKEN,required \
+  sh -c 'export PAT_TOKEN="$(cat /run/secrets/PAT_TOKEN)" && yarn install --immutable'
 
 RUN --mount=type=secret,id=PAT_TOKEN,required \
   sh -c 'export PAT_TOKEN="$(cat /run/secrets/PAT_TOKEN)" && yarn workspace @shoppingo/api build'
