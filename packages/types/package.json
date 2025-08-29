@@ -8,6 +8,6 @@
         ".": "./src/index.ts"
     },
     "dependencies": {
-        "mongodb": "^6.13.1"
+        "mongodb": "^6.19.0"
     }
 }
