@@ -15,7 +15,8 @@ RUN corepack enable && corepack prepare yarn@4.9.2 --activate
 
 COPY . .
 
-RUN yarn workspace @shoppingo/api build
+RUN --mount=type=secret,id=PAT_TOKEN,required \
+  sh -c 'export PAT_TOKEN="$(cat /run/secrets/PAT_TOKEN)" && yarn workspace @shoppingo/api build'
 
 FROM node:22-alpine AS runner
 

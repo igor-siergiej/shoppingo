@@ -18,7 +18,8 @@ RUN corepack enable && corepack prepare yarn@4.9.2 --activate
 
 COPY . .
 
-RUN yarn workspace @shoppingo/web build
+RUN --mount=type=secret,id=PAT_TOKEN,required \
+  sh -c 'export PAT_TOKEN="$(cat /run/secrets/PAT_TOKEN)" && yarn workspace @shoppingo/web build'
 
 FROM nginx:alpine
 
