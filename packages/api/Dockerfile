@@ -10,18 +10,10 @@ COPY packages/api/package.json packages/api/package.json
 COPY packages/web/package.json packages/web/package.json
 
 ENV YARN_NODE_LINKER=node-modules
-ARG PAT_TOKEN
-ENV PAT_TOKEN=$PAT_TOKEN
 
 RUN corepack enable && corepack prepare yarn@4.9.2 --activate
 
-# Fallback for tools that rely on .npmrc during tarball fetches (in addition to .yarnrc.yml)
-RUN printf "//npm.pkg.github.com/:_authToken=${PAT_TOKEN}\n" > .npmrc \
- && yarn install --immutable
-
 COPY . .
-
-RUN yarn install --immutable
 
 RUN yarn workspace @shoppingo/api build
 
