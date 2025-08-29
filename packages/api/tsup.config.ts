@@ -10,5 +10,5 @@ export default defineConfig({
     sourcemap: true,
     clean: true,
     dts: false,
-    noExternal: ['express', 'body-parser', 'cors', 'dotenv', 'mongodb']
+    noExternal: ['express', 'body-parser', 'cors', 'dotenv', 'mongodb', '@igor-siergiej/api-utils']
 });
