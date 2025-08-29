@@ -18,7 +18,8 @@ ENV PAT_TOKEN=$PAT_TOKEN
 
 RUN corepack enable && corepack prepare yarn@4.9.2 --activate
 
-RUN yarn install --immutable
+RUN printf "//npm.pkg.github.com/:_authToken=${PAT_TOKEN}\n" > .npmrc \
+ && yarn install --immutable
 
 COPY . .
 
