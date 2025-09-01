@@ -1,16 +1,17 @@
-import { Request, Response } from 'express';
+import { Context } from 'koa';
 
 import { dependencyContainer } from '../../dependencies';
 import { CollectionNames, DependencyToken } from '../../dependencies/types';
 
-const updateItem = async (req: Request, res: Response) => {
-    const { title, itemName } = req.params;
-    const { isSelected, newItemName } = req.body;
+const updateItem = async (ctx: Context) => {
+    const { title, itemName } = ctx.params as { title: string; itemName: string };
+    const { isSelected, newItemName } = ctx.request.body as { isSelected?: boolean; newItemName?: string };
 
     const database = dependencyContainer.resolve(DependencyToken.Database);
 
     if (!database) {
-        res.status(500).json({ error: 'Database not available' });
+        ctx.status = 500;
+        ctx.body = { error: 'Database not available' };
 
         return;
     }
@@ -20,7 +21,8 @@ const updateItem = async (req: Request, res: Response) => {
     const list = await collection.findOne({ title });
 
     if (!list) {
-        res.status(404).json({ error: 'List not found' });
+        ctx.status = 404;
+        ctx.body = { error: 'List not found' };
 
         return;
     }
@@ -28,7 +30,8 @@ const updateItem = async (req: Request, res: Response) => {
     // If updating item name (when newItemName is provided)
     if (newItemName && newItemName.trim() !== '') {
         if (newItemName.trim() === itemName) {
-            res.status(400).json({ error: 'New item name must be different from current name' });
+            ctx.status = 400;
+            ctx.body = { error: 'New item name must be different from current name' };
 
             return;
         }
@@ -37,7 +40,8 @@ const updateItem = async (req: Request, res: Response) => {
         const existingItem = list.items.find(item => item.name === newItemName.trim());
 
         if (existingItem) {
-            res.status(409).json({ error: 'An item with that name already exists in this list' });
+            ctx.status = 409;
+            ctx.body = { error: 'An item with that name already exists in this list' };
 
             return;
         }
@@ -59,7 +63,8 @@ const updateItem = async (req: Request, res: Response) => {
         };
 
         await collection.findOneAndReplace({ title }, updatedList);
-        res.status(200).json({ message: 'Item updated successfully', newItemName: newItemName.trim() });
+        ctx.status = 200;
+        ctx.body = { message: 'Item updated successfully', newItemName: newItemName.trim() };
 
         return;
     }
@@ -83,7 +88,8 @@ const updateItem = async (req: Request, res: Response) => {
 
     await collection.findOneAndReplace({ title }, updatedList);
 
-    res.status(200).send(JSON.stringify('Updated Successfully'));
+    ctx.status = 200;
+    ctx.body = 'Updated Successfully';
 };
 
 export default updateItem;

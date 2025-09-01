@@ -1,14 +1,15 @@
-import { Request, Response } from 'express';
+import { Context } from 'koa';
 
 import { dependencyContainer } from '../../dependencies';
 import { CollectionNames, DependencyToken } from '../../dependencies/types';
 
-const updateList = async (req: Request, res: Response) => {
-    const { title } = req.params;
-    const { newTitle } = req.body;
+const updateList = async (ctx: Context) => {
+    const { title } = ctx.params as { title: string };
+    const { newTitle } = ctx.request.body as { newTitle?: string };
 
     if (!newTitle || newTitle.trim() === '') {
-        res.status(400).json({ error: 'New title cannot be empty' });
+        ctx.status = 400;
+        ctx.body = { error: 'New title cannot be empty' };
 
         return;
     }
@@ -16,7 +17,8 @@ const updateList = async (req: Request, res: Response) => {
     const database = dependencyContainer.resolve(DependencyToken.Database);
 
     if (!database) {
-        res.status(500).json({ error: 'Database not available' });
+        ctx.status = 500;
+        ctx.body = { error: 'Database not available' };
 
         return;
     }
@@ -26,7 +28,8 @@ const updateList = async (req: Request, res: Response) => {
     const list = await collection.findOne({ title });
 
     if (!list) {
-        res.status(404).json({ error: 'List not found' });
+        ctx.status = 404;
+        ctx.body = { error: 'List not found' };
 
         return;
     }
@@ -35,7 +38,8 @@ const updateList = async (req: Request, res: Response) => {
     const existingList = await collection.findOne({ title: newTitle.trim() });
 
     if (existingList) {
-        res.status(409).json({ error: 'A list with that name already exists' });
+        ctx.status = 409;
+        ctx.body = { error: 'A list with that name already exists' };
 
         return;
     }
@@ -46,7 +50,8 @@ const updateList = async (req: Request, res: Response) => {
     };
 
     await collection.findOneAndReplace({ title }, updatedList);
-    res.status(200).json({ message: 'List updated successfully', newTitle: newTitle.trim() });
+    ctx.status = 200;
+    ctx.body = { message: 'List updated successfully', newTitle: newTitle.trim() };
 };
 
 export default updateList;

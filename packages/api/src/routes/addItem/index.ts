@@ -1,17 +1,18 @@
-import { Request, Response } from 'express';
+import { Context } from 'koa';
 import { ObjectId } from 'mongodb';
 
 import { dependencyContainer } from '../../dependencies';
 import { CollectionNames, DependencyToken } from '../../dependencies/types';
 
-const addItem = async (req: Request, res: Response) => {
-    const { title } = req.params;
-    const { itemName, dateAdded } = req.body;
+const addItem = async (ctx: Context) => {
+    const { title } = ctx.params as { title: string };
+    const { itemName, dateAdded } = ctx.request.body as { itemName: string; dateAdded: Date };
 
     const database = dependencyContainer.resolve(DependencyToken.Database);
 
     if (!database) {
-        res.status(500).json({ error: 'Database not available' });
+        ctx.status = 500;
+        ctx.body = { error: 'Database not available' };
 
         return;
     }
@@ -21,7 +22,8 @@ const addItem = async (req: Request, res: Response) => {
     const list = await collection.findOneAndUpdate({ title },
         { $push: { items: { id: (new ObjectId()).toString(), name: itemName, dateAdded, isSelected: false } } });
 
-    res.send(list).status(200);
+    ctx.status = 200;
+    ctx.body = list;
 };
 
 export default addItem;

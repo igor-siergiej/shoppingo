@@ -1,18 +1,19 @@
 import { List, User } from '@shoppingo/types';
-import { Request, Response } from 'express';
+import { Context } from 'koa';
 import { ObjectId } from 'mongodb';
 
 import { config } from '../../config';
 import { dependencyContainer } from '../../dependencies';
 import { CollectionNames, DependencyToken } from '../../dependencies/types';
 
-const addList = async (req: Request, res: Response) => {
-    const { title, dateAdded, user, selectedUsers } = req.body;
+const addList = async (ctx: Context) => {
+    const { title, dateAdded, user, selectedUsers } = ctx.request.body as { title: string; dateAdded: Date; user: User; selectedUsers?: Array<string> };
 
     const database = dependencyContainer.resolve(DependencyToken.Database);
 
     if (!database) {
-        res.status(500).json({ error: 'Database not available' });
+        ctx.status = 500;
+        ctx.body = { error: 'Database not available' };
 
         return;
     }
@@ -38,7 +39,8 @@ const addList = async (req: Request, res: Response) => {
 
                 console.error('Auth service error response:', errorText);
 
-                res.status(502).json({ error: `Auth service error: ${response.status}` });
+                ctx.status = 502;
+                ctx.body = { error: `Auth service error: ${response.status}` };
 
                 return;
             }
@@ -50,7 +52,8 @@ const addList = async (req: Request, res: Response) => {
             if (!data.success) {
                 console.error('Auth service returned success: false', data);
 
-                res.status(502).json({ error: 'Auth service returned error', details: data.message });
+                ctx.status = 502;
+                ctx.body = { error: 'Auth service returned error', details: data.message };
 
                 return;
             }
@@ -60,7 +63,8 @@ const addList = async (req: Request, res: Response) => {
             if (!users || users.length === 0) {
                 console.warn('No users found for usernames:', selectedUsers);
 
-                res.status(400).json({ error: 'No users found for the provided usernames' });
+                ctx.status = 400;
+                ctx.body = { error: 'No users found for the provided usernames' };
 
                 return;
             }
@@ -69,7 +73,8 @@ const addList = async (req: Request, res: Response) => {
         } catch (error) {
             console.error('Error fetching users from auth service:', error);
 
-            res.status(502).json({ error: 'Failed to fetch users from auth service' });
+            ctx.status = 502;
+            ctx.body = { error: 'Failed to fetch users from auth service' };
 
             return;
         }
@@ -85,7 +90,8 @@ const addList = async (req: Request, res: Response) => {
 
     const result = await collection.insertOne(list);
 
-    res.send(result).status(200);
+    ctx.status = 200;
+    ctx.body = result;
 };
 
 export default addList;

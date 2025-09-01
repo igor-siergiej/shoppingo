@@ -1,10 +1,10 @@
-import { Request, Response } from 'express';
+import { Context } from 'koa';
 
 import { dependencyContainer } from '../../dependencies';
 import { CollectionNames, DependencyToken } from '../../dependencies/types';
 
-const getList = async (req: Request, res: Response) => {
-    const { title } = req.params;
+const getList = async (ctx: Context) => {
+    const { title } = ctx.params as { title: string };
 
     const database = dependencyContainer.resolve(DependencyToken.Database);
 
@@ -13,12 +13,14 @@ const getList = async (req: Request, res: Response) => {
     const list = await collection.findOne({ title });
 
     if (!list) {
-        res.status(404).json({ error: 'List not found' });
+        ctx.status = 404;
+        ctx.body = { error: 'List not found' };
 
         return;
     }
 
-    res.send(list.items).status(200);
+    ctx.status = 200;
+    ctx.body = list.items;
 };
 
 export default getList;
