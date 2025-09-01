@@ -16,6 +16,7 @@ import deleteList from './endpoints/deleteList';
 import getList from './endpoints/getList';
 import getLists from './endpoints/getLists';
 import updateItem from './endpoints/updateItem';
+import updateList from './endpoints/updateList';
 
 const port = config.get('port');
 
@@ -77,6 +78,8 @@ export const onStartup = async () => {
         app.get('/api/lists/user/:userId', getLists);
 
         app.delete('/api/lists/:title', deleteList);
+
+        app.post('/api/lists/:title', updateList);
 
         app.put('/api/lists', addList);
 

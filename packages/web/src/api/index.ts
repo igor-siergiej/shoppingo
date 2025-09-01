@@ -112,6 +112,28 @@ export const clearSelected = async (listTitle: string) => {
     });
 };
 
+export const updateListName = async (listTitle: string, newTitle: string) => {
+    return await makeRequest({
+        pathname: `/api/lists/${listTitle}`,
+        method: MethodType.POST,
+        operationString: 'update list name',
+        body: JSON.stringify({
+            newTitle,
+        }),
+    });
+};
+
+export const updateItemName = async (listTitle: string, itemName: string, newItemName: string) => {
+    return await makeRequest({
+        pathname: `/api/lists/${listTitle}/items/${itemName}`,
+        method: MethodType.POST,
+        operationString: 'update item name',
+        body: JSON.stringify({
+            newItemName,
+        }),
+    });
+};
+
 const generateTimestamp = (now: Date): string => {
     const year = now.getFullYear();
     const month = (now.getMonth() + 1).toString().padStart(2, '0');
