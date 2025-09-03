@@ -73,8 +73,10 @@ const updateItem = async (ctx: Context) => {
     if (typeof isSelected !== 'boolean') {
         ctx.status = 400;
         ctx.body = { error: 'isSelected must be a boolean' };
+
         return;
     }
+
     const updatedItems = list.items.map((item) => {
         if (item.name === itemName) {
             return {
