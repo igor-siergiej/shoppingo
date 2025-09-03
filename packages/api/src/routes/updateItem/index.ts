@@ -70,6 +70,11 @@ const updateItem = async (ctx: Context) => {
     }
 
     // Otherwise, update item selection status as usual
+    if (typeof isSelected !== 'boolean') {
+        ctx.status = 400;
+        ctx.body = { error: 'isSelected must be a boolean' };
+        return;
+    }
     const updatedItems = list.items.map((item) => {
         if (item.name === itemName) {
             return {
@@ -89,7 +94,7 @@ const updateItem = async (ctx: Context) => {
     await collection.findOneAndReplace({ title }, updatedList);
 
     ctx.status = 200;
-    ctx.body = 'Updated Successfully';
+    ctx.body = { message: 'Item selection updated successfully', itemName, isSelected };
 };
 
 export default updateItem;

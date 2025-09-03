@@ -24,15 +24,20 @@ const ItemCheckBox = ({ item, listTitle, refetch }: ItemCheckBoxProps) => {
 
     const handleUpdateItem = async () => {
         setIsUpdateLoading(true);
-        await updateItem(item.name, !item.isSelected, listTitle);
-        await refetch();
-        setIsUpdateLoading(false);
+        try {
+            await updateItem(item.name, !item.isSelected, listTitle);
+            refetch();
+        } catch (error) {
+            console.error('Error updating item selection:', error);
+        } finally {
+            setIsUpdateLoading(false);
+        }
     };
 
     const handleDeleteItem = async () => {
         setIsDeleteLoading(true);
         await deleteItem(item.name, listTitle);
-        await refetch();
+        refetch();
         setIsDeleteLoading(false);
     };
 
@@ -45,7 +50,7 @@ const ItemCheckBox = ({ item, listTitle, refetch }: ItemCheckBoxProps) => {
         if (editValue.trim() && editValue !== item.name) {
             try {
                 await updateItemName(listTitle, item.name, editValue.trim());
-                await refetch();
+                refetch();
             } catch (error) {
                 console.error('Error updating item name:', error);
             }
