@@ -19,6 +19,7 @@ const getList = async (ctx: Context) => {
         return;
     }
 
+    ctx.set('Cache-Control', 'no-store');
     ctx.status = 200;
     ctx.body = list.items;
 };

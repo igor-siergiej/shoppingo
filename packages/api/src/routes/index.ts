@@ -6,6 +6,7 @@ import clearList from './clearList';
 import deleteSelected from './deleteChecked';
 import deleteItem from './deleteItem';
 import deleteList from './deleteList';
+import getImage from './getImage';
 import getList from './getList';
 import getLists from './getLists';
 import updateItem from './updateItem';
@@ -28,5 +29,6 @@ router.post('/api/lists/:title/items/:itemName', updateItem);
 router.delete('/api/lists/:title/items/:itemName', deleteItem);
 router.delete('/api/lists/:title/clear', clearList);
 router.delete('/api/lists/:title/clearSelected', deleteSelected);
+router.get('/api/image/:name', getImage);
 
 export default router;

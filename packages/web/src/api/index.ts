@@ -10,7 +10,7 @@ export const getListQuery = (listTitle: string) => ({
 
 export const getList = async (listTitle: string): Promise<Array<Item>> => {
     return await makeRequest({
-        pathname: `/api/lists/title/${listTitle}`,
+        pathname: `/api/lists/title/${encodeURIComponent(listTitle)}`,
         method: MethodType.GET,
         operationString: 'get list',
     });
@@ -54,8 +54,8 @@ export const addItem = async (
 ): Promise<unknown> => {
     const dateAdded = generateTimestamp(new Date());
 
-    return await makeRequest({
-        pathname: `/api/lists/${listTitle}/items`,
+    const result = await makeRequest({
+        pathname: `/api/lists/${encodeURIComponent(listTitle)}/items`,
         method: MethodType.PUT,
         operationString: 'add item',
         body: JSON.stringify({
@@ -63,6 +63,12 @@ export const addItem = async (
             dateAdded,
         }),
     });
+
+    // Trigger image generation/fetch for the item in the background (fire-and-forget)
+    void fetch(`/api/image/${encodeURIComponent(itemName)}`, { method: 'GET' })
+        .catch(() => { /* ignore errors, do not block addItem */ });
+
+    return result;
 };
 
 export const updateItem = async (
@@ -71,7 +77,7 @@ export const updateItem = async (
     listTitle: string
 ) => {
     return await makeRequest({
-        pathname: `/api/lists/${listTitle}/items/${itemName}`,
+        pathname: `/api/lists/${encodeURIComponent(listTitle)}/items/${encodeURIComponent(itemName)}`,
         method: MethodType.POST,
         operationString: 'update item',
         body: JSON.stringify({
@@ -82,7 +88,7 @@ export const updateItem = async (
 
 export const deleteItem = async (itemName: string, listTitle: string) => {
     return await makeRequest({
-        pathname: `/api/lists/${listTitle}/items/${itemName}`,
+        pathname: `/api/lists/${encodeURIComponent(listTitle)}/items/${encodeURIComponent(itemName)}`,
         method: MethodType.DELETE,
         operationString: 'delete item',
     });
@@ -90,7 +96,7 @@ export const deleteItem = async (itemName: string, listTitle: string) => {
 
 export const deleteList = async (listTitle: string) => {
     return await makeRequest({
-        pathname: `/api/lists/${listTitle}`,
+        pathname: `/api/lists/${encodeURIComponent(listTitle)}`,
         method: MethodType.DELETE,
         operationString: 'delete list',
     });
@@ -98,7 +104,7 @@ export const deleteList = async (listTitle: string) => {
 
 export const clearList = async (listTitle: string) => {
     return await makeRequest({
-        pathname: `/api/lists/${listTitle}/clear`,
+        pathname: `/api/lists/${encodeURIComponent(listTitle)}/clear`,
         method: MethodType.DELETE,
         operationString: 'clear the list',
     });
@@ -106,7 +112,7 @@ export const clearList = async (listTitle: string) => {
 
 export const clearSelected = async (listTitle: string) => {
     return await makeRequest({
-        pathname: `/api/lists/${listTitle}/clearSelected`,
+        pathname: `/api/lists/${encodeURIComponent(listTitle)}/clearSelected`,
         method: MethodType.DELETE,
         operationString: 'clear selected items'
     });
@@ -114,7 +120,7 @@ export const clearSelected = async (listTitle: string) => {
 
 export const updateListName = async (listTitle: string, newTitle: string) => {
     return await makeRequest({
-        pathname: `/api/lists/${listTitle}`,
+        pathname: `/api/lists/${encodeURIComponent(listTitle)}`,
         method: MethodType.POST,
         operationString: 'update list name',
         body: JSON.stringify({
@@ -125,7 +131,7 @@ export const updateListName = async (listTitle: string, newTitle: string) => {
 
 export const updateItemName = async (listTitle: string, itemName: string, newItemName: string) => {
     return await makeRequest({
-        pathname: `/api/lists/${listTitle}/items/${itemName}`,
+        pathname: `/api/lists/${encodeURIComponent(listTitle)}/items/${encodeURIComponent(itemName)}`,
         method: MethodType.POST,
         operationString: 'update item name',
         body: JSON.stringify({

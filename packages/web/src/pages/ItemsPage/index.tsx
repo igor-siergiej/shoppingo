@@ -28,8 +28,7 @@ const ItemsPage = () => {
                             items={data}
                             refetch={refetch}
                             listTitle={listTitle}
-                        >
-                        </ItemCheckBoxList>
+                        />
                     )
                 : (
                         <p className="text-center pb-4 pt-4">

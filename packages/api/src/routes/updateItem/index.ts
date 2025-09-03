@@ -94,7 +94,7 @@ const updateItem = async (ctx: Context) => {
     await collection.findOneAndReplace({ title }, updatedList);
 
     ctx.status = 200;
-    ctx.body = { message: 'Item selection updated successfully', itemName, isSelected };
+    ctx.body = { message: 'Updated Successfully' };
 };
 
 export default updateItem;

@@ -1,12 +1,12 @@
 import { Item } from '@shoppingo/types';
-import { Check, Edit2, Loader2, X, X as XIcon } from 'lucide-react';
-import { useState } from 'react';
+import { Check, Edit2, ImageOff, Loader2, X, X as XIcon } from 'lucide-react';
+import { type MouseEvent, useEffect, useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Skeleton } from '@/components/ui/skeleton';
 
 import { deleteItem, updateItem, updateItemName } from '../../api';
 
@@ -17,31 +17,21 @@ export interface ItemCheckBoxProps {
 }
 
 const ItemCheckBox = ({ item, listTitle, refetch }: ItemCheckBoxProps) => {
-    const [isUpdateLoading, setIsUpdateLoading] = useState(false);
     const [isDeleteLoading, setIsDeleteLoading] = useState(false);
+    const [isToggleLoading, setIsToggleLoading] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [editValue, setEditValue] = useState('');
 
-    const handleUpdateItem = async () => {
-        setIsUpdateLoading(true);
-        try {
-            await updateItem(item.name, !item.isSelected, listTitle);
-            refetch();
-        } catch (error) {
-            console.error('Error updating item selection:', error);
-        } finally {
-            setIsUpdateLoading(false);
-        }
-    };
-
-    const handleDeleteItem = async () => {
+    const handleDeleteItem = async (e?: MouseEvent) => {
+        e?.stopPropagation();
         setIsDeleteLoading(true);
         await deleteItem(item.name, listTitle);
         refetch();
         setIsDeleteLoading(false);
     };
 
-    const handleEditStart = () => {
+    const handleEditStart = (e?: MouseEvent) => {
+        e?.stopPropagation();
         setIsEditing(true);
         setEditValue(item.name);
     };
@@ -65,6 +55,28 @@ const ItemCheckBox = ({ item, listTitle, refetch }: ItemCheckBoxProps) => {
         setEditValue('');
     };
 
+    const imageSrc = useMemo(() => `/api/image/${encodeURIComponent(item.name)}`, [item.name]);
+    const [hasLoadedImage, setHasLoadedImage] = useState(false);
+    const [hasImageError, setHasImageError] = useState(false);
+
+    useEffect(() => {
+        setHasLoadedImage(false);
+        setHasImageError(false);
+    }, [imageSrc]);
+
+    const handleToggleSelected = async () => {
+        if (isEditing || isDeleteLoading || isToggleLoading) return;
+        setIsToggleLoading(true);
+        try {
+            const next = !item.isSelected;
+
+            await updateItem(item.name, next, listTitle);
+            await refetch();
+        } finally {
+            setIsToggleLoading(false);
+        }
+    };
+
     return (
         <Card
             key={item.name}
@@ -72,23 +84,64 @@ const ItemCheckBox = ({ item, listTitle, refetch }: ItemCheckBoxProps) => {
                 item.isSelected
                     ? 'bg-primary/10 border-primary/20 shadow-md'
                     : 'bg-background hover:bg-accent/50'
-            }`}
+            } ${isEditing ? '' : 'cursor-pointer'}`}
+            onClick={() => void handleToggleSelected()}
+
+            onClickCapture={(e) => {
+                const target = e.target as HTMLElement;
+
+                if (target.closest('button') || target.closest('input, textarea')) {
+                    return;
+                }
+                // Allow bubbling onClick to handle the toggle
+            }}
+            role="button"
+            aria-pressed={item.isSelected}
+            aria-busy={isToggleLoading}
+            tabIndex={isEditing ? -1 : 0}
+            onKeyDown={(e) => {
+                if (isEditing) return;
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    void handleToggleSelected();
+                }
+            }}
         >
             <CardContent className="flex items-center justify-between p-0.5">
                 <div className="flex items-center gap-4 flex-1">
-                    {isUpdateLoading
-                        ? (
-                                <Loader2 className="h-6 w-6 animate-spin shrink-0" />
-                            )
-                        : (
-                                <Checkbox
-                                    id={`checkbox-${item.name}`}
-                                    checked={item.isSelected}
-                                    onCheckedChange={handleUpdateItem}
-                                    className="shrink-0 h-5 w-5"
-                                    disabled={isEditing}
-                                />
+
+                    {/* Item image: single <img> to avoid duplicate requests. Overlays for loading/spinner/error. */}
+                    {!isEditing && (
+                        <div className="relative h-12 w-12 shrink-0">
+                            {/* Image */}
+                            <img
+                                src={imageSrc}
+                                alt={item.name}
+                                className={`h-12 w-12 rounded-full object-cover border ${hasLoadedImage && !hasImageError ? 'opacity-100' : 'opacity-0'}`}
+                                onLoad={() => setHasLoadedImage(true)}
+                                onError={() => setHasImageError(true)}
+                            />
+
+                            {/* Loading skeleton (only before load and no error) */}
+                            {!hasLoadedImage && !hasImageError && (
+                                <Skeleton className="absolute inset-0 h-12 w-12 rounded-full border" />
                             )}
+
+                            {/* Toggle spinner overlay */}
+                            {isToggleLoading && (
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                                </div>
+                            )}
+
+                            {/* Error fallback icon */}
+                            {hasImageError && (
+                                <div className="absolute inset-0 h-12 w-12 rounded-full border flex items-center justify-center bg-muted/20 text-muted-foreground">
+                                    <ImageOff className="h-5 w-5" />
+                                </div>
+                            )}
+                        </div>
+                    )}
 
                     {isEditing
                         ? (
@@ -111,7 +164,7 @@ const ItemCheckBox = ({ item, listTitle, refetch }: ItemCheckBoxProps) => {
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        onClick={handleEditSave}
+                                        onClick={handleEditStart}
                                         className="h-8 w-8 text-green-600 hover:bg-green-50"
                                     >
                                         <Check size={16} />
@@ -128,7 +181,6 @@ const ItemCheckBox = ({ item, listTitle, refetch }: ItemCheckBoxProps) => {
                             )
                         : (
                                 <Label
-                                    htmlFor={`checkbox-${item.name}`}
                                     className={`flex-1 cursor-pointer text-base ${
                                         item.isSelected
                                             ? 'line-through text-muted-foreground'
