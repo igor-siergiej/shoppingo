@@ -24,7 +24,7 @@ const ListsList = ({ lists, refetch }: ListsListProps) => {
         if (editValue.trim() && editValue !== originalTitle) {
             try {
                 await updateListName(originalTitle, editValue.trim());
-                await refetch();
+                refetch();
             } catch (error) {
                 console.error('Error updating list name:', error);
             }
