@@ -9,10 +9,12 @@ on:
 
 jobs:
   ci:
+    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
     uses: igor-siergiej/im-apps-utils/.github/workflows/ci.yml@main
     secrets: inherit
 
   build-web:
+    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
     needs: ci
     uses: igor-siergiej/im-apps-utils/.github/workflows/docker-build.yml@main
     with:
@@ -22,6 +24,7 @@ jobs:
     secrets: inherit
 
   build-api:
+    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
     needs: ci
     uses: igor-siergiej/im-apps-utils/.github/workflows/docker-build.yml@main
     with:
@@ -31,6 +34,7 @@ jobs:
     secrets: inherit
 
   gitops:
+    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
     needs: [build-web, build-api]
     uses: igor-siergiej/im-apps-utils/.github/workflows/gitops-update.yml@main
     with:
