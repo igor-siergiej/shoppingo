@@ -1,7 +1,7 @@
 FROM node:22 AS builder
 
-ARG VITE_AUTH_URL
-ENV VITE_AUTH_URL=$VITE_AUTH_URL
+ARG APP_VERSION
+ENV APP_VERSION=$APP_VERSION
 
 WORKDIR /app
 
@@ -25,7 +25,7 @@ RUN --mount=type=secret,id=PAT_TOKEN,required \
   sh -c 'export PAT_TOKEN="$(cat /run/secrets/PAT_TOKEN)" && yarn install --immutable'
 
 RUN --mount=type=secret,id=PAT_TOKEN,required \
-  sh -c 'export PAT_TOKEN="$(cat /run/secrets/PAT_TOKEN)" && yarn workspace @shoppingo/web build'
+  sh -c 'export PAT_TOKEN="$(cat /run/secrets/PAT_TOKEN)" APP_VERSION="$APP_VERSION" && yarn workspace @shoppingo/web build'
 
 FROM nginx:alpine
 

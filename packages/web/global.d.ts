@@ -3,3 +3,5 @@ declare module '*.svg' {
 
     export default content;
 }
+
+declare const __APP_VERSION__: string | undefined;

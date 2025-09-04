@@ -5,6 +5,7 @@
       "useDefineForClassFields": true,
       "isolatedModules": true,
       "noEmit": true,
+      "emitDeclarationOnly": false,
       "types": ["vite/client", "vitest/globals", "@testing-library/jest-dom"],
       "paths": {
         "@shoppingo/types": ["../types/src"],
@@ -13,8 +14,9 @@
     },
     "include": [
       "src",
-      "vite-env.d.ts"
-, "tsconfig.node.json"    ],
+      "vite-env.d.ts",
+      "global.d.ts"
+    ],
     "references": [
       { "path": "../types" }
     ]
