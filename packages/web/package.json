@@ -1,7 +1,7 @@
 {
     "name": "@shoppingo/web",
     "private": true,
-    "version": "0.2.0",
+    "version": "0.2.1",
     "scripts": {
         "start": "vite --port 4000",
         "start:mock-auth": "node mock-auth-server.js",
