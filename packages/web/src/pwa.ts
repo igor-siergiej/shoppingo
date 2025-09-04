@@ -9,7 +9,7 @@ export function registerPWA() {
             || (typeof import.meta !== 'undefined' && (import.meta as unknown as { env?: { DEV?: boolean } }).env?.DEV === true);
 
     // In development/local, do not use a service worker. Also clean up any previous SW + caches.
-    if (!isLocalhost) {
+    if (isLocalhost) {
         window.addEventListener('load', async () => {
             try {
                 const registrations = await navigator.serviceWorker.getRegistrations();

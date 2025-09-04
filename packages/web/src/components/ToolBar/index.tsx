@@ -165,9 +165,9 @@ export default function ToolBar({
     return (
         <>
             <div className="fixed bottom-4 left-0 right-0 z-40 px-4">
-                <div className="mx-auto max-w-[500px]">
+                <div className="mx-auto max-w-[400px]">
                     <MotionConfig transition={transition}>
-                        <Card className="shadow-lg !gap-0">
+                        <Card className="shadow-lg py-2 !gap-0">
                             <div className="overflow-hidden">
                                 <AnimatePresence initial={false} mode="sync">
                                     {
@@ -238,7 +238,7 @@ export default function ToolBar({
                                     <DrawerTrigger asChild>
                                         <RippleButton
                                             size="icon"
-                                            className="h-12 w-12 rounded-lg border-2 border-primary/20 hover:border-primary/40 transition-colors"
+                                            className="h-12 w-12 rounded-full border-2 border-primary/20 hover:border-primary/40 transition-colors"
                                         >
                                             <Plus className="h-5 w-5" />
                                         </RippleButton>
@@ -353,7 +353,7 @@ export default function ToolBar({
                                     <RippleButton
                                         size="icon"
                                         variant="ghost"
-                                        className="h-12 w-12 rounded-lg border-2 border-border hover:border-primary/40 transition-colors"
+                                        className="h-12 w-12 rounded-full transition-colors"
                                         rippleClassName="bg-gray-500/30"
                                         title={isItemsPage && handleGoBack ? 'Go back' : 'Go home'}
                                         onClick={() => {
@@ -373,7 +373,7 @@ export default function ToolBar({
                                     <RippleButton
                                         size="icon"
                                         variant="ghost"
-                                        className="h-12 w-12 rounded-lg border-2 border-border hover:border-primary/40 transition-colors"
+                                        className="h-12 w-12 rounded-full transition-colors"
                                         rippleClassName="bg-gray-500/30"
                                         title="Clear selected items"
                                         onClick={handleClearSelected}
@@ -387,7 +387,7 @@ export default function ToolBar({
                                     <RippleButton
                                         size="icon"
                                         variant="ghost"
-                                        className="h-12 w-12 rounded-lg border-2 border-destructive/20 hover:border-destructive/40 text-destructive hover:text-destructive transition-colors"
+                                        className="h-12 w-12 rounded-full text-destructive hover:text-destructive transition-colors"
                                         rippleClassName="bg-red-500/30"
                                         title="Delete all items"
                                         onClick={handleRemoveAll}
@@ -400,7 +400,7 @@ export default function ToolBar({
                                 <RippleButton
                                     size="icon"
                                     variant="ghost"
-                                    className="h-12 w-12 rounded-lg border-2 border-border hover:border-primary/40 transition-colors"
+                                    className="h-12 w-12 rounded-full transition-colors"
                                     rippleClassName="bg-gray-500/30"
                                     title="More"
                                     onClick={() => {
