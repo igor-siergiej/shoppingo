@@ -1,6 +1,6 @@
 import { Item } from '@shoppingo/types';
 import { Check, Edit2, ImageOff, Loader2, X, X as XIcon } from 'lucide-react';
-import { type MouseEvent, useEffect, useMemo, useState } from 'react';
+import { type MouseEvent, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -58,10 +58,23 @@ const ItemCheckBox = ({ item, listTitle, refetch }: ItemCheckBoxProps) => {
     const imageSrc = useMemo(() => `/api/image/${encodeURIComponent(item.name)}`, [item.name]);
     const [hasLoadedImage, setHasLoadedImage] = useState(false);
     const [hasImageError, setHasImageError] = useState(false);
+    const imageRef = useRef<HTMLImageElement>(null);
 
     useEffect(() => {
         setHasLoadedImage(false);
         setHasImageError(false);
+
+        const img = imageRef.current;
+
+        // If the image is already in the browser cache, the load event may not fire.
+        // Detect that case and set the loaded/error state accordingly.
+        if (img && img.complete) {
+            if (img.naturalWidth > 0) {
+                setHasLoadedImage(true);
+            } else {
+                setHasImageError(true);
+            }
+        }
     }, [imageSrc]);
 
     const handleToggleSelected = async () => {
@@ -115,6 +128,7 @@ const ItemCheckBox = ({ item, listTitle, refetch }: ItemCheckBoxProps) => {
                         <div className="relative h-12 w-12 shrink-0">
                             {/* Image */}
                             <img
+                                ref={imageRef}
                                 src={imageSrc}
                                 alt={item.name}
                                 className={`h-12 w-12 rounded-full object-cover border ${hasLoadedImage && !hasImageError ? 'opacity-100' : 'opacity-0'}`}

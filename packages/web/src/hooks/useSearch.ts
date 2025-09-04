@@ -21,6 +21,7 @@ export const useSearch = () => {
         const trimmedQuery = searchQuery.trim();
 
         if (!trimmedQuery || trimmedQuery.length < 2) {
+            setError(null);
             setResults({
                 success: 'false',
                 usernames: [],
@@ -55,14 +56,20 @@ export const useSearch = () => {
         }
     }, []);
 
-    // Debounced search effect
     useEffect(() => {
         const timeoutId = setTimeout(() => {
             searchUsers(query);
-        }, 300); // 300ms debounce
+        }, 300);
 
         return () => clearTimeout(timeoutId);
     }, [query, searchUsers]);
+
+    useEffect(() => {
+        if (!error) return;
+        const timeoutId = setTimeout(() => setError(null), 3000);
+
+        return () => clearTimeout(timeoutId);
+    }, [error]);
 
     return {
         query,
@@ -70,11 +77,14 @@ export const useSearch = () => {
         results,
         isLoading,
         error,
-        clearResults: () => setResults({
-            success: 'false',
-            usernames: [],
-            count: 0,
-            query: '',
-        }),
+        clearResults: () => {
+            setError(null);
+            setResults({
+                success: 'false',
+                usernames: [],
+                count: 0,
+                query: '',
+            });
+        },
     };
 };

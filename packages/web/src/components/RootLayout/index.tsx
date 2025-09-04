@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom';
 
 import Appbar from '../Appbar';
 import { Layout } from '../Layout';
+import NetworkStatusAlert from '../NetworkStatusAlert';
 
 interface RootLayoutProps {
     children?: ReactNode;
@@ -15,6 +16,7 @@ export const RootLayout = ({ children, showLayout = true }: RootLayoutProps) => 
     return (
         <div className="min-h-screen bg-background flex flex-col">
             <Appbar />
+            <NetworkStatusAlert />
             {showLayout
                 ? (
                         <Layout>

@@ -4,7 +4,7 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 
 const app = express();
-const PORT = 4002;
+const PORT = 3008;
 
 app.use(cors({
     origin: true,
