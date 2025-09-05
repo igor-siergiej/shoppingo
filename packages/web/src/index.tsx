@@ -13,7 +13,7 @@ import ItemsPage from './pages/ItemsPage';
 import ListPage from './pages/ListsPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
-import { listenForInstallPrompt, registerPWA } from './pwa';
+import { registerPWA } from './pwa';
 import { loadConfig } from './utils/config';
 
 const queryClient = new QueryClient({
@@ -73,7 +73,6 @@ const initializeApp = async () => {
         await loadConfig();
 
         registerPWA();
-        listenForInstallPrompt();
 
         root.render(
             <QueryClientProvider client={queryClient}>
