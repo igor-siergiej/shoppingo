@@ -185,6 +185,10 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html, body {
+    overscroll-behavior: none;
+    overscroll-behavior-y: none;
+  }
   body {
     @apply bg-background text-foreground;
     letter-spacing: var(--tracking-normal);

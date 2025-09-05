@@ -1,7 +1,7 @@
 export function registerPWA() {
     if (!('serviceWorker' in navigator)) return;
 
-    window.addEventListener('load', () => {
+    const registerNow = () => {
         navigator.serviceWorker.register('/sw.js').then((registration) => {
             registration.addEventListener('updatefound', () => {
                 const installing = registration.installing;
@@ -18,5 +18,11 @@ export function registerPWA() {
         navigator.serviceWorker.addEventListener('controllerchange', () => {
             window.location.reload();
         });
-    });
+    };
+
+    if (document.readyState === 'complete') {
+        registerNow();
+    } else {
+        window.addEventListener('load', registerNow);
+    }
 }

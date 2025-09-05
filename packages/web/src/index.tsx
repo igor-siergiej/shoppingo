@@ -69,10 +69,10 @@ const root = ReactDOM.createRoot(
 );
 
 const initializeApp = async () => {
+    registerPWA();
+
     try {
         await loadConfig();
-
-        registerPWA();
 
         root.render(
             <QueryClientProvider client={queryClient}>

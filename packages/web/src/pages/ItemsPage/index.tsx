@@ -1,5 +1,8 @@
+import { AlertTriangle } from 'lucide-react';
 import { useQuery } from 'react-query';
 import { useNavigate, useParams } from 'react-router-dom';
+
+import { Button } from '@/components/ui/button';
 
 import { addItem, clearList, clearSelected, getListQuery } from '../../api';
 import ItemCheckBoxList from '../../components/ItemCheckBoxList';
@@ -18,23 +21,44 @@ const ItemsPage = () => {
         return <div>Need a valid list title</div>;
     }
 
-    const errorPageContent = <div>Error fetching data.</div>;
+    const errorPageContent = (
+        <div className="flex flex-col items-center justify-center py-10 text-center">
+            <div className="flex items-center gap-3 text-destructive mb-3">
+                <AlertTriangle className="h-6 w-6" />
+                <span className="font-semibold">Unable to load items</span>
+            </div>
+            <p className="text-muted-foreground mb-4 max-w-sm">
+                Please check your connection and try again.
+            </p>
+            <Button variant="default" onClick={() => { void refetch(); }}>
+                Retry
+            </Button>
+        </div>
+    );
+
+    const isEmpty = Array.isArray(data) && data.length === 0;
 
     const pageContent = (
         <div className="flex flex-col">
             {data
                 ? (
-                        <ItemCheckBoxList
-                            items={data}
-                            refetch={refetch}
-                            listTitle={listTitle}
-                        />
+                        isEmpty
+                            ? (
+                                    <div className="fixed bottom-28 left-6 z-50 flex items-center gap-3 select-none">
+                                        <div className="bg-primary text-primary-foreground px-3 py-2 rounded-md shadow">
+                                            Press the green button to add items
+                                        </div>
+                                    </div>
+                                )
+                            : (
+                                    <ItemCheckBoxList
+                                        items={data}
+                                        refetch={refetch}
+                                        listTitle={listTitle}
+                                    />
+                                )
                     )
-                : (
-                        <p className="text-center pb-4 pt-4">
-                            This list is empty...
-                        </p>
-                    )}
+                : null}
         </div>
     );
 

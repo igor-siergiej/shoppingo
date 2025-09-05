@@ -1,4 +1,7 @@
+import { AlertTriangle } from 'lucide-react';
 import { useQuery } from 'react-query';
+
+import { Button } from '@/components/ui/button';
 
 import { addList, getListsQuery } from '../../api';
 import ListsList from '../../components/ListsList';
@@ -74,7 +77,20 @@ const ListsPage = () => {
         }
     };
 
-    const errorPageContent = <div>Error has occured</div>;
+    const errorPageContent = (
+        <div className="flex flex-col items-center justify-center py-10 text-center">
+            <div className="flex items-center gap-3 text-destructive mb-3">
+                <AlertTriangle className="h-6 w-6" />
+                <span className="font-semibold">Unable to load your lists</span>
+            </div>
+            <p className="text-muted-foreground mb-4 max-w-sm">
+                Please check your connection and try again.
+            </p>
+            <Button variant="default" onClick={() => { void refetch(); }}>
+                Retry
+            </Button>
+        </div>
+    );
 
     return (
         <>
