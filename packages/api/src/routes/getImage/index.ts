@@ -80,7 +80,7 @@ export const getImage = async (ctx: Context) => {
 
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash-image-preview',
-            contents: generatePrompt(name)
+            contents: generatePrompt(name.trim().toLocaleLowerCase())
         });
 
         const candidates = response?.candidates ?? [];
@@ -135,7 +135,7 @@ export const getImage = async (ctx: Context) => {
             try {
                 processedBuffer = await sharp(originalBuffer)
                     .webp({ quality: 85 })
-                    .withMetadata(false)
+                    .withMetadata({})
                     .toBuffer();
                 finalContentType = 'image/webp';
                 logger?.info('Fallback WebP conversion successful', { name });

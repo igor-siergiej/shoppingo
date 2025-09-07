@@ -31,6 +31,8 @@ WORKDIR /app
 # Copy only the built application
 COPY --from=builder /app/packages/api/build ./build
 
+RUN npm install --omit=dev --include=optional sharp
+
 EXPOSE 4001
 
 CMD ["node", "build/index.js"]
