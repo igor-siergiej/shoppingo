@@ -6,7 +6,7 @@ import { config } from '../../config';
 import { dependencyContainer } from '../../dependencies';
 import { DependencyToken } from '../../dependencies/types';
 
-const generatePrompt = (name: string) => `Minimalistic flat icon of a ${name} ingredient drawn in a simple, clean style, this is going to be a icon for my shopping list item. Bright solid colors, soft rounded edges, modern vector look, no text, no background.`;
+const generatePrompt = (name: string) => `Minimalistic flat icon of a ${name} drawn in a simple, clean style, this is going to be a icon for my shopping list item. Bright solid colors, soft rounded edges, modern vector look, no text, no background.`;
 
 /**
  * Process and optimize image buffer using Sharp
@@ -27,9 +27,8 @@ const processImage = async (inputBuffer: Buffer): Promise<Buffer> => {
             effort: 4, // Higher effort for better compression
             lossless: false,
             smartSubsample: true, // Better compression for photographic content
-            reductionEffort: 6 // Maximum compression effort
         })
-        .withMetadata(false) // Remove metadata to reduce file size
+        .withMetadata({})
         .toBuffer();
 };
 
