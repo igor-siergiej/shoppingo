@@ -16,11 +16,13 @@
         "koa-router": "^14.0.0",
         "minio": "^8.0.5",
         "mongodb": "^6.19.0",
+        "sharp": "^0.33.5",
         "typescript": "^5.9.2"
     },
     "devDependencies": {
         "@types/koa-router": "^7.4.8",
         "@types/koa__cors": "^5.0.0",
+        "@types/sharp": "^0.32.0",
         "ts-loader": "^9.5.4",
         "ts-node-dev": "^2.0.0",
         "tsup": "^8.5.0",

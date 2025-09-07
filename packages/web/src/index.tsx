@@ -14,11 +14,26 @@ import { UserProvider } from './context/UserContext';
 import { registerPWA } from './pwa';
 import { loadConfig } from './utils/config';
 
-// Lazy load pages for better performance
-const ItemsPage = React.lazy(() => import('./pages/ItemsPage'));
-const ListPage = React.lazy(() => import('./pages/ListsPage'));
-const LoginPage = React.lazy(() => import('./pages/LoginPage'));
-const RegisterPage = React.lazy(() => import('./pages/RegisterPage'));
+// Lazy load pages with proper error boundaries and context delay
+const lazyLoadPage = (importFn: () => Promise<any>, fallbackName: string) =>
+    React.lazy(() =>
+        Promise.all([
+            importFn(),
+            new Promise(resolve => setTimeout(resolve, 100)) // Small delay to ensure React context is ready
+        ]).then(([module]) => module).catch(() => ({
+            default: () => (
+                <div>
+                    Failed to load
+                    {fallbackName}
+                </div>
+            )
+        }))
+    );
+
+const ItemsPage = lazyLoadPage(() => import('./pages/ItemsPage'), 'items page');
+const ListPage = lazyLoadPage(() => import('./pages/ListsPage'), 'lists page');
+const LoginPage = lazyLoadPage(() => import('./pages/LoginPage'), 'login page');
+const RegisterPage = lazyLoadPage(() => import('./pages/RegisterPage'), 'register page');
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -85,10 +100,6 @@ const root = ReactDOM.createRoot(
 );
 
 const initializeApp = async () => {
-    // Initialize performance monitoring
-    initPerformanceMonitoring();
-    markPerformance('app-initialization-start');
-
     registerPWA();
 
     // Render the app immediately with loading state

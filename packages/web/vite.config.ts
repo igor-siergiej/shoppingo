@@ -23,6 +23,10 @@ export default defineConfig(({ mode }) => {
             },
             // Increase chunk size warning limit since we're splitting
             chunkSizeWarningLimit: 1000,
+            // Ensure React is properly externalized
+            commonjsOptions: {
+                include: [/node_modules/],
+            },
         },
         define: {
             __APP_VERSION__: JSON.stringify(process.env.APP_VERSION || (isDev ? 'localhost' : '')),
