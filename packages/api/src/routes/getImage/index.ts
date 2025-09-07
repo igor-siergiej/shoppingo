@@ -5,7 +5,7 @@ import { config } from '../../config';
 import { dependencyContainer } from '../../dependencies';
 import { DependencyToken } from '../../dependencies/types';
 
-const generatePrompt = (name: string) => `Simple flat vector icon of ${name}, minimal style, bright solid colors, no background, transparent background, consistent line weight.`;
+const generatePrompt = (name: string) => `Minimalistic flat icon of a ${name} ingredient drawn in a simple, clean style, this is going to be a icon for my shopping list item. Bright solid colors, soft rounded edges, modern vector look, no text, no background.`;
 
 export const getImage = async (ctx: Context) => {
     const { name } = ctx.params as { name: string };

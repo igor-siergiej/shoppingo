@@ -8,7 +8,21 @@ export default defineConfig(({ mode }) => {
     return {
         plugins: [react()],
         build: {
-            outDir: './build'
+            outDir: './build',
+            rollupOptions: {
+                output: {
+                    manualChunks: {
+                        // Vendor chunks for better caching
+                        'react-vendor': ['react', 'react-dom'],
+                        'router-vendor': ['react-router-dom'],
+                        'query-vendor': ['react-query'],
+                        'ui-vendor': ['lucide-react', 'motion'],
+                        'utils-vendor': ['clsx', 'tailwind-merge']
+                    },
+                },
+            },
+            // Increase chunk size warning limit since we're splitting
+            chunkSizeWarningLimit: 1000,
         },
         define: {
             __APP_VERSION__: JSON.stringify(process.env.APP_VERSION || (isDev ? 'localhost' : '')),

@@ -1,20 +1,24 @@
 import './index.css';
 
+import React, { Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
 import AppInitializer from './components/AppInitializer';
+import LoadingSpinner from './components/LoadingSpinner';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { RootLayout } from './components/RootLayout';
 import { AuthProvider } from './context/AuthContext';
 import { UserProvider } from './context/UserContext';
-import ItemsPage from './pages/ItemsPage';
-import ListPage from './pages/ListsPage';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
 import { registerPWA } from './pwa';
 import { loadConfig } from './utils/config';
+
+// Lazy load pages for better performance
+const ItemsPage = React.lazy(() => import('./pages/ItemsPage'));
+const ListPage = React.lazy(() => import('./pages/ListsPage'));
+const LoginPage = React.lazy(() => import('./pages/LoginPage'));
+const RegisterPage = React.lazy(() => import('./pages/RegisterPage'));
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -30,7 +34,9 @@ const router = createBrowserRouter([
         path: '/login',
         element: (
             <RootLayout showLayout={false}>
-                <LoginPage />
+                <Suspense fallback={<LoadingSpinner message="Loading login..." />}>
+                    <LoginPage />
+                </Suspense>
             </RootLayout>
         ),
     },
@@ -38,7 +44,9 @@ const router = createBrowserRouter([
         path: '/register',
         element: (
             <RootLayout showLayout={false}>
-                <RegisterPage />
+                <Suspense fallback={<LoadingSpinner message="Loading registration..." />}>
+                    <RegisterPage />
+                </Suspense>
             </RootLayout>
         ),
     },
@@ -54,11 +62,19 @@ const router = createBrowserRouter([
         children: [
             {
                 index: true,
-                element: <ListPage />,
+                element: (
+                    <Suspense fallback={<LoadingSpinner message="Loading lists..." />}>
+                        <ListPage />
+                    </Suspense>
+                ),
             },
             {
                 path: 'list/:listTitle',
-                element: <ItemsPage />,
+                element: (
+                    <Suspense fallback={<LoadingSpinner message="Loading items..." />}>
+                        <ItemsPage />
+                    </Suspense>
+                ),
             },
         ],
     },
@@ -69,66 +85,30 @@ const root = ReactDOM.createRoot(
 );
 
 const initializeApp = async () => {
+    // Initialize performance monitoring
+    initPerformanceMonitoring();
+    markPerformance('app-initialization-start');
+
     registerPWA();
 
+    // Render the app immediately with loading state
+    root.render(
+        <QueryClientProvider client={queryClient}>
+            <UserProvider>
+                <AuthProvider>
+                    <RouterProvider router={router} />
+                </AuthProvider>
+            </UserProvider>
+        </QueryClientProvider>
+    );
+
+    // Load config in background and handle errors gracefully
     try {
         await loadConfig();
-
-        root.render(
-            <QueryClientProvider client={queryClient}>
-                <UserProvider>
-                    <AuthProvider>
-                        <RouterProvider router={router} />
-                    </AuthProvider>
-                </UserProvider>
-            </QueryClientProvider>
-        );
     } catch (error) {
-        root.render(
-            <div style={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                height: '100vh',
-                fontFamily: 'Arial, sans-serif',
-                backgroundColor: '#f5f5f5'
-            }}
-            >
-                <div style={{
-                    textAlign: 'center',
-                    padding: '2rem',
-                    backgroundColor: 'white',
-                    borderRadius: '8px',
-                    boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-                    maxWidth: '500px'
-                }}
-                >
-                    <h1 style={{ color: '#e53e3e', marginBottom: '1rem' }}>
-                        Configuration Error
-                    </h1>
-                    <p style={{ color: '#4a5568', marginBottom: '1rem' }}>
-                        The application failed to load its configuration.
-                    </p>
-                    <p style={{ color: '#718096', fontSize: '0.9rem' }}>
-                        {error instanceof Error ? error.message : 'Unknown error occurred'}
-                    </p>
-                    <button
-                        onClick={() => window.location.reload()}
-                        style={{
-                            marginTop: '1rem',
-                            padding: '0.5rem 1rem',
-                            backgroundColor: '#3182ce',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: 'pointer'
-                        }}
-                    >
-                        Retry
-                    </button>
-                </div>
-            </div>
-        );
+        console.error('Configuration failed to load:', error);
+        // Show a toast or notification instead of blocking the entire app
+        // The app can still function with default config values
     }
 };
 
