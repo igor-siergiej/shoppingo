@@ -29,9 +29,20 @@ const AddItemDrawer = ({ handleAdd, placeholder = 'Enter item name...' }: AddIte
 
     useEffect(() => {
         if (isOpen && inputRef.current) {
-            setTimeout(() => {
+            // Longer timeout for mobile devices to ensure drawer animation completes
+            const timeoutId = setTimeout(() => {
                 inputRef.current?.focus();
-            }, 50);
+                // Scroll the input into view on mobile
+                if (inputRef.current) {
+                    inputRef.current.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center',
+                        inline: 'nearest'
+                    });
+                }
+            }, 200);
+
+            return () => clearTimeout(timeoutId);
         }
     }, [isOpen]);
 

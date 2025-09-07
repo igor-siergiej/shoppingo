@@ -1,0 +1,47 @@
+/* Mobile keyboard handling styles */
+
+/* Ensure the drawer content is properly positioned when keyboard appears */
+@media (max-width: 768px) {
+  /* Use dynamic viewport units for better mobile support */
+  .drawer-content {
+    max-height: calc(100dvh - env(keyboard-inset-height, 0px) - 2rem) !important;
+  }
+  
+  /* Prevent the drawer from being pushed off screen */
+  [data-vaul-drawer] {
+    max-height: calc(100dvh - env(keyboard-inset-height, 0px) - 2rem) !important;
+  }
+  
+  /* Ensure input fields are visible when keyboard appears */
+  [data-vaul-drawer] input:focus {
+    scroll-margin-top: 2rem;
+    scroll-margin-bottom: 2rem;
+  }
+  
+  /* Handle iOS Safari viewport changes */
+  @supports (-webkit-touch-callout: none) {
+    [data-vaul-drawer] {
+      max-height: calc(100vh - env(keyboard-inset-height, 0px) - 2rem) !important;
+    }
+  }
+}
+
+/* Prevent zoom on input focus on iOS */
+@media screen and (max-width: 768px) {
+  input[type="text"],
+  input[type="search"],
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Ensure proper scrolling behavior in drawers */
+[data-vaul-drawer] {
+  overscroll-behavior: contain;
+}
+
+/* Better focus management for mobile */
+[data-vaul-drawer] input:focus {
+  transform: translateZ(0); /* Force hardware acceleration */
+  will-change: transform;
+}

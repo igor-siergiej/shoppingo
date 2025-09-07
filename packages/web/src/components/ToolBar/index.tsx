@@ -105,9 +105,20 @@ export default function ToolBar({
 
     useEffect(() => {
         if (isDrawerOpen && inputRef.current) {
-            setTimeout(() => {
+            // Longer timeout for mobile devices to ensure drawer animation completes
+            const timeoutId = setTimeout(() => {
                 inputRef.current?.focus();
-            }, 150);
+                // Scroll the input into view on mobile
+                if (inputRef.current) {
+                    inputRef.current.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center',
+                        inline: 'nearest'
+                    });
+                }
+            }, 250);
+
+            return () => clearTimeout(timeoutId);
         }
     }, [isDrawerOpen]);
 
