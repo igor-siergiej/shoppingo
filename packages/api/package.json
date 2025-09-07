@@ -1,6 +1,6 @@
 {
     "name": "@shoppingo/api",
-    "version": "0.2.4",
+    "version": "0.2.5",
     "scripts": {
         "start": "tsx watch src/index.ts",
         "build": "tsup"
