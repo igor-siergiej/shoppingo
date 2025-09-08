@@ -12,7 +12,6 @@ export default defineConfig(({ mode }) => {
             rollupOptions: {
                 output: {
                     manualChunks: {
-                        // Vendor chunks for better caching
                         'react-vendor': ['react', 'react-dom'],
                         'router-vendor': ['react-router-dom'],
                         'query-vendor': ['react-query'],
@@ -21,9 +20,7 @@ export default defineConfig(({ mode }) => {
                     },
                 },
             },
-            // Increase chunk size warning limit since we're splitting
             chunkSizeWarningLimit: 1000,
-            // Ensure React is properly externalized
             commonjsOptions: {
                 include: [/node_modules/],
             },

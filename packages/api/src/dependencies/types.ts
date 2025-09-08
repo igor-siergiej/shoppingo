@@ -1,7 +1,5 @@
-import { Logger, MongoDbConnection } from '@igor-siergiej/api-utils';
+import { Logger, MongoDbConnection, ObjectStoreConnection } from '@igor-siergiej/api-utils';
 import { List } from '@shoppingo/types';
-
-import { IBucket } from '../bucket/types';
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 export type Collections = {
@@ -18,7 +16,7 @@ export enum DependencyToken {
 export type Dependencies = {
     [DependencyToken.Database]: MongoDbConnection<Collections>;
     [DependencyToken.Logger]: Logger;
-    [DependencyToken.Bucket]: IBucket;
+    [DependencyToken.Bucket]: ObjectStoreConnection;
 };
 
 export enum CollectionNames {

@@ -42,6 +42,7 @@ export const onStartup = async () => {
 
         const logger = dependencyContainer.resolve(DependencyToken.Logger);
         const database = dependencyContainer.resolve(DependencyToken.Database);
+        const bucket = dependencyContainer.resolve(DependencyToken.Bucket);
 
         if (!database) {
             throw new Error('Database dependency not found');
@@ -66,21 +67,31 @@ export const onStartup = async () => {
         app.use(async (ctx, next) => {
             try {
                 await next();
-            } catch (err: any) {
-                ctx.status = err.status || 500;
-                ctx.body = { error: err.message || 'Internal Server Error' };
+            } catch (err: unknown) {
+                const error = err as { status?: number; message?: string };
+
+                ctx.status = error.status ?? 500;
+                ctx.body = { error: error.message ?? 'Internal Server Error' };
                 if (logger) {
-                    logger.error('Unhandled error', err);
+                    logger.error('Unhandled error', error);
                 }
             }
         });
 
-        logger.info('Starting API server - connecting to database');
+        logger.info('Starting API server - connecting to database and object store');
         await database.connect({
             connectionUri: config.get('connectionUri'),
             databaseName: config.get('databaseName')
         });
         logger.info('Connected to database');
+
+        await bucket.connect?.({
+            endpoint: config.get('bucketEndpoint'),
+            accessKey: config.get('bucketAccessKey'),
+            secretKey: config.get('bucketSecretKey'),
+            bucketName: config.get('bucketName')
+        });
+        logger.info('Connected to object store');
 
         app.use(routes.routes());
         app.use(routes.allowedMethods());

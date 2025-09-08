@@ -862,12 +862,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@igor-siergiej/api-utils@npm:0.0.4":
-  version: 0.0.4
-  resolution: "@igor-siergiej/api-utils@npm:0.0.4::__archiveUrl=https%3A%2F%2Fnpm.pkg.github.com%2Fdownload%2F%40igor-siergiej%2Fapi-utils%2F0.0.4%2Fc0a73e0b5515bbbb9dd9ff7edf95a4b6449ceaf0"
+"@igor-siergiej/api-utils@npm:0.0.5":
+  version: 0.0.5
+  resolution: "@igor-siergiej/api-utils@npm:0.0.5::__archiveUrl=https%3A%2F%2Fnpm.pkg.github.com%2Fdownload%2F%40igor-siergiej%2Fapi-utils%2F0.0.5%2F50a004f4520d7cf41033bdfe15e16dba22f5d33b"
   dependencies:
+    minio: "npm:^8.0.0"
     mongodb: "npm:^6.19.0"
-  checksum: 10c0/38cc8da9e75b1243e37d6333f7205bb167e8f4315dcf79641378ea96797e46668c2f5453aac3765330f89df7cc865bc49cf79365d9c19f05d689f2048d1314d0
+  checksum: 10c0/33b259b57aadb9d7affde9545c92f8a28fbea0ab84b0b092b836ce51a9c0cdeb454bd2a8e2b291217bf3c5565671b06e7ec15209f64a52842db1a42ec17fd9e0
   languageName: node
   linkType: hard
 
@@ -2122,7 +2123,7 @@ __metadata:
   resolution: "@shoppingo/api@workspace:packages/api"
   dependencies:
     "@google/genai": "npm:^1.16.0"
-    "@igor-siergiej/api-utils": "npm:0.0.4"
+    "@igor-siergiej/api-utils": "npm:0.0.5"
     "@koa/bodyparser": "npm:^6.0.0"
     "@koa/cors": "npm:^5.0.0"
     "@shoppingo/types": "workspace:*"
@@ -7642,7 +7643,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"minio@npm:^8.0.5":
+"minio@npm:^8.0.0, minio@npm:^8.0.5":
   version: 8.0.5
   resolution: "minio@npm:8.0.5"
   dependencies:
