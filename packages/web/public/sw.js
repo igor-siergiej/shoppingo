@@ -27,7 +27,17 @@ const CACHE_STRATEGIES = {
 self.addEventListener('install', (event) => {
   event.waitUntil(
     Promise.all([
-      caches.open(STATIC_CACHE).then((cache) => cache.addAll(STATIC_ASSETS)),
+      caches.open(STATIC_CACHE).then((cache) => {
+        // Cache assets individually to handle failures gracefully
+        return Promise.allSettled(
+          STATIC_ASSETS.map(asset => 
+            cache.add(asset).catch(error => {
+              console.warn(`Failed to cache ${asset}:`, error);
+              // Don't fail the entire installation if one asset fails
+            })
+          )
+        );
+      }),
     ])
   );
   self.skipWaiting();
