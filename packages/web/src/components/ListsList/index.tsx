@@ -43,6 +43,7 @@ const ListsList = ({ lists, refetch }: ListsListProps) => {
         <Card
             key={list.title}
             className="mb-2 transition-all duration-200 bg-background hover:bg-accent/50 py-0"
+            data-testid={`list-${list.title}`}
         >
             <CardContent className="flex items-center justify-between p-0.5 ">
                 <div className="flex-1">
@@ -63,6 +64,7 @@ const ListsList = ({ lists, refetch }: ListsListProps) => {
                                         }}
                                         className="flex-1"
                                         autoFocus
+                                        data-testid={`edit-input-${list.title}`}
                                     />
                                     <Button
                                         variant="ghost"
@@ -89,6 +91,7 @@ const ListsList = ({ lists, refetch }: ListsListProps) => {
                                     onClick={() => {
                                         navigate(`/list/${list.title}`);
                                     }}
+                                    data-testid={`list-link-${list.title}`}
                                 >
                                     {list.title}
                                 </Button>
@@ -102,6 +105,7 @@ const ListsList = ({ lists, refetch }: ListsListProps) => {
                             size="icon"
                             onClick={() => handleEditStart(list.title)}
                             className="h-12 w-12 hover:bg-blue-50 hover:text-blue-600"
+                            data-testid={`edit-list-${list.title}`}
                         >
                             <Edit2 size={20} strokeWidth={1.75} />
                         </Button>
@@ -115,6 +119,7 @@ const ListsList = ({ lists, refetch }: ListsListProps) => {
                         }}
                         className="h-12 w-12 hover:bg-destructive/10 hover:text-destructive"
                         disabled={editingList === list.title}
+                        data-testid={`delete-list-${list.title}`}
                     >
                         <X size={24} strokeWidth={1.75} />
                     </Button>

@@ -31,7 +31,7 @@ const ListsPage = () => {
     ) || [];
 
     const pageContent = (
-        <div className="flex flex-col space-y-6">
+        <div className="flex flex-col space-y-6" data-testid="lists-container">
             {/* Your Lists Section */}
             <div>
                 <h2 className="text-lg font-semibold mb-3 text-foreground">Your Lists</h2>
@@ -40,7 +40,7 @@ const ListsPage = () => {
                             <ListsList lists={yourLists} refetch={refetch} />
                         )
                     : (
-                            <p className="text-center pb-4 pt-4 text-muted-foreground">
+                            <p className="text-center pb-4 pt-4 text-muted-foreground" data-testid="empty-lists-message">
                                 You haven't created any lists yet...
                             </p>
                         )}

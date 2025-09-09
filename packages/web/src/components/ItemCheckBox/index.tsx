@@ -99,6 +99,7 @@ const ItemCheckBox = ({ item, listTitle, refetch }: ItemCheckBoxProps) => {
                     : 'bg-background hover:bg-accent/50'
             } ${isEditing ? '' : 'cursor-pointer'}`}
             onClick={() => void handleToggleSelected()}
+            data-testid={`item-${item.name}`}
 
             onClickCapture={(e) => {
                 const target = e.target as HTMLElement;
@@ -126,6 +127,14 @@ const ItemCheckBox = ({ item, listTitle, refetch }: ItemCheckBoxProps) => {
                     {/* Item image: single <img> to avoid duplicate requests. Overlays for loading/spinner/error. */}
                     {!isEditing && (
                         <div className="relative h-12 w-12 shrink-0">
+                            {/* Hidden checkbox for testing */}
+                            <input
+                                type="checkbox"
+                                checked={item.isSelected}
+                                onChange={() => void handleToggleSelected()}
+                                className="sr-only"
+                                data-testid={`item-checkbox-${item.name}`}
+                            />
                             {/* Image */}
                             <img
                                 ref={imageRef}
@@ -174,6 +183,7 @@ const ItemCheckBox = ({ item, listTitle, refetch }: ItemCheckBoxProps) => {
                                         }}
                                         className="flex-1"
                                         autoFocus
+                                        data-testid={`edit-input-${item.name}`}
                                     />
                                     <Button
                                         variant="ghost"
@@ -206,13 +216,14 @@ const ItemCheckBox = ({ item, listTitle, refetch }: ItemCheckBoxProps) => {
                             )}
                 </div>
 
-                <div className="flex items-center">
+                <div className="flex items-center" data-testid={`item-actions-${item.name}`}>
                     {!isEditing && (
                         <Button
                             variant="ghost"
                             size="icon"
                             onClick={handleEditStart}
                             className="h-12 w-12 hover:bg-blue-50 hover:text-blue-600"
+                            data-testid={`edit-item-${item.name}`}
                         >
                             <Edit2 size={20} strokeWidth={1.75} />
                         </Button>
@@ -228,6 +239,7 @@ const ItemCheckBox = ({ item, listTitle, refetch }: ItemCheckBoxProps) => {
                                     onClick={handleDeleteItem}
                                     className="h-12 w-12 hover:bg-destructive/10 hover:text-destructive"
                                     disabled={isEditing}
+                                    data-testid={`delete-item-${item.name}`}
                                 >
                                     <X size={24} strokeWidth={1.75} />
                                 </Button>

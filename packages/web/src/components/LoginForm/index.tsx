@@ -88,6 +88,7 @@ export function LoginForm({
                                     value={username}
                                     onChange={e => setUsername(e.target.value)}
                                     required
+                                    data-testid="username-input"
                                 />
                             </div>
                             <div className="grid gap-3">
@@ -101,15 +102,16 @@ export function LoginForm({
                                     value={password}
                                     onChange={e => setPassword(e.target.value)}
                                     required
+                                    data-testid="password-input"
                                 />
                             </div>
                             {error && (
-                                <div className="text-sm text-red-600 bg-red-50 p-3 rounded-md">
+                                <div className="text-sm text-red-600 bg-red-50 p-3 rounded-md" data-testid="error-message">
                                     {error}
                                 </div>
                             )}
                             <div className="flex flex-col gap-3">
-                                <Button type="submit" className="w-full" disabled={isLoading}>
+                                <Button type="submit" className="w-full" disabled={isLoading} data-testid="login-button">
                                     {isLoading ? 'Logging in...' : 'Login'}
                                 </Button>
                             </div>
