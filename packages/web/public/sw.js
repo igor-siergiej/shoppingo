@@ -1,4 +1,4 @@
-const STATIC_CACHE = 'shoppingo-static-v5';
+const STATIC_CACHE = 'shoppingo-static-v6';
 const API_CACHE = 'shoppingo-api-v4';
 const ASSET_CACHE = 'shoppingo-assets-v2';
 const RUNTIME_CACHE = 'shoppingo-runtime-v1';
@@ -8,19 +8,13 @@ const STATIC_ASSETS = [
   '/index.html',
   '/manifest.json',
   '/logo-192.png',
-  '/logo-512.png',
-  '/config.json' // Cache config for faster loading
+  '/logo-512.png'
 ];
 
-// Cache strategies
 const CACHE_STRATEGIES = {
-  // Static assets - cache first
   STATIC: 'cache-first',
-  // API calls - network first with cache fallback
   API: 'network-first',
-  // Images and fonts - cache first with long TTL
   ASSETS: 'cache-first',
-  // Runtime resources - stale while revalidate
   RUNTIME: 'stale-while-revalidate'
 };
 
@@ -28,12 +22,10 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     Promise.all([
       caches.open(STATIC_CACHE).then((cache) => {
-        // Cache assets individually to handle failures gracefully
         return Promise.allSettled(
           STATIC_ASSETS.map(asset => 
             cache.add(asset).catch(error => {
               console.warn(`Failed to cache ${asset}:`, error);
-              // Don't fail the entire installation if one asset fails
             })
           )
         );
@@ -79,9 +71,9 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Config file: cache-first with short TTL
+  // Config file: network-first, only cache successful responses
   if (url.pathname === '/config.json') {
-    event.respondWith(cacheFirstStrategy(request, STATIC_CACHE));
+    event.respondWith(networkFirstConfigStrategy(request, STATIC_CACHE));
     return;
   }
 
@@ -139,6 +131,30 @@ async function networkFirstStrategy(request, cacheName) {
     return new Response(JSON.stringify({ 
       error: 'offline', 
       message: 'No cached data available' 
+    }), {
+      status: 503,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+}
+
+// Network-first strategy for config.json - only cache successful responses
+async function networkFirstConfigStrategy(request, cacheName) {
+  const cache = await caches.open(cacheName);
+  
+  try {
+    const response = await fetch(request);
+    // Only cache if response is successful (200-299)
+    if (response && response.ok) {
+      await cache.put(request, response.clone());
+    }
+    return response;
+  } catch (error) {
+    // For config.json, don't fall back to cache if network fails
+    // This prevents serving stale 403 responses
+    return new Response(JSON.stringify({ 
+      error: 'network_error', 
+      message: 'Failed to fetch config' 
     }), {
       status: 503,
       headers: { 'Content-Type': 'application/json' }
