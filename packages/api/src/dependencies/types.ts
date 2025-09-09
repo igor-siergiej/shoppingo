@@ -1,10 +1,11 @@
 import { Logger, MongoDbConnection, ObjectStoreConnection } from '@igor-siergiej/api-utils';
 import { List } from '@shoppingo/types';
 
+import { IdGenerator } from '../domain/IdGenerator';
 import { ImageService } from '../domain/ImageService';
 import { ImageGenerator, ImageStore } from '../domain/ImageService/types';
+import { ListRepository } from '../domain/ListRepository';
 import { AuthClient, ListService } from '../domain/ListService';
-import { ListRepository } from '../domain/ListService/types';
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 export type Collections = {
@@ -15,6 +16,7 @@ export enum DependencyToken {
     Database = 'Database',
     Logger = 'Logger',
     Bucket = 'Bucket',
+    IdGenerator = 'IdGenerator',
     ListRepository = 'ListRepository',
     ListService = 'ListService',
     AuthClient = 'AuthClient',
@@ -28,6 +30,7 @@ export type Dependencies = {
     [DependencyToken.Database]: MongoDbConnection<Collections>;
     [DependencyToken.Logger]: Logger;
     [DependencyToken.Bucket]: ObjectStoreConnection;
+    [DependencyToken.IdGenerator]: IdGenerator;
     [DependencyToken.ListRepository]: ListRepository;
     [DependencyToken.ListService]: ListService;
     [DependencyToken.AuthClient]: AuthClient;

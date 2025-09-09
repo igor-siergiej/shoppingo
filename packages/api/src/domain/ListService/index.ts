@@ -1,7 +1,7 @@
 import { Item, List, User } from '@shoppingo/types';
-import { ObjectId } from 'mongodb';
 
-import { ListRepository } from './types';
+import { IdGenerator } from '../IdGenerator';
+import { ListRepository } from '../ListRepository';
 
 export interface AuthClient {
     getUsersByUsernames(usernames: Array<string>): Promise<Array<User>>;
@@ -10,6 +10,7 @@ export interface AuthClient {
 export class ListService {
     constructor(
         private readonly repo: ListRepository,
+        private readonly idGenerator: IdGenerator,
         private readonly auth?: AuthClient
     ) {}
 
@@ -61,7 +62,7 @@ export class ListService {
         }
 
         const list: List = {
-            id: (new ObjectId()).toString(),
+            id: this.idGenerator.generate(),
             title,
             dateAdded,
             items: [],
@@ -75,7 +76,7 @@ export class ListService {
 
     async addItem(title: string, itemName: string, dateAdded: Date) {
         const item: Item = {
-            id: (new ObjectId()).toString(),
+            id: this.idGenerator.generate(),
             name: itemName,
             dateAdded,
             isSelected: false

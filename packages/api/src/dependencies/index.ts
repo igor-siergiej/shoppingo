@@ -7,6 +7,7 @@ import { HttpAuthClient } from '../infrastructure/AuthClient';
 import { BucketStore } from '../infrastructure/BucketStore';
 import { GeminiImageGenerator } from '../infrastructure/GeminiImageGenerator';
 import { MongoListRepository } from '../infrastructure/MongoListRepository';
+import { UuidGenerator } from '../infrastructure/UuidGenerator';
 import { Dependencies, DependencyToken } from './types';
 
 export const dependencyContainer = DependencyContainer.getInstance<Dependencies>();
@@ -17,6 +18,7 @@ export const registerDepdendencies = () => {
     dependencyContainer.registerSingleton(DependencyToken.Logger, Logger);
     dependencyContainer.registerSingleton(DependencyToken.Bucket, ObjectStoreConnection);
     dependencyContainer.registerSingleton(DependencyToken.AuthClient, HttpAuthClient);
+    dependencyContainer.registerSingleton(DependencyToken.IdGenerator, UuidGenerator);
 
     // Domain services using factory classes
     dependencyContainer.registerSingleton(DependencyToken.ListRepository, class {
@@ -29,6 +31,7 @@ export const registerDepdendencies = () => {
         constructor() {
             return new ListService(
                 dependencyContainer.resolve(DependencyToken.ListRepository),
+                dependencyContainer.resolve(DependencyToken.IdGenerator),
                 dependencyContainer.resolve(DependencyToken.AuthClient)
             );
         }

@@ -2,7 +2,7 @@ import { MongoDbConnection } from '@igor-siergiej/api-utils';
 import { Item, List } from '@shoppingo/types';
 
 import { CollectionNames } from '../../dependencies/types';
-import { ListRepository } from '../../domain/ListService/types';
+import { ListRepository } from '../../domain/ListRepository';
 
 export class MongoListRepository implements ListRepository {
     constructor(
