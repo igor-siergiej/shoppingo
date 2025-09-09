@@ -5,7 +5,8 @@ import { IdGenerator } from '../domain/IdGenerator';
 import { ImageService } from '../domain/ImageService';
 import { ImageGenerator, ImageStore } from '../domain/ImageService/types';
 import { ListRepository } from '../domain/ListRepository';
-import { AuthClient, ListService } from '../domain/ListService';
+import { ListService } from '../domain/ListService';
+import { AuthClient } from '../domain/ListService/types';
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 export type Collections = {

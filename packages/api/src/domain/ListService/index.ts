@@ -2,10 +2,7 @@ import { Item, List, User } from '@shoppingo/types';
 
 import { IdGenerator } from '../IdGenerator';
 import { ListRepository } from '../ListRepository';
-
-export interface AuthClient {
-    getUsersByUsernames(usernames: Array<string>): Promise<Array<User>>;
-}
+import { AuthClient } from './types';
 
 export class ListService {
     constructor(
@@ -102,7 +99,6 @@ export class ListService {
             throw Object.assign(new Error('List not found'), { status: 404 });
         }
 
-        // Check if an item with the new name already exists
         const existingItem = list.items.find(item => item.name === newItemName.trim());
 
         if (existingItem) {
@@ -175,7 +171,6 @@ export class ListService {
             throw Object.assign(new Error('List not found'), { status: 404 });
         }
 
-        // Check if a list with the new title already exists
         const existingList = await this.repo.getByTitle(newTitle.trim());
 
         if (existingList) {

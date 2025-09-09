@@ -1,0 +1,9 @@
+process.env.PORT = '3000';
+process.env.CONNECTION_URI = 'mongodb://localhost:27017/test';
+process.env.DATABASE_NAME = 'test';
+process.env.BUCKET_NAME = 'test';
+process.env.BUCKET_ACCESS_KEY = 'test';
+process.env.BUCKET_SECRET_KEY = 'test';
+process.env.BUCKET_ENDPOINT = 'localhost:9000';
+process.env.AUTH_URL = 'http://localhost:3001';
+process.env.GEMINI_API_KEY = 'test-key';
