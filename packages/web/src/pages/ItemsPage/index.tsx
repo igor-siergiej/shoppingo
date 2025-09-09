@@ -45,7 +45,7 @@ const ItemsPage = () => {
                         isEmpty
                             ? (
                                     <div className="fixed bottom-28 left-6 z-50 flex items-center gap-3 select-none">
-                                        <div className="bg-primary text-primary-foreground px-3 py-2 rounded-md shadow">
+                                        <div className="bg-primary text-primary-foreground px-3 py-2 rounded-md shadow" data-testid="empty-list-message">
                                             Press the green button to add items
                                         </div>
                                     </div>

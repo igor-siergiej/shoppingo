@@ -8,6 +8,9 @@
         "start:with-mock": "concurrently \"npm run start:mock-auth\" \"npm run start\"",
         "build": "tsc && vite build --emptyOutDir",
         "test": "vitest --coverage",
+        "test:unit": "vitest run tests/unit",
+        "pw:run": "playwright test",
+        "pw:open": "playwright test --ui",
         "preview": "vite preview"
     },
     "dependencies": {
@@ -36,6 +39,7 @@
         "vaul": "^1.1.2"
     },
     "devDependencies": {
+        "@playwright/test": "^1.55.0",
         "@shoppingo/types": "workspace:*",
         "@tailwindcss/postcss": "^4.1.11",
         "@testing-library/jest-dom": "^6.6.4",

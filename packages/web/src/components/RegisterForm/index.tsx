@@ -97,6 +97,7 @@ export function RegisterForm({
                                     value={username}
                                     onChange={e => setUsername(e.target.value)}
                                     required
+                                    data-testid="username-input"
                                 />
                             </div>
                             <div className="grid gap-3">
@@ -108,6 +109,7 @@ export function RegisterForm({
                                     value={password}
                                     onChange={e => setPassword(e.target.value)}
                                     required
+                                    data-testid="password-input"
                                 />
                             </div>
                             <div className="grid gap-3">
@@ -119,15 +121,16 @@ export function RegisterForm({
                                     value={repeatPassword}
                                     onChange={e => setRepeatPassword(e.target.value)}
                                     required
+                                    data-testid="confirm-password-input"
                                 />
                             </div>
                             {(validationError || error) && (
-                                <div className="text-sm text-red-600 bg-red-50 p-3 rounded-md">
+                                <div className="text-sm text-red-600 bg-red-50 p-3 rounded-md" data-testid="error-message">
                                     {validationError || error}
                                 </div>
                             )}
                             <div className="flex flex-col gap-3">
-                                <Button type="submit" className="w-full" disabled={isLoading}>
+                                <Button type="submit" className="w-full" disabled={isLoading} data-testid="register-button">
                                     {isLoading ? 'Creating Account...' : 'Create Account'}
                                 </Button>
                             </div>

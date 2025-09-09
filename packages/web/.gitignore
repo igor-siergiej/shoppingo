@@ -26,3 +26,6 @@ build-ssr
 
 package-lock.json
 yarn.lock
+
+test-results
+playwright-report

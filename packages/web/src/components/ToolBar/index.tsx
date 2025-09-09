@@ -230,6 +230,7 @@ export default function ToolBar({
                                                                             setMenuActive(null);
                                                                         }}
                                                                         className="justify-center"
+                                                                        data-testid="logout-button"
                                                                     >
                                                                         <LogOut className="h-4 w-4 mr-2" />
                                                                         Log out
@@ -250,11 +251,12 @@ export default function ToolBar({
                                         <RippleButton
                                             size="icon"
                                             className="h-12 w-12 rounded-full border-2 border-primary/20 hover:border-primary/40 transition-colors"
+                                            data-testid={isListsPage ? 'add-list-button' : 'add-item-button'}
                                         >
                                             <Plus className="h-5 w-5" />
                                         </RippleButton>
                                     </DrawerTrigger>
-                                    <DrawerContent>
+                                    <DrawerContent data-testid="mobile-drawer">
                                         <div className="mx-auto w-full max-w-sm">
                                             <DrawerHeader>
                                                 <DrawerTitle>
@@ -285,6 +287,7 @@ export default function ToolBar({
                                                                 handleCancel();
                                                             }
                                                         }}
+                                                        data-testid={isListsPage ? 'list-title-input' : 'item-name-input'}
                                                     />
                                                     {error && (
                                                         <p className="text-sm text-destructive">Name cannot be blank.</p>
@@ -347,7 +350,7 @@ export default function ToolBar({
                                                 )}
                                             </div>
                                             <DrawerFooter>
-                                                <Button onClick={handleSubmit}>
+                                                <Button onClick={handleSubmit} data-testid={isListsPage ? 'create-list-button' : 'add-item-submit'}>
                                                     {isListsPage ? 'Add List' : 'Add Item'}
                                                 </Button>
                                                 <DrawerClose asChild>
@@ -374,6 +377,7 @@ export default function ToolBar({
                                                 navigate('/');
                                             }
                                         }}
+                                        data-testid="back-button"
                                     >
                                         <ArrowLeft className="h-5 w-5" />
                                     </RippleButton>
@@ -388,6 +392,7 @@ export default function ToolBar({
                                         rippleClassName="bg-gray-500/30"
                                         title="Clear selected items"
                                         onClick={handleClearSelected}
+                                        data-testid="clear-selected-button"
                                     >
                                         <CheckCheck className="h-5 w-5" />
                                     </RippleButton>
@@ -402,6 +407,7 @@ export default function ToolBar({
                                         rippleClassName="bg-red-500/30"
                                         title="Delete all items"
                                         onClick={handleRemoveAll}
+                                        data-testid="clear-all-button"
                                     >
                                         <Trash2 className="h-5 w-5" />
                                     </RippleButton>
@@ -425,6 +431,7 @@ export default function ToolBar({
 
                                         setMenuActive(1);
                                     }}
+                                    data-testid="user-menu"
                                 >
                                     <Menu className="h-5 w-5" />
                                 </RippleButton>
