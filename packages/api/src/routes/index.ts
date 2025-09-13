@@ -5,7 +5,7 @@ import * as listHandlers from '../interfaces/ListHandlers';
 
 const router = new Router();
 
-router.get('/health', async (ctx) => {
+router.get('/api/health', async (ctx) => {
     ctx.status = 200;
     ctx.body = { status: 'healthy', service: 'shoppingo-api', timestamp: new Date().toISOString() };
 });
