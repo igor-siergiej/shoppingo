@@ -8,16 +8,10 @@
         <meta name="theme-color" content="#2e7d32" />
         <link rel="manifest" href="/manifest.json" />
         
-        <!-- Preload critical resources -->
         <link rel="preload" href="/logo-192.png" as="image" />
-        <link rel="preload" href="/config.json" as="fetch" crossorigin />
-        
-        <!-- DNS prefetch for external resources -->
         <link rel="dns-prefetch" href="//fonts.googleapis.com" />
         
-        <!-- Critical CSS inline for faster rendering -->
         <style>
-            /* Critical loading styles */
             #root {
                 min-height: 100vh;
                 background-color: #f5f5f5;
@@ -52,7 +46,6 @@
     </head>
     <body>
         <div id="root">
-            <!-- Initial loading screen -->
             <div class="loading-screen">
                 <div class="loading-spinner"></div>
                 <div class="loading-text">Loading Shoppingo...</div>

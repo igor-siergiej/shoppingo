@@ -1,19 +1,20 @@
 import './index.css';
 
-import React, { Suspense, useEffect, useState } from 'react';
+import React, { Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
 import AppInitializer from './components/AppInitializer';
+import ConfigLoader from './components/ConfigLoader';
 import ErrorBoundary from './components/ErrorBoundary';
 import LoadingSpinner from './components/LoadingSpinner';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { RootLayout } from './components/RootLayout';
+import RouterErrorHandler from './components/RouterErrorHandler';
 import { AuthProvider } from './context/AuthContext';
 import { UserProvider } from './context/UserContext';
 import { registerPWA } from './pwa';
-import { getConfigState, loadConfig } from './utils/config';
 
 const lazyLoadPage = (importFn: () => Promise<any>, fallbackName: string) =>
     React.lazy(() =>
@@ -54,6 +55,7 @@ const router = createBrowserRouter([
                 </Suspense>
             </RootLayout>
         ),
+        errorElement: <RouterErrorHandler />,
     },
     {
         path: '/register',
@@ -64,6 +66,7 @@ const router = createBrowserRouter([
                 </Suspense>
             </RootLayout>
         ),
+        errorElement: <RouterErrorHandler />,
     },
     {
         path: '/',
@@ -74,6 +77,7 @@ const router = createBrowserRouter([
                 </ProtectedRoute>
             </AppInitializer>
         ),
+        errorElement: <RouterErrorHandler />,
         children: [
             {
                 index: true,
@@ -96,58 +100,24 @@ const router = createBrowserRouter([
 ]);
 
 const App: React.FC = () => {
-    const [configLoaded, setConfigLoaded] = useState(false);
-    const [configError, setConfigError] = useState<string | null>(null);
-
-    useEffect(() => {
-        const initializeConfig = async () => {
-            try {
-                await loadConfig();
-            } catch {
-                const configState = getConfigState();
-
-                if (configState.error) {
-                    setConfigError(configState.error);
-                }
-            } finally {
-                setConfigLoaded(true);
-            }
-        };
-
-        initializeConfig();
-    }, []);
-
-    if (!configLoaded) {
-        return (
-            <div className="flex flex-col items-center justify-center h-screen gap-4">
-                <div className="loading-spinner"></div>
-                <div className="loading-text">Loading Shoppingo...</div>
-                {configError && (
-                    <div className="text-red-600 text-sm mt-2 text-center max-w-md">
-                        Failed to load configuration:
-                        {' '}
-                        {configError}
-                        <br />
-                    </div>
-                )}
-            </div>
-        );
-    }
-
     return (
         <ErrorBoundary>
-            <QueryClientProvider client={queryClient}>
-                <UserProvider>
-                    <AuthProvider>
-                        <RouterProvider router={router} />
-                    </AuthProvider>
-                </UserProvider>
-            </QueryClientProvider>
+            <ConfigLoader>
+                <QueryClientProvider client={queryClient}>
+                    <UserProvider>
+                        <AuthProvider>
+                            <RouterProvider router={router} />
+                        </AuthProvider>
+                    </UserProvider>
+                </QueryClientProvider>
+            </ConfigLoader>
         </ErrorBoundary>
     );
 };
 
-registerPWA();
+if (__IS_PROD__) {
+    registerPWA();
+}
 
 const root = ReactDOM.createRoot(
     document.getElementById('root') as HTMLElement

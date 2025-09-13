@@ -27,6 +27,7 @@ export default defineConfig(({ mode }) => {
         },
         define: {
             __APP_VERSION__: JSON.stringify(process.env.APP_VERSION || (isDev ? 'localhost' : '')),
+            __IS_PROD__: JSON.stringify(!isDev),
         },
         resolve: {
             alias: {
@@ -35,6 +36,9 @@ export default defineConfig(({ mode }) => {
         },
         server: {
             port: 4000,
+            hmr: {
+                overlay: false
+            },
             proxy: {
                 '/api': {
                     target: 'http://localhost:4001',

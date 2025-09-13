@@ -1,23 +1,9 @@
-export interface AppConfig {
-    AUTH_URL: string;
-}
+import { AppConfig, ConfigState } from './types';
 
-export interface ConfigState {
-    config: AppConfig | null;
-    isLoading: boolean;
-    error: string | null;
-    hasFallback: boolean;
-}
-
-const configState: ConfigState = {
+export const configState: ConfigState = {
     config: null,
     isLoading: false,
-    error: null,
-    hasFallback: false
-};
-
-const fallbackConfig: AppConfig = {
-    AUTH_URL: undefined
+    error: null
 };
 
 export const loadConfig = async (): Promise<AppConfig> => {
@@ -27,6 +13,10 @@ export const loadConfig = async (): Promise<AppConfig> => {
     try {
         const response = await fetch('/config.json');
 
+        if (!response.ok) {
+            throw new Error(`Failed to fetch config.json: ${response.status} ${response.statusText}`);
+        }
+
         const configData = await response.json();
 
         if (!configData.AUTH_URL) {
@@ -35,18 +25,15 @@ export const loadConfig = async (): Promise<AppConfig> => {
 
         configState.config = configData as AppConfig;
         configState.isLoading = false;
-        configState.hasFallback = false;
 
         return configState.config;
     } catch (error) {
-        console.warn('Configuration failed to load, using fallback config:', error instanceof Error ? error.message : 'Unknown error');
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
 
-        configState.config = fallbackConfig;
-        configState.error = error instanceof Error ? error.message : 'Unknown error';
+        configState.error = errorMessage;
         configState.isLoading = false;
-        configState.hasFallback = true;
 
-        return configState.config;
+        throw new Error(`Configuration failed to load: ${errorMessage}`);
     }
 };
 
