@@ -2,15 +2,30 @@ export interface AppConfig {
     AUTH_URL: string;
 }
 
-let config: AppConfig | null = null;
+export interface ConfigState {
+    config: AppConfig | null;
+    isLoading: boolean;
+    error: string | null;
+    hasFallback: boolean;
+}
+
+const configState: ConfigState = {
+    config: null,
+    isLoading: false,
+    error: null,
+    hasFallback: false
+};
+
+const fallbackConfig: AppConfig = {
+    AUTH_URL: undefined
+};
 
 export const loadConfig = async (): Promise<AppConfig> => {
+    configState.isLoading = true;
+    configState.error = null;
+
     try {
         const response = await fetch('/config.json');
-
-        if (!response.ok) {
-            throw new Error(`Failed to load config.json: ${response.status} ${response.statusText}`);
-        }
 
         const configData = await response.json();
 
@@ -18,20 +33,33 @@ export const loadConfig = async (): Promise<AppConfig> => {
             throw new Error('AUTH_URL is required in config.json');
         }
 
-        config = configData as AppConfig;
+        configState.config = configData as AppConfig;
+        configState.isLoading = false;
+        configState.hasFallback = false;
 
-        return config;
+        return configState.config;
     } catch (error) {
-        throw new Error(`Configuration failed to load: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        console.warn('Configuration failed to load, using fallback config:', error instanceof Error ? error.message : 'Unknown error');
+
+        configState.config = fallbackConfig;
+        configState.error = error instanceof Error ? error.message : 'Unknown error';
+        configState.isLoading = false;
+        configState.hasFallback = true;
+
+        return configState.config;
     }
 };
 
 export const getConfig = (): AppConfig => {
-    if (!config) {
+    if (!configState.config) {
         throw new Error('Configuration not loaded.');
     }
 
-    return config;
+    return configState.config;
+};
+
+export const getConfigState = (): ConfigState => {
+    return { ...configState };
 };
 
 export const getAuthUrl = (): string => {
