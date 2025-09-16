@@ -1,5 +1,10 @@
 import './index.css';
 
+import {
+    AuthConfigProvider,
+    AuthProvider,
+    ProtectedRoute,
+    UserProvider } from '@igor-siergiej/web-utils';
 import React, { Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from 'react-query';
@@ -9,11 +14,9 @@ import AppInitializer from './components/AppInitializer';
 import ConfigLoader from './components/ConfigLoader';
 import ErrorBoundary from './components/ErrorBoundary';
 import LoadingSpinner from './components/LoadingSpinner';
-import { ProtectedRoute } from './components/ProtectedRoute';
 import { RootLayout } from './components/RootLayout';
 import RouterErrorHandler from './components/RouterErrorHandler';
-import { AuthProvider } from './context/AuthContext';
-import { UserProvider } from './context/UserContext';
+import { getAuthConfig } from './config/auth';
 import { registerPWA } from './pwa';
 
 const lazyLoadPage = (importFn: () => Promise<any>, fallbackName: string) =>
@@ -104,11 +107,13 @@ const App: React.FC = () => {
         <ErrorBoundary>
             <ConfigLoader>
                 <QueryClientProvider client={queryClient}>
-                    <UserProvider>
-                        <AuthProvider>
-                            <RouterProvider router={router} />
-                        </AuthProvider>
-                    </UserProvider>
+                    <AuthConfigProvider config={getAuthConfig()}>
+                        <UserProvider>
+                            <AuthProvider>
+                                <RouterProvider router={router} />
+                            </AuthProvider>
+                        </UserProvider>
+                    </AuthConfigProvider>
                 </QueryClientProvider>
             </ConfigLoader>
         </ErrorBoundary>

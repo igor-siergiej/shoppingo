@@ -1,10 +1,9 @@
+import { useAuth, useAuthConfig } from '@igor-siergiej/web-utils';
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { cn } from '@/lib/utils';
 
-import { useAuth } from '../../context/AuthContext';
-import { getAuthUrl } from '../../utils/config';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Input } from '../ui/input';
@@ -21,6 +20,7 @@ export function LoginForm({
     const navigate = useNavigate();
     const location = useLocation();
     const { login } = useAuth();
+    const config = useAuthConfig();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -28,7 +28,7 @@ export function LoginForm({
         setError(null);
 
         try {
-            const response = await fetch(`${getAuthUrl()}/login`, {
+            const response = await fetch(`${config.authUrl}/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

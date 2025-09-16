@@ -1,10 +1,9 @@
+import { useAuth, useAuthConfig } from '@igor-siergiej/web-utils';
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { cn } from '@/lib/utils';
 
-import { useAuth } from '../../context/AuthContext';
-import { getAuthUrl } from '../../utils/config';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Input } from '../ui/input';
@@ -23,6 +22,7 @@ export function RegisterForm({
     const navigate = useNavigate();
     const location = useLocation();
     const { login } = useAuth();
+    const config = useAuthConfig();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -44,7 +44,7 @@ export function RegisterForm({
         setIsLoading(true);
 
         try {
-            const response = await fetch(`${getAuthUrl()}/register`, {
+            const response = await fetch(`${config.authUrl}/register`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

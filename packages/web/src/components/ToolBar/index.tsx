@@ -1,5 +1,6 @@
 'use client';
 
+import { useAuth } from '@igor-siergiej/web-utils';
 import { ArrowLeft, CheckCheck, Download, LogOut, Menu, Plus, Search, Trash2, User } from 'lucide-react';
 import { AnimatePresence, motion, MotionConfig } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
@@ -21,7 +22,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RippleButton } from '@/components/ui/ripple';
 
-import { useAuth } from '../../context/AuthContext';
 import { useSearch } from '../../hooks/useSearch';
 import { SearchResults } from '../SearchResults';
 

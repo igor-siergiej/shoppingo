@@ -1,7 +1,6 @@
+import { useTokenInitialization } from '@igor-siergiej/web-utils';
 import { Loader2 } from 'lucide-react';
 import React from 'react';
-
-import { useTokenInitialization } from '../../hooks/useTokenInitialization';
 
 interface AppInitializerProps {
     children: React.ReactNode;

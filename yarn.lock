@@ -872,6 +872,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@igor-siergiej/web-utils@npm:^0.0.6":
+  version: 0.0.6
+  resolution: "@igor-siergiej/web-utils@npm:0.0.6::__archiveUrl=https%3A%2F%2Fnpm.pkg.github.com%2Fdownload%2F%40igor-siergiej%2Fweb-utils%2F0.0.6%2Fd0c118a03283cb9e2da1e61d32671070883b61fe"
+  peerDependencies:
+    react: ">=18.0.0"
+    react-router-dom: ">=6.0.0"
+  checksum: 10c0/ec9b25a99fd48b60c1d35b529440991905ebfc5cc0eba31a209c2cc8507b4e77f7e2b66e1f149b5793a4f151c0454ca37a5e13972e5c43dbdc47f77762a2c250
+  languageName: node
+  linkType: hard
+
 "@img/sharp-darwin-arm64@npm:0.33.5":
   version: 0.33.5
   resolution: "@img/sharp-darwin-arm64@npm:0.33.5"
@@ -2166,6 +2176,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@shoppingo/web@workspace:packages/web"
   dependencies:
+    "@igor-siergiej/web-utils": "npm:^0.0.6"
     "@radix-ui/react-checkbox": "npm:^1.3.2"
     "@radix-ui/react-dialog": "npm:^1.1.14"
     "@radix-ui/react-label": "npm:^2.1.7"
