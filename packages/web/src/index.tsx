@@ -102,19 +102,25 @@ const router = createBrowserRouter([
     },
 ]);
 
+const AppContent: React.FC = () => {
+    return (
+        <QueryClientProvider client={queryClient}>
+            <AuthConfigProvider config={getAuthConfig()}>
+                <UserProvider>
+                    <AuthProvider>
+                        <RouterProvider router={router} />
+                    </AuthProvider>
+                </UserProvider>
+            </AuthConfigProvider>
+        </QueryClientProvider>
+    );
+};
+
 const App: React.FC = () => {
     return (
         <ErrorBoundary>
             <ConfigLoader>
-                <QueryClientProvider client={queryClient}>
-                    <AuthConfigProvider config={getAuthConfig()}>
-                        <UserProvider>
-                            <AuthProvider>
-                                <RouterProvider router={router} />
-                            </AuthProvider>
-                        </UserProvider>
-                    </AuthConfigProvider>
-                </QueryClientProvider>
+                <AppContent />
             </ConfigLoader>
         </ErrorBoundary>
     );

@@ -1,3 +1,4 @@
+import { useUser } from '@igor-siergiej/web-utils';
 import { AlertTriangle } from 'lucide-react';
 import { useQuery } from 'react-query';
 
@@ -7,7 +8,6 @@ import { addList, getListsQuery } from '../../api';
 import ListsList from '../../components/ListsList';
 import { ListsSkeleton } from '../../components/LoadingSkeleton';
 import ToolBar from '../../components/ToolBar';
-import { useUser } from '../../context/UserContext';
 
 const ListsPage = () => {
     const { user } = useUser();
