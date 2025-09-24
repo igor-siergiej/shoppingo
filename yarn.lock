@@ -714,15 +714,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@eslint/core@npm:^0.15.1":
-  version: 0.15.1
-  resolution: "@eslint/core@npm:0.15.1"
-  dependencies:
-    "@types/json-schema": "npm:^7.0.15"
-  checksum: 10c0/abaf641940776638b8c15a38d99ce0dac551a8939310ec81b9acd15836a574cf362588eaab03ab11919bc2a0f9648b19ea8dee33bf12675eb5b6fd38bda6f25e
-  languageName: node
-  linkType: hard
-
 "@eslint/core@npm:^0.15.2":
   version: 0.15.2
   resolution: "@eslint/core@npm:0.15.2"
@@ -756,32 +747,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@eslint/json@npm:^0.13.1":
-  version: 0.13.1
-  resolution: "@eslint/json@npm:0.13.1"
-  dependencies:
-    "@eslint/core": "npm:^0.15.1"
-    "@eslint/plugin-kit": "npm:^0.3.4"
-    "@humanwhocodes/momoa": "npm:^3.3.8"
-    natural-compare: "npm:^1.4.0"
-  checksum: 10c0/8dae443777aa2d6cc8d24e3185fb718c527cecd33af65a776ebc1e2a6f7856cac6238daff03d57bbcd31c8c0ede4fa3e9f8dd69531b5eedd61d53517fe65502d
-  languageName: node
-  linkType: hard
-
 "@eslint/object-schema@npm:^2.1.6":
   version: 2.1.6
   resolution: "@eslint/object-schema@npm:2.1.6"
   checksum: 10c0/b8cdb7edea5bc5f6a96173f8d768d3554a628327af536da2fc6967a93b040f2557114d98dbcdbf389d5a7b290985ad6a9ce5babc547f36fc1fde42e674d11a56
-  languageName: node
-  linkType: hard
-
-"@eslint/plugin-kit@npm:^0.3.4":
-  version: 0.3.4
-  resolution: "@eslint/plugin-kit@npm:0.3.4"
-  dependencies:
-    "@eslint/core": "npm:^0.15.1"
-    levn: "npm:^0.4.1"
-  checksum: 10c0/64331ca100f62a0115d10419a28059d0f377e390192163b867b9019517433d5073d10b4ec21f754fa01faf832aceb34178745924baab2957486f8bf95fd628d2
   languageName: node
   linkType: hard
 
@@ -841,13 +810,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@humanwhocodes/momoa@npm:^3.3.8":
-  version: 3.3.9
-  resolution: "@humanwhocodes/momoa@npm:3.3.9"
-  checksum: 10c0/591e1ef6b6e299a57006a052199a0b5f854dfbd0016c7862eb21fe7441a1426ef2ea75c006863693eb98fc46d4a60a82319546adb0277df2814b543a8dad7a7b
-  languageName: node
-  linkType: hard
-
 "@humanwhocodes/retry@npm:^0.3.0":
   version: 0.3.1
   resolution: "@humanwhocodes/retry@npm:0.3.1"
@@ -869,6 +831,27 @@ __metadata:
     minio: "npm:^8.0.0"
     mongodb: "npm:^6.19.0"
   checksum: 10c0/33b259b57aadb9d7affde9545c92f8a28fbea0ab84b0b092b836ce51a9c0cdeb454bd2a8e2b291217bf3c5565671b06e7ec15209f64a52842db1a42ec17fd9e0
+  languageName: node
+  linkType: hard
+
+"@igor-siergiej/eslint-config@npm:^0.0.9":
+  version: 0.0.9
+  resolution: "@igor-siergiej/eslint-config@npm:0.0.9::__archiveUrl=https%3A%2F%2Fnpm.pkg.github.com%2Fdownload%2F%40igor-siergiej%2Feslint-config%2F0.0.9%2Fadd78036041d8099f62b4f0bf3866eee255c9385"
+  dependencies:
+    "@eslint/js": "npm:^9.33.0"
+    "@stylistic/eslint-plugin": "npm:^5.2.3"
+    eslint: "npm:^9.33.0"
+    eslint-plugin-import: "npm:^2.32.0"
+    eslint-plugin-jsx-a11y: "npm:^6.10.2"
+    eslint-plugin-react: "npm:^7.37.2"
+    eslint-plugin-react-hooks: "npm:^5.0.0"
+    eslint-plugin-simple-import-sort: "npm:^12.1.1"
+    eslint-plugin-unused-imports: "npm:^4.1.4"
+    typescript-eslint: "npm:^8.39.0"
+  peerDependencies:
+    eslint: ^9.0.0
+    typescript: ^5.0.0
+  checksum: 10c0/889e3d3954ec410a4b49c3a4661d20adccaf1f67ae48aeeebce1afe52b3d678caeaf109a25172859da8ee01482d00f8b193cc4139fd803b56dda1ba5063befe1
   languageName: node
   linkType: hard
 
@@ -2901,7 +2884,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@typescript-eslint/eslint-plugin@npm:8.39.0, @typescript-eslint/eslint-plugin@npm:^8.39.0":
+"@typescript-eslint/eslint-plugin@npm:8.39.0":
   version: 8.39.0
   resolution: "@typescript-eslint/eslint-plugin@npm:8.39.0"
   dependencies:
@@ -2943,7 +2926,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@typescript-eslint/parser@npm:8.39.0, @typescript-eslint/parser@npm:^8.39.0":
+"@typescript-eslint/parser@npm:8.39.0":
   version: 8.39.0
   resolution: "@typescript-eslint/parser@npm:8.39.0"
   dependencies:
@@ -3125,7 +3108,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@typescript-eslint/utils@npm:8.39.0, @typescript-eslint/utils@npm:^8.0.0":
+"@typescript-eslint/utils@npm:8.39.0":
   version: 8.39.0
   resolution: "@typescript-eslint/utils@npm:8.39.0"
   dependencies:
@@ -5154,24 +5137,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-jest@npm:^29.0.1":
-  version: 29.0.1
-  resolution: "eslint-plugin-jest@npm:29.0.1"
-  dependencies:
-    "@typescript-eslint/utils": "npm:^8.0.0"
-  peerDependencies:
-    "@typescript-eslint/eslint-plugin": ^8.0.0
-    eslint: ^8.57.0 || ^9.0.0
-    jest: "*"
-  peerDependenciesMeta:
-    "@typescript-eslint/eslint-plugin":
-      optional: true
-    jest:
-      optional: true
-  checksum: 10c0/20edc166503a50c10b45f733797d530a5107c91efa25410ef405780d12222a796b5b41ed8f6d2b939632a1af273af6cc5732233463d1f36dbe7680bbb86c4eec
-  languageName: node
-  linkType: hard
-
 "eslint-plugin-jsx-a11y@npm:^6.10.2":
   version: 6.10.2
   resolution: "eslint-plugin-jsx-a11y@npm:6.10.2"
@@ -5197,7 +5162,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-react-hooks@npm:^5.2.0":
+"eslint-plugin-react-hooks@npm:^5.0.0, eslint-plugin-react-hooks@npm:^5.2.0":
   version: 5.2.0
   resolution: "eslint-plugin-react-hooks@npm:5.2.0"
   peerDependencies:
@@ -5215,7 +5180,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-react@npm:^7.37.5":
+"eslint-plugin-react@npm:^7.37.2, eslint-plugin-react@npm:^7.37.5":
   version: 7.37.5
   resolution: "eslint-plugin-react@npm:7.37.5"
   dependencies:
@@ -9651,25 +9616,13 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "shoppingo@workspace:."
   dependencies:
-    "@eslint/js": "npm:^9.33.0"
-    "@eslint/json": "npm:^0.13.1"
-    "@stylistic/eslint-plugin": "npm:^5.2.3"
-    "@typescript-eslint/eslint-plugin": "npm:^8.39.0"
-    "@typescript-eslint/parser": "npm:^8.39.0"
+    "@igor-siergiej/eslint-config": "npm:^0.0.9"
     "@vitest/ui": "npm:^3.2.4"
     dotenv-cli: "npm:^10.0.0"
     eslint: "npm:^9.33.0"
-    eslint-plugin-import: "npm:^2.32.0"
-    eslint-plugin-jest: "npm:^29.0.1"
-    eslint-plugin-jsx-a11y: "npm:^6.10.2"
-    eslint-plugin-react: "npm:^7.37.5"
-    eslint-plugin-react-hooks: "npm:^5.2.0"
-    eslint-plugin-simple-import-sort: "npm:^12.1.1"
-    eslint-plugin-unused-imports: "npm:^4.1.4"
     eslint-plugin-use-encapsulation: "npm:^1.3.1"
     tsup: "npm:^8.5.0"
     typescript: "npm:^5.9.2"
-    typescript-eslint: "npm:^8.39.0"
     vitest: "npm:^3.2.4"
   languageName: unknown
   linkType: soft
