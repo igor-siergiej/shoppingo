@@ -10,13 +10,12 @@ const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
     const { isInitializing } = useTokenInitialization();
     const [timeoutReached, setTimeoutReached] = useState(false);
 
-    // Add timeout protection in case initialization hangs
     useEffect(() => {
         if (isInitializing) {
             const timeout = setTimeout(() => {
                 console.warn('Token initialization timeout reached, this might indicate cache/SW issues');
                 setTimeoutReached(true);
-            }, 10000); // 10 second timeout
+            }, 10000);
 
             return () => clearTimeout(timeout);
         }
