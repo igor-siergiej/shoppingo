@@ -8,3 +8,4 @@ tsconfig.tsbuildinfo
 .yarn/releases/
 .pnp.*
 .vscode
+dev-dist

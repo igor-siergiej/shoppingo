@@ -16,10 +16,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import LoadingSpinner from './components/LoadingSpinner';
 import { RootLayout } from './components/RootLayout';
 import RouterErrorHandler from './components/RouterErrorHandler';
-import { UpdatePrompt } from './components/UpdatePrompt';
 import { getAuthConfig } from './config/auth';
-import { registerPWA } from './pwa';
-import { handleVersionUpdate } from './utils/version';
 
 const lazyLoadPage = (importFn: () => Promise<any>, fallbackName: string) =>
     React.lazy(() =>
@@ -123,37 +120,10 @@ const App: React.FC = () => {
         <ErrorBoundary>
             <ConfigLoader>
                 <AppContent />
-                <UpdatePrompt />
             </ConfigLoader>
         </ErrorBoundary>
     );
 };
-
-if (__IS_PROD__) {
-    // Initialize PWA with proper version handling
-    (async () => {
-        try {
-            // Handle version updates (clears cache if version changed)
-            const wasUpdated = await handleVersionUpdate();
-
-            if (wasUpdated) {
-                // Force a complete reload to ensure new version loads
-                setTimeout(() => {
-                    window.location.reload();
-                }, 500);
-
-                return; // Don't register PWA yet, let reload happen first
-            }
-
-            // Register PWA
-            registerPWA();
-        } catch (error) {
-            console.error('PWA initialization failed:', error);
-            // Still try to register PWA even if version handling fails
-            registerPWA();
-        }
-    })();
-}
 
 const root = ReactDOM.createRoot(
     document.getElementById('root') as HTMLElement

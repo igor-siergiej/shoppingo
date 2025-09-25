@@ -67,6 +67,7 @@
         "tw-animate-css": "^1.3.6",
         "typescript": "^5.9.2",
         "vite": "^7.1.2",
+        "vite-plugin-pwa": "^1.0.3",
         "vitest": "^3.2.4",
         "vitest-fetch-mock": "^0.4.5"
     }

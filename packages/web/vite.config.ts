@@ -1,96 +1,67 @@
 import react from '@vitejs/plugin-react';
 import fs from 'fs';
 import path from 'path';
-import { defineConfig, Plugin } from 'vite';
-
-// Custom plugin to update service worker version
-function updateServiceWorkerVersion(): Plugin {
-    let originalSwContent: string | null = null;
-
-    const updateServiceWorker = () => {
-        if (!fs.existsSync('./package.json')) return;
-
-        const packageJson = JSON.parse(fs.readFileSync('./package.json', 'utf8'));
-        const version = packageJson.version;
-        const swPath = './public/sw.js';
-
-        if (fs.existsSync(swPath)) {
-            let swContent = fs.readFileSync(swPath, 'utf8');
-
-            // Store original content with placeholders for restoration later
-            if (!originalSwContent && (swContent.includes('__APP_VERSION_PLACEHOLDER__') || swContent.includes('__BUILD_TIMESTAMP_PLACEHOLDER__'))) {
-                originalSwContent = swContent;
-            }
-
-            // Only update if placeholders are present (avoid double-updating)
-            if (swContent.includes('__APP_VERSION_PLACEHOLDER__') || swContent.includes('__BUILD_TIMESTAMP_PLACEHOLDER__')) {
-                // Replace APP_VERSION placeholder
-                swContent = swContent.replace(
-                    /__APP_VERSION_PLACEHOLDER__/g,
-                    version
-                );
-
-                // Replace BUILD_TIMESTAMP placeholder
-                const buildTimestamp = Date.now();
-
-                swContent = swContent.replace(
-                    /__BUILD_TIMESTAMP_PLACEHOLDER__/g,
-                    buildTimestamp.toString()
-                );
-
-                fs.writeFileSync(swPath, swContent);
-                console.log(`🔧 Service Worker: Injected version ${version} with build timestamp ${buildTimestamp}`);
-            }
-        }
-    };
-
-    const restoreServiceWorker = () => {
-        const swPath = './public/sw.js';
-
-        if (originalSwContent && fs.existsSync(swPath)) {
-            fs.writeFileSync(swPath, originalSwContent);
-            console.log('🔄 Service Worker: Restored placeholders for next build');
-        }
-    };
-
-    return {
-        name: 'update-sw-version',
-        buildStart: updateServiceWorker,
-        generateBundle() {
-            updateServiceWorker();
-
-            // Also ensure the updated sw.js is copied to the build directory
-            const swPath = './public/sw.js';
-            const buildSwPath = './build/sw.js';
-
-            if (fs.existsSync(swPath)) {
-                const swContent = fs.readFileSync(swPath, 'utf8');
-
-                // Ensure build directory exists
-                if (!fs.existsSync('./build')) {
-                    fs.mkdirSync('./build', { recursive: true });
-                }
-
-                fs.writeFileSync(buildSwPath, swContent);
-                console.log('📦 Service Worker: Copied updated sw.js to build directory');
-            }
-        },
-        buildEnd() {
-            // Restore placeholders after build completes
-            restoreServiceWorker();
-        }
-    };
-}
+import { defineConfig } from 'vite';
+import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig(({ mode }) => {
     const isDev = mode === 'development';
 
-    // Read package version for APP_VERSION
     const packageJson = JSON.parse(fs.readFileSync('./package.json', 'utf8'));
     const appVersion = process.env.APP_VERSION || packageJson.version || (isDev ? 'localhost' : '');
 
     return {
-        plugins: [react(), updateServiceWorkerVersion()],
+        plugins: [
+            react(),
+            VitePWA({
+                registerType: 'autoUpdate',
+                injectRegister: 'auto',
+                workbox: {
+                    skipWaiting: true,
+                    clientsClaim: true,
+                    globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest}'],
+                    runtimeCaching: [
+                        {
+                            urlPattern: ({ url }) => url.pathname.startsWith('/api/'),
+                            handler: 'NetworkFirst',
+                            options: {
+                                cacheName: 'api-cache',
+                                networkTimeoutSeconds: 2,
+                            },
+                        },
+                        {
+                            urlPattern: /^\/config\.json$/,
+                            handler: 'NetworkFirst',
+                            options: {
+                                cacheName: 'config-cache',
+                            },
+                        },
+                    ],
+                },
+                manifest: {
+                    name: 'Shoppingo',
+                    short_name: 'Shoppingo',
+                    description: 'Shopping list application',
+                    theme_color: '#ffffff',
+                    icons: [
+                        {
+                            src: 'logo-192.png',
+                            sizes: '192x192',
+                            type: 'image/png',
+                        },
+                        {
+                            src: 'logo-512.png',
+                            sizes: '512x512',
+                            type: 'image/png',
+                        },
+                    ],
+                },
+                devOptions: {
+                    enabled: true,
+                    type: 'module',
+                },
+            }),
+        ],
         build: {
             outDir: './build',
             rollupOptions: {
