@@ -18,6 +18,7 @@ import { RootLayout } from './components/RootLayout';
 import RouterErrorHandler from './components/RouterErrorHandler';
 import { getAuthConfig } from './config/auth';
 import { registerPWA } from './pwa';
+import { checkForVersionUpdate, clearVersionCache } from './utils/version';
 
 const lazyLoadPage = (importFn: () => Promise<any>, fallbackName: string) =>
     React.lazy(() =>
@@ -127,6 +128,12 @@ const App: React.FC = () => {
 };
 
 if (__IS_PROD__) {
+    // Check for version updates and clear cache if needed
+    if (checkForVersionUpdate()) {
+        console.log('New app version detected, clearing cache...');
+        clearVersionCache();
+    }
+
     registerPWA();
 }
 

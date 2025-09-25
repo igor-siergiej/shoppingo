@@ -1,7 +1,12 @@
-const STATIC_CACHE = 'shoppingo-static-v6';
-const API_CACHE = 'shoppingo-api-v4';
-const ASSET_CACHE = 'shoppingo-assets-v2';
-const RUNTIME_CACHE = 'shoppingo-runtime-v1';
+// Use a version from the manifest or a timestamp to ensure cache busting
+const APP_VERSION = '__APP_VERSION_PLACEHOLDER__'; // This will be updated automatically during build
+const BUILD_TIMESTAMP = '__BUILD_TIMESTAMP_PLACEHOLDER__'; // This will be updated during build
+const CACHE_VERSION = `v${APP_VERSION}-${BUILD_TIMESTAMP}`;
+
+const STATIC_CACHE = `shoppingo-static-${CACHE_VERSION}`;
+const API_CACHE = `shoppingo-api-${CACHE_VERSION}`;
+const ASSET_CACHE = `shoppingo-assets-${CACHE_VERSION}`;
+const RUNTIME_CACHE = `shoppingo-runtime-${CACHE_VERSION}`;
 
 const STATIC_ASSETS = [
   '/',

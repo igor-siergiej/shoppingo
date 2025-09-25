@@ -1,6 +1,6 @@
 import { useTokenInitialization } from '@igor-siergiej/web-utils';
 import { Loader2 } from 'lucide-react';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 interface AppInitializerProps {
     children: React.ReactNode;
@@ -8,6 +8,19 @@ interface AppInitializerProps {
 
 const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
     const { isInitializing } = useTokenInitialization();
+    const [timeoutReached, setTimeoutReached] = useState(false);
+
+    // Add timeout protection in case initialization hangs
+    useEffect(() => {
+        if (isInitializing) {
+            const timeout = setTimeout(() => {
+                console.warn('Token initialization timeout reached, this might indicate cache/SW issues');
+                setTimeoutReached(true);
+            }, 10000); // 10 second timeout
+
+            return () => clearTimeout(timeout);
+        }
+    }, [isInitializing]);
 
     if (isInitializing) {
         return (
@@ -16,6 +29,17 @@ const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
                 <p className="text-muted-foreground">
                     Loading Shoppingo...
                 </p>
+                {timeoutReached && (
+                    <div className="text-center text-sm text-orange-600 max-w-md">
+                        <p>Taking longer than expected...</p>
+                        <p>If this persists, try:</p>
+                        <ul className="list-disc text-left mt-2 pl-4">
+                            <li>Hard refresh (Ctrl+F5)</li>
+                            <li>Clear browser data</li>
+                            <li>Reinstall the app</li>
+                        </ul>
+                    </div>
+                )}
             </div>
         );
     }
