@@ -1,6 +1,6 @@
 {
     "name": "shoppingo",
-    "version": "0.2.24",
+    "version": "0.2.25",
     "private": true,
     "repository": "git@github.com:igor-siergiej/shoppingo.git",
     "author": "Igor Siergiej <igorsiergiej@gmail.com>",
