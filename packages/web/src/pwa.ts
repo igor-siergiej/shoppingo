@@ -2,54 +2,88 @@ export function registerPWA() {
     if (!('serviceWorker' in navigator)) return;
 
     const registerNow = () => {
-        navigator.serviceWorker.register('/sw.js', {
-            // Force update check on registration
-            updateViaCache: 'none'
-        }).then((registration) => {
-            // Check for updates immediately
-            registration.update();
+        // Force aggressive service worker updates
+        const forceUpdateSW = async () => {
+            try {
+                // Unregister all existing service workers first
+                const registrations = await navigator.serviceWorker.getRegistrations();
 
-            registration.addEventListener('updatefound', () => {
-                const installing = registration.installing;
+                for (const registration of registrations) {
+                    console.log('PWA: Unregistering old service worker');
+                    await registration.unregister();
+                }
 
-                console.log('PWA: New version found, installing...');
+                // Wait a bit for unregistration to complete
+                await new Promise(resolve => setTimeout(resolve, 500));
 
-                if (!installing) return;
-                installing.addEventListener('statechange', () => {
-                    if (installing.state === 'installed') {
-                        if (navigator.serviceWorker.controller) {
-                            // New version available
-                            console.log('PWA: New version ready, will reload...');
-                            // Give a brief moment for the new SW to activate
-                            setTimeout(() => {
-                                window.location.reload();
-                            }, 1000);
-                        } else {
-                            // First installation
-                            console.log('PWA: App ready for offline use');
-                        }
-                    }
+                // Register fresh service worker with cache-busting
+                const registration = await navigator.serviceWorker.register(`/sw.js?t=${Date.now()}`, {
+                    updateViaCache: 'none'
                 });
-            });
 
-            // Check for updates every 30 seconds while the app is open
-            setInterval(() => {
-                registration.update();
-            }, 30000);
-        }).catch((error) => {
-            console.error('PWA: Service worker registration failed:', error);
-        });
+                console.log('PWA: Fresh service worker registered');
 
+                // Force immediate update check
+                await registration.update();
+
+                registration.addEventListener('updatefound', () => {
+                    const installing = registration.installing;
+
+                    console.log('PWA: New version found, installing...');
+
+                    if (!installing) return;
+
+                    installing.addEventListener('statechange', () => {
+                        console.log(`PWA: Service worker state: ${installing.state}`);
+
+                        if (installing.state === 'installed') {
+                            if (navigator.serviceWorker.controller) {
+                                // New version available - force immediate reload
+                                console.log('PWA: New version ready, reloading immediately');
+                                window.location.reload();
+                            } else {
+                                // First installation
+                                console.log('PWA: App ready for offline use');
+                            }
+                        }
+
+                        if (installing.state === 'activated') {
+                            console.log('PWA: New service worker activated, reloading');
+                            window.location.reload();
+                        }
+                    });
+                });
+
+                // More frequent update checking
+                setInterval(async () => {
+                    console.log('PWA: Checking for updates...');
+                    await registration.update();
+                }, 10000); // Every 10 seconds
+
+                return registration;
+            } catch (error) {
+                console.error('PWA: Service worker registration failed:', error);
+            }
+        };
+
+        forceUpdateSW();
+
+        // Listen for service worker controller changes
         navigator.serviceWorker.addEventListener('controllerchange', () => {
-            console.log('PWA: New service worker controller, reloading...');
+            console.log('PWA: Service worker controller changed, reloading');
             window.location.reload();
         });
 
-        // Also check for updates when the page regains focus
-        window.addEventListener('focus', () => {
-            navigator.serviceWorker.getRegistration().then((registration) => {
-                if (registration) {
-                    registration.update();
+        // Check for updates on multiple events
+        ['focus', 'visibilitychange', 'online', 'pageshow'].forEach((event) => {
+            window.addEventListener(event, async () => {
+                if (document.visibilityState === 'visible' || navigator.onLine) {
+                    const registration = await navigator.serviceWorker.getRegistration();
+
+                    if (registration) {
+                        console.log(`PWA: Checking for updates due to ${event} event`);
+                        await registration.update();
+                    }
                 }
             });
         });

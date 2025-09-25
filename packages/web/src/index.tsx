@@ -16,8 +16,10 @@ import ErrorBoundary from './components/ErrorBoundary';
 import LoadingSpinner from './components/LoadingSpinner';
 import { RootLayout } from './components/RootLayout';
 import RouterErrorHandler from './components/RouterErrorHandler';
+import { UpdatePrompt } from './components/UpdatePrompt';
 import { getAuthConfig } from './config/auth';
 import { registerPWA } from './pwa';
+import { PWADebugUtils } from './utils/pwa-debug';
 import { checkForVersionUpdate, clearVersionCache } from './utils/version';
 
 const lazyLoadPage = (importFn: () => Promise<any>, fallbackName: string) =>
@@ -122,12 +124,16 @@ const App: React.FC = () => {
         <ErrorBoundary>
             <ConfigLoader>
                 <AppContent />
+                <UpdatePrompt />
             </ConfigLoader>
         </ErrorBoundary>
     );
 };
 
 if (__IS_PROD__) {
+    // Log PWA status for debugging
+    PWADebugUtils.logStatus();
+
     // Check for version updates and clear cache if needed
     if (checkForVersionUpdate()) {
         console.log('New app version detected, clearing cache...');
@@ -135,6 +141,9 @@ if (__IS_PROD__) {
     }
 
     registerPWA();
+
+    // Log status again after registration
+    setTimeout(() => PWADebugUtils.logStatus(), 2000);
 }
 
 const root = ReactDOM.createRoot(

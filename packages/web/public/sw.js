@@ -1,6 +1,6 @@
 // Use a version from the manifest or a timestamp to ensure cache busting
-const APP_VERSION = '__APP_VERSION_PLACEHOLDER__'; // This will be updated automatically during build
-const BUILD_TIMESTAMP = '__BUILD_TIMESTAMP_PLACEHOLDER__'; // This will be updated during build
+const APP_VERSION = '0.2.24'; // This will be updated automatically during build
+const BUILD_TIMESTAMP = '1758788970885'; // This will be updated during build
 const CACHE_VERSION = `v${APP_VERSION}-${BUILD_TIMESTAMP}`;
 
 const STATIC_CACHE = `shoppingo-static-${CACHE_VERSION}`;
