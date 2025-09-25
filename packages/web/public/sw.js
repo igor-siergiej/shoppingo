@@ -53,6 +53,27 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
+// Handle messages from the client (for lifecycle management)
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type) {
+    switch (event.data.type) {
+      case 'SKIP_WAITING':
+        console.log('SW: Received SKIP_WAITING message, activating new version');
+        self.skipWaiting();
+        break;
+      case 'GET_VERSION':
+        event.ports[0].postMessage({
+          version: APP_VERSION,
+          buildTimestamp: BUILD_TIMESTAMP,
+          cacheVersion: CACHE_VERSION
+        });
+        break;
+      default:
+        console.log('SW: Unknown message type:', event.data.type);
+    }
+  }
+});
+
 // Enhanced caching strategies
 self.addEventListener('fetch', (event) => {
   const { request } = event;

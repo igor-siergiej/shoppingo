@@ -1,22 +1,21 @@
 import React, { useEffect, useState } from 'react';
 
-declare const __APP_VERSION__: string;
+import { clearVersionCache, getVersionInfo, updateStoredVersion } from '../utils/version';
 
 export const UpdatePrompt: React.FC = () => {
     const [showPrompt, setShowPrompt] = useState(false);
     const [isUpdating, setIsUpdating] = useState(false);
 
     useEffect(() => {
-        // Check if there's a version mismatch
-        const storedVersion = localStorage.getItem('app_version');
-        const currentVersion = __APP_VERSION__;
+        const versionInfo = getVersionInfo();
 
-        if (storedVersion && storedVersion !== currentVersion) {
+        // Show prompt if version has changed
+        if (versionInfo.hasChanged) {
             setShowPrompt(true);
         }
 
         // Also show prompt if page was loaded with cache-busting parameter
-        if (window.location.search.includes('force-update')) {
+        if (window.location.search.includes('force-update') || window.location.search.includes('pwa-debug')) {
             setShowPrompt(true);
         }
     }, []);
@@ -25,29 +24,24 @@ export const UpdatePrompt: React.FC = () => {
         setIsUpdating(true);
 
         try {
-            // Clear all caches
-            if ('caches' in window) {
-                const cacheNames = await caches.keys();
+            console.log('UpdatePrompt: Starting manual update...');
 
-                await Promise.all(cacheNames.map(name => caches.delete(name)));
-                console.log('Cleared all caches');
-            }
+            // Clear all caches and version info
+            await clearVersionCache();
 
             // Unregister service workers
             if ('serviceWorker' in navigator) {
                 const registrations = await navigator.serviceWorker.getRegistrations();
 
                 await Promise.all(registrations.map(reg => reg.unregister()));
-                console.log('Unregistered all service workers');
+                console.log('UpdatePrompt: Unregistered all service workers');
             }
 
-            // Clear localStorage version info
-            localStorage.removeItem('app_version');
-
             // Force reload with cache busting
+            console.log('UpdatePrompt: Forcing reload with cache busting...');
             window.location.href = window.location.pathname + '?force-update=' + Date.now();
         } catch (error) {
-            console.error('Update failed:', error);
+            console.error('UpdatePrompt: Update failed:', error);
             setIsUpdating(false);
         }
     };
@@ -55,7 +49,7 @@ export const UpdatePrompt: React.FC = () => {
     const handleDismiss = () => {
         setShowPrompt(false);
         // Store current version to avoid showing prompt again
-        localStorage.setItem('app_version', __APP_VERSION__);
+        updateStoredVersion();
     };
 
     if (!showPrompt) return null;

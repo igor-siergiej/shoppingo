@@ -20,7 +20,7 @@ import { UpdatePrompt } from './components/UpdatePrompt';
 import { getAuthConfig } from './config/auth';
 import { registerPWA } from './pwa';
 import { PWADebugUtils } from './utils/pwa-debug';
-import { checkForVersionUpdate, clearVersionCache } from './utils/version';
+import { handleVersionUpdate } from './utils/version';
 
 const lazyLoadPage = (importFn: () => Promise<any>, fallbackName: string) =>
     React.lazy(() =>
@@ -131,19 +131,30 @@ const App: React.FC = () => {
 };
 
 if (__IS_PROD__) {
-    // Log PWA status for debugging
-    PWADebugUtils.logStatus();
+    // Initialize PWA with proper version handling
+    (async () => {
+        try {
+            // Log PWA status for debugging
+            PWADebugUtils.logStatus();
 
-    // Check for version updates and clear cache if needed
-    if (checkForVersionUpdate()) {
-        console.log('New app version detected, clearing cache...');
-        clearVersionCache();
-    }
+            // Handle version updates (clears cache if version changed)
+            const wasUpdated = await handleVersionUpdate();
 
-    registerPWA();
+            if (wasUpdated) {
+                console.log('PWA: Version update processed, caches cleared');
+            }
 
-    // Log status again after registration
-    setTimeout(() => PWADebugUtils.logStatus(), 2000);
+            // Register PWA
+            registerPWA();
+
+            // Log status again after registration
+            setTimeout(() => PWADebugUtils.logStatus(), 3000);
+        } catch (error) {
+            console.error('PWA: Initialization failed:', error);
+            // Still try to register PWA even if version handling fails
+            registerPWA();
+        }
+    })();
 }
 
 const root = ReactDOM.createRoot(

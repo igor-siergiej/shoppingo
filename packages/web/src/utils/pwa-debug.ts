@@ -1,10 +1,10 @@
-declare const __APP_VERSION__: string;
+import { clearVersionCache, getVersionInfo } from './version';
 
 export const PWADebugUtils = {
     async getStatus() {
+        const versionInfo = getVersionInfo();
         const status = {
-            appVersion: __APP_VERSION__,
-            storedVersion: localStorage.getItem('app_version'),
+            ...versionInfo,
             hasServiceWorker: 'serviceWorker' in navigator,
             registrations: 0,
             caches: [] as Array<string>,
@@ -33,13 +33,8 @@ export const PWADebugUtils = {
     async clearEverything() {
         console.log('🧹 PWA Debug: Clearing everything...');
 
-        // Clear all caches
-        if ('caches' in window) {
-            const cacheNames = await caches.keys();
-
-            await Promise.all(cacheNames.map(name => caches.delete(name)));
-            console.log(`🧹 Cleared ${cacheNames.length} caches:`, cacheNames);
-        }
+        // Use the centralized cache clearing
+        await clearVersionCache();
 
         // Unregister all service workers
         if ('serviceWorker' in navigator) {
@@ -48,10 +43,6 @@ export const PWADebugUtils = {
             await Promise.all(registrations.map(reg => reg.unregister()));
             console.log(`🧹 Unregistered ${registrations.length} service workers`);
         }
-
-        // Clear localStorage
-        localStorage.removeItem('app_version');
-        console.log('🧹 Cleared version from localStorage');
 
         return this.getStatus();
     },
@@ -68,12 +59,13 @@ export const PWADebugUtils = {
     logStatus() {
         this.getStatus().then((status) => {
             console.group('📱 PWA Status');
-            console.log('App Version:', status.appVersion);
-            console.log('Stored Version:', status.storedVersion);
-            console.log('Version Match:', status.appVersion === status.storedVersion);
+            console.log('Current Version:', status.current);
+            console.log('Stored Version:', status.stored);
+            console.log('First Time:', status.isFirstTime);
+            console.log('Version Changed:', status.hasChanged);
             console.log('Service Workers:', status.registrations);
             console.log('SW State:', status.state);
-            console.log('Caches:', status.caches);
+            console.log('Caches:', status.caches.length, status.caches);
             console.groupEnd();
         });
     }
