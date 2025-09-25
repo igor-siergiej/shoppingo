@@ -19,7 +19,6 @@ import RouterErrorHandler from './components/RouterErrorHandler';
 import { UpdatePrompt } from './components/UpdatePrompt';
 import { getAuthConfig } from './config/auth';
 import { registerPWA } from './pwa';
-import { PWADebugUtils } from './utils/pwa-debug';
 import { handleVersionUpdate } from './utils/version';
 
 const lazyLoadPage = (importFn: () => Promise<any>, fallbackName: string) =>
@@ -134,23 +133,22 @@ if (__IS_PROD__) {
     // Initialize PWA with proper version handling
     (async () => {
         try {
-            // Log PWA status for debugging
-            PWADebugUtils.logStatus();
-
             // Handle version updates (clears cache if version changed)
             const wasUpdated = await handleVersionUpdate();
 
             if (wasUpdated) {
-                console.log('PWA: Version update processed, caches cleared');
+                // Force a complete reload to ensure new version loads
+                setTimeout(() => {
+                    window.location.reload();
+                }, 500);
+
+                return; // Don't register PWA yet, let reload happen first
             }
 
             // Register PWA
             registerPWA();
-
-            // Log status again after registration
-            setTimeout(() => PWADebugUtils.logStatus(), 3000);
         } catch (error) {
-            console.error('PWA: Initialization failed:', error);
+            console.error('PWA initialization failed:', error);
             // Still try to register PWA even if version handling fails
             registerPWA();
         }

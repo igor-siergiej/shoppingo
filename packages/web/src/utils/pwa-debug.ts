@@ -31,8 +31,6 @@ export const PWADebugUtils = {
     },
 
     async clearEverything() {
-        console.log('🧹 PWA Debug: Clearing everything...');
-
         // Use the centralized cache clearing
         await clearVersionCache();
 
@@ -41,15 +39,12 @@ export const PWADebugUtils = {
             const registrations = await navigator.serviceWorker.getRegistrations();
 
             await Promise.all(registrations.map(reg => reg.unregister()));
-            console.log(`🧹 Unregistered ${registrations.length} service workers`);
         }
 
         return this.getStatus();
     },
 
     async forceUpdate() {
-        console.log('🔄 PWA Debug: Forcing update...');
-
         await this.clearEverything();
 
         // Force reload with cache busting

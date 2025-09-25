@@ -9,15 +9,12 @@ export function registerPWA() {
 
     const registerNow = async () => {
         try {
-            console.log(`PWA: Starting registration for version ${__APP_VERSION__}`);
-
             // Register service worker (no timestamp - let browser handle caching)
             const registration = await navigator.serviceWorker.register('/sw.js', {
                 updateViaCache: 'none'
             });
 
             currentRegistration = registration;
-            console.log('PWA: Service worker registered successfully');
 
             // Set up update handling with proper lifecycle management
             registration.addEventListener('updatefound', () => {
@@ -26,16 +23,12 @@ export function registerPWA() {
                 if (!installing || isUpdating) return;
 
                 isUpdating = true;
-                console.log('PWA: New version found, installing...');
 
                 installing.addEventListener('statechange', () => {
-                    console.log(`PWA: Service worker state changed to: ${installing.state}`);
-
                     switch (installing.state) {
                         case 'installed':
                             if (navigator.serviceWorker.controller) {
                                 // New version is ready, but old version is still controlling
-                                console.log('PWA: New version installed, preparing to activate...');
 
                                 // Force the waiting service worker to become active
                                 if (registration.waiting) {
@@ -44,40 +37,27 @@ export function registerPWA() {
 
                                 // Give user a moment, then reload
                                 setTimeout(() => {
-                                    console.log('PWA: Activating new version with reload');
                                     window.location.reload();
                                 }, 2000);
                             } else {
                                 // First installation
-                                console.log('PWA: First installation complete');
                                 isUpdating = false;
                             }
 
                             break;
 
                         case 'activated':
-                            console.log('PWA: Service worker activated');
-                            if (!navigator.serviceWorker.controller) {
-                                // First activation - app is ready for offline use
-                                console.log('PWA: App ready for offline use');
-                            } else {
-                                // Update activation - should trigger reload via controllerchange
-                                console.log('PWA: New version activated');
-                            }
-
                             isUpdating = false;
                             break;
 
                         case 'redundant':
-                            console.log('PWA: Service worker became redundant');
                             isUpdating = false;
                             break;
                     }
                 });
 
                 // Handle installation errors
-                installing.addEventListener('error', (error) => {
-                    console.error('PWA: Service worker installation failed:', error);
+                installing.addEventListener('error', () => {
                     isUpdating = false;
                 });
             });
@@ -91,18 +71,16 @@ export function registerPWA() {
 
                 // Only check every 5th attempt to reduce noise
                 if (updateCheckCount % 5 === 0) {
-                    console.log('PWA: Periodic update check...');
                     try {
                         await registration.update();
                     } catch (error) {
-                        console.warn('PWA: Update check failed:', error);
+                        // Silent fail
                     }
                 }
             }, 30000); // Every 30 seconds, but only check every 5th time
 
             return registration;
         } catch (error) {
-            console.error('PWA: Service worker registration failed:', error);
             isUpdating = false;
         }
     };
@@ -113,7 +91,6 @@ export function registerPWA() {
     navigator.serviceWorker.addEventListener('controllerchange', () => {
         if (!controllerChangeHandled && !isUpdating) {
             controllerChangeHandled = true;
-            console.log('PWA: Service worker controller changed - reloading in 2 seconds');
             setTimeout(() => {
                 window.location.reload();
             }, 2000);
@@ -133,11 +110,10 @@ export function registerPWA() {
             const registration = await navigator.serviceWorker.getRegistration();
 
             if (registration && !isUpdating) {
-                console.log('PWA: Checking for updates due to window focus');
                 try {
                     await registration.update();
                 } catch (error) {
-                    console.warn('PWA: Focus update check failed:', error);
+                    // Silent fail
                 }
             }
         }, 2000);
@@ -176,7 +152,6 @@ export function registerPWA() {
             forceUpdate: async () => {
                 if (currentRegistration) {
                     await currentRegistration.update();
-                    console.log('PWA: Forced update check requested');
                 }
             }
         };

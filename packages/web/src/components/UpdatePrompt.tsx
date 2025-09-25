@@ -24,8 +24,6 @@ export const UpdatePrompt: React.FC = () => {
         setIsUpdating(true);
 
         try {
-            console.log('UpdatePrompt: Starting manual update...');
-
             // Clear all caches and version info
             await clearVersionCache();
 
@@ -34,14 +32,11 @@ export const UpdatePrompt: React.FC = () => {
                 const registrations = await navigator.serviceWorker.getRegistrations();
 
                 await Promise.all(registrations.map(reg => reg.unregister()));
-                console.log('UpdatePrompt: Unregistered all service workers');
             }
 
             // Force reload with cache busting
-            console.log('UpdatePrompt: Forcing reload with cache busting...');
             window.location.href = window.location.pathname + '?force-update=' + Date.now();
         } catch (error) {
-            console.error('UpdatePrompt: Update failed:', error);
             setIsUpdating(false);
         }
     };

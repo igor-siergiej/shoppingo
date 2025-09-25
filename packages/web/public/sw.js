@@ -1,6 +1,6 @@
 // Use a version from the manifest or a timestamp to ensure cache busting
-const APP_VERSION = '0.2.24'; // This will be updated automatically during build
-const BUILD_TIMESTAMP = '1758788970885'; // This will be updated during build
+const APP_VERSION = '0.2.27'; // This will be updated automatically during build
+const BUILD_TIMESTAMP = '1758821342946'; // This will be updated during build
 const CACHE_VERSION = `v${APP_VERSION}-${BUILD_TIMESTAMP}`;
 
 const STATIC_CACHE = `shoppingo-static-${CACHE_VERSION}`;
@@ -29,8 +29,8 @@ self.addEventListener('install', (event) => {
       caches.open(STATIC_CACHE).then((cache) => {
         return Promise.allSettled(
           STATIC_ASSETS.map(asset => 
-            cache.add(asset).catch(error => {
-              console.warn(`Failed to cache ${asset}:`, error);
+            cache.add(asset).catch(() => {
+              // Failed to cache asset
             })
           )
         );
@@ -58,7 +58,6 @@ self.addEventListener('message', (event) => {
   if (event.data && event.data.type) {
     switch (event.data.type) {
       case 'SKIP_WAITING':
-        console.log('SW: Received SKIP_WAITING message, activating new version');
         self.skipWaiting();
         break;
       case 'GET_VERSION':
@@ -69,7 +68,7 @@ self.addEventListener('message', (event) => {
         });
         break;
       default:
-        console.log('SW: Unknown message type:', event.data.type);
+        // Unknown message type
     }
   }
 });
@@ -103,7 +102,16 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Assets (images, fonts, styles, scripts): cache-first
+  // Main app bundle: network-first (to ensure version detection works)
+  if (
+    request.destination === 'script' &&
+    (url.pathname.includes('/assets/index-') || url.pathname.includes('index') && url.pathname.endsWith('.js'))
+  ) {
+    event.respondWith(networkFirstStrategy(request, ASSET_CACHE));
+    return;
+  }
+
+  // Other assets (images, fonts, styles, other scripts): cache-first
   if (
     request.destination === 'image' ||
     request.destination === 'font' ||
