@@ -14,6 +14,7 @@ const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
         if (isInitializing) {
             const timeout = setTimeout(() => {
                 console.warn('Token initialization timeout reached, this might indicate cache/SW issues');
+
                 setTimeoutReached(true);
             }, 10000);
 
