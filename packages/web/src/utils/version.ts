@@ -53,7 +53,7 @@ export const clearAllCaches = async (): Promise<void> => {
 
             await Promise.all(cacheNames.map(name => caches.delete(name)));
         }
-    } catch (error) {
+    } catch {
         // Silent fail
     }
 };

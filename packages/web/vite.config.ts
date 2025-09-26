@@ -14,11 +14,12 @@ export default defineConfig(({ mode }) => {
         plugins: [
             react(),
             VitePWA({
-                registerType: 'autoUpdate',
+                registerType: 'prompt',
                 injectRegister: 'auto',
                 workbox: {
-                    skipWaiting: true,
-                    clientsClaim: true,
+                    skipWaiting: false,
+                    clientsClaim: false,
+                    cacheId: `shoppingo-v${appVersion}`,
                     globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest}'],
                     runtimeCaching: [
                         {

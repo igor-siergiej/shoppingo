@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '@igor-siergiej/web-utils';
-import { ArrowLeft, CheckCheck, Download, LogOut, Menu, Plus, Search, Trash2, User } from 'lucide-react';
+import { ArrowLeft, CheckCheck, Download, LogOut, Menu, Plus, RefreshCw, Search, Trash2, User, X } from 'lucide-react';
 import { AnimatePresence, motion, MotionConfig } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -22,6 +22,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RippleButton } from '@/components/ui/ripple';
 
+import { usePWA } from '../../hooks/usePWA';
 import { useSearch } from '../../hooks/useSearch';
 import { SearchResults } from '../SearchResults';
 
@@ -68,40 +69,8 @@ export default function ToolBar({
         setMaxWidth(menuWidth);
     }, [menuWidth, maxWidth]);
 
-    // PWA install support
-    interface BeforeInstallPromptEvent extends Event {
-        prompt: () => Promise<void>;
-        userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
-    }
-
-    const [canInstall, setCanInstall] = useState(false);
-    const [isInstalled, setIsInstalled] = useState(false);
-
-    useEffect(() => {
-        if ((window as unknown as { deferredPrompt?: unknown }).deferredPrompt) {
-            setCanInstall(true);
-        }
-
-        // Detect installed display mode
-        const isStandalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches)
-            || (navigator as unknown as { standalone?: boolean }).standalone === true;
-
-        setIsInstalled(Boolean(isStandalone));
-
-        const handleBip = () => setCanInstall(true);
-        const handleInstalled = () => {
-            setCanInstall(false);
-            setIsInstalled(true);
-        };
-
-        window.addEventListener('beforeinstallprompt', handleBip as EventListener);
-        window.addEventListener('appinstalled', handleInstalled as EventListener);
-
-        return () => {
-            window.removeEventListener('beforeinstallprompt', handleBip as EventListener);
-            window.removeEventListener('appinstalled', handleInstalled as EventListener);
-        };
-    }, []);
+    // PWA functionality
+    const { canInstall, isInstalled, hasUpdate, installApp, updateApp, dismissUpdate } = usePWA();
 
     useEffect(() => {
         if (isDrawerOpen && inputRef.current) {
@@ -194,26 +163,49 @@ export default function ToolBar({
                                                         <div ref={contentRef} className="p-3">
                                                             {menuActive === 1 && (
                                                                 <div className="flex flex-col space-y-3">
+                                                                    {/* Update available notification */}
+                                                                    {hasUpdate && (
+                                                                        <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                                                            <div className="flex items-center justify-between mb-2">
+                                                                                <div className="flex items-center space-x-2">
+                                                                                    <RefreshCw className="h-4 w-4 text-blue-600" />
+                                                                                    <span className="text-sm font-medium text-blue-900">Update Available</span>
+                                                                                </div>
+                                                                                <Button
+                                                                                    variant="ghost"
+                                                                                    size="sm"
+                                                                                    onClick={dismissUpdate}
+                                                                                    className="h-6 w-6 p-0 text-blue-600 hover:text-blue-800"
+                                                                                >
+                                                                                    <X className="h-4 w-4" />
+                                                                                </Button>
+                                                                            </div>
+                                                                            <p className="text-xs text-blue-700 mb-3">A new version is available with improvements and bug fixes.</p>
+                                                                            <Button
+                                                                                size="sm"
+                                                                                onClick={() => {
+                                                                                    void updateApp();
+                                                                                    setIsMenuOpen(false);
+                                                                                    setMenuActive(null);
+                                                                                }}
+                                                                                className="w-full"
+                                                                            >
+                                                                                <RefreshCw className="h-4 w-4 mr-2" />
+                                                                                Update Now
+                                                                            </Button>
+                                                                        </div>
+                                                                    )}
+
                                                                     {/* Install app action (shows only if available and not installed) */}
                                                                     {canInstall && !isInstalled && (
                                                                         <Button
                                                                             variant="outline"
                                                                             onClick={async () => {
-                                                                                const dp = (window as unknown as { deferredPrompt?: BeforeInstallPromptEvent | null }).deferredPrompt;
+                                                                                const success = await installApp();
 
-                                                                                if (dp && typeof dp.prompt === 'function') {
-                                                                                    try {
-                                                                                        await dp.prompt();
-                                                                                        const choice = await dp.userChoice;
-
-                                                                                        (window as unknown as { deferredPrompt?: BeforeInstallPromptEvent | null }).deferredPrompt = null;
-                                                                                        if (choice?.outcome === 'accepted') {
-                                                                                            setCanInstall(false);
-                                                                                            setIsInstalled(true);
-                                                                                        }
-                                                                                    } catch {
-                                                                                        // ignore
-                                                                                    }
+                                                                                if (success) {
+                                                                                    setIsMenuOpen(false);
+                                                                                    setMenuActive(null);
                                                                                 }
                                                                             }}
                                                                             className="justify-center"
