@@ -73,7 +73,7 @@ describe('ImageService', () => {
                 const result = await imageService.getImage('shopping-cart');
 
                 expect(mockImageGenerator.generateImage).toHaveBeenCalledWith(
-                    'Minimalistic flat icon of a shopping-cart drawn in a simple, clean style, this is going to be a icon for my shopping list item. Bright solid colors, soft rounded edges, modern vector look, no text, no background.'
+                    'Minimalistic flat icon of a shopping-cart drawn in a simple, clean style, this is going to be a icon for my shopping list item. Bright solid colors, soft rounded edges, modern vector look, no text.'
                 );
                 expect(mockImageStore.putObject).toHaveBeenCalledWith(
                     'shopping-cart',
@@ -150,7 +150,7 @@ describe('ImageService', () => {
                 await imageService.getImage('  SHOPPING CART  ');
 
                 expect(mockImageGenerator.generateImage).toHaveBeenCalledWith(
-                    'Minimalistic flat icon of a shopping cart drawn in a simple, clean style, this is going to be a icon for my shopping list item. Bright solid colors, soft rounded edges, modern vector look, no text, no background.'
+                    'Minimalistic flat icon of a shopping cart drawn in a simple, clean style, this is going to be a icon for my shopping list item. Bright solid colors, soft rounded edges, modern vector look, no text.'
                 );
             });
         });
