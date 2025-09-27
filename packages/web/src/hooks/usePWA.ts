@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 
-import { checkForVersionUpdate, handleVersionUpdate } from '../utils/version';
+import { checkForVersionUpdate } from '../utils/version';
 
 interface BeforeInstallPromptEvent extends Event {
     prompt: () => Promise<void>;
@@ -103,6 +103,7 @@ export const usePWA = () => {
     // Keep these methods for backward compatibility but they're no longer needed
     const updateApp = async () => {
         console.log('PWA: Manual update requested (auto-update is enabled)');
+
         return true;
     };
 
