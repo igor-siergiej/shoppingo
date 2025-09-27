@@ -14,7 +14,7 @@ export default defineConfig(({ mode }) => {
         plugins: [
             react(),
             VitePWA({
-                registerType: 'prompt',
+                registerType: 'autoUpdate',
                 injectRegister: 'auto',
                 selfDestroying: false,
                 workbox: {

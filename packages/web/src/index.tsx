@@ -18,6 +18,38 @@ import { RootLayout } from './components/RootLayout';
 import RouterErrorHandler from './components/RouterErrorHandler';
 import { getAuthConfig } from './config/auth';
 
+// Set up PWA install prompt listener as early as possible
+interface BeforeInstallPromptEvent extends Event {
+    prompt: () => Promise<void>;
+    userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+}
+
+// Global storage for the install prompt
+declare global {
+    interface Window {
+        __deferredInstallPrompt?: BeforeInstallPromptEvent | null;
+        __pwaInstallAvailable?: boolean;
+    }
+}
+
+// Set up the event listener immediately
+window.__pwaInstallAvailable = false;
+window.__deferredInstallPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e: Event) => {
+    e.preventDefault();
+
+    const event = e as BeforeInstallPromptEvent;
+
+    window.__deferredInstallPrompt = event;
+    window.__pwaInstallAvailable = true;
+});
+
+window.addEventListener('appinstalled', () => {
+    window.__deferredInstallPrompt = null;
+    window.__pwaInstallAvailable = false;
+});
+
 const lazyLoadPage = (importFn: () => Promise<any>, fallbackName: string) =>
     React.lazy(() =>
         Promise.all([
