@@ -16,9 +16,11 @@ const PWAContext = createContext<PWAContextType | undefined>(undefined);
 
 export const usePWAContext = () => {
     const context = useContext(PWAContext);
+
     if (context === undefined) {
         throw new Error('usePWAContext must be used within a PWAProvider');
     }
+
     return context;
 };
 
@@ -42,6 +44,7 @@ export const PWAProvider: React.FC<PWAProviderProps> = ({ children }) => {
         const handleBeforeInstallPrompt = (e: Event) => {
             e.preventDefault();
             const event = e as BeforeInstallPromptEvent;
+
             setDeferredPrompt(event);
             setCanInstall(true);
         };
@@ -73,6 +76,7 @@ export const PWAProvider: React.FC<PWAProviderProps> = ({ children }) => {
                 setCanInstall(false);
                 setIsInstalled(true);
                 setDeferredPrompt(null);
+
                 return true;
             }
         } catch {
