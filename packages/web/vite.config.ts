@@ -14,11 +14,11 @@ export default defineConfig(({ mode }) => {
         plugins: [
             react(),
             VitePWA({
-                registerType: 'prompt',
+                registerType: 'autoUpdate',
                 injectRegister: 'auto',
                 workbox: {
-                    skipWaiting: false,
-                    clientsClaim: false,
+                    skipWaiting: true,
+                    clientsClaim: true,
                     cacheId: `shoppingo-v${appVersion}`,
                     globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest}'],
                     runtimeCaching: [
@@ -43,17 +43,25 @@ export default defineConfig(({ mode }) => {
                     name: 'Shoppingo',
                     short_name: 'Shoppingo',
                     description: 'Shopping list application',
-                    theme_color: '#ffffff',
+                    start_url: '/',
+                    display: 'standalone',
+                    background_color: '#ffffff',
+                    theme_color: '#2e7d32',
+                    scope: '/',
+                    orientation: 'portrait-primary',
+                    categories: ['shopping', 'productivity', 'lifestyle'],
                     icons: [
                         {
                             src: 'logo-192.png',
                             sizes: '192x192',
                             type: 'image/png',
+                            purpose: 'any maskable',
                         },
                         {
                             src: 'logo-512.png',
                             sizes: '512x512',
                             type: 'image/png',
+                            purpose: 'any maskable',
                         },
                     ],
                 },

@@ -13,9 +13,9 @@ export const usePWA = () => {
     const [isInstalled, setIsInstalled] = useState(false);
     const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
 
-    // Use Vite PWA plugin's service worker registration
+    // Use Vite PWA plugin's service worker registration with auto-update
     const {
-        needRefresh: [needRefresh, setNeedRefresh],
+        needRefresh: [needRefresh],
         updateServiceWorker,
     } = useRegisterSW({
         onRegistered(r) {
@@ -24,12 +24,21 @@ export const usePWA = () => {
         onRegisterError(error) {
             console.log('SW registration error', error);
         },
+        onNeedRefresh() {
+            console.log('PWA: Auto-updating service worker');
+            updateServiceWorker(true);
+        },
+        onOfflineReady() {
+            console.log('PWA: App ready to work offline');
+        },
     });
 
     // Check for version updates from localStorage
     const [hasVersionUpdate, setHasVersionUpdate] = useState(false);
 
     useEffect(() => {
+        console.log('PWA: usePWA hook initializing');
+
         // Check for app version updates
         if (checkForVersionUpdate()) {
             setHasVersionUpdate(true);
@@ -40,17 +49,21 @@ export const usePWA = () => {
             || (navigator as unknown as { standalone?: boolean }).standalone === true;
 
         setIsInstalled(Boolean(isStandalone));
+        console.log('PWA: App installed status:', Boolean(isStandalone));
 
         // Setup install prompt listener
         const handleBeforeInstallPrompt = (e: Event) => {
+            console.log('PWA: beforeinstallprompt event fired');
             e.preventDefault();
             const event = e as BeforeInstallPromptEvent;
 
             setDeferredPrompt(event);
             setCanInstall(true);
+            console.log('PWA: Install prompt available, canInstall set to true');
         };
 
         const handleAppInstalled = () => {
+            console.log('PWA: App installed successfully');
             setCanInstall(false);
             setIsInstalled(true);
             setDeferredPrompt(null);
@@ -86,42 +99,21 @@ export const usePWA = () => {
         return false;
     };
 
+    // Auto-update is now handled by the service worker
+    // Keep these methods for backward compatibility but they're no longer needed
     const updateApp = async () => {
-        try {
-            // Handle service worker updates if available
-            if (needRefresh) {
-                await updateServiceWorker(true);
-                setNeedRefresh(false);
-            }
-
-            // Handle version updates
-            if (hasVersionUpdate) {
-                await handleVersionUpdate();
-                setHasVersionUpdate(false);
-            }
-
-            return true;
-        } catch (error) {
-            console.warn('Error updating app:', error);
-
-            return false;
-        }
+        console.log('PWA: Manual update requested (auto-update is enabled)');
+        return true;
     };
 
     const dismissUpdate = () => {
-        if (needRefresh) {
-            setNeedRefresh(false);
-        }
-
-        if (hasVersionUpdate) {
-            setHasVersionUpdate(false);
-        }
+        console.log('PWA: Dismiss update requested (auto-update is enabled)');
     };
 
     return {
         canInstall,
         isInstalled,
-        hasUpdate: needRefresh || hasVersionUpdate,
+        hasUpdate: false, // Always false since auto-update is enabled
         installApp,
         updateApp,
         dismissUpdate
