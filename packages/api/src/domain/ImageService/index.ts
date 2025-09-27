@@ -20,7 +20,7 @@ export class ImageService {
         try {
             const head = await this.store.getHeadObject(normalisedName);
             const contentType = head?.metaData?.['content-type'] ?? 'image/webp';
-            const stream = await this.store.getObjectStream(name);
+            const stream = await this.store.getObjectStream(normalisedName);
 
             return {
                 stream,
