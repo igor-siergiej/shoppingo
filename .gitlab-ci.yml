@@ -1,6 +1,6 @@
 # Include reusable job templates from @utils/
 include:
-  - project: 'igor-siergiej/im-apps-utils'
+  - project: 'imapps/utils'
     file: 'templates.yml'
 
 stages:

@@ -2,7 +2,7 @@
     "name": "shoppingo",
     "version": "0.2.39",
     "private": true,
-    "repository": "git@github.com:igor-siergiej/shoppingo.git",
+    "repository": "git@gitlab.com:imapps/shoppingo.git",
     "author": "Igor Siergiej <igorsiergiej@gmail.com>",
     "license": "MIT",
     "scripts": {
@@ -19,7 +19,7 @@
         "packages/*"
     ],
     "devDependencies": {
-        "@igor-siergiej/eslint-config": "^0.0.9",
+        "@imapps/eslint-config": "^0.0.10",
         "@vitest/ui": "^3.2.4",
         "dotenv-cli": "^10.0.0",
         "eslint": "^9.33.0",
