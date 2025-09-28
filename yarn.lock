@@ -1811,19 +1811,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@igor-siergiej/api-utils@npm:0.0.5":
-  version: 0.0.5
-  resolution: "@igor-siergiej/api-utils@npm:0.0.5::__archiveUrl=https%3A%2F%2Fnpm.pkg.github.com%2Fdownload%2F%40igor-siergiej%2Fapi-utils%2F0.0.5%2F50a004f4520d7cf41033bdfe15e16dba22f5d33b"
+"@imapps/api-utils@npm:^0.0.11":
+  version: 0.0.11
+  resolution: "@imapps/api-utils@npm:0.0.11::__archiveUrl=https%3A%2F%2Fgitlab.com%2Fapi%2Fv4%2Fprojects%2F74828972%2Fpackages%2Fnpm%2F%40imapps%2Fapi-utils%2F-%2F%40imapps%2Fapi-utils-0.0.11.tgz"
   dependencies:
     minio: "npm:^8.0.0"
     mongodb: "npm:^6.19.0"
-  checksum: 10c0/33b259b57aadb9d7affde9545c92f8a28fbea0ab84b0b092b836ce51a9c0cdeb454bd2a8e2b291217bf3c5565671b06e7ec15209f64a52842db1a42ec17fd9e0
+  checksum: 10c0/35dc10f07466eac76911eb3eb41bbc17884177d2e55ce07fd04fdbf49869c6717e49683c107dd3443213754d2fb2afdde6aa6aa06eb20b30a03a7f5381c2ac94
   languageName: node
   linkType: hard
 
-"@igor-siergiej/eslint-config@npm:^0.0.9":
-  version: 0.0.9
-  resolution: "@igor-siergiej/eslint-config@npm:0.0.9::__archiveUrl=https%3A%2F%2Fnpm.pkg.github.com%2Fdownload%2F%40igor-siergiej%2Feslint-config%2F0.0.9%2Fadd78036041d8099f62b4f0bf3866eee255c9385"
+"@imapps/eslint-config@npm:^0.0.11":
+  version: 0.0.11
+  resolution: "@imapps/eslint-config@npm:0.0.11::__archiveUrl=https%3A%2F%2Fgitlab.com%2Fapi%2Fv4%2Fprojects%2F74828972%2Fpackages%2Fnpm%2F%40imapps%2Feslint-config%2F-%2F%40imapps%2Feslint-config-0.0.11.tgz"
   dependencies:
     "@eslint/js": "npm:^9.33.0"
     "@stylistic/eslint-plugin": "npm:^5.2.3"
@@ -1838,17 +1838,17 @@ __metadata:
   peerDependencies:
     eslint: ^9.0.0
     typescript: ^5.0.0
-  checksum: 10c0/889e3d3954ec410a4b49c3a4661d20adccaf1f67ae48aeeebce1afe52b3d678caeaf109a25172859da8ee01482d00f8b193cc4139fd803b56dda1ba5063befe1
+  checksum: 10c0/b75742ddbc54b1061554b3d3beae4c0b1b64bc32cd35998fbe0ab9f79d663206ed580eb2b88645ec5395652666db0c04027205431c7c62846a6298828d184c13
   languageName: node
   linkType: hard
 
-"@igor-siergiej/web-utils@npm:^0.0.6":
-  version: 0.0.6
-  resolution: "@igor-siergiej/web-utils@npm:0.0.6::__archiveUrl=https%3A%2F%2Fnpm.pkg.github.com%2Fdownload%2F%40igor-siergiej%2Fweb-utils%2F0.0.6%2Fd0c118a03283cb9e2da1e61d32671070883b61fe"
+"@imapps/web-utils@npm:^0.0.11":
+  version: 0.0.11
+  resolution: "@imapps/web-utils@npm:0.0.11::__archiveUrl=https%3A%2F%2Fgitlab.com%2Fapi%2Fv4%2Fprojects%2F74828972%2Fpackages%2Fnpm%2F%40imapps%2Fweb-utils%2F-%2F%40imapps%2Fweb-utils-0.0.11.tgz"
   peerDependencies:
     react: ">=18.0.0"
     react-router-dom: ">=6.0.0"
-  checksum: 10c0/ec9b25a99fd48b60c1d35b529440991905ebfc5cc0eba31a209c2cc8507b4e77f7e2b66e1f149b5793a4f151c0454ca37a5e13972e5c43dbdc47f77762a2c250
+  checksum: 10c0/845863b1ecc75330981c745492464cd36323a8748c55bb4d3db3bee8dc2577760ca66087435f6e95cb2f0c851d0b80c1efd0f8bbff51dbe51e19a7098fa08300
   languageName: node
   linkType: hard
 
@@ -3232,7 +3232,7 @@ __metadata:
   resolution: "@shoppingo/api@workspace:packages/api"
   dependencies:
     "@google/genai": "npm:^1.16.0"
-    "@igor-siergiej/api-utils": "npm:0.0.5"
+    "@imapps/api-utils": "npm:^0.0.11"
     "@koa/bodyparser": "npm:^6.0.0"
     "@koa/cors": "npm:^5.0.0"
     "@shoppingo/types": "workspace:*"
@@ -3268,7 +3268,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@shoppingo/web@workspace:packages/web"
   dependencies:
-    "@igor-siergiej/web-utils": "npm:^0.0.6"
+    "@imapps/web-utils": "npm:^0.0.11"
     "@radix-ui/react-checkbox": "npm:^1.3.2"
     "@radix-ui/react-dialog": "npm:^1.1.14"
     "@radix-ui/react-label": "npm:^2.1.7"
@@ -11168,7 +11168,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "shoppingo@workspace:."
   dependencies:
-    "@igor-siergiej/eslint-config": "npm:^0.0.9"
+    "@imapps/eslint-config": "npm:^0.0.11"
     "@vitest/ui": "npm:^3.2.4"
     dotenv-cli: "npm:^10.0.0"
     eslint: "npm:^9.33.0"

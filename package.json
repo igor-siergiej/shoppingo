@@ -19,7 +19,7 @@
         "packages/*"
     ],
     "devDependencies": {
-        "@imapps/eslint-config": "^0.0.10",
+        "@imapps/eslint-config": "^0.0.11",
         "@vitest/ui": "^3.2.4",
         "dotenv-cli": "^10.0.0",
         "eslint": "^9.33.0",
