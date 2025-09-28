@@ -1,27 +1,12 @@
-# Include reusable job templates from @utils/
+# GitLab CI configuration for Shoppingo
 include:
-  - project: 'imapps/utils'
+  - project: 'igor-siergiej/utils'
     file: 'templates.yml'
 
-stages:
-  - ci
-  - docker-build
-  - gitops-update
-  - production-deploy
-
 variables:
-  NODE_VERSION: "22"
-  YARN_CACHE_FOLDER: "$CI_PROJECT_DIR/.yarn-cache"
   PROJECT_NAME: "shoppingo"
 
-# Cache configuration for faster builds
-cache:
-  key: "${CI_COMMIT_REF_SLUG}"
-  paths:
-    - .yarn-cache/
-    - node_modules/
-
-# CI job - extends the reusable template from @utils/
+# CI job - extends the reusable template
 ci:
   extends: .ci-template
   rules:
@@ -58,9 +43,8 @@ build-api:
 gitops-staging:
   extends: .gitops-update-template
   variables:
-    PROJECT_NAME: "shoppingo"
     ENVIRONMENT: "staging"
-    APP_IMAGES: "api:shoppingo-api,web:shoppingo-web"
+    APP_IMAGES: "shoppingo-api:shoppingo-api,shoppingo-web:shoppingo-web"
   rules:
     - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_REF_NAME == "main"
     - if: $CI_PIPELINE_SOURCE == "web"
@@ -72,14 +56,6 @@ gitops-staging:
 gitops-production:
   extends: .production-deploy-template
   variables:
-    PROJECT_NAME: "shoppingo"
-    APP_IMAGES: "api:shoppingo-api,web:shoppingo-web"
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_REF_NAME == "main"
-      when: manual
-      allow_failure: true
-    - if: $CI_PIPELINE_SOURCE == "web"
-      when: manual
-      allow_failure: true
+    APP_IMAGES: "shoppingo-api:shoppingo-api,shoppingo-web:shoppingo-web"
   needs:
     - gitops-staging
