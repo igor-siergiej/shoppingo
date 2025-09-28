@@ -1,6 +1,6 @@
 # GitLab CI configuration for Shoppingo
 include:
-  - project: 'utils'
+  - project: 'https://gitlab.com/imapps/utils'
     file: 'templates.yml'
 
 variables:
