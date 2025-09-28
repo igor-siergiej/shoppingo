@@ -1,4 +1,4 @@
-import { MongoDbConnection } from '@igor-siergiej/api-utils';
+import { MongoDbConnection } from '@imapps/api-utils';
 import { Item, List } from '@shoppingo/types';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 

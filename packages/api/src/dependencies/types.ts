@@ -1,4 +1,4 @@
-import { Logger, MongoDbConnection, ObjectStoreConnection } from '@igor-siergiej/api-utils';
+import { Logger, MongoDbConnection, ObjectStoreConnection } from '@imapps/api-utils';
 import { List } from '@shoppingo/types';
 
 import { IdGenerator } from '../domain/IdGenerator';

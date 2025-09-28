@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuth } from '@igor-siergiej/web-utils';
+import { useAuth } from '@imapps/web-utils';
 import { ArrowLeft, CheckCheck, Download, LogOut, Menu, Plus, Search, Trash2, User } from 'lucide-react';
 import { AnimatePresence, motion, MotionConfig } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';

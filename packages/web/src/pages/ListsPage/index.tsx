@@ -1,4 +1,4 @@
-import { useUser } from '@igor-siergiej/web-utils';
+import { useUser } from '@imapps/web-utils';
 import { AlertTriangle } from 'lucide-react';
 import { useQuery } from 'react-query';
 

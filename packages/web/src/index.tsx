@@ -4,7 +4,7 @@ import {
     AuthConfigProvider,
     AuthProvider,
     ProtectedRoute,
-    UserProvider } from '@igor-siergiej/web-utils';
+    UserProvider } from '@imapps/web-utils';
 import React, { Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from 'react-query';

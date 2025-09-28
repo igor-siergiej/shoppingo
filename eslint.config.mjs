@@ -1,3 +1,3 @@
-import { monorepoConfig } from '@igor-siergiej/eslint-config';
+import { monorepoConfig } from '@imapps/eslint-config';
 
 export default monorepoConfig;

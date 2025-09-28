@@ -59,7 +59,7 @@ Key dependencies:
 - MinIO for file storage
 - Google Gemini AI for AI features
 - Sharp for image processing
-- `@igor-siergiej/api-utils` - Shared utilities for configuration, database connections, and logging
+- `@imapps/api-utils` - Shared utilities for configuration, database connections, and logging
 
 ## Frontend Structure (`packages/web/`)
 Modern React app with:
@@ -93,7 +93,7 @@ Common TypeScript interfaces and types shared between frontend and backend.
 
 ## Shared Utilities Integration
 The project uses **im-apps-utils** monorepo for shared functionality:
-- API package uses `@igor-siergiej/api-utils` for database connections, dependency injection, and logging
+- API package uses `@imapps/api-utils` for database connections, dependency injection, and logging
 - Published to GitHub Packages registry
 - See `../im-apps-utils/CLAUDE.md` for detailed utilities documentation
 

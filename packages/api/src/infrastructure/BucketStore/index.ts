@@ -1,4 +1,4 @@
-import { ObjectStoreConnection } from '@igor-siergiej/api-utils';
+import { ObjectStoreConnection } from '@imapps/api-utils';
 
 import { ImageStore } from '../../domain/ImageService/types';
 

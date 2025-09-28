@@ -1,4 +1,4 @@
-import { useTokenInitialization } from '@igor-siergiej/web-utils';
+import { useTokenInitialization } from '@imapps/web-utils';
 import { Loader2 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 

@@ -1,4 +1,4 @@
-import { Logger } from '@igor-siergiej/api-utils';
+import { Logger } from '@imapps/api-utils';
 
 import { ImageGenerator, ImageStore } from './types';
 
