@@ -54,7 +54,6 @@ export default function ToolBar({
     const isItemsPage = location.pathname.includes('/list/');
     const isListsPage = location.pathname === '/';
 
-    // Search functionality
     const { query, setQuery, results, isLoading, error: searchError, clearResults } = useSearch();
 
     // Hamburger expandable menu state (reusing ToolBarOld transitions)
