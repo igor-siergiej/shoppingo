@@ -1811,13 +1811,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@imapps/api-utils@npm:^0.0.11":
-  version: 0.0.11
-  resolution: "@imapps/api-utils@npm:0.0.11::__archiveUrl=https%3A%2F%2Fgitlab.com%2Fapi%2Fv4%2Fprojects%2F74828972%2Fpackages%2Fnpm%2F%40imapps%2Fapi-utils%2F-%2F%40imapps%2Fapi-utils-0.0.11.tgz"
+"@imapps/api-utils@npm:^0.0.12":
+  version: 0.0.12
+  resolution: "@imapps/api-utils@npm:0.0.12::__archiveUrl=https%3A%2F%2Fgitlab.com%2Fapi%2Fv4%2Fprojects%2F74828972%2Fpackages%2Fnpm%2F%40imapps%2Fapi-utils%2F-%2F%40imapps%2Fapi-utils-0.0.12.tgz"
   dependencies:
     minio: "npm:^8.0.0"
     mongodb: "npm:^6.19.0"
-  checksum: 10c0/35dc10f07466eac76911eb3eb41bbc17884177d2e55ce07fd04fdbf49869c6717e49683c107dd3443213754d2fb2afdde6aa6aa06eb20b30a03a7f5381c2ac94
+  checksum: 10c0/a1deb00c2aaea84be264ba35dcb95b953232bfd3741db44ac251cdb998398d6ec884580728625a5af70816d9dbf0165bf92d06db371f7dcd643f08fbd84f9270
   languageName: node
   linkType: hard
 
@@ -3232,7 +3232,7 @@ __metadata:
   resolution: "@shoppingo/api@workspace:packages/api"
   dependencies:
     "@google/genai": "npm:^1.16.0"
-    "@imapps/api-utils": "npm:^0.0.11"
+    "@imapps/api-utils": "npm:^0.0.12"
     "@koa/bodyparser": "npm:^6.0.0"
     "@koa/cors": "npm:^5.0.0"
     "@shoppingo/types": "workspace:*"
