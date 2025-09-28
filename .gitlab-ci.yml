@@ -1,0 +1,85 @@
+# Include reusable job templates from @utils/
+include:
+  - project: 'igor-siergiej/im-apps-utils'
+    file: 'templates.yml'
+
+stages:
+  - ci
+  - docker-build
+  - gitops-update
+  - production-deploy
+
+variables:
+  NODE_VERSION: "22"
+  YARN_CACHE_FOLDER: "$CI_PROJECT_DIR/.yarn-cache"
+  PROJECT_NAME: "shoppingo"
+
+# Cache configuration for faster builds
+cache:
+  key: "${CI_COMMIT_REF_SLUG}"
+  paths:
+    - .yarn-cache/
+    - node_modules/
+
+# CI job - extends the reusable template from @utils/
+ci:
+  extends: .ci-template
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push"
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_PIPELINE_SOURCE == "web"
+
+# Build shoppingo-web Docker image
+build-web:
+  extends: .docker-build-template
+  variables:
+    APP_NAME: "shoppingo-web"
+    DOCKERFILE_PATH: "packages/web/Dockerfile"
+    BUILD_ARGS: "--build-arg APP_VERSION=${CI_COMMIT_SHORT_SHA}"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_REF_NAME == "main"
+    - if: $CI_PIPELINE_SOURCE == "web"
+  needs:
+    - ci
+
+# Build shoppingo-api Docker image
+build-api:
+  extends: .docker-build-template
+  variables:
+    APP_NAME: "shoppingo-api"
+    DOCKERFILE_PATH: "packages/api/Dockerfile"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_REF_NAME == "main"
+    - if: $CI_PIPELINE_SOURCE == "web"
+  needs:
+    - ci
+
+# Update staging environment automatically
+gitops-staging:
+  extends: .gitops-update-template
+  variables:
+    PROJECT_NAME: "shoppingo"
+    ENVIRONMENT: "staging"
+    APP_IMAGES: "api:shoppingo-api,web:shoppingo-web"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_REF_NAME == "main"
+    - if: $CI_PIPELINE_SOURCE == "web"
+  needs:
+    - build-web
+    - build-api
+
+# Manual production deployment
+gitops-production:
+  extends: .production-deploy-template
+  variables:
+    PROJECT_NAME: "shoppingo"
+    APP_IMAGES: "api:shoppingo-api,web:shoppingo-web"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_REF_NAME == "main"
+      when: manual
+      allow_failure: true
+    - if: $CI_PIPELINE_SOURCE == "web"
+      when: manual
+      allow_failure: true
+  needs:
+    - gitops-staging
