@@ -41,9 +41,8 @@ build-api:
 
 # Update staging environment automatically
 gitops-staging:
-  extends: .gitops-update-template
+  extends: .gitops-staging-template
   variables:
-    ENVIRONMENT: "staging"
     APP_IMAGES: "shoppingo-api:shoppingo-api,shoppingo-web:shoppingo-web"
   rules:
     - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_REF_NAME == "main"
