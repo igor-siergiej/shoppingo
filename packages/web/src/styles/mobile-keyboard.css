@@ -1,5 +1,3 @@
-/* Mobile keyboard handling styles */
-
 /* Ensure the drawer content is properly positioned when keyboard appears */
 @media (max-width: 768px) {
   /* Use dynamic viewport units for better mobile support */
