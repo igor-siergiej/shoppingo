@@ -14,18 +14,28 @@ ci:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_PIPELINE_SOURCE == "web"
 
+# Calculate semantic version for this release
+version-calculation:
+  extends: .version-calculation-template
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_REF_NAME == "main"
+    - if: $CI_PIPELINE_SOURCE == "web"
+  needs:
+    - ci
+
 # Build shoppingo-web Docker image
 build-web:
   extends: .docker-build-template
   variables:
     APP_NAME: "shoppingo-web"
     DOCKERFILE_PATH: "packages/web/Dockerfile"
-    BUILD_ARGS: "--build-arg APP_VERSION=${CI_COMMIT_SHORT_SHA}"
+    BUILD_ARGS: "--build-arg APP_VERSION=${VERSION}"
   rules:
     - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_REF_NAME == "main"
     - if: $CI_PIPELINE_SOURCE == "web"
   needs:
     - ci
+    - version-calculation
 
 # Build shoppingo-api Docker image
 build-api:
@@ -38,6 +48,7 @@ build-api:
     - if: $CI_PIPELINE_SOURCE == "web"
   needs:
     - ci
+    - version-calculation
 
 # Update staging environment automatically
 gitops-staging:
@@ -48,6 +59,7 @@ gitops-staging:
     - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_REF_NAME == "main"
     - if: $CI_PIPELINE_SOURCE == "web"
   needs:
+    - version-calculation
     - build-web
     - build-api
 
