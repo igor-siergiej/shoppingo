@@ -63,6 +63,15 @@ gitops-staging:
     - build-web
     - build-api
 
+# Version release - bump version and create tag after successful staging deployment
+version-release:
+  extends: .version-release-template
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_REF_NAME == "main"
+    - if: $CI_PIPELINE_SOURCE == "web"
+  needs:
+    - gitops-staging
+
 # Manual production deployment
 gitops-production:
   extends: .production-deploy-template
