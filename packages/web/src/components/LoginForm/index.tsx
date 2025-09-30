@@ -1,32 +1,46 @@
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth, useAuthConfig } from '@imapps/web-utils';
-import { useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { useLocation, useNavigate } from 'react-router-dom';
-
-import { cn } from '@/lib/utils';
+import { z } from 'zod';
 
 import { Button } from '../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 
-export function LoginForm({
-    className,
-    ...props
-}: React.ComponentProps<'div'>) {
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+const loginSchema = z.object({
+    username: z
+        .string()
+        .min(1, 'Username is required')
+        .min(3, 'Username must be at least 3 characters')
+        .max(50, 'Username must not exceed 50 characters')
+        .trim(),
+    password: z
+        .string()
+        .min(1, 'Password is required')
+        .min(6, 'Password must be at least 6 characters')
+        .max(100, 'Password must not exceed 100 characters'),
+});
+
+type LoginFormData = z.infer<typeof loginSchema>;
+
+export const LoginForm: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const { login } = useAuth();
     const config = useAuthConfig();
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsLoading(true);
-        setError(null);
+    const {
+        register,
+        handleSubmit,
+        formState: { errors, isSubmitting },
+        setError,
+    } = useForm<LoginFormData>({
+        resolver: zodResolver(loginSchema),
+    });
 
+    const onSubmit = async (data: LoginFormData) => {
         try {
             const response = await fetch(`${config.authUrl}/login`, {
                 method: 'POST',
@@ -34,7 +48,7 @@ export function LoginForm({
                     'Content-Type': 'application/json',
                 },
                 credentials: 'include',
-                body: JSON.stringify({ username, password }),
+                body: JSON.stringify(data),
             });
 
             if (!response.ok) {
@@ -43,32 +57,29 @@ export function LoginForm({
                 throw new Error(errorData.error || 'Login failed');
             }
 
-            const data = await response.json();
+            const responseData = await response.json();
 
-            console.log('Login response:', data);
+            console.log('Login response:', responseData);
 
-            if (!data.token && !data.accessToken) {
-                console.error('No token found in response:', data);
+            if (!responseData.token && !responseData.accessToken) {
+                console.error('No token found in response:', responseData);
                 throw new Error('Login successful but no token received');
             }
 
-            login(data.token || data.accessToken);
+            login(responseData.token || responseData.accessToken);
 
-            // Redirect to the page they were trying to access, or home
             const from = location.state?.from?.pathname || '/';
 
             navigate(from, { replace: true });
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Login failed';
 
-            setError(errorMessage);
-        } finally {
-            setIsLoading(false);
+            setError('root', { message: errorMessage });
         }
     };
 
     return (
-        <div className={cn('flex flex-col gap-6', className)} {...props}>
+        <div className="flex flex-col gap-6">
             <Card>
                 <CardHeader>
                     <CardTitle>Login to your account</CardTitle>
@@ -77,7 +88,7 @@ export function LoginForm({
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <form onSubmit={handleSubmit}>
+                    <form onSubmit={handleSubmit(onSubmit)}>
                         <div className="flex flex-col gap-6">
                             <div className="grid gap-3">
                                 <Label htmlFor="username">Username</Label>
@@ -85,10 +96,14 @@ export function LoginForm({
                                     id="username"
                                     type="text"
                                     placeholder="Enter your username"
-                                    value={username}
-                                    onChange={e => setUsername(e.target.value)}
-                                    required
+                                    {...register('username')}
+                                    aria-invalid={errors.username ? 'true' : 'false'}
                                 />
+                                {errors.username && (
+                                    <p className="text-sm text-red-600">
+                                        {errors.username.message}
+                                    </p>
+                                )}
                             </div>
                             <div className="grid gap-3">
                                 <div className="flex items-center">
@@ -98,24 +113,28 @@ export function LoginForm({
                                     id="password"
                                     type="password"
                                     placeholder="Enter your password"
-                                    value={password}
-                                    onChange={e => setPassword(e.target.value)}
-                                    required
+                                    {...register('password')}
+                                    aria-invalid={errors.password ? 'true' : 'false'}
                                 />
+                                {errors.password && (
+                                    <p className="text-sm text-red-600">
+                                        {errors.password.message}
+                                    </p>
+                                )}
                             </div>
-                            {error && (
+                            {errors.root && (
                                 <div className="text-sm text-red-600 bg-red-50 p-3 rounded-md">
-                                    {error}
+                                    {errors.root.message}
                                 </div>
                             )}
                             <div className="flex flex-col gap-3">
-                                <Button type="submit" className="w-full" disabled={isLoading}>
-                                    {isLoading ? 'Logging in...' : 'Login'}
+                                <Button type="submit" className="w-full" disabled={isSubmitting}>
+                                    {isSubmitting ? 'Logging in...' : 'Login'}
                                 </Button>
                             </div>
                         </div>
                         <div className="mt-4 text-center text-sm">
-                            Don&apos;t have an account?
+                            Don't have an account?
                             {' '}
                             <a href="/register" className="underline underline-offset-4">
                                 Sign up
@@ -126,4 +145,4 @@ export function LoginForm({
             </Card>
         </div>
     );
-}
+};
