@@ -69,4 +69,5 @@ gitops-production:
   variables:
     APP_IMAGES: "shoppingo-api:shoppingo-api,shoppingo-web:shoppingo-web"
   needs:
+    - version-calculation
     - gitops-staging
