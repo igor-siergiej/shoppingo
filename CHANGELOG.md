@@ -1,3 +1,15 @@
+# [1.1.0](https://gitlab.com/imapps/shoppingo/compare/v1.0.0...v1.1.0) (2025-10-03)
+
+
+### Bug Fixes
+
+* yarn lock and use eslint-config 0.2 ([0097da7](https://gitlab.com/imapps/shoppingo/commit/0097da7465c9b17619730288fb69d7fc6d4ed225))
+
+
+### Features
+
+* update empty components and some toolbar fixes ([78cff8b](https://gitlab.com/imapps/shoppingo/commit/78cff8b747e4ebc35ffca297fa89243d0f303a36))
+
 # 1.0.0 (2025-09-30)
 
 
