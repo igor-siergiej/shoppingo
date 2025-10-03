@@ -1,3 +1,10 @@
+## [1.1.1](https://gitlab.com/imapps/shoppingo/compare/v1.1.0...v1.1.1) (2025-10-03)
+
+
+### Bug Fixes
+
+* update package versions too ([69ace70](https://gitlab.com/imapps/shoppingo/commit/69ace70f7449e6cf6e35f50c259064b3805c1d54))
+
 # [1.1.0](https://gitlab.com/imapps/shoppingo/compare/v1.0.0...v1.1.0) (2025-10-03)
 
 
