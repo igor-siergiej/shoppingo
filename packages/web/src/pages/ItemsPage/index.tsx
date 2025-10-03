@@ -1,17 +1,27 @@
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, ShoppingCart } from 'lucide-react';
+import { useRef } from 'react';
 import { useQuery } from 'react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { Button } from '@/components/ui/button';
+import {
+    Empty,
+    EmptyContent,
+    EmptyDescription,
+    EmptyHeader,
+    EmptyMedia,
+    EmptyTitle,
+} from '@/components/ui/empty';
 
 import { addItem, clearList, clearSelected, getListQuery } from '../../api';
 import ItemCheckBoxList from '../../components/ItemCheckBoxList';
 import { ItemsSkeleton } from '../../components/LoadingSkeleton';
-import ToolBar from '../../components/ToolBar';
+import ToolBar, { type ToolBarRef } from '../../components/ToolBar';
 
 const ItemsPage = () => {
     const { listTitle } = useParams();
     const navigate = useNavigate();
+    const toolbarRef = useRef<ToolBarRef>(null);
 
     const { data, isLoading, isError, refetch } = useQuery({
         ...getListQuery(listTitle),
@@ -44,11 +54,22 @@ const ItemsPage = () => {
                 ? (
                         isEmpty
                             ? (
-                                    <div className="fixed bottom-28 left-6 z-50 flex items-center gap-3 select-none">
-                                        <div className="bg-primary text-primary-foreground px-3 py-2 rounded-md shadow">
-                                            Press the green button to add items
-                                        </div>
-                                    </div>
+                                    <Empty className="flex-none justify-start p-4">
+                                        <EmptyHeader>
+                                            <EmptyMedia variant="icon">
+                                                <ShoppingCart />
+                                            </EmptyMedia>
+                                            <EmptyTitle>No items yet</EmptyTitle>
+                                            <EmptyDescription>
+                                                Start adding items to your shopping list
+                                            </EmptyDescription>
+                                        </EmptyHeader>
+                                        <EmptyContent>
+                                            <Button onClick={() => toolbarRef.current?.openDrawer()}>
+                                                Add Item
+                                            </Button>
+                                        </EmptyContent>
+                                    </Empty>
                                 )
                             : (
                                     <ItemCheckBoxList
@@ -88,6 +109,7 @@ const ItemsPage = () => {
             {!isLoading && !isError && data && pageContent}
 
             <ToolBar
+                ref={toolbarRef}
                 handleAdd={handleAddItem}
                 handleGoBack={handleGoBack}
                 handleClearSelected={handleClearSelected}

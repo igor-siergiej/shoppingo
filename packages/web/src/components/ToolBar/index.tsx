@@ -3,7 +3,7 @@
 import { useAuth } from '@imapps/web-utils';
 import { ArrowLeft, CheckCheck, Download, LogOut, Menu, Plus, Search, Trash2, User } from 'lucide-react';
 import { AnimatePresence, motion, MotionConfig } from 'motion/react';
-import { useEffect, useRef, useState } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import useMeasure from 'react-use-measure';
 
@@ -34,13 +34,17 @@ interface ToolBarProps {
     placeholder?: string;
 }
 
-export default function ToolBar({
+export interface ToolBarRef {
+    openDrawer: () => void;
+}
+
+const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(({
     handleAdd,
     handleGoBack,
     handleClearSelected,
     handleRemoveAll,
     placeholder = 'Enter item name...',
-}: ToolBarProps) {
+}, ref) => {
     const location = useLocation();
     const navigate = useNavigate();
     const { logout } = useAuth();
@@ -50,6 +54,7 @@ export default function ToolBar({
     const [error, setError] = useState(false);
     const [selectedUsers, setSelectedUsers] = useState<Array<string>>([]);
     const inputRef = useRef<HTMLInputElement>(null);
+    const menuCardRef = useRef<HTMLDivElement>(null);
 
     const isItemsPage = location.pathname.includes('/list/');
     const isListsPage = location.pathname === '/';
@@ -70,6 +75,28 @@ export default function ToolBar({
 
     // PWA functionality
     const { canInstall, isInstalled, installApp } = usePWA();
+
+    // Expose method to open drawer from parent component
+    useImperativeHandle(ref, () => ({
+        openDrawer: () => setIsDrawerOpen(true),
+    }));
+
+    // Close menu when clicking outside (works on mobile and desktop)
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+            if (menuCardRef.current && !menuCardRef.current.contains(event.target as Node) && isMenuOpen) {
+                setIsMenuOpen(false);
+                setMenuActive(null);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('touchstart', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('touchstart', handleClickOutside);
+        };
+    }, [isMenuOpen]);
 
     useEffect(() => {
         if (isDrawerOpen && inputRef.current) {
@@ -146,7 +173,7 @@ export default function ToolBar({
             <div className="fixed bottom-4 left-0 right-0 z-40 px-4">
                 <div className="mx-auto max-w-[400px]">
                     <MotionConfig transition={transition}>
-                        <Card className="shadow-lg py-2 !gap-0">
+                        <Card ref={menuCardRef} className="shadow-lg py-2 !gap-0">
                             <div className="overflow-hidden">
                                 <AnimatePresence initial={false} mode="sync">
                                     {
@@ -394,4 +421,8 @@ export default function ToolBar({
             </div>
         </>
     );
-}
+});
+
+ToolBar.displayName = 'ToolBar';
+
+export default ToolBar;

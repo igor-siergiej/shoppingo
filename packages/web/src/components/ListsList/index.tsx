@@ -85,7 +85,7 @@ const ListsList = ({ lists, refetch }: ListsListProps) => {
                         : (
                                 <Button
                                     variant="ghost"
-                                    className="w-full justify-start text-left text-base font-medium"
+                                    className="w-full justify-start text-left text-base font-medium hover:bg-transparent"
                                     onClick={() => {
                                         navigate(`/list/${list.title}`);
                                     }}

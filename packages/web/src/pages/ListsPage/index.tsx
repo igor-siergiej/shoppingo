@@ -1,16 +1,26 @@
 import { useUser } from '@imapps/web-utils';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, ListPlus, Users } from 'lucide-react';
+import { useRef } from 'react';
 import { useQuery } from 'react-query';
 
 import { Button } from '@/components/ui/button';
+import {
+    Empty,
+    EmptyContent,
+    EmptyDescription,
+    EmptyHeader,
+    EmptyMedia,
+    EmptyTitle,
+} from '@/components/ui/empty';
 
 import { addList, getListsQuery } from '../../api';
 import ListsList from '../../components/ListsList';
 import { ListsSkeleton } from '../../components/LoadingSkeleton';
-import ToolBar from '../../components/ToolBar';
+import ToolBar, { type ToolBarRef } from '../../components/ToolBar';
 
 const ListsPage = () => {
     const { user } = useUser();
+    const toolbarRef = useRef<ToolBarRef>(null);
     const { data, isLoading, isError, refetch } = useQuery({
         ...getListsQuery(user?.id || ''),
         enabled: !!user?.id,
@@ -40,9 +50,22 @@ const ListsPage = () => {
                             <ListsList lists={yourLists} refetch={refetch} />
                         )
                     : (
-                            <p className="text-center pb-4 pt-4 text-muted-foreground">
-                                You haven't created any lists yet...
-                            </p>
+                            <Empty className="flex-none justify-start p-4">
+                                <EmptyHeader>
+                                    <EmptyMedia variant="icon">
+                                        <ListPlus />
+                                    </EmptyMedia>
+                                    <EmptyTitle>No lists yet</EmptyTitle>
+                                    <EmptyDescription>
+                                        Create your first list to get started
+                                    </EmptyDescription>
+                                </EmptyHeader>
+                                <EmptyContent>
+                                    <Button onClick={() => toolbarRef.current?.openDrawer()}>
+                                        Create List
+                                    </Button>
+                                </EmptyContent>
+                            </Empty>
                         )}
             </div>
 
@@ -54,9 +77,17 @@ const ListsPage = () => {
                             <ListsList lists={sharedLists} refetch={refetch} />
                         )
                     : (
-                            <p className="text-center pb-4 pt-4 text-muted-foreground">
-                                No shared lists available...
-                            </p>
+                            <Empty className="flex-none justify-start p-4">
+                                <EmptyHeader>
+                                    <EmptyMedia variant="icon">
+                                        <Users />
+                                    </EmptyMedia>
+                                    <EmptyTitle>No shared lists</EmptyTitle>
+                                    <EmptyDescription>
+                                        Shared lists will appear here when someone shares one with you
+                                    </EmptyDescription>
+                                </EmptyHeader>
+                            </Empty>
                         )}
             </div>
         </div>
@@ -99,6 +130,7 @@ const ListsPage = () => {
             {!isLoading && !isError && pageContent}
 
             <ToolBar
+                ref={toolbarRef}
                 handleAdd={handleAddList}
                 placeholder="Enter list name..."
             />

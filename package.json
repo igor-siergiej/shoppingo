@@ -4,7 +4,6 @@
     "private": true,
     "repository": "git@gitlab.com:imapps/shoppingo.git",
     "author": "Igor Siergiej <igorsiergiej@gmail.com>",
-    "license": "MIT",
     "scripts": {
         "start:web": "yarn workspace @shoppingo/web start",
         "start:web:with-mock": "dotenv -e .env -- yarn workspace @shoppingo/web start:with-mock",

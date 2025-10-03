@@ -6,9 +6,7 @@
         "start": "vite --port 4000",
         "start:mock-auth": "node mock-auth-server.js",
         "start:with-mock": "concurrently \"npm run start:mock-auth\" \"npm run start\"",
-        "build": "tsc && vite build --emptyOutDir",
-        "test": "vitest --coverage",
-        "preview": "vite preview"
+        "build": "tsc && vite build --emptyOutDir"
     },
     "dependencies": {
         "@hookform/resolvers": "^5.2.2",
@@ -52,7 +50,6 @@
         "@typescript-eslint/eslint-plugin": "^8.39.1",
         "@typescript-eslint/parser": "^8.39.1",
         "@vitejs/plugin-react": "^5.0.0",
-        "@vitest/coverage-v8": "^3.2.4",
         "autoprefixer": "^10.4.21",
         "concurrently": "^8.2.2",
         "eslint": "^9.33.0",
