@@ -1,28 +1,28 @@
 {
-    "compilerOptions": {
-        "composite": true,
-        "declaration": true,
-        "module": "ESNext",
-        "moduleResolution": "bundler",
-        "target": "ESNext",
-        "noImplicitAny": true,
-        "preserveConstEnums": true,
-        "noUnusedLocals": true,
-        "resolveJsonModule": true,
-        "esModuleInterop": true,
-        "skipLibCheck": true,
-        "emitDeclarationOnly": true
+  "compilerOptions": {
+    "composite": true,
+    "declaration": true,
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "target": "ESNext",
+    "noImplicitAny": true,
+    "preserveConstEnums": true,
+    "noUnusedLocals": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "emitDeclarationOnly": true
+  },
+  "files": [],
+  "references": [
+    {
+      "path": "packages/types"
     },
-    "files": [],
-    "references": [
-        {
-            "path": "packages/types"
-        },
-        {
-            "path": "packages/api"
-        },
-        {
-            "path": "packages/web"
-        }
-    ]
+    {
+      "path": "packages/api"
+    },
+    {
+      "path": "packages/web"
+    }
+  ]
 }

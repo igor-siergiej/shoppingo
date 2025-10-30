@@ -19,7 +19,7 @@ export const getVersionInfo = (): VersionInfo => {
         current,
         stored,
         isFirstTime,
-        hasChanged
+        hasChanged,
     };
 };
 
@@ -51,7 +51,7 @@ export const clearAllCaches = async (): Promise<void> => {
         if ('caches' in window) {
             const cacheNames = await caches.keys();
 
-            await Promise.all(cacheNames.map(name => caches.delete(name)));
+            await Promise.all(cacheNames.map((name) => caches.delete(name)));
         }
     } catch {
         // Silent fail

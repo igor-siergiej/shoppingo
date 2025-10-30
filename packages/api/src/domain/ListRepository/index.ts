@@ -1,4 +1,4 @@
-import { Item, List } from '@shoppingo/types';
+import type { Item, List } from '@shoppingo/types';
 
 export interface ListRepository {
     getByTitle(title: string): Promise<List | null>;

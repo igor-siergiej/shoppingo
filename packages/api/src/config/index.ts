@@ -9,7 +9,7 @@ const schema = {
     bucketName: { parser: parsers.string, from: 'BUCKET_NAME' },
     bucketAccessKey: { parser: parsers.string, from: 'BUCKET_ACCESS_KEY' },
     bucketSecretKey: { parser: parsers.string, from: 'BUCKET_SECRET_KEY' },
-    bucketEndpoint: { parser: parsers.string, from: 'BUCKET_ENDPOINT' }
+    bucketEndpoint: { parser: parsers.string, from: 'BUCKET_ENDPOINT' },
 } as const;
 
 export const config = new ConfigService(schema);

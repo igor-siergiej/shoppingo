@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { Outlet } from 'react-router-dom';
 
 import Appbar from '../Appbar';
@@ -17,19 +17,13 @@ export const RootLayout = ({ children, showLayout = true }: RootLayoutProps) => 
         <div className="min-h-screen bg-background flex flex-col pt-16">
             <Appbar />
             <NetworkStatusAlert />
-            {showLayout
-                ? (
-                        <Layout>
-                            {content}
-                        </Layout>
-                    )
-                : (
-                        <main className="flex-1 flex items-center justify-center p-4">
-                            <div className="w-full max-w-md">
-                                {content}
-                            </div>
-                        </main>
-                    )}
+            {showLayout ? (
+                <Layout>{content}</Layout>
+            ) : (
+                <main className="flex-1 flex items-center justify-center p-4">
+                    <div className="w-full max-w-md">{content}</div>
+                </main>
+            )}
         </div>
     );
 };

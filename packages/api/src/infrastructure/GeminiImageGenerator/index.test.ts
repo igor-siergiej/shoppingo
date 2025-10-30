@@ -6,23 +6,23 @@ const mockGenerateContent = vi.fn();
 
 const mockGoogleAI = {
     models: {
-        generateContent: mockGenerateContent
-    }
+        generateContent: mockGenerateContent,
+    },
 };
 
 vi.mock('@google/genai', () => ({
-    GoogleGenAI: vi.fn().mockImplementation(() => mockGoogleAI)
+    GoogleGenAI: vi.fn().mockImplementation(() => mockGoogleAI),
 }));
 
 const mockSharpInstance = {
     resize: vi.fn().mockReturnThis(),
     webp: vi.fn().mockReturnThis(),
     withMetadata: vi.fn().mockReturnThis(),
-    toBuffer: vi.fn()
+    toBuffer: vi.fn(),
 };
 
 vi.mock('sharp', () => ({
-    default: vi.fn().mockImplementation(() => mockSharpInstance)
+    default: vi.fn().mockImplementation(() => mockSharpInstance),
 }));
 
 describe('GeminiImageGenerator', () => {
@@ -37,16 +37,20 @@ describe('GeminiImageGenerator', () => {
         describe('When generating an image successfully', () => {
             it('should generate and process the image', async () => {
                 const mockResponse = {
-                    candidates: [{
-                        content: {
-                            parts: [{
-                                inlineData: {
-                                    mimeType: 'image/webp',
-                                    data: Buffer.from('base64-encoded-image').toString('base64')
-                                }
-                            }]
-                        }
-                    }]
+                    candidates: [
+                        {
+                            content: {
+                                parts: [
+                                    {
+                                        inlineData: {
+                                            mimeType: 'image/webp',
+                                            data: Buffer.from('base64-encoded-image').toString('base64'),
+                                        },
+                                    },
+                                ],
+                            },
+                        },
+                    ],
                 };
 
                 mockGenerateContent.mockResolvedValue(mockResponse);
@@ -56,7 +60,7 @@ describe('GeminiImageGenerator', () => {
 
                 expect(mockGenerateContent).toHaveBeenCalledWith({
                     model: 'gemini-2.5-flash-image-preview',
-                    contents: 'test prompt'
+                    contents: 'test prompt',
                 });
                 expect(mockSharpInstance.resize).toHaveBeenCalled();
                 expect(mockSharpInstance.webp).toHaveBeenCalled();
@@ -71,17 +75,16 @@ describe('GeminiImageGenerator', () => {
             it('should throw an error', async () => {
                 const mockResponse = {
                     response: {
-                        candidates: []
-                    }
+                        candidates: [],
+                    },
                 };
 
                 mockGenerateContent.mockResolvedValue(mockResponse);
 
-                await expect(generator.generateImage('test prompt'))
-                    .rejects.toMatchObject({
-                        message: 'Invalid image generation response',
-                        status: 502
-                    });
+                await expect(generator.generateImage('test prompt')).rejects.toMatchObject({
+                    message: 'Invalid image generation response',
+                    status: 502,
+                });
             });
         });
 
@@ -89,17 +92,16 @@ describe('GeminiImageGenerator', () => {
             it('should throw an error', async () => {
                 const mockResponse = {
                     response: {
-                        candidates: [{}]
-                    }
+                        candidates: [{}],
+                    },
                 };
 
                 mockGenerateContent.mockResolvedValue(mockResponse);
 
-                await expect(generator.generateImage('test prompt'))
-                    .rejects.toMatchObject({
-                        message: 'Invalid image generation response',
-                        status: 502
-                    });
+                await expect(generator.generateImage('test prompt')).rejects.toMatchObject({
+                    message: 'Invalid image generation response',
+                    status: 502,
+                });
             });
         });
 
@@ -107,19 +109,20 @@ describe('GeminiImageGenerator', () => {
             it('should throw an error', async () => {
                 const mockResponse = {
                     response: {
-                        candidates: [{
-                            content: {}
-                        }]
-                    }
+                        candidates: [
+                            {
+                                content: {},
+                            },
+                        ],
+                    },
                 };
 
                 mockGenerateContent.mockResolvedValue(mockResponse);
 
-                await expect(generator.generateImage('test prompt'))
-                    .rejects.toMatchObject({
-                        message: 'Invalid image generation response',
-                        status: 502
-                    });
+                await expect(generator.generateImage('test prompt')).rejects.toMatchObject({
+                    message: 'Invalid image generation response',
+                    status: 502,
+                });
             });
         });
 
@@ -127,21 +130,22 @@ describe('GeminiImageGenerator', () => {
             it('should throw an error', async () => {
                 const mockResponse = {
                     response: {
-                        candidates: [{
-                            content: {
-                                parts: [{}]
-                            }
-                        }]
-                    }
+                        candidates: [
+                            {
+                                content: {
+                                    parts: [{}],
+                                },
+                            },
+                        ],
+                    },
                 };
 
                 mockGenerateContent.mockResolvedValue(mockResponse);
 
-                await expect(generator.generateImage('test prompt'))
-                    .rejects.toMatchObject({
-                        message: 'Invalid image generation response',
-                        status: 502
-                    });
+                await expect(generator.generateImage('test prompt')).rejects.toMatchObject({
+                    message: 'Invalid image generation response',
+                    status: 502,
+                });
             });
         });
 
@@ -149,24 +153,27 @@ describe('GeminiImageGenerator', () => {
             it('should throw the error', async () => {
                 mockGenerateContent.mockRejectedValue(new Error('API error'));
 
-                await expect(generator.generateImage('test prompt'))
-                    .rejects.toThrow('API error');
+                await expect(generator.generateImage('test prompt')).rejects.toThrow('API error');
             });
         });
 
         describe('When sharp processing fails', () => {
             it('should fallback to original buffer', async () => {
                 const mockResponse = {
-                    candidates: [{
-                        content: {
-                            parts: [{
-                                inlineData: {
-                                    mimeType: 'image/png',
-                                    data: Buffer.from('base64-encoded-image').toString('base64')
-                                }
-                            }]
-                        }
-                    }]
+                    candidates: [
+                        {
+                            content: {
+                                parts: [
+                                    {
+                                        inlineData: {
+                                            mimeType: 'image/png',
+                                            data: Buffer.from('base64-encoded-image').toString('base64'),
+                                        },
+                                    },
+                                ],
+                            },
+                        },
+                    ],
                 };
 
                 mockGenerateContent.mockResolvedValue(mockResponse);
@@ -183,16 +190,20 @@ describe('GeminiImageGenerator', () => {
             it('should work without logger', async () => {
                 const generatorWithoutLogger = new GeminiImageGenerator('test-api-key');
                 const mockResponse = {
-                    candidates: [{
-                        content: {
-                            parts: [{
-                                inlineData: {
-                                    mimeType: 'image/png',
-                                    data: Buffer.from('base64-encoded-image').toString('base64')
-                                }
-                            }]
-                        }
-                    }]
+                    candidates: [
+                        {
+                            content: {
+                                parts: [
+                                    {
+                                        inlineData: {
+                                            mimeType: 'image/png',
+                                            data: Buffer.from('base64-encoded-image').toString('base64'),
+                                        },
+                                    },
+                                ],
+                            },
+                        },
+                    ],
                 };
 
                 mockGenerateContent.mockResolvedValue(mockResponse);

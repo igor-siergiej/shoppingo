@@ -1,4 +1,4 @@
-import { Item } from '@shoppingo/types';
+import type { Item } from '@shoppingo/types';
 import { Check, Edit2, ImageOff, Loader2, X, X as XIcon } from 'lucide-react';
 import { type MouseEvent, useEffect, useMemo, useRef, useState } from 'react';
 
@@ -68,14 +68,14 @@ const ItemCheckBox = ({ item, listTitle, refetch }: ItemCheckBoxProps) => {
 
         // If the image is already in the browser cache, the load event may not fire.
         // Detect that case and set the loaded/error state accordingly.
-        if (img && img.complete) {
+        if (img?.complete) {
             if (img.naturalWidth > 0) {
                 setHasLoadedImage(true);
             } else {
                 setHasImageError(true);
             }
         }
-    }, [imageSrc]);
+    }, []);
 
     const handleToggleSelected = async () => {
         if (isEditing || isDeleteLoading || isToggleLoading) return;
@@ -94,12 +94,9 @@ const ItemCheckBox = ({ item, listTitle, refetch }: ItemCheckBoxProps) => {
         <Card
             key={item.name}
             className={`mb-2 transition-all duration-200 py-0.5 px-3 ${
-                item.isSelected
-                    ? 'bg-primary/10 border-primary/20 shadow-md'
-                    : 'bg-background hover:bg-accent/50'
+                item.isSelected ? 'bg-primary/10 border-primary/20 shadow-md' : 'bg-background hover:bg-accent/50'
             } ${isEditing ? '' : 'cursor-pointer'}`}
             onClick={() => void handleToggleSelected()}
-
             onClickCapture={(e) => {
                 const target = e.target as HTMLElement;
 
@@ -122,7 +119,6 @@ const ItemCheckBox = ({ item, listTitle, refetch }: ItemCheckBoxProps) => {
         >
             <CardContent className="flex items-center justify-between p-0.5">
                 <div className="flex items-center gap-4 flex-1">
-
                     {/* Item image: single <img> to avoid duplicate requests. Overlays for loading/spinner/error. */}
                     {!isEditing && (
                         <div className="relative h-12 w-12 shrink-0">
@@ -157,53 +153,49 @@ const ItemCheckBox = ({ item, listTitle, refetch }: ItemCheckBoxProps) => {
                         </div>
                     )}
 
-                    {isEditing
-                        ? (
-                                <div className="flex items-center gap-2 flex-1">
-                                    <Input
-                                        value={editValue}
-                                        onChange={e => setEditValue(e.target.value)}
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter') {
-                                                handleEditSave();
-                                            }
+                    {isEditing ? (
+                        <div className="flex items-center gap-2 flex-1">
+                            <Input
+                                value={editValue}
+                                onChange={(e) => setEditValue(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        handleEditSave();
+                                    }
 
-                                            if (e.key === 'Escape') {
-                                                handleEditCancel();
-                                            }
-                                        }}
-                                        className="flex-1"
-                                        autoFocus
-                                    />
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={handleEditStart}
-                                        className="h-8 w-8 text-green-600 hover:bg-green-50"
-                                    >
-                                        <Check size={16} />
-                                    </Button>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={handleEditCancel}
-                                        className="h-8 w-8 text-gray-500 hover:bg-gray-50"
-                                    >
-                                        <XIcon size={16} />
-                                    </Button>
-                                </div>
-                            )
-                        : (
-                                <Label
-                                    className={`flex-1 cursor-pointer text-base ${
-                                        item.isSelected
-                                            ? 'line-through text-muted-foreground'
-                                            : 'text-foreground'
-                                    }`}
-                                >
-                                    {item.name}
-                                </Label>
-                            )}
+                                    if (e.key === 'Escape') {
+                                        handleEditCancel();
+                                    }
+                                }}
+                                className="flex-1"
+                                autoFocus
+                            />
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={handleEditStart}
+                                className="h-8 w-8 text-green-600 hover:bg-green-50"
+                            >
+                                <Check size={16} />
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={handleEditCancel}
+                                className="h-8 w-8 text-gray-500 hover:bg-gray-50"
+                            >
+                                <XIcon size={16} />
+                            </Button>
+                        </div>
+                    ) : (
+                        <Label
+                            className={`flex-1 cursor-pointer text-base ${
+                                item.isSelected ? 'line-through text-muted-foreground' : 'text-foreground'
+                            }`}
+                        >
+                            {item.name}
+                        </Label>
+                    )}
                 </div>
 
                 <div className="flex items-center">
@@ -217,21 +209,19 @@ const ItemCheckBox = ({ item, listTitle, refetch }: ItemCheckBoxProps) => {
                             <Edit2 size={20} strokeWidth={1.75} />
                         </Button>
                     )}
-                    {isDeleteLoading
-                        ? (
-                                <Loader2 className="h-5 w-5 animate-spin" />
-                            )
-                        : (
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={handleDeleteItem}
-                                    className="h-12 w-12 hover:bg-destructive/10 hover:text-destructive"
-                                    disabled={isEditing}
-                                >
-                                    <X size={24} strokeWidth={1.75} />
-                                </Button>
-                            )}
+                    {isDeleteLoading ? (
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                    ) : (
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={handleDeleteItem}
+                            className="h-12 w-12 hover:bg-destructive/10 hover:text-destructive"
+                            disabled={isEditing}
+                        >
+                            <X size={24} strokeWidth={1.75} />
+                        </Button>
+                    )}
                 </div>
             </CardContent>
         </Card>

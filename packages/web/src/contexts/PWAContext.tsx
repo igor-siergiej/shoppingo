@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import type React from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 
 interface BeforeInstallPromptEvent extends Event {
     prompt: () => Promise<void>;
@@ -35,8 +36,9 @@ export const PWAProvider: React.FC<PWAProviderProps> = ({ children }) => {
 
     useEffect(() => {
         // Check if app is already installed
-        const isStandalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches)
-            || (navigator as unknown as { standalone?: boolean }).standalone === true;
+        const isStandalone =
+            window.matchMedia?.('(display-mode: standalone)').matches ||
+            (navigator as unknown as { standalone?: boolean }).standalone === true;
 
         setIsInstalled(Boolean(isStandalone));
 
@@ -93,9 +95,5 @@ export const PWAProvider: React.FC<PWAProviderProps> = ({ children }) => {
         installApp,
     };
 
-    return (
-        <PWAContext.Provider value={value}>
-            {children}
-        </PWAContext.Provider>
-    );
+    return <PWAContext.Provider value={value}>{children}</PWAContext.Provider>;
 };

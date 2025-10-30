@@ -1,6 +1,6 @@
-import { Logger } from '@imapps/api-utils';
+import type { Logger } from '@imapps/api-utils';
 
-import { ImageGenerator, ImageStore } from './types';
+import type { ImageGenerator, ImageStore } from './types';
 
 export class ImageService {
     constructor(
@@ -9,7 +9,11 @@ export class ImageService {
         private readonly logger?: Logger
     ) {}
 
-    async getImage(name: string): Promise<{ stream: NodeJS.ReadableStream; contentType: string; cacheControl: string }> {
+    async getImage(name: string): Promise<{
+        stream: NodeJS.ReadableStream;
+        contentType: string;
+        cacheControl: string;
+    }> {
         if (!name) {
             throw Object.assign(new Error('Image name is required'), { status: 400 });
         }
@@ -25,10 +29,12 @@ export class ImageService {
             return {
                 stream,
                 contentType,
-                cacheControl: 'public, max-age=31536000, immutable'
+                cacheControl: 'public, max-age=31536000, immutable',
             };
         } catch {
-            this.logger?.warn('Image not found in store, falling back to generator', { name: normalisedName });
+            this.logger?.warn('Image not found in store, falling back to generator', {
+                name: normalisedName,
+            });
         }
 
         // Generate new image
@@ -39,13 +45,16 @@ export class ImageService {
         try {
             await this.store.putObject(normalisedName, buffer, { contentType });
         } catch (uploadErr) {
-            this.logger?.error('Failed to store generated image', { name: normalisedName, error: uploadErr });
+            this.logger?.error('Failed to store generated image', {
+                name: normalisedName,
+                error: uploadErr,
+            });
         }
 
         return {
             stream: this.bufferToStream(buffer),
             contentType,
-            cacheControl: 'public, max-age=31536000, immutable'
+            cacheControl: 'public, max-age=31536000, immutable',
         };
     }
 
@@ -54,13 +63,13 @@ export class ImageService {
     }
 
     private bufferToStream(buffer: Buffer): NodeJS.ReadableStream {
-        const { Readable } = require('stream');
+        const { Readable } = require('node:stream');
 
         return new Readable({
             read() {
                 this.push(buffer);
                 this.push(null);
-            }
+            },
         });
     }
 }

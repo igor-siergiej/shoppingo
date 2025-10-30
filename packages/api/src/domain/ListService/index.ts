@@ -1,8 +1,8 @@
-import { Item, List, User } from '@shoppingo/types';
+import type { Item, List, User } from '@shoppingo/types';
 
-import { IdGenerator } from '../IdGenerator';
-import { ListRepository } from '../ListRepository';
-import { AuthClient } from './types';
+import type { IdGenerator } from '../IdGenerator';
+import type { ListRepository } from '../ListRepository';
+import type { AuthClient } from './types';
 
 export class ListService {
     constructor(
@@ -28,12 +28,12 @@ export class ListService {
 
         const lists = await this.repo.findByUserId(userId);
 
-        return lists.map(list => ({
+        return lists.map((list) => ({
             id: list.id,
             title: list.title,
             dateAdded: list.dateAdded,
             items: list.items,
-            users: list.users.map(user => ({ username: user.username }))
+            users: list.users.map((user) => ({ username: user.username })),
         }));
     }
 
@@ -42,7 +42,9 @@ export class ListService {
 
         if (selectedUsernames && selectedUsernames.length > 0) {
             if (!this.auth) {
-                throw Object.assign(new Error('Auth service not configured'), { status: 502 });
+                throw Object.assign(new Error('Auth service not configured'), {
+                    status: 502,
+                });
             }
 
             try {
@@ -63,7 +65,7 @@ export class ListService {
             title,
             dateAdded,
             items: [],
-            users
+            users,
         };
 
         await this.repo.insert(list);
@@ -76,7 +78,7 @@ export class ListService {
             id: this.idGenerator.generate(),
             name: itemName,
             dateAdded,
-            isSelected: false
+            isSelected: false,
         };
 
         await this.repo.pushItem(title, item);
@@ -86,7 +88,9 @@ export class ListService {
 
     async updateItemName(title: string, itemName: string, newItemName: string) {
         if (!newItemName || newItemName.trim() === '') {
-            throw Object.assign(new Error('New title cannot be empty'), { status: 400 });
+            throw Object.assign(new Error('New title cannot be empty'), {
+                status: 400,
+            });
         }
 
         if (newItemName.trim() === itemName) {
@@ -99,21 +103,20 @@ export class ListService {
             throw Object.assign(new Error('List not found'), { status: 404 });
         }
 
-        const existingItem = list.items.find(item => item.name === newItemName.trim());
+        const existingItem = list.items.find((item) => item.name === newItemName.trim());
 
         if (existingItem) {
             throw Object.assign(new Error('An item with that name already exists in this list'), { status: 409 });
         }
 
-        list.items = list.items.map(item =>
-            item.name === itemName
-                ? { ...item, name: newItemName.trim() }
-                : item
-        );
+        list.items = list.items.map((item) => (item.name === itemName ? { ...item, name: newItemName.trim() } : item));
 
         await this.repo.replaceByTitle(title, list);
 
-        return { message: 'Item updated successfully', newItemName: newItemName.trim() };
+        return {
+            message: 'Item updated successfully',
+            newItemName: newItemName.trim(),
+        };
     }
 
     async setItemSelected(title: string, itemName: string, isSelected: boolean) {
@@ -123,11 +126,7 @@ export class ListService {
             throw Object.assign(new Error('List not found'), { status: 404 });
         }
 
-        list.items = list.items.map(item =>
-            item.name === itemName
-                ? { ...item, isSelected }
-                : item
-        );
+        list.items = list.items.map((item) => (item.name === itemName ? { ...item, isSelected } : item));
 
         await this.repo.replaceByTitle(title, list);
 
@@ -141,7 +140,7 @@ export class ListService {
             throw Object.assign(new Error('List not found'), { status: 404 });
         }
 
-        list.items = list.items.filter(item => !item.isSelected);
+        list.items = list.items.filter((item) => !item.isSelected);
         await this.repo.replaceByTitle(title, list);
 
         return list;
@@ -154,7 +153,7 @@ export class ListService {
             throw Object.assign(new Error('List not found'), { status: 404 });
         }
 
-        list.items = list.items.filter(item => item.name !== itemName);
+        list.items = list.items.filter((item) => item.name !== itemName);
         await this.repo.replaceByTitle(title, list);
 
         return list;
@@ -162,7 +161,9 @@ export class ListService {
 
     async updateListTitle(title: string, newTitle: string) {
         if (!newTitle || newTitle.trim() === '') {
-            throw Object.assign(new Error('New title cannot be empty'), { status: 400 });
+            throw Object.assign(new Error('New title cannot be empty'), {
+                status: 400,
+            });
         }
 
         const list = await this.repo.getByTitle(title);
@@ -174,7 +175,9 @@ export class ListService {
         const existingList = await this.repo.getByTitle(newTitle.trim());
 
         if (existingList) {
-            throw Object.assign(new Error('A list with that name already exists'), { status: 409 });
+            throw Object.assign(new Error('A list with that name already exists'), {
+                status: 409,
+            });
         }
 
         list.title = newTitle.trim();

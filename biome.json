@@ -1,0 +1,13 @@
+{
+  "extends": ["@imapps/biome-config/base"],
+  "linter": {
+    "rules": {
+      "a11y": {
+        "useSemanticElements": "warn"
+      },
+      "correctness": {
+        "useUniqueElementIds": "warn"
+      }
+    }
+  }
+}

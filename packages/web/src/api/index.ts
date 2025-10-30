@@ -1,4 +1,4 @@
-import { Item, ListResponse, User } from '@shoppingo/types';
+import type { Item, ListResponse, User } from '@shoppingo/types';
 
 import { makeRequest } from './makeRequest';
 import { MethodType } from './types';
@@ -42,16 +42,13 @@ export const addList = async (listTitle: string, user: User, selectedUsers?: Arr
         pathname: '/api/lists',
         method: MethodType.PUT,
         operationString: 'add list',
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify(requestBody),
     });
 
     return result;
 };
 
-export const addItem = async (
-    itemName: string,
-    listTitle: string
-): Promise<unknown> => {
+export const addItem = async (itemName: string, listTitle: string): Promise<unknown> => {
     const dateAdded = generateTimestamp(new Date());
 
     const result = await makeRequest({
@@ -65,17 +62,16 @@ export const addItem = async (
     });
 
     // Trigger image generation/fetch for the item in the background (fire-and-forget)
-    void fetch(`/api/image/${encodeURIComponent(itemName)}`, { method: 'GET' })
-        .catch(() => { /* ignore errors, do not block addItem */ });
+    void fetch(`/api/image/${encodeURIComponent(itemName)}`, {
+        method: 'GET',
+    }).catch(() => {
+        /* ignore errors, do not block addItem */
+    });
 
     return result;
 };
 
-export const updateItem = async (
-    itemName: string,
-    isSelected: boolean,
-    listTitle: string
-) => {
+export const updateItem = async (itemName: string, isSelected: boolean, listTitle: string) => {
     return await makeRequest({
         pathname: `/api/lists/${encodeURIComponent(listTitle)}/items/${encodeURIComponent(itemName)}`,
         method: MethodType.POST,
@@ -114,7 +110,7 @@ export const clearSelected = async (listTitle: string) => {
     return await makeRequest({
         pathname: `/api/lists/${encodeURIComponent(listTitle)}/clearSelected`,
         method: MethodType.DELETE,
-        operationString: 'clear selected items'
+        operationString: 'clear selected items',
     });
 };
 

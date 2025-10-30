@@ -1,7 +1,7 @@
 import { GoogleGenAI } from '@google/genai';
 import sharp from 'sharp';
 
-import { ImageGenerator } from '../../domain/ImageService/types';
+import type { ImageGenerator } from '../../domain/ImageService/types';
 
 export class GeminiImageGenerator implements ImageGenerator {
     constructor(private readonly apiKey: string) {}
@@ -15,16 +15,23 @@ export class GeminiImageGenerator implements ImageGenerator {
 
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash-image-preview',
-            contents: prompt
+            contents: prompt,
         });
 
         const candidates = response?.candidates ?? [];
         const parts = candidates[0]?.content?.parts ?? [];
 
         const imagePart = parts.find((p: unknown) =>
-            Boolean((p as { inlineData?: { data?: string } })?.inlineData?.data
-                || (p as { inline_data?: { data?: string } })?.inline_data?.data)
-        ) as { inlineData?: { data?: string; mimeType?: string }; inline_data?: { data?: string; mime_type?: string } } | undefined;
+            Boolean(
+                (p as { inlineData?: { data?: string } })?.inlineData?.data ||
+                    (p as { inline_data?: { data?: string } })?.inline_data?.data
+            )
+        ) as
+            | {
+                  inlineData?: { data?: string; mimeType?: string };
+                  inline_data?: { data?: string; mime_type?: string };
+              }
+            | undefined;
 
         const inlineDataField = imagePart?.inlineData || imagePart?.inline_data;
         const base64 = inlineDataField?.data;
@@ -32,15 +39,23 @@ export class GeminiImageGenerator implements ImageGenerator {
         let responseContentType = 'image/png';
 
         if (inlineDataField) {
-            if ('mimeType' in inlineDataField && typeof (inlineDataField as { mimeType?: unknown }).mimeType === 'string') {
+            if (
+                'mimeType' in inlineDataField &&
+                typeof (inlineDataField as { mimeType?: unknown }).mimeType === 'string'
+            ) {
                 responseContentType = (inlineDataField as { mimeType: string }).mimeType;
-            } else if ('mime_type' in inlineDataField && typeof (inlineDataField as { mime_type?: unknown }).mime_type === 'string') {
+            } else if (
+                'mime_type' in inlineDataField &&
+                typeof (inlineDataField as { mime_type?: unknown }).mime_type === 'string'
+            ) {
                 responseContentType = (inlineDataField as { mime_type: string }).mime_type;
             }
         }
 
         if (!base64) {
-            throw Object.assign(new Error('Invalid image generation response'), { status: 502 });
+            throw Object.assign(new Error('Invalid image generation response'), {
+                status: 502,
+            });
         }
 
         const originalBuffer = Buffer.from(base64, 'base64');
@@ -54,10 +69,7 @@ export class GeminiImageGenerator implements ImageGenerator {
         } catch {
             // Fallback: try to at least convert to WebP without resizing
             try {
-                processedBuffer = await sharp(originalBuffer)
-                    .webp({ quality: 85 })
-                    .withMetadata({})
-                    .toBuffer();
+                processedBuffer = await sharp(originalBuffer).webp({ quality: 85 }).withMetadata({}).toBuffer();
                 finalContentType = 'image/webp';
             } catch {
                 processedBuffer = originalBuffer;
@@ -67,7 +79,7 @@ export class GeminiImageGenerator implements ImageGenerator {
 
         return {
             buffer: processedBuffer,
-            contentType: finalContentType
+            contentType: finalContentType,
         };
     }
 
@@ -76,7 +88,7 @@ export class GeminiImageGenerator implements ImageGenerator {
             .resize(256, 256, {
                 fit: 'contain',
                 background: { r: 0, g: 0, b: 0, alpha: 0 }, // Transparent background
-                withoutEnlargement: true // Don't upscale small images
+                withoutEnlargement: true, // Don't upscale small images
             })
             .webp({
                 quality: 85, // Good balance between quality and file size

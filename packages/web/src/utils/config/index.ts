@@ -1,9 +1,9 @@
-import { AppConfig, ConfigState } from './types';
+import type { AppConfig, ConfigState } from './types';
 
 export const configState: ConfigState = {
     config: null,
     isLoading: false,
-    error: null
+    error: null,
 };
 
 export const loadConfig = async (): Promise<AppConfig> => {

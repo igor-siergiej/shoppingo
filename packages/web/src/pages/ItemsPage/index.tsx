@@ -4,14 +4,7 @@ import { useQuery } from 'react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { Button } from '@/components/ui/button';
-import {
-    Empty,
-    EmptyContent,
-    EmptyDescription,
-    EmptyHeader,
-    EmptyMedia,
-    EmptyTitle,
-} from '@/components/ui/empty';
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
 
 import { addItem, clearList, clearSelected, getListQuery } from '../../api';
 import ItemCheckBoxList from '../../components/ItemCheckBoxList';
@@ -37,10 +30,13 @@ const ItemsPage = () => {
                 <AlertTriangle className="h-6 w-6" />
                 <span className="font-semibold">Unable to load items</span>
             </div>
-            <p className="text-muted-foreground mb-4 max-w-sm">
-                Please check your connection and try again.
-            </p>
-            <Button variant="default" onClick={() => { void refetch(); }}>
+            <p className="text-muted-foreground mb-4 max-w-sm">Please check your connection and try again.</p>
+            <Button
+                variant="default"
+                onClick={() => {
+                    void refetch();
+                }}
+            >
                 Retry
             </Button>
         </div>
@@ -50,36 +46,24 @@ const ItemsPage = () => {
 
     const pageContent = (
         <div className="flex flex-col">
-            {data
-                ? (
-                        isEmpty
-                            ? (
-                                    <Empty className="flex-none justify-start p-4">
-                                        <EmptyHeader>
-                                            <EmptyMedia variant="icon">
-                                                <ShoppingCart />
-                                            </EmptyMedia>
-                                            <EmptyTitle>No items yet</EmptyTitle>
-                                            <EmptyDescription>
-                                                Start adding items to your shopping list
-                                            </EmptyDescription>
-                                        </EmptyHeader>
-                                        <EmptyContent>
-                                            <Button onClick={() => toolbarRef.current?.openDrawer()}>
-                                                Add Item
-                                            </Button>
-                                        </EmptyContent>
-                                    </Empty>
-                                )
-                            : (
-                                    <ItemCheckBoxList
-                                        items={data}
-                                        refetch={refetch}
-                                        listTitle={listTitle}
-                                    />
-                                )
-                    )
-                : null}
+            {data ? (
+                isEmpty ? (
+                    <Empty className="flex-none justify-start p-4">
+                        <EmptyHeader>
+                            <EmptyMedia variant="icon">
+                                <ShoppingCart />
+                            </EmptyMedia>
+                            <EmptyTitle>No items yet</EmptyTitle>
+                            <EmptyDescription>Start adding items to your shopping list</EmptyDescription>
+                        </EmptyHeader>
+                        <EmptyContent>
+                            <Button onClick={() => toolbarRef.current?.openDrawer()}>Add Item</Button>
+                        </EmptyContent>
+                    </Empty>
+                ) : (
+                    <ItemCheckBoxList items={data} refetch={refetch} listTitle={listTitle} />
+                )
+            ) : null}
         </div>
     );
 

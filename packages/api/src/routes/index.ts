@@ -7,7 +7,11 @@ const router = new Router();
 
 router.get('/api/health', async (ctx) => {
     ctx.status = 200;
-    ctx.body = { status: 'healthy', service: 'shoppingo-api', timestamp: new Date().toISOString() };
+    ctx.body = {
+        status: 'healthy',
+        service: 'shoppingo-api',
+        timestamp: new Date().toISOString(),
+    };
 });
 
 router.get('/api/lists/title/:title', listHandlers.getList);

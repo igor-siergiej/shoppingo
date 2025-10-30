@@ -1,22 +1,20 @@
-import { Item, List, User } from '@shoppingo/types';
+import type { Item, List, User } from '@shoppingo/types';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { IdGenerator } from '../IdGenerator';
-import { ListRepository } from '../ListRepository';
+import type { IdGenerator } from '../IdGenerator';
+import type { ListRepository } from '../ListRepository';
 import { ListService } from './index';
-import { AuthClient } from './types';
+import type { AuthClient } from './types';
 
 class MockListRepository implements ListRepository {
     private lists: Array<List> = [];
 
     async getByTitle(title: string): Promise<List | null> {
-        return this.lists.find(list => list.title === title) || null;
+        return this.lists.find((list) => list.title === title) || null;
     }
 
     async findByUserId(userId: string): Promise<Array<List>> {
-        return this.lists.filter(list =>
-            list.users.some(user => user.id === userId)
-        );
+        return this.lists.filter((list) => list.users.some((user) => user.id === userId));
     }
 
     async insert(list: List): Promise<void> {
@@ -24,11 +22,11 @@ class MockListRepository implements ListRepository {
     }
 
     async deleteByTitle(title: string): Promise<void> {
-        this.lists = this.lists.filter(list => list.title !== title);
+        this.lists = this.lists.filter((list) => list.title !== title);
     }
 
     async replaceByTitle(title: string, list: List): Promise<void> {
-        const index = this.lists.findIndex(l => l.title === title);
+        const index = this.lists.findIndex((l) => l.title === title);
 
         if (index !== -1) {
             this.lists[index] = list;
@@ -36,7 +34,7 @@ class MockListRepository implements ListRepository {
     }
 
     async pushItem(title: string, item: Item): Promise<void> {
-        const list = this.lists.find(l => l.title === title);
+        const list = this.lists.find((l) => l.title === title);
 
         if (list) {
             list.items.push(item);
@@ -54,9 +52,9 @@ class MockIdGenerator implements IdGenerator {
 
 class MockAuthClient implements AuthClient {
     async getUsersByUsernames(usernames: Array<string>): Promise<Array<User>> {
-        return usernames.map(username => ({
+        return usernames.map((username) => ({
             id: `user-${username}`,
-            username
+            username,
         }));
     }
 }
@@ -85,9 +83,14 @@ describe('ListService', () => {
                     title: 'Test List',
                     dateAdded: new Date('2023-01-01'),
                     items: [
-                        { id: 'item-1', name: 'Item 1', dateAdded: new Date(), isSelected: false }
+                        {
+                            id: 'item-1',
+                            name: 'Item 1',
+                            dateAdded: new Date(),
+                            isSelected: false,
+                        },
                     ],
-                    users: [mockUser]
+                    users: [mockUser],
                 };
 
                 await mockRepository.insert(mockList);
@@ -101,8 +104,7 @@ describe('ListService', () => {
 
         describe('When a list does not exist', () => {
             it('should throw an error indicating the list was not found', async () => {
-                await expect(listService.getListItems('Non-existent List'))
-                    .rejects.toThrow('List not found');
+                await expect(listService.getListItems('Non-existent List')).rejects.toThrow('List not found');
             });
         });
     });
@@ -115,7 +117,7 @@ describe('ListService', () => {
                     title: 'Test List',
                     dateAdded: new Date('2023-01-01'),
                     items: [],
-                    users: [mockUser]
+                    users: [mockUser],
                 };
 
                 await mockRepository.insert(mockList);
@@ -130,8 +132,7 @@ describe('ListService', () => {
 
         describe('When no user ID is provided', () => {
             it('should throw an error indicating user ID is required', async () => {
-                await expect(listService.getListsForUser(''))
-                    .rejects.toThrow('userId is required');
+                await expect(listService.getListsForUser('')).rejects.toThrow('userId is required');
             });
         });
     });
@@ -169,12 +170,9 @@ describe('ListService', () => {
             it('should throw an error when trying to add additional users', async () => {
                 const serviceWithoutAuth = new ListService(mockRepository, mockIdGenerator);
 
-                await expect(serviceWithoutAuth.addList(
-                    'New List',
-                    new Date('2023-01-01'),
-                    mockUser,
-                    ['user2']
-                )).rejects.toThrow('Auth service not configured');
+                await expect(
+                    serviceWithoutAuth.addList('New List', new Date('2023-01-01'), mockUser, ['user2'])
+                ).rejects.toThrow('Auth service not configured');
             });
         });
 
@@ -183,16 +181,13 @@ describe('ListService', () => {
                 const mockAuthClientEmpty = {
                     async getUsersByUsernames(): Promise<Array<User>> {
                         return [];
-                    }
+                    },
                 };
                 const serviceWithEmptyAuth = new ListService(mockRepository, mockIdGenerator, mockAuthClientEmpty);
 
-                await expect(serviceWithEmptyAuth.addList(
-                    'New List',
-                    new Date('2023-01-01'),
-                    mockUser,
-                    ['user2']
-                )).rejects.toThrow('Failed to fetch users from auth service');
+                await expect(
+                    serviceWithEmptyAuth.addList('New List', new Date('2023-01-01'), mockUser, ['user2'])
+                ).rejects.toThrow('Failed to fetch users from auth service');
             });
         });
     });
@@ -205,7 +200,7 @@ describe('ListService', () => {
                     title: 'Test List',
                     dateAdded: new Date('2023-01-01'),
                     items: [],
-                    users: [mockUser]
+                    users: [mockUser],
                 };
 
                 await mockRepository.insert(mockList);
@@ -227,9 +222,14 @@ describe('ListService', () => {
                     title: 'Test List',
                     dateAdded: new Date('2023-01-01'),
                     items: [
-                        { id: 'item-1', name: 'Old Name', dateAdded: new Date(), isSelected: false }
+                        {
+                            id: 'item-1',
+                            name: 'Old Name',
+                            dateAdded: new Date(),
+                            isSelected: false,
+                        },
                     ],
-                    users: [mockUser]
+                    users: [mockUser],
                 };
 
                 await mockRepository.insert(mockList);
@@ -243,8 +243,9 @@ describe('ListService', () => {
 
         describe('When the list does not exist', () => {
             it('should throw an error indicating the list was not found', async () => {
-                await expect(listService.updateItemName('Non-existent', 'Old', 'New'))
-                    .rejects.toThrow('List not found');
+                await expect(listService.updateItemName('Non-existent', 'Old', 'New')).rejects.toThrow(
+                    'List not found'
+                );
             });
         });
 
@@ -255,15 +256,21 @@ describe('ListService', () => {
                     title: 'Test List',
                     dateAdded: new Date('2023-01-01'),
                     items: [
-                        { id: 'item-1', name: 'Old Name', dateAdded: new Date(), isSelected: false }
+                        {
+                            id: 'item-1',
+                            name: 'Old Name',
+                            dateAdded: new Date(),
+                            isSelected: false,
+                        },
                     ],
-                    users: [mockUser]
+                    users: [mockUser],
                 };
 
                 await mockRepository.insert(mockList);
 
-                await expect(listService.updateItemName('Test List', 'Old Name', ''))
-                    .rejects.toThrow('New title cannot be empty');
+                await expect(listService.updateItemName('Test List', 'Old Name', '')).rejects.toThrow(
+                    'New title cannot be empty'
+                );
             });
         });
 
@@ -274,15 +281,21 @@ describe('ListService', () => {
                     title: 'Test List',
                     dateAdded: new Date('2023-01-01'),
                     items: [
-                        { id: 'item-1', name: 'Old Name', dateAdded: new Date(), isSelected: false }
+                        {
+                            id: 'item-1',
+                            name: 'Old Name',
+                            dateAdded: new Date(),
+                            isSelected: false,
+                        },
                     ],
-                    users: [mockUser]
+                    users: [mockUser],
                 };
 
                 await mockRepository.insert(mockList);
 
-                await expect(listService.updateItemName('Test List', 'Old Name', 'Old Name'))
-                    .rejects.toThrow('New item name must be different from current name');
+                await expect(listService.updateItemName('Test List', 'Old Name', 'Old Name')).rejects.toThrow(
+                    'New item name must be different from current name'
+                );
             });
         });
 
@@ -293,15 +306,21 @@ describe('ListService', () => {
                     title: 'Test List',
                     dateAdded: new Date('2023-01-01'),
                     items: [
-                        { id: 'item-1', name: 'Existing Item', dateAdded: new Date(), isSelected: false }
+                        {
+                            id: 'item-1',
+                            name: 'Existing Item',
+                            dateAdded: new Date(),
+                            isSelected: false,
+                        },
                     ],
-                    users: [mockUser]
+                    users: [mockUser],
                 };
 
                 await mockRepository.insert(mockList);
 
-                await expect(listService.updateItemName('Test List', 'Old Name', 'Existing Item'))
-                    .rejects.toThrow('An item with that name already exists in this list');
+                await expect(listService.updateItemName('Test List', 'Old Name', 'Existing Item')).rejects.toThrow(
+                    'An item with that name already exists in this list'
+                );
             });
         });
     });
@@ -314,9 +333,14 @@ describe('ListService', () => {
                     title: 'Test List',
                     dateAdded: new Date('2023-01-01'),
                     items: [
-                        { id: 'item-1', name: 'Item 1', dateAdded: new Date(), isSelected: false }
+                        {
+                            id: 'item-1',
+                            name: 'Item 1',
+                            dateAdded: new Date(),
+                            isSelected: false,
+                        },
                     ],
-                    users: [mockUser]
+                    users: [mockUser],
                 };
 
                 await mockRepository.insert(mockList);
@@ -329,8 +353,9 @@ describe('ListService', () => {
 
         describe('When the list does not exist', () => {
             it('should throw an error indicating the list was not found', async () => {
-                await expect(listService.setItemSelected('Non-existent', 'Item', true))
-                    .rejects.toThrow('List not found');
+                await expect(listService.setItemSelected('Non-existent', 'Item', true)).rejects.toThrow(
+                    'List not found'
+                );
             });
         });
     });
@@ -343,10 +368,20 @@ describe('ListService', () => {
                     title: 'Test List',
                     dateAdded: new Date('2023-01-01'),
                     items: [
-                        { id: 'item-1', name: 'Item 1', dateAdded: new Date(), isSelected: true },
-                        { id: 'item-2', name: 'Item 2', dateAdded: new Date(), isSelected: false }
+                        {
+                            id: 'item-1',
+                            name: 'Item 1',
+                            dateAdded: new Date(),
+                            isSelected: true,
+                        },
+                        {
+                            id: 'item-2',
+                            name: 'Item 2',
+                            dateAdded: new Date(),
+                            isSelected: false,
+                        },
                     ],
-                    users: [mockUser]
+                    users: [mockUser],
                 };
 
                 await mockRepository.insert(mockList);
@@ -360,8 +395,7 @@ describe('ListService', () => {
 
         describe('When the list does not exist', () => {
             it('should throw an error indicating the list was not found', async () => {
-                await expect(listService.clearSelectedItems('Non-existent'))
-                    .rejects.toThrow('List not found');
+                await expect(listService.clearSelectedItems('Non-existent')).rejects.toThrow('List not found');
             });
         });
     });
@@ -374,10 +408,20 @@ describe('ListService', () => {
                     title: 'Test List',
                     dateAdded: new Date('2023-01-01'),
                     items: [
-                        { id: 'item-1', name: 'Item 1', dateAdded: new Date(), isSelected: false },
-                        { id: 'item-2', name: 'Item 2', dateAdded: new Date(), isSelected: false }
+                        {
+                            id: 'item-1',
+                            name: 'Item 1',
+                            dateAdded: new Date(),
+                            isSelected: false,
+                        },
+                        {
+                            id: 'item-2',
+                            name: 'Item 2',
+                            dateAdded: new Date(),
+                            isSelected: false,
+                        },
                     ],
-                    users: [mockUser]
+                    users: [mockUser],
                 };
 
                 await mockRepository.insert(mockList);
@@ -391,8 +435,7 @@ describe('ListService', () => {
 
         describe('When the list does not exist', () => {
             it('should throw an error indicating the list was not found', async () => {
-                await expect(listService.deleteItem('Non-existent', 'Item'))
-                    .rejects.toThrow('List not found');
+                await expect(listService.deleteItem('Non-existent', 'Item')).rejects.toThrow('List not found');
             });
         });
     });
@@ -405,7 +448,7 @@ describe('ListService', () => {
                     title: 'Old Title',
                     dateAdded: new Date('2023-01-01'),
                     items: [],
-                    users: [mockUser]
+                    users: [mockUser],
                 };
 
                 await mockRepository.insert(mockList);
@@ -419,8 +462,9 @@ describe('ListService', () => {
 
         describe('When the list does not exist', () => {
             it('should throw an error indicating the list was not found', async () => {
-                await expect(listService.updateListTitle('Non-existent', 'New Title'))
-                    .rejects.toThrow('List not found');
+                await expect(listService.updateListTitle('Non-existent', 'New Title')).rejects.toThrow(
+                    'List not found'
+                );
             });
         });
 
@@ -431,13 +475,12 @@ describe('ListService', () => {
                     title: 'Old Title',
                     dateAdded: new Date('2023-01-01'),
                     items: [],
-                    users: [mockUser]
+                    users: [mockUser],
                 };
 
                 await mockRepository.insert(mockList);
 
-                await expect(listService.updateListTitle('Old Title', ''))
-                    .rejects.toThrow('New title cannot be empty');
+                await expect(listService.updateListTitle('Old Title', '')).rejects.toThrow('New title cannot be empty');
             });
         });
 
@@ -448,21 +491,22 @@ describe('ListService', () => {
                     title: 'Existing Title',
                     dateAdded: new Date('2023-01-01'),
                     items: [],
-                    users: [mockUser]
+                    users: [mockUser],
                 };
                 const mockList2: List = {
                     id: 'list-2',
                     title: 'Old Title',
                     dateAdded: new Date('2023-01-01'),
                     items: [],
-                    users: [mockUser]
+                    users: [mockUser],
                 };
 
                 await mockRepository.insert(mockList1);
                 await mockRepository.insert(mockList2);
 
-                await expect(listService.updateListTitle('Old Title', 'Existing Title'))
-                    .rejects.toThrow('A list with that name already exists');
+                await expect(listService.updateListTitle('Old Title', 'Existing Title')).rejects.toThrow(
+                    'A list with that name already exists'
+                );
             });
         });
     });
@@ -475,7 +519,7 @@ describe('ListService', () => {
                     title: 'Test List',
                     dateAdded: new Date('2023-01-01'),
                     items: [],
-                    users: [mockUser]
+                    users: [mockUser],
                 };
 
                 await mockRepository.insert(mockList);
@@ -495,9 +539,14 @@ describe('ListService', () => {
                     title: 'Test List',
                     dateAdded: new Date('2023-01-01'),
                     items: [
-                        { id: 'item-1', name: 'Item 1', dateAdded: new Date(), isSelected: false }
+                        {
+                            id: 'item-1',
+                            name: 'Item 1',
+                            dateAdded: new Date(),
+                            isSelected: false,
+                        },
                     ],
-                    users: [mockUser]
+                    users: [mockUser],
                 };
 
                 await mockRepository.insert(mockList);
@@ -510,8 +559,7 @@ describe('ListService', () => {
 
         describe('When the list does not exist', () => {
             it('should throw an error indicating the list was not found', async () => {
-                await expect(listService.clearList('Non-existent'))
-                    .rejects.toThrow('List not found');
+                await expect(listService.clearList('Non-existent')).rejects.toThrow('List not found');
             });
         });
     });

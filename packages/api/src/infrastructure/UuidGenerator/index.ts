@@ -1,6 +1,6 @@
-import { randomUUID } from 'crypto';
+import { randomUUID } from 'node:crypto';
 
-import { IdGenerator } from '../../domain/IdGenerator';
+import type { IdGenerator } from '../../domain/IdGenerator';
 
 export class UuidGenerator implements IdGenerator {
     generate(): string {

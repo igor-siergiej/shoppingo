@@ -14,7 +14,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-import { AddItemDrawerProps } from './types';
+import type { AddItemDrawerProps } from './types';
 
 const AddItemDrawer = ({ handleAdd, placeholder = 'Enter item name...' }: AddItemDrawerProps) => {
     const [newName, setNewName] = useState('');
@@ -35,7 +35,7 @@ const AddItemDrawer = ({ handleAdd, placeholder = 'Enter item name...' }: AddIte
                     inputRef.current.scrollIntoView({
                         behavior: 'smooth',
                         block: 'center',
-                        inline: 'nearest'
+                        inline: 'nearest',
                     });
                 }
             }, 200);
@@ -67,9 +67,7 @@ const AddItemDrawer = ({ handleAdd, placeholder = 'Enter item name...' }: AddIte
         <div className="fixed bottom-20 left-4 z-40">
             <Drawer open={isOpen} onOpenChange={setIsOpen}>
                 <DrawerTrigger asChild>
-                    <Button
-                        className="h-14 w-14 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg"
-                    >
+                    <Button className="h-14 w-14 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg">
                         <Plus className="h-6 w-6" />
                     </Button>
                 </DrawerTrigger>
@@ -100,9 +98,7 @@ const AddItemDrawer = ({ handleAdd, placeholder = 'Enter item name...' }: AddIte
                                         }
                                     }}
                                 />
-                                {error && (
-                                    <p className="text-sm text-destructive">Name cannot be blank.</p>
-                                )}
+                                {error && <p className="text-sm text-destructive">Name cannot be blank.</p>}
                             </div>
                         </div>
                         <DrawerFooter>

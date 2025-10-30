@@ -19,10 +19,7 @@ function EmptyHeader({ className, ...props }: React.ComponentProps<'div'>) {
     return (
         <div
             data-slot="empty-header"
-            className={cn(
-                'flex max-w-sm flex-col items-center gap-2 text-center',
-                className
-            )}
+            className={cn('flex max-w-sm flex-col items-center gap-2 text-center', className)}
             {...props}
         />
     );
@@ -34,7 +31,7 @@ const emptyMediaVariants = cva(
         variants: {
             variant: {
                 default: 'bg-transparent',
-                icon: 'bg-muted text-foreground flex size-10 shrink-0 items-center justify-center rounded-lg [&_svg:not([class*=\'size-\'])]:size-6',
+                icon: "bg-muted text-foreground flex size-10 shrink-0 items-center justify-center rounded-lg [&_svg:not([class*='size-'])]:size-6",
             },
         },
         defaultVariants: {
@@ -59,13 +56,7 @@ function EmptyMedia({
 }
 
 function EmptyTitle({ className, ...props }: React.ComponentProps<'div'>) {
-    return (
-        <div
-            data-slot="empty-title"
-            className={cn('text-lg font-medium tracking-tight', className)}
-            {...props}
-        />
-    );
+    return <div data-slot="empty-title" className={cn('text-lg font-medium tracking-tight', className)} {...props} />;
 }
 
 function EmptyDescription({ className, ...props }: React.ComponentProps<'p'>) {
@@ -85,20 +76,10 @@ function EmptyContent({ className, ...props }: React.ComponentProps<'div'>) {
     return (
         <div
             data-slot="empty-content"
-            className={cn(
-                'flex w-full min-w-0 max-w-sm flex-col items-center gap-4 text-balance text-sm',
-                className
-            )}
+            className={cn('flex w-full min-w-0 max-w-sm flex-col items-center gap-4 text-balance text-sm', className)}
             {...props}
         />
     );
 }
 
-export {
-    Empty,
-    EmptyContent,
-    EmptyDescription,
-    EmptyHeader,
-    EmptyMedia,
-    EmptyTitle,
-};
+export { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle };

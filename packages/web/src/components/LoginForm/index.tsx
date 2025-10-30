@@ -59,8 +59,6 @@ export const LoginForm: React.FC = () => {
 
             const responseData = await response.json();
 
-            console.log('Login response:', responseData);
-
             if (!responseData.token && !responseData.accessToken) {
                 console.error('No token found in response:', responseData);
                 throw new Error('Login successful but no token received');
@@ -83,9 +81,7 @@ export const LoginForm: React.FC = () => {
             <Card>
                 <CardHeader>
                     <CardTitle>Login to your account</CardTitle>
-                    <CardDescription>
-                        Enter your username below to login to your account
-                    </CardDescription>
+                    <CardDescription>Enter your username below to login to your account</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={handleSubmit(onSubmit)}>
@@ -99,11 +95,7 @@ export const LoginForm: React.FC = () => {
                                     {...register('username')}
                                     aria-invalid={errors.username ? 'true' : 'false'}
                                 />
-                                {errors.username && (
-                                    <p className="text-sm text-red-600">
-                                        {errors.username.message}
-                                    </p>
-                                )}
+                                {errors.username && <p className="text-sm text-red-600">{errors.username.message}</p>}
                             </div>
                             <div className="grid gap-3">
                                 <div className="flex items-center">
@@ -116,11 +108,7 @@ export const LoginForm: React.FC = () => {
                                     {...register('password')}
                                     aria-invalid={errors.password ? 'true' : 'false'}
                                 />
-                                {errors.password && (
-                                    <p className="text-sm text-red-600">
-                                        {errors.password.message}
-                                    </p>
-                                )}
+                                {errors.password && <p className="text-sm text-red-600">{errors.password.message}</p>}
                             </div>
                             {errors.root && (
                                 <div className="text-sm text-red-600 bg-red-50 p-3 rounded-md">
@@ -134,8 +122,7 @@ export const LoginForm: React.FC = () => {
                             </div>
                         </div>
                         <div className="mt-4 text-center text-sm">
-                            Don't have an account?
-                            {' '}
+                            Don't have an account?{' '}
                             <a href="/register" className="underline underline-offset-4">
                                 Sign up
                             </a>

@@ -1,10 +1,6 @@
 import './index.css';
 
-import {
-    AuthConfigProvider,
-    AuthProvider,
-    ProtectedRoute,
-    UserProvider } from '@imapps/web-utils';
+import { AuthConfigProvider, AuthProvider, ProtectedRoute, UserProvider } from '@imapps/web-utils';
 import React, { Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from 'react-query';
@@ -23,15 +19,17 @@ const lazyLoadPage = (importFn: () => Promise<any>, fallbackName: string) =>
     React.lazy(() =>
         Promise.all([
             importFn(),
-            new Promise(resolve => setTimeout(resolve, 100)) // Small delay to ensure React context is ready
-        ]).then(([module]) => module).catch(() => ({
-            default: () => (
-                <div>
-                    Failed to load
-                    {fallbackName}
-                </div>
-            )
-        }))
+            new Promise((resolve) => setTimeout(resolve, 100)), // Small delay to ensure React context is ready
+        ])
+            .then(([module]) => module)
+            .catch(() => ({
+                default: () => (
+                    <div>
+                        Failed to load
+                        {fallbackName}
+                    </div>
+                ),
+            }))
     );
 
 const ItemsPage = lazyLoadPage(() => import('./pages/ItemsPage'), 'items page');
@@ -128,8 +126,6 @@ const App: React.FC = () => {
     );
 };
 
-const root = ReactDOM.createRoot(
-    document.getElementById('root') as HTMLElement
-);
+const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 
 root.render(<App />);

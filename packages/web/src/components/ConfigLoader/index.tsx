@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 
 import { loadConfig } from '../../utils/config';
 import ErrorPage from '../ErrorPage';
@@ -33,11 +34,7 @@ const ConfigLoader: React.FC<ConfigLoaderProps> = ({ children }) => {
     }
 
     if (error) {
-        return (
-            <ErrorPage
-                error={new Error(error)}
-            />
-        );
+        return <ErrorPage error={new Error(error)} />;
     }
 
     return <>{children}</>;

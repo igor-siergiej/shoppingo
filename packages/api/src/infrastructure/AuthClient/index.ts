@@ -1,29 +1,33 @@
-import { User } from '@shoppingo/types';
+import type { User } from '@shoppingo/types';
 
 import { config } from '../../config';
-import { AuthClient } from '../../domain/ListService';
+import type { AuthClient } from '../../domain/ListService';
 
 export class HttpAuthClient implements AuthClient {
     async getUsersByUsernames(usernames: Array<string>): Promise<Array<User>> {
         const authUrl = config.get('authUrl');
 
         if (!authUrl) {
-            throw Object.assign(new Error('Auth service not configured'), { status: 502 });
+            throw Object.assign(new Error('Auth service not configured'), {
+                status: 502,
+            });
         }
 
         const response = await fetch(`${authUrl}/users`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ usernames })
+            body: JSON.stringify({ usernames }),
         });
 
         if (!response.ok) {
             const errorText = await response.text();
 
             console.error('Auth service error response:', errorText);
-            throw Object.assign(new Error(`Auth service error: ${response.status}`), { status: 502 });
+            throw Object.assign(new Error(`Auth service error: ${response.status}`), {
+                status: 502,
+            });
         }
 
         const data = await response.json();
@@ -34,7 +38,7 @@ export class HttpAuthClient implements AuthClient {
             console.error('Auth service returned success: false', data);
             throw Object.assign(new Error('Auth service returned error'), {
                 status: 502,
-                details: data.message
+                details: data.message,
             });
         }
 

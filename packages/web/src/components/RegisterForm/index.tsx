@@ -9,10 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 
-export function RegisterForm({
-    className,
-    ...props
-}: React.ComponentProps<'div'>) {
+export function RegisterForm({ className, ...props }: React.ComponentProps<'div'>) {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [repeatPassword, setRepeatPassword] = useState('');
@@ -81,9 +78,7 @@ export function RegisterForm({
             <Card>
                 <CardHeader>
                     <CardTitle>Create your account</CardTitle>
-                    <CardDescription>
-                        Enter your details below to create your account
-                    </CardDescription>
+                    <CardDescription>Enter your details below to create your account</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={handleSubmit}>
@@ -95,7 +90,7 @@ export function RegisterForm({
                                     type="text"
                                     placeholder="Enter your username"
                                     value={username}
-                                    onChange={e => setUsername(e.target.value)}
+                                    onChange={(e) => setUsername(e.target.value)}
                                     required
                                 />
                             </div>
@@ -106,7 +101,7 @@ export function RegisterForm({
                                     type="password"
                                     placeholder="Enter your password"
                                     value={password}
-                                    onChange={e => setPassword(e.target.value)}
+                                    onChange={(e) => setPassword(e.target.value)}
                                     required
                                 />
                             </div>
@@ -117,7 +112,7 @@ export function RegisterForm({
                                     type="password"
                                     placeholder="Repeat your password"
                                     value={repeatPassword}
-                                    onChange={e => setRepeatPassword(e.target.value)}
+                                    onChange={(e) => setRepeatPassword(e.target.value)}
                                     required
                                 />
                             </div>
@@ -133,8 +128,7 @@ export function RegisterForm({
                             </div>
                         </div>
                         <div className="mt-4 text-center text-sm">
-                            Already have an account?
-                            {' '}
+                            Already have an account?{' '}
                             <a href="/login" className="underline underline-offset-4">
                                 Sign in
                             </a>

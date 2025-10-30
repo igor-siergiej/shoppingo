@@ -1,33 +1,34 @@
-import { Context } from 'koa';
+import type { Context } from 'koa';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import * as imageHandlers from './index';
 
 const mockDependencyContainer = vi.hoisted(() => ({
-    resolve: vi.fn()
+    resolve: vi.fn(),
 }));
 
 vi.mock('../../dependencies', () => ({
-    dependencyContainer: mockDependencyContainer
+    dependencyContainer: mockDependencyContainer,
 }));
 
 const mockImageService = {
-    getImage: vi.fn()
+    getImage: vi.fn(),
 } as {
     getImage: ReturnType<typeof vi.fn>;
 };
 
-const createMockContext = (overrides: Partial<Context> = {}): Context => ({
-    params: {},
-    set: vi.fn() as any,
-    status: 200,
-    body: {},
-    res: {
-        write: vi.fn(),
-        end: vi.fn()
-    } as any,
-    ...overrides
-} as Context);
+const createMockContext = (overrides: Partial<Context> = {}): Context =>
+    ({
+        params: {},
+        set: vi.fn() as any,
+        status: 200,
+        body: {},
+        res: {
+            write: vi.fn(),
+            end: vi.fn(),
+        } as any,
+        ...overrides,
+    }) as Context;
 
 describe('ImageHandlers', () => {
     beforeEach(() => {
@@ -39,7 +40,7 @@ describe('ImageHandlers', () => {
         it('should return image successfully', async () => {
             const mockStream = {
                 pipe: vi.fn(),
-                on: vi.fn()
+                on: vi.fn(),
             } as {
                 pipe: ReturnType<typeof vi.fn>;
                 on: ReturnType<typeof vi.fn>;
@@ -50,7 +51,7 @@ describe('ImageHandlers', () => {
             mockImageService.getImage.mockResolvedValue({
                 stream: mockStream,
                 contentType: 'image/webp',
-                cacheControl: 'public, max-age=31536000, immutable'
+                cacheControl: 'public, max-age=31536000, immutable',
             });
 
             mockStream.on.mockImplementation((event: string, callback: (...args: Array<any>) => void) => {
@@ -70,7 +71,7 @@ describe('ImageHandlers', () => {
         it('should handle stream piping correctly', async () => {
             const mockStream = {
                 pipe: vi.fn(),
-                on: vi.fn()
+                on: vi.fn(),
             } as {
                 pipe: ReturnType<typeof vi.fn>;
                 on: ReturnType<typeof vi.fn>;
@@ -81,7 +82,7 @@ describe('ImageHandlers', () => {
             mockImageService.getImage.mockResolvedValue({
                 stream: mockStream,
                 contentType: 'image/png',
-                cacheControl: 'public, max-age=31536000, immutable'
+                cacheControl: 'public, max-age=31536000, immutable',
             });
 
             mockStream.on.mockImplementation((event: string, callback: (...args: Array<any>) => void) => {
@@ -100,9 +101,7 @@ describe('ImageHandlers', () => {
         it('should handle service errors with status code', async () => {
             const ctx = createMockContext({ params: { name: 'invalid-image' } });
 
-            mockImageService.getImage.mockRejectedValue(
-                Object.assign(new Error('Image not found'), { status: 404 })
-            );
+            mockImageService.getImage.mockRejectedValue(Object.assign(new Error('Image not found'), { status: 404 }));
 
             await imageHandlers.getImage(ctx);
 
@@ -135,7 +134,7 @@ describe('ImageHandlers', () => {
         it('should handle stream errors', async () => {
             const mockStream = {
                 pipe: vi.fn(),
-                on: vi.fn()
+                on: vi.fn(),
             } as {
                 pipe: ReturnType<typeof vi.fn>;
                 on: ReturnType<typeof vi.fn>;
@@ -146,7 +145,7 @@ describe('ImageHandlers', () => {
             mockImageService.getImage.mockResolvedValue({
                 stream: mockStream,
                 contentType: 'image/webp',
-                cacheControl: 'public, max-age=31536000, immutable'
+                cacheControl: 'public, max-age=31536000, immutable',
             });
 
             const streamError = new Error('Stream error');
@@ -166,7 +165,7 @@ describe('ImageHandlers', () => {
         it('should handle stream end event', async () => {
             const mockStream = {
                 pipe: vi.fn(),
-                on: vi.fn()
+                on: vi.fn(),
             } as {
                 pipe: ReturnType<typeof vi.fn>;
                 on: ReturnType<typeof vi.fn>;
@@ -177,7 +176,7 @@ describe('ImageHandlers', () => {
             mockImageService.getImage.mockResolvedValue({
                 stream: mockStream,
                 contentType: 'image/webp',
-                cacheControl: 'public, max-age=31536000, immutable'
+                cacheControl: 'public, max-age=31536000, immutable',
             });
 
             mockStream.on.mockImplementation((event: string, callback: (...args: Array<any>) => void) => {

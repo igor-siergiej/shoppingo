@@ -2,7 +2,7 @@
 
 import { useAuth } from '@imapps/web-utils';
 import { ArrowLeft, CheckCheck, Download, LogOut, Menu, Plus, Search, Trash2, User } from 'lucide-react';
-import { AnimatePresence, motion, MotionConfig } from 'motion/react';
+import { AnimatePresence, MotionConfig, motion } from 'motion/react';
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import useMeasure from 'react-use-measure';
@@ -38,196 +38,185 @@ export interface ToolBarRef {
     openDrawer: () => void;
 }
 
-const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(({
-    handleAdd,
-    handleGoBack,
-    handleClearSelected,
-    handleRemoveAll,
-    placeholder = 'Enter item name...',
-}, ref) => {
-    const location = useLocation();
-    const navigate = useNavigate();
-    const { logout } = useAuth();
+const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
+    ({ handleAdd, handleGoBack, handleClearSelected, handleRemoveAll, placeholder = 'Enter item name...' }, ref) => {
+        const location = useLocation();
+        const navigate = useNavigate();
+        const { logout } = useAuth();
 
-    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-    const [newName, setNewName] = useState('');
-    const [error, setError] = useState(false);
-    const [selectedUsers, setSelectedUsers] = useState<Array<string>>([]);
-    const inputRef = useRef<HTMLInputElement>(null);
-    const menuCardRef = useRef<HTMLDivElement>(null);
+        const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+        const [newName, setNewName] = useState('');
+        const [error, setError] = useState(false);
+        const [selectedUsers, setSelectedUsers] = useState<Array<string>>([]);
+        const inputRef = useRef<HTMLInputElement>(null);
+        const menuCardRef = useRef<HTMLDivElement>(null);
 
-    const isItemsPage = location.pathname.includes('/list/');
-    const isListsPage = location.pathname === '/';
+        const isItemsPage = location.pathname.includes('/list/');
+        const isListsPage = location.pathname === '/';
 
-    const { query, setQuery, results, isLoading, error: searchError, clearResults } = useSearch();
+        const { query, setQuery, results, isLoading, error: searchError, clearResults } = useSearch();
 
-    // Hamburger expandable menu state (reusing ToolBarOld transitions)
-    const [menuActive, setMenuActive] = useState<number | null>(null);
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [contentRef, { height: contentHeight }] = useMeasure();
-    const [menuRef, { width: menuWidth }] = useMeasure();
-    const [maxWidth, setMaxWidth] = useState(0);
+        // Hamburger expandable menu state (reusing ToolBarOld transitions)
+        const [menuActive, setMenuActive] = useState<number | null>(null);
+        const [isMenuOpen, setIsMenuOpen] = useState(false);
+        const [contentRef, { height: contentHeight }] = useMeasure();
+        const [menuRef, { width: menuWidth }] = useMeasure();
+        const [maxWidth, setMaxWidth] = useState(0);
 
-    useEffect(() => {
-        if (!menuWidth || maxWidth > 0) return;
-        setMaxWidth(menuWidth);
-    }, [menuWidth, maxWidth]);
+        useEffect(() => {
+            if (!menuWidth || maxWidth > 0) return;
+            setMaxWidth(menuWidth);
+        }, [menuWidth, maxWidth]);
 
-    // PWA functionality
-    const { canInstall, isInstalled, installApp } = usePWA();
+        // PWA functionality
+        const { canInstall, isInstalled, installApp } = usePWA();
 
-    // Expose method to open drawer from parent component
-    useImperativeHandle(ref, () => ({
-        openDrawer: () => setIsDrawerOpen(true),
-    }));
+        // Expose method to open drawer from parent component
+        useImperativeHandle(ref, () => ({
+            openDrawer: () => setIsDrawerOpen(true),
+        }));
 
-    // Close menu when clicking outside (works on mobile and desktop)
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent | TouchEvent) => {
-            if (menuCardRef.current && !menuCardRef.current.contains(event.target as Node) && isMenuOpen) {
-                setIsMenuOpen(false);
-                setMenuActive(null);
-            }
-        };
-
-        document.addEventListener('mousedown', handleClickOutside);
-        document.addEventListener('touchstart', handleClickOutside);
-
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-            document.removeEventListener('touchstart', handleClickOutside);
-        };
-    }, [isMenuOpen]);
-
-    useEffect(() => {
-        if (isDrawerOpen && inputRef.current) {
-            // Longer timeout for mobile devices to ensure drawer animation completes
-            const timeoutId = setTimeout(() => {
-                inputRef.current?.focus();
-                // Scroll the input into view on mobile
-                if (inputRef.current) {
-                    inputRef.current.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'center',
-                        inline: 'nearest'
-                    });
+        // Close menu when clicking outside (works on mobile and desktop)
+        useEffect(() => {
+            const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+                if (menuCardRef.current && !menuCardRef.current.contains(event.target as Node) && isMenuOpen) {
+                    setIsMenuOpen(false);
+                    setMenuActive(null);
                 }
-            }, 250);
+            };
 
-            return () => clearTimeout(timeoutId);
-        }
-    }, [isDrawerOpen]);
+            document.addEventListener('mousedown', handleClickOutside);
+            document.addEventListener('touchstart', handleClickOutside);
 
-    const validateForm = () => {
-        return newName.length === 0;
-    };
+            return () => {
+                document.removeEventListener('mousedown', handleClickOutside);
+                document.removeEventListener('touchstart', handleClickOutside);
+            };
+        }, [isMenuOpen]);
 
-    const handleSubmit = async () => {
-        if (validateForm()) {
-            setError(true);
+        useEffect(() => {
+            if (isDrawerOpen && inputRef.current) {
+                // Longer timeout for mobile devices to ensure drawer animation completes
+                const timeoutId = setTimeout(() => {
+                    inputRef.current?.focus();
+                    // Scroll the input into view on mobile
+                    if (inputRef.current) {
+                        inputRef.current.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center',
+                            inline: 'nearest',
+                        });
+                    }
+                }, 250);
 
-            return;
-        }
+                return () => clearTimeout(timeoutId);
+            }
+        }, [isDrawerOpen]);
 
-        await handleAdd(newName.trim(), selectedUsers);
-        setNewName('');
-        setError(false);
-        setSelectedUsers([]);
-        setIsDrawerOpen(false);
-    };
+        const validateForm = () => {
+            return newName.length === 0;
+        };
 
-    const handleCancel = () => {
-        setNewName('');
-        setError(false);
-        setSelectedUsers([]);
-        setQuery('');
-        clearResults();
-        setIsDrawerOpen(false);
-    };
+        const handleSubmit = async () => {
+            if (validateForm()) {
+                setError(true);
 
-    const handleUserSelect = (username: string) => {
-        if (!selectedUsers.includes(username)) {
-            setSelectedUsers([...selectedUsers, username]);
-        }
+                return;
+            }
 
-        setQuery('');
-        clearResults();
-    };
+            await handleAdd(newName.trim(), selectedUsers);
+            setNewName('');
+            setError(false);
+            setSelectedUsers([]);
+            setIsDrawerOpen(false);
+        };
 
-    const removeSelectedUser = (username: string) => {
-        setSelectedUsers(selectedUsers.filter(u => u !== username));
-    };
+        const handleCancel = () => {
+            setNewName('');
+            setError(false);
+            setSelectedUsers([]);
+            setQuery('');
+            clearResults();
+            setIsDrawerOpen(false);
+        };
 
-    const handleLogout = async () => {
-        await logout();
-        navigate('/login');
-    };
+        const handleUserSelect = (username: string) => {
+            if (!selectedUsers.includes(username)) {
+                setSelectedUsers([...selectedUsers, username]);
+            }
 
-    const transition = {
-        type: 'spring' as const,
-        bounce: 0.1,
-        duration: 0.25,
-    };
+            setQuery('');
+            clearResults();
+        };
 
-    return (
-        <>
+        const removeSelectedUser = (username: string) => {
+            setSelectedUsers(selectedUsers.filter((u) => u !== username));
+        };
+
+        const handleLogout = async () => {
+            await logout();
+            navigate('/login');
+        };
+
+        const transition = {
+            type: 'spring' as const,
+            bounce: 0.1,
+            duration: 0.25,
+        };
+
+        return (
             <div className="fixed bottom-4 left-0 right-0 z-40 px-4">
                 <div className="mx-auto max-w-[400px]">
                     <MotionConfig transition={transition}>
                         <Card ref={menuCardRef} className="shadow-lg py-2 !gap-0">
                             <div className="overflow-hidden">
                                 <AnimatePresence initial={false} mode="sync">
-                                    {
-                                        isMenuOpen
-                                            ? (
-                                                    <motion.div
-                                                        key="content"
-                                                        initial={{ height: 0 }}
-                                                        animate={{ height: contentHeight || 0 }}
-                                                        exit={{ height: 0 }}
-                                                        style={{ width: maxWidth }}
-                                                    >
-                                                        <div ref={contentRef} className="p-3">
-                                                            {menuActive === 1 && (
-                                                                <div className="flex flex-col space-y-3">
+                                    {isMenuOpen ? (
+                                        <motion.div
+                                            key="content"
+                                            initial={{ height: 0 }}
+                                            animate={{ height: contentHeight || 0 }}
+                                            exit={{ height: 0 }}
+                                            style={{ width: maxWidth }}
+                                        >
+                                            <div ref={contentRef} className="p-3">
+                                                {menuActive === 1 && (
+                                                    <div className="flex flex-col space-y-3">
+                                                        {/* Install app action (shows only if available and not installed) */}
+                                                        {canInstall && !isInstalled && (
+                                                            <Button
+                                                                variant="outline"
+                                                                onClick={async () => {
+                                                                    const success = await installApp();
 
-                                                                    {/* Install app action (shows only if available and not installed) */}
-                                                                    {canInstall && !isInstalled && (
-                                                                        <Button
-                                                                            variant="outline"
-                                                                            onClick={async () => {
-                                                                                const success = await installApp();
-
-                                                                                if (success) {
-                                                                                    setIsMenuOpen(false);
-                                                                                    setMenuActive(null);
-                                                                                }
-                                                                            }}
-                                                                            className="justify-center"
-                                                                        >
-                                                                            <Download className="h-4 w-4 mr-2" />
-                                                                            Install app
-                                                                        </Button>
-                                                                    )}
-                                                                    <Button
-                                                                        variant="destructive"
-                                                                        onClick={() => {
-                                                                            void handleLogout();
-                                                                            setIsMenuOpen(false);
-                                                                            setMenuActive(null);
-                                                                        }}
-                                                                        className="justify-center"
-                                                                    >
-                                                                        <LogOut className="h-4 w-4 mr-2" />
-                                                                        Log out
-                                                                    </Button>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    </motion.div>
-                                                )
-                                            : null
-                                    }
+                                                                    if (success) {
+                                                                        setIsMenuOpen(false);
+                                                                        setMenuActive(null);
+                                                                    }
+                                                                }}
+                                                                className="justify-center"
+                                                            >
+                                                                <Download className="h-4 w-4 mr-2" />
+                                                                Install app
+                                                            </Button>
+                                                        )}
+                                                        <Button
+                                                            variant="destructive"
+                                                            onClick={() => {
+                                                                void handleLogout();
+                                                                setIsMenuOpen(false);
+                                                                setMenuActive(null);
+                                                            }}
+                                                            className="justify-center"
+                                                        >
+                                                            <LogOut className="h-4 w-4 mr-2" />
+                                                            Log out
+                                                        </Button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </motion.div>
+                                    ) : null}
                                 </AnimatePresence>
                             </div>
                             <CardContent className="flex items-center justify-between" ref={menuRef}>
@@ -274,7 +263,9 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(({
                                                         }}
                                                     />
                                                     {error && (
-                                                        <p className="text-sm text-destructive">Name cannot be blank.</p>
+                                                        <p className="text-sm text-destructive">
+                                                            Name cannot be blank.
+                                                        </p>
                                                     )}
                                                 </div>
 
@@ -288,7 +279,7 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(({
                                                                 <Input
                                                                     id="search-users"
                                                                     value={query}
-                                                                    onChange={e => setQuery(e.target.value)}
+                                                                    onChange={(e) => setQuery(e.target.value)}
                                                                     placeholder="Search users..."
                                                                     className="pl-10"
                                                                 />
@@ -310,7 +301,7 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(({
                                                                     Selected Users:
                                                                 </Label>
                                                                 <div className="flex flex-wrap gap-2">
-                                                                    {selectedUsers.map(username => (
+                                                                    {selectedUsers.map((username) => (
                                                                         <div
                                                                             key={username}
                                                                             className="flex items-center gap-1 bg-secondary text-secondary-foreground px-2 py-1 rounded-md text-sm"
@@ -321,7 +312,9 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(({
                                                                                 variant="ghost"
                                                                                 size="sm"
                                                                                 className="h-4 w-4 p-0 hover:bg-secondary-foreground/20"
-                                                                                onClick={() => removeSelectedUser(username)}
+                                                                                onClick={() =>
+                                                                                    removeSelectedUser(username)
+                                                                                }
                                                                             >
                                                                                 ×
                                                                             </Button>
@@ -420,9 +413,9 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(({
                     </MotionConfig>
                 </div>
             </div>
-        </>
-    );
-});
+        );
+    }
+);
 
 ToolBar.displayName = 'ToolBar';
 

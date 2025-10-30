@@ -1,6 +1,6 @@
-import { ObjectStoreConnection } from '@imapps/api-utils';
+import type { ObjectStoreConnection } from '@imapps/api-utils';
 
-import { ImageStore } from '../../domain/ImageService/types';
+import type { ImageStore } from '../../domain/ImageService/types';
 
 export class BucketStore implements ImageStore {
     constructor(private readonly bucket: ObjectStoreConnection) {}

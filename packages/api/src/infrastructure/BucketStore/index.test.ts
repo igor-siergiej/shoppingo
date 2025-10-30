@@ -1,4 +1,4 @@
-import { ObjectStoreConnection } from '@imapps/api-utils';
+import type { ObjectStoreConnection } from '@imapps/api-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { BucketStore } from './index';
@@ -6,7 +6,7 @@ import { BucketStore } from './index';
 const mockObjectStore = {
     getHeadObject: vi.fn(),
     getObjectStream: vi.fn(),
-    putObject: vi.fn()
+    putObject: vi.fn(),
 };
 
 const mockConnection = mockObjectStore as unknown as ObjectStoreConnection;
@@ -24,8 +24,8 @@ describe('BucketStore', () => {
             it('should return the object metadata', async () => {
                 const mockStat = {
                     metaData: {
-                        'content-type': 'image/png'
-                    }
+                        'content-type': 'image/png',
+                    },
                 };
 
                 mockObjectStore.getHeadObject.mockResolvedValue(mockStat);
@@ -41,8 +41,7 @@ describe('BucketStore', () => {
             it('should throw the error', async () => {
                 mockObjectStore.getHeadObject.mockRejectedValue({ code: 'NotFound' });
 
-                await expect(bucketStore.getHeadObject('non-existent.png'))
-                    .rejects.toEqual({ code: 'NotFound' });
+                await expect(bucketStore.getHeadObject('non-existent.png')).rejects.toEqual({ code: 'NotFound' });
             });
         });
 
@@ -50,8 +49,7 @@ describe('BucketStore', () => {
             it('should throw the error', async () => {
                 mockObjectStore.getHeadObject.mockRejectedValue(new Error('Access denied'));
 
-                await expect(bucketStore.getHeadObject('test-image.png'))
-                    .rejects.toThrow('Access denied');
+                await expect(bucketStore.getHeadObject('test-image.png')).rejects.toThrow('Access denied');
             });
         });
     });
@@ -61,7 +59,7 @@ describe('BucketStore', () => {
             it('should return a readable stream', async () => {
                 const mockStream = {
                     pipe: vi.fn(),
-                    on: vi.fn()
+                    on: vi.fn(),
                 };
 
                 mockObjectStore.getObjectStream.mockReturnValue(mockStream);
@@ -84,11 +82,7 @@ describe('BucketStore', () => {
 
                 await bucketStore.putObject('test-image.png', mockBuffer, options);
 
-                expect(mockObjectStore.putObject).toHaveBeenCalledWith(
-                    'test-image.png',
-                    mockBuffer,
-                    options
-                );
+                expect(mockObjectStore.putObject).toHaveBeenCalledWith('test-image.png', mockBuffer, options);
             });
         });
 
@@ -100,11 +94,7 @@ describe('BucketStore', () => {
 
                 await bucketStore.putObject('test-image.png', mockBuffer);
 
-                expect(mockObjectStore.putObject).toHaveBeenCalledWith(
-                    'test-image.png',
-                    mockBuffer,
-                    undefined
-                );
+                expect(mockObjectStore.putObject).toHaveBeenCalledWith('test-image.png', mockBuffer, undefined);
             });
         });
 
@@ -114,8 +104,7 @@ describe('BucketStore', () => {
 
                 mockObjectStore.putObject.mockRejectedValue(new Error('Upload failed'));
 
-                await expect(bucketStore.putObject('test-image.png', mockBuffer))
-                    .rejects.toThrow('Upload failed');
+                await expect(bucketStore.putObject('test-image.png', mockBuffer)).rejects.toThrow('Upload failed');
             });
         });
 
@@ -128,11 +117,7 @@ describe('BucketStore', () => {
 
                 await storeWithoutLogger.putObject('test-image.png', mockBuffer);
 
-                expect(mockObjectStore.putObject).toHaveBeenCalledWith(
-                    'test-image.png',
-                    mockBuffer,
-                    undefined
-                );
+                expect(mockObjectStore.putObject).toHaveBeenCalledWith('test-image.png', mockBuffer, undefined);
             });
         });
     });

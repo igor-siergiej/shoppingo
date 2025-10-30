@@ -1,13 +1,11 @@
-import { MongoDbConnection } from '@imapps/api-utils';
-import { Item, List } from '@shoppingo/types';
+import type { MongoDbConnection } from '@imapps/api-utils';
+import type { Item, List } from '@shoppingo/types';
 
 import { CollectionNames } from '../../dependencies/types';
-import { ListRepository } from '../../domain/ListRepository';
+import type { ListRepository } from '../../domain/ListRepository';
 
 export class MongoListRepository implements ListRepository {
-    constructor(
-        private readonly db: MongoDbConnection<{ [CollectionNames.List]: List }>
-    ) {}
+    constructor(private readonly db: MongoDbConnection<{ [CollectionNames.List]: List }>) {}
 
     private collection() {
         return this.db.getCollection(CollectionNames.List);
@@ -34,9 +32,6 @@ export class MongoListRepository implements ListRepository {
     }
 
     async pushItem(title: string, item: Item): Promise<void> {
-        await this.collection().findOneAndUpdate(
-            { title },
-            { $push: { items: item } }
-        );
+        await this.collection().findOneAndUpdate({ title }, { $push: { items: item } });
     }
 }

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import { SearchResult } from '@/components/SearchResults';
+import type { SearchResult } from '@/components/SearchResults';
 import { getAuthUrl } from '@/utils/config';
 
 import { makeRequest } from '../api/makeRequest';

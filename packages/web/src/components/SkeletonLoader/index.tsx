@@ -1,14 +1,12 @@
-import React from 'react';
+// biome-ignore-all lint/suspicious/noArrayIndexKey: these won't change
+import type React from 'react';
 
 interface SkeletonLoaderProps {
     type?: 'list' | 'item' | 'card' | 'text';
     count?: number;
 }
 
-export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
-    type = 'card',
-    count = 1
-}) => {
+export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({ type = 'card', count = 1 }) => {
     const renderSkeleton = () => {
         switch (type) {
             case 'list':
@@ -61,7 +59,7 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
                                 key={i}
                                 className="h-4 bg-muted animate-pulse rounded"
                                 style={{
-                                    width: `${Math.random() * 40 + 60}%`
+                                    width: `${Math.random() * 40 + 60}%`,
                                 }}
                             />
                         ))}
@@ -69,9 +67,7 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
                 );
 
             default:
-                return (
-                    <div className="h-4 bg-muted animate-pulse rounded w-full" />
-                );
+                return <div className="h-4 bg-muted animate-pulse rounded w-full" />;
         }
     };
 

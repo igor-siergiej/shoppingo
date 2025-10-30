@@ -1,4 +1,4 @@
-import { AuthConfig } from '@imapps/web-utils';
+import type { AuthConfig } from '@imapps/web-utils';
 
 import { getConfig } from '../utils/config';
 
@@ -12,7 +12,7 @@ export const getAuthConfig = (): AuthConfig => {
         refreshTokenCookieName: 'refreshToken',
         endpoints: {
             refresh: '/refresh',
-            logout: '/logout'
-        }
+            logout: '/logout',
+        },
     };
 };

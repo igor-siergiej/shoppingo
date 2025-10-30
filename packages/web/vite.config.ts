@@ -1,6 +1,6 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import react from '@vitejs/plugin-react';
-import fs from 'fs';
-import path from 'path';
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
@@ -81,7 +81,7 @@ export default defineConfig(({ mode }) => {
                         'router-vendor': ['react-router-dom'],
                         'query-vendor': ['react-query'],
                         'ui-vendor': ['lucide-react', 'motion'],
-                        'utils-vendor': ['clsx', 'tailwind-merge']
+                        'utils-vendor': ['clsx', 'tailwind-merge'],
                     },
                 },
             },
@@ -102,14 +102,14 @@ export default defineConfig(({ mode }) => {
         server: {
             port: 4000,
             hmr: {
-                overlay: false
+                overlay: false,
             },
             proxy: {
                 '/api': {
                     target: 'http://localhost:4001',
                     changeOrigin: false,
                     secure: false,
-                }
+                },
             },
         },
     };

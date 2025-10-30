@@ -2,7 +2,7 @@ import 'dotenv/config';
 
 import bodyParser from '@koa/bodyparser';
 import cors from '@koa/cors';
-import Koa, { Context, Next } from 'koa';
+import Koa, { type Context, type Next } from 'koa';
 
 import { config } from './config';
 import { dependencyContainer, registerDepdendencies } from './dependencies';
@@ -81,7 +81,7 @@ export const onStartup = async () => {
         logger.info('Starting API server - connecting to database and object store');
         await database.connect({
             connectionUri: config.get('connectionUri'),
-            databaseName: config.get('databaseName')
+            databaseName: config.get('databaseName'),
         });
         logger.info('Connected to database');
 
@@ -89,7 +89,7 @@ export const onStartup = async () => {
             endpoint: config.get('bucketEndpoint'),
             accessKey: config.get('bucketAccessKey'),
             secretKey: config.get('bucketSecretKey'),
-            bucketName: config.get('bucketName')
+            bucketName: config.get('bucketName'),
         });
         logger.info('Connected to object store');
 

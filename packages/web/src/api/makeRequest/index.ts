@@ -1,12 +1,6 @@
-import { MakeRequestProps } from '../types';
+import type { MakeRequestProps } from '../types';
 
-export const makeRequest = async ({
-    pathname,
-    method,
-    operationString,
-    body,
-    queryParams,
-}: MakeRequestProps) => {
+export const makeRequest = async ({ pathname, method, operationString, body, queryParams }: MakeRequestProps) => {
     try {
         let url = pathname;
 
@@ -27,20 +21,12 @@ export const makeRequest = async ({
         if (response.ok) {
             return await response.json();
         } else {
-            console.error(
-                `Failed to ${operationString}:`,
-                response.status,
-                response.statusText
-            );
-            throw new Error(
-                `Response was not ok ${response.status}: ${response.statusText}`
-            );
+            console.error(`Failed to ${operationString}:`, response.status, response.statusText);
+            throw new Error(`Response was not ok ${response.status}: ${response.statusText}`);
         }
     } catch (error: unknown) {
         if (error instanceof Error) {
-            throw new Error(
-                `Error while trying to ${operationString}: ${error.message}`
-            );
+            throw new Error(`Error while trying to ${operationString}: ${error.message}`);
         }
     }
 };

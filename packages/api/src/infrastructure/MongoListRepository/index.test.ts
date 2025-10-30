@@ -1,5 +1,5 @@
-import { MongoDbConnection } from '@imapps/api-utils';
-import { Item, List } from '@shoppingo/types';
+import type { MongoDbConnection } from '@imapps/api-utils';
+import type { Item, List } from '@shoppingo/types';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { MongoListRepository } from './index';
@@ -12,11 +12,11 @@ const mockCollection = {
     replaceOne: vi.fn(),
     updateOne: vi.fn(),
     findOneAndReplace: vi.fn(),
-    findOneAndUpdate: vi.fn()
+    findOneAndUpdate: vi.fn(),
 };
 
 const mockConnection = {
-    getCollection: vi.fn().mockReturnValue(mockCollection)
+    getCollection: vi.fn().mockReturnValue(mockCollection),
 } as unknown as MongoDbConnection<{ list: List }>;
 
 describe('MongoListRepository', () => {
@@ -35,14 +35,16 @@ describe('MongoListRepository', () => {
                     title: 'Test List',
                     dateAdded: new Date('2023-01-01'),
                     items: [],
-                    users: [{ id: 'user-1', username: 'testuser' }]
+                    users: [{ id: 'user-1', username: 'testuser' }],
                 };
 
                 mockCollection.findOne.mockResolvedValue(mockList);
 
                 const result = await repository.getByTitle('Test List');
 
-                expect(mockCollection.findOne).toHaveBeenCalledWith({ title: 'Test List' });
+                expect(mockCollection.findOne).toHaveBeenCalledWith({
+                    title: 'Test List',
+                });
                 expect(result).toEqual(mockList);
             });
         });
@@ -67,11 +69,11 @@ describe('MongoListRepository', () => {
                         title: 'List 1',
                         dateAdded: new Date('2023-01-01'),
                         items: [],
-                        users: [{ id: 'user-1', username: 'testuser' }]
-                    }
+                        users: [{ id: 'user-1', username: 'testuser' }],
+                    },
                 ];
                 const mockCursor = {
-                    toArray: vi.fn().mockResolvedValue(mockLists)
+                    toArray: vi.fn().mockResolvedValue(mockLists),
                 };
 
                 mockCollection.find.mockReturnValue(mockCursor);
@@ -79,7 +81,7 @@ describe('MongoListRepository', () => {
                 const result = await repository.findByUserId('user-1');
 
                 expect(mockCollection.find).toHaveBeenCalledWith({
-                    'users.id': 'user-1'
+                    'users.id': 'user-1',
                 });
                 expect(result).toEqual(mockLists);
             });
@@ -88,7 +90,7 @@ describe('MongoListRepository', () => {
         describe('When a user has no lists', () => {
             it('should return an empty array', async () => {
                 const mockCursor = {
-                    toArray: vi.fn().mockResolvedValue([])
+                    toArray: vi.fn().mockResolvedValue([]),
                 };
 
                 mockCollection.find.mockReturnValue(mockCursor);
@@ -108,7 +110,7 @@ describe('MongoListRepository', () => {
                     title: 'Test List',
                     dateAdded: new Date('2023-01-01'),
                     items: [],
-                    users: [{ id: 'user-1', username: 'testuser' }]
+                    users: [{ id: 'user-1', username: 'testuser' }],
                 };
 
                 mockCollection.insertOne.mockResolvedValue({ insertedId: 'list-1' });
@@ -127,7 +129,9 @@ describe('MongoListRepository', () => {
 
                 await repository.deleteByTitle('Test List');
 
-                expect(mockCollection.deleteOne).toHaveBeenCalledWith({ title: 'Test List' });
+                expect(mockCollection.deleteOne).toHaveBeenCalledWith({
+                    title: 'Test List',
+                });
             });
         });
     });
@@ -140,17 +144,16 @@ describe('MongoListRepository', () => {
                     title: 'Updated List',
                     dateAdded: new Date('2023-01-01'),
                     items: [],
-                    users: [{ id: 'user-1', username: 'testuser' }]
+                    users: [{ id: 'user-1', username: 'testuser' }],
                 };
 
-                mockCollection.findOneAndReplace.mockResolvedValue({ modifiedCount: 1 });
+                mockCollection.findOneAndReplace.mockResolvedValue({
+                    modifiedCount: 1,
+                });
 
                 await repository.replaceByTitle('Test List', mockList);
 
-                expect(mockCollection.findOneAndReplace).toHaveBeenCalledWith(
-                    { title: 'Test List' },
-                    mockList
-                );
+                expect(mockCollection.findOneAndReplace).toHaveBeenCalledWith({ title: 'Test List' }, mockList);
             });
         });
     });
@@ -162,7 +165,7 @@ describe('MongoListRepository', () => {
                     id: 'item-1',
                     name: 'Test Item',
                     dateAdded: new Date('2023-01-01'),
-                    isSelected: false
+                    isSelected: false,
                 };
 
                 mockCollection.findOneAndUpdate.mockResolvedValue({ modifiedCount: 1 });

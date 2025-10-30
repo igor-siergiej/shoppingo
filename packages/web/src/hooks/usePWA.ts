@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
+import { useEffect, useState } from 'react';
 
 import { usePWAContext } from '../contexts/PWAContext';
 import { checkForVersionUpdate } from '../utils/version';
@@ -8,9 +8,7 @@ export const usePWA = () => {
     const { canInstall, isInstalled, installApp } = usePWAContext();
 
     // Use Vite PWA plugin's service worker registration with auto-update
-    const {
-        updateServiceWorker,
-    } = useRegisterSW({
+    const { updateServiceWorker } = useRegisterSW({
         onRegistered() {
             // Service worker registered successfully
         },
@@ -51,6 +49,6 @@ export const usePWA = () => {
         hasUpdate: false, // Always false since auto-update is enabled
         installApp,
         updateApp,
-        dismissUpdate
+        dismissUpdate,
     };
 };

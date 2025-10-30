@@ -1,15 +1,15 @@
-import { Item, List } from '@shoppingo/types';
-import { Context } from 'koa';
+import type { Item, List } from '@shoppingo/types';
+import type { Context } from 'koa';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import * as listHandlers from './index';
 
 const mockDependencyContainer = vi.hoisted(() => ({
-    resolve: vi.fn()
+    resolve: vi.fn(),
 }));
 
 vi.mock('../../dependencies', () => ({
-    dependencyContainer: mockDependencyContainer
+    dependencyContainer: mockDependencyContainer,
 }));
 
 const mockListService = {
@@ -23,7 +23,7 @@ const mockListService = {
     updateListTitle: vi.fn(),
     deleteList: vi.fn(),
     clearList: vi.fn(),
-    addItem: vi.fn()
+    addItem: vi.fn(),
 };
 
 const createMockContext = (overrides: Partial<Context> = {}): Context => {
@@ -35,21 +35,25 @@ const createMockContext = (overrides: Partial<Context> = {}): Context => {
         set: vi.fn(),
         status: 200,
         body: {},
-        ...overrides
+        ...overrides,
     } as Context;
 
     Object.defineProperty(ctx, 'status', {
         get: () => ctx.response.status,
-        set: (value) => { ctx.response.status = value; },
+        set: (value) => {
+            ctx.response.status = value;
+        },
         configurable: true,
-        enumerable: true
+        enumerable: true,
     });
 
     Object.defineProperty(ctx, 'body', {
         get: () => ctx.response.body,
-        set: (value) => { ctx.response.body = value; },
+        set: (value) => {
+            ctx.response.body = value;
+        },
         configurable: true,
-        enumerable: true
+        enumerable: true,
     });
 
     return ctx;
@@ -64,7 +68,12 @@ describe('ListHandlers', () => {
     describe('getList', () => {
         it('should return list items successfully', async () => {
             const mockItems: Array<Item> = [
-                { id: 'item-1', name: 'Item 1', dateAdded: new Date(), isSelected: false }
+                {
+                    id: 'item-1',
+                    name: 'Item 1',
+                    dateAdded: new Date(),
+                    isSelected: false,
+                },
             ];
             const ctx = createMockContext({ params: { title: 'Test List' } });
 
@@ -97,8 +106,8 @@ describe('ListHandlers', () => {
                     title: 'Test List',
                     dateAdded: new Date(),
                     items: [],
-                    users: [{ id: 'user-1', username: 'testuser' }]
-                }
+                    users: [{ id: 'user-1', username: 'testuser' }],
+                },
             ];
             const ctx = createMockContext({ params: { userId: 'user-1' } });
 
@@ -130,7 +139,7 @@ describe('ListHandlers', () => {
                 title: 'New List',
                 dateAdded: new Date(),
                 items: [],
-                users: [{ id: 'user-1', username: 'testuser' }]
+                users: [{ id: 'user-1', username: 'testuser' }],
             };
             const ctx = createMockContext({
                 response: { status: 201 } as any,
@@ -139,7 +148,7 @@ describe('ListHandlers', () => {
                         title: 'New List',
                         dateAdded: new Date().toISOString(),
                         user: { id: 'user-1', username: 'testuser' },
-                        selectedUsers: []
+                        selectedUsers: [],
                     },
                 } as any,
             });
@@ -164,9 +173,9 @@ describe('ListHandlers', () => {
                     body: {
                         title: 'New List',
                         dateAdded: new Date().toISOString(),
-                        user: { id: 'user-1', username: 'testuser' }
-                    }
-                } as Context['request']
+                        user: { id: 'user-1', username: 'testuser' },
+                    },
+                } as Context['request'],
             });
 
             mockListService.addList.mockRejectedValue(new Error('Auth service not configured'));
@@ -184,27 +193,23 @@ describe('ListHandlers', () => {
                 params: { title: 'Test List', itemName: 'Old Name' },
                 request: {
                     body: {
-                        newItemName: 'New Name'
-                    }
-                } as Context['request']
+                        newItemName: 'New Name',
+                    },
+                } as Context['request'],
             });
 
             mockListService.updateItemName.mockResolvedValue({
                 message: 'Item updated successfully',
-                newItemName: 'New Name'
+                newItemName: 'New Name',
             });
 
             await listHandlers.updateItem(ctx);
 
-            expect(mockListService.updateItemName).toHaveBeenCalledWith(
-                'Test List',
-                'Old Name',
-                'New Name'
-            );
+            expect(mockListService.updateItemName).toHaveBeenCalledWith('Test List', 'Old Name', 'New Name');
             expect(ctx.response.status).toBe(200);
             expect(ctx.body).toEqual({
                 message: 'Item updated successfully',
-                newItemName: 'New Name'
+                newItemName: 'New Name',
             });
         });
 
@@ -213,9 +218,9 @@ describe('ListHandlers', () => {
                 params: { title: 'Test List', itemName: 'Old Name' },
                 request: {
                     body: {
-                        newItemName: 'New Name'
-                    }
-                } as Context['request']
+                        newItemName: 'New Name',
+                    },
+                } as Context['request'],
             });
 
             mockListService.updateItemName.mockRejectedValue(new Error('List not found'));
@@ -234,10 +239,10 @@ describe('ListHandlers', () => {
                 title: 'Test List',
                 dateAdded: new Date(),
                 items: [],
-                users: [{ id: 'user-1', username: 'testuser' }]
+                users: [{ id: 'user-1', username: 'testuser' }],
             };
             const ctx = createMockContext({
-                params: { title: 'Test List', itemName: 'Item 1' }
+                params: { title: 'Test List', itemName: 'Item 1' },
             });
 
             mockListService.deleteItem.mockResolvedValue(mockList);
@@ -251,7 +256,7 @@ describe('ListHandlers', () => {
 
         it('should handle service errors', async () => {
             const ctx = createMockContext({
-                params: { title: 'Test List', itemName: 'Item 1' }
+                params: { title: 'Test List', itemName: 'Item 1' },
             });
 
             mockListService.deleteItem.mockRejectedValue(new Error('List not found'));
@@ -270,7 +275,7 @@ describe('ListHandlers', () => {
                 title: 'Test List',
                 dateAdded: new Date(),
                 items: [],
-                users: [{ id: 'user-1', username: 'testuser' }]
+                users: [{ id: 'user-1', username: 'testuser' }],
             };
             const ctx = createMockContext({ params: { title: 'Test List' } });
 
@@ -302,7 +307,7 @@ describe('ListHandlers', () => {
                 title: 'Test List',
                 dateAdded: new Date(),
                 items: [],
-                users: [{ id: 'user-1', username: 'testuser' }]
+                users: [{ id: 'user-1', username: 'testuser' }],
             };
             const ctx = createMockContext({ params: { title: 'Test List' } });
 
@@ -333,14 +338,14 @@ describe('ListHandlers', () => {
                 params: { title: 'Old Title' },
                 request: {
                     body: {
-                        newTitle: 'New Title'
-                    }
-                } as Context['request']
+                        newTitle: 'New Title',
+                    },
+                } as Context['request'],
             });
 
             mockListService.updateListTitle.mockResolvedValue({
                 message: 'List updated successfully',
-                newTitle: 'New Title'
+                newTitle: 'New Title',
             });
 
             await listHandlers.updateList(ctx);
@@ -349,7 +354,7 @@ describe('ListHandlers', () => {
             expect(ctx.response.status).toBe(200);
             expect(ctx.body).toEqual({
                 message: 'List updated successfully',
-                newTitle: 'New Title'
+                newTitle: 'New Title',
             });
         });
 
@@ -358,9 +363,9 @@ describe('ListHandlers', () => {
                 params: { title: 'Old Title' },
                 request: {
                     body: {
-                        newTitle: 'New Title'
-                    }
-                } as Context['request']
+                        newTitle: 'New Title',
+                    },
+                } as Context['request'],
             });
 
             mockListService.updateListTitle.mockRejectedValue(new Error('List not found'));
@@ -378,27 +383,23 @@ describe('ListHandlers', () => {
                 id: 'item-1',
                 name: 'New Item',
                 dateAdded: new Date(),
-                isSelected: false
+                isSelected: false,
             };
             const ctx = createMockContext({
                 params: { title: 'Test List' },
                 request: {
                     body: {
                         itemName: 'New Item',
-                        dateAdded: new Date().toISOString()
-                    }
-                } as Context['request']
+                        dateAdded: new Date().toISOString(),
+                    },
+                } as Context['request'],
             });
 
             mockListService.addItem.mockResolvedValue(mockItem);
 
             await listHandlers.addItem(ctx);
 
-            expect(mockListService.addItem).toHaveBeenCalledWith(
-                'Test List',
-                'New Item',
-                expect.any(String)
-            );
+            expect(mockListService.addItem).toHaveBeenCalledWith('Test List', 'New Item', expect.any(String));
             expect(ctx.response.status).toBe(200);
             expect(ctx.body).toEqual(mockItem);
         });
@@ -409,9 +410,9 @@ describe('ListHandlers', () => {
                 request: {
                     body: {
                         itemName: 'New Item',
-                        dateAdded: new Date().toISOString()
-                    }
-                } as Context['request']
+                        dateAdded: new Date().toISOString(),
+                    },
+                } as Context['request'],
             });
 
             mockListService.addItem.mockRejectedValue(new Error('List not found'));
@@ -428,7 +429,7 @@ describe('ListHandlers', () => {
             const ctx = createMockContext({ params: { title: 'Test List' } });
 
             mockListService.deleteList.mockResolvedValue({
-                message: 'List deleted successfully'
+                message: 'List deleted successfully',
             });
 
             await listHandlers.deleteList(ctx);
@@ -436,7 +437,7 @@ describe('ListHandlers', () => {
             expect(mockListService.deleteList).toHaveBeenCalledWith('Test List');
             expect(ctx.response.status).toBe(200);
             expect(ctx.body).toEqual({
-                message: 'List deleted successfully'
+                message: 'List deleted successfully',
             });
         });
 

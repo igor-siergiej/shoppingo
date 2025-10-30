@@ -50,9 +50,7 @@ export const SearchResults = ({ results, isLoading, error, onSelect, onClose, qu
     if (error) {
         return (
             <div className="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded-md shadow-lg z-50">
-                <div className="p-4 text-center text-destructive text-sm">
-                    {error}
-                </div>
+                <div className="p-4 text-center text-destructive text-sm">{error}</div>
             </div>
         );
     }
@@ -78,7 +76,7 @@ export const SearchResults = ({ results, isLoading, error, onSelect, onClose, qu
         >
             <ScrollArea className="max-h-80">
                 <div className="p-1">
-                    {results.usernames.map(username => (
+                    {results.usernames.map((username) => (
                         <Button
                             key={username}
                             variant="ghost"

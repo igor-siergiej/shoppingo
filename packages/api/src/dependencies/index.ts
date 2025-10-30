@@ -1,3 +1,4 @@
+// biome-ignore-all lint/correctness/noConstructorReturn: I need to figure out a better way to do this
 import { DependencyContainer, Logger, MongoDbConnection, ObjectStoreConnection } from '@imapps/api-utils';
 
 import { config } from '../config';
@@ -8,7 +9,7 @@ import { BucketStore } from '../infrastructure/BucketStore';
 import { GeminiImageGenerator } from '../infrastructure/GeminiImageGenerator';
 import { MongoListRepository } from '../infrastructure/MongoListRepository';
 import { UuidGenerator } from '../infrastructure/UuidGenerator';
-import { Dependencies, DependencyToken } from './types';
+import { type Dependencies, DependencyToken } from './types';
 
 export const dependencyContainer = DependencyContainer.getInstance<Dependencies>();
 
@@ -21,42 +22,57 @@ export const registerDepdendencies = () => {
     dependencyContainer.registerSingleton(DependencyToken.IdGenerator, UuidGenerator);
 
     // Domain services using factory classes
-    dependencyContainer.registerSingleton(DependencyToken.ListRepository, class {
-        constructor() {
-            return new MongoListRepository(dependencyContainer.resolve(DependencyToken.Database));
-        }
-    } as any);
+    dependencyContainer.registerSingleton(
+        DependencyToken.ListRepository,
+        class {
+            constructor() {
+                return new MongoListRepository(dependencyContainer.resolve(DependencyToken.Database));
+            }
+        } as any
+    );
 
-    dependencyContainer.registerSingleton(DependencyToken.ListService, class {
-        constructor() {
-            return new ListService(
-                dependencyContainer.resolve(DependencyToken.ListRepository),
-                dependencyContainer.resolve(DependencyToken.IdGenerator),
-                dependencyContainer.resolve(DependencyToken.AuthClient)
-            );
-        }
-    } as any);
+    dependencyContainer.registerSingleton(
+        DependencyToken.ListService,
+        class {
+            constructor() {
+                return new ListService(
+                    dependencyContainer.resolve(DependencyToken.ListRepository),
+                    dependencyContainer.resolve(DependencyToken.IdGenerator),
+                    dependencyContainer.resolve(DependencyToken.AuthClient)
+                );
+            }
+        } as any
+    );
 
     // Image services
-    dependencyContainer.registerSingleton(DependencyToken.ImageStore, class {
-        constructor() {
-            return new BucketStore(dependencyContainer.resolve(DependencyToken.Bucket));
-        }
-    } as any);
+    dependencyContainer.registerSingleton(
+        DependencyToken.ImageStore,
+        class {
+            constructor() {
+                return new BucketStore(dependencyContainer.resolve(DependencyToken.Bucket));
+            }
+        } as any
+    );
 
-    dependencyContainer.registerSingleton(DependencyToken.ImageGenerator, class {
-        constructor() {
-            return new GeminiImageGenerator(config.get('geminiApiKey'));
-        }
-    } as any);
+    dependencyContainer.registerSingleton(
+        DependencyToken.ImageGenerator,
+        class {
+            constructor() {
+                return new GeminiImageGenerator(config.get('geminiApiKey'));
+            }
+        } as any
+    );
 
-    dependencyContainer.registerSingleton(DependencyToken.ImageService, class {
-        constructor() {
-            return new ImageService(
-                dependencyContainer.resolve(DependencyToken.ImageStore),
-                dependencyContainer.resolve(DependencyToken.ImageGenerator),
-                dependencyContainer.resolve(DependencyToken.Logger)
-            );
-        }
-    } as any);
+    dependencyContainer.registerSingleton(
+        DependencyToken.ImageService,
+        class {
+            constructor() {
+                return new ImageService(
+                    dependencyContainer.resolve(DependencyToken.ImageStore),
+                    dependencyContainer.resolve(DependencyToken.ImageGenerator),
+                    dependencyContainer.resolve(DependencyToken.Logger)
+                );
+            }
+        } as any
+    );
 };

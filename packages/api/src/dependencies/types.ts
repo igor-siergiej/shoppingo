@@ -1,12 +1,12 @@
-import { Logger, MongoDbConnection, ObjectStoreConnection } from '@imapps/api-utils';
-import { List } from '@shoppingo/types';
+import type { Logger, MongoDbConnection, ObjectStoreConnection } from '@imapps/api-utils';
+import type { List } from '@shoppingo/types';
 
-import { IdGenerator } from '../domain/IdGenerator';
-import { ImageService } from '../domain/ImageService';
-import { ImageGenerator, ImageStore } from '../domain/ImageService/types';
-import { ListRepository } from '../domain/ListRepository';
-import { ListService } from '../domain/ListService';
-import { AuthClient } from '../domain/ListService/types';
+import type { IdGenerator } from '../domain/IdGenerator';
+import type { ImageService } from '../domain/ImageService';
+import type { ImageGenerator, ImageStore } from '../domain/ImageService/types';
+import type { ListRepository } from '../domain/ListRepository';
+import type { ListService } from '../domain/ListService';
+import type { AuthClient } from '../domain/ListService/types';
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 export type Collections = {
@@ -23,7 +23,7 @@ export enum DependencyToken {
     AuthClient = 'AuthClient',
     ImageStore = 'ImageStore',
     ImageGenerator = 'ImageGenerator',
-    ImageService = 'ImageService'
+    ImageService = 'ImageService',
 }
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
@@ -41,5 +41,5 @@ export type Dependencies = {
 };
 
 export enum CollectionNames {
-    List = 'list'
+    List = 'list',
 }

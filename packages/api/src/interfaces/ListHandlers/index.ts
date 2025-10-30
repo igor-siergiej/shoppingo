@@ -1,11 +1,10 @@
-import { Context } from 'koa';
+import type { Context } from 'koa';
 
 import { dependencyContainer } from '../../dependencies';
 import { DependencyToken } from '../../dependencies/types';
-import { ListService } from '../../domain/ListService';
+import type { ListService } from '../../domain/ListService';
 
-const getListService = (): ListService =>
-    dependencyContainer.resolve(DependencyToken.ListService);
+const getListService = (): ListService => dependencyContainer.resolve(DependencyToken.ListService);
 
 export const getList = async (ctx: Context) => {
     const { title } = ctx.params as { title: string };
@@ -63,7 +62,10 @@ export const addList = async (ctx: Context) => {
 
 export const addItem = async (ctx: Context) => {
     const { title } = ctx.params as { title: string };
-    const { itemName, dateAdded } = ctx.request.body as { itemName: string; dateAdded: Date };
+    const { itemName, dateAdded } = ctx.request.body as {
+        itemName: string;
+        dateAdded: Date;
+    };
 
     try {
         const item = await getListService().addItem(title, itemName, dateAdded);
@@ -80,24 +82,25 @@ export const addItem = async (ctx: Context) => {
 
 export const updateItem = async (ctx: Context) => {
     const { title, itemName } = ctx.params as { title: string; itemName: string };
-    const { isSelected, newItemName } = ctx.request.body as { isSelected?: boolean; newItemName?: string };
+    const { isSelected, newItemName } = ctx.request.body as {
+        isSelected?: boolean;
+        newItemName?: string;
+    };
+    ctx.status = 200;
 
     try {
-        let result;
-
         if (newItemName !== undefined) {
-            result = await getListService().updateItemName(title, itemName, newItemName);
+            ctx.body = await getListService().updateItemName(title, itemName, newItemName);
         } else if (typeof isSelected === 'boolean') {
-            result = await getListService().setItemSelected(title, itemName, isSelected);
+            ctx.body = await getListService().setItemSelected(title, itemName, isSelected);
         } else {
             ctx.status = 400;
-            ctx.body = { error: 'Either isSelected (boolean) or newItemName (string) must be provided' };
+            ctx.body = {
+                error: 'Either isSelected (boolean) or newItemName (string) must be provided',
+            };
 
             return;
         }
-
-        ctx.status = 200;
-        ctx.body = result;
     } catch (error: unknown) {
         const err = error as { status?: number; message?: string };
 

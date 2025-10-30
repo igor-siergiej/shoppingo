@@ -1,11 +1,10 @@
-import { Context } from 'koa';
+import type { Context } from 'koa';
 
 import { dependencyContainer } from '../../dependencies';
 import { DependencyToken } from '../../dependencies/types';
-import { ImageService } from '../../domain/ImageService';
+import type { ImageService } from '../../domain/ImageService';
 
-const getImageService = (): ImageService =>
-    dependencyContainer.resolve(DependencyToken.ImageService);
+const getImageService = (): ImageService => dependencyContainer.resolve(DependencyToken.ImageService);
 
 export const getImage = async (ctx: Context) => {
     const { name } = ctx.params as { name: string };

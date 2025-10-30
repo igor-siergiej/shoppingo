@@ -1,4 +1,4 @@
-import { Component, ErrorInfo, ReactNode } from 'react';
+import { Component, type ErrorInfo, type ReactNode } from 'react';
 
 import ErrorPage from '../ErrorPage';
 
@@ -33,11 +33,7 @@ class ErrorBoundary extends Component<Props, State> {
                 return this.props.fallback;
             }
 
-            return (
-                <ErrorPage
-                    error={this.state.error}
-                />
-            );
+            return <ErrorPage error={this.state.error} />;
         }
 
         return this.props.children;

@@ -1,4 +1,4 @@
-import { ListResponse } from '@shoppingo/types';
+import type { ListResponse } from '@shoppingo/types';
 import { Check, Edit2, X, X as XIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -8,7 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 
 import { deleteList, updateListName } from '../../api';
-import { ListsListProps } from './types';
+import type { ListsListProps } from './types';
 
 const ListsList = ({ lists, refetch }: ListsListProps) => {
     const navigate = useNavigate();
@@ -40,59 +40,54 @@ const ListsList = ({ lists, refetch }: ListsListProps) => {
     };
 
     const renderedOutput = lists.map((list: ListResponse) => (
-        <Card
-            key={list.title}
-            className="mb-2 transition-all duration-200 bg-background hover:bg-accent/50 py-0"
-        >
+        <Card key={list.title} className="mb-2 transition-all duration-200 bg-background hover:bg-accent/50 py-0">
             <CardContent className="flex items-center justify-between p-0.5 ">
                 <div className="flex-1">
-                    {editingList === list.title
-                        ? (
-                                <div className="flex items-center space-x-2 px-3">
-                                    <Input
-                                        value={editValue}
-                                        onChange={e => setEditValue(e.target.value)}
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter') {
-                                                handleEditSave(list.title);
-                                            }
+                    {editingList === list.title ? (
+                        <div className="flex items-center space-x-2 px-3">
+                            <Input
+                                value={editValue}
+                                onChange={(e) => setEditValue(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        handleEditSave(list.title);
+                                    }
 
-                                            if (e.key === 'Escape') {
-                                                handleEditCancel();
-                                            }
-                                        }}
-                                        className="flex-1"
-                                        autoFocus
-                                    />
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={() => handleEditSave(list.title)}
-                                        className="h-8 w-8 text-green-600 hover:bg-green-50"
-                                    >
-                                        <Check size={16} />
-                                    </Button>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={handleEditCancel}
-                                        className="h-8 w-8 text-gray-500 hover:bg-gray-50"
-                                    >
-                                        <XIcon size={16} />
-                                    </Button>
-                                </div>
-                            )
-                        : (
-                                <Button
-                                    variant="ghost"
-                                    className="w-full justify-start text-left text-base font-medium hover:bg-transparent"
-                                    onClick={() => {
-                                        navigate(`/list/${list.title}`);
-                                    }}
-                                >
-                                    {list.title}
-                                </Button>
-                            )}
+                                    if (e.key === 'Escape') {
+                                        handleEditCancel();
+                                    }
+                                }}
+                                className="flex-1"
+                                autoFocus
+                            />
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleEditSave(list.title)}
+                                className="h-8 w-8 text-green-600 hover:bg-green-50"
+                            >
+                                <Check size={16} />
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={handleEditCancel}
+                                className="h-8 w-8 text-gray-500 hover:bg-gray-50"
+                            >
+                                <XIcon size={16} />
+                            </Button>
+                        </div>
+                    ) : (
+                        <Button
+                            variant="ghost"
+                            className="w-full justify-start text-left text-base font-medium hover:bg-transparent"
+                            onClick={() => {
+                                navigate(`/list/${list.title}`);
+                            }}
+                        >
+                            {list.title}
+                        </Button>
+                    )}
                 </div>
 
                 <div className="flex items-center">

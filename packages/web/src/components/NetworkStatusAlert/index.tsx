@@ -58,9 +58,7 @@ const NetworkStatusAlert = () => {
                             <Star className="h-5 w-5 mt-[2px]" aria-hidden="true" />
                             <div>
                                 <AlertTitle>Back online</AlertTitle>
-                                <AlertDescription>
-                                    Connection restored.
-                                </AlertDescription>
+                                <AlertDescription>Connection restored.</AlertDescription>
                             </div>
                         </div>
                     </Alert>

@@ -9,7 +9,7 @@ export const PWADebugUtils = {
             registrations: 0,
             caches: [] as Array<string>,
             controller: null as any,
-            state: 'unknown'
+            state: 'unknown',
         };
 
         if ('serviceWorker' in navigator) {
@@ -38,7 +38,7 @@ export const PWADebugUtils = {
         if ('serviceWorker' in navigator) {
             const registrations = await navigator.serviceWorker.getRegistrations();
 
-            await Promise.all(registrations.map(reg => reg.unregister()));
+            await Promise.all(registrations.map((reg) => reg.unregister()));
         }
 
         return this.getStatus();
@@ -48,7 +48,7 @@ export const PWADebugUtils = {
         await this.clearEverything();
 
         // Force reload with cache busting
-        window.location.href = window.location.pathname + '?pwa-debug=' + Date.now();
+        window.location.href = `${window.location.pathname}?pwa-debug=${Date.now()}`;
     },
 
     logStatus() {
@@ -63,7 +63,7 @@ export const PWADebugUtils = {
             console.log('Caches:', status.caches.length, status.caches);
             console.groupEnd();
         });
-    }
+    },
 };
 
 // Make available globally in development

@@ -1,6 +1,7 @@
 import { useTokenInitialization } from '@imapps/web-utils';
 import { Loader2 } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 
 interface AppInitializerProps {
     children: React.ReactNode;
@@ -26,9 +27,7 @@ const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
         return (
             <div className="flex flex-col items-center justify-center h-screen gap-4">
                 <Loader2 className="h-10 w-10 animate-spin text-primary" />
-                <p className="text-muted-foreground">
-                    Loading Shoppingo...
-                </p>
+                <p className="text-muted-foreground">Loading Shoppingo...</p>
                 {timeoutReached && (
                     <div className="text-center text-sm text-orange-600 max-w-md">
                         <p>Taking longer than expected...</p>

@@ -1,15 +1,11 @@
 {
-    "extends": "../../tsconfig.json",
-    "compilerOptions": {
-      "composite": true,
-      "module": "esnext",
-      "moduleResolution": "bundler",
-      "emitDeclarationOnly": false,
-      "types": ["node", "vitest/globals"]
-    },
-    "include": [
-      "vite.config.ts",
-      "vitest.config.ts"
-    ]
-  }
-  
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "composite": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "emitDeclarationOnly": false,
+    "types": ["node", "vitest/globals"]
+  },
+  "include": ["vite.config.ts", "vitest.config.ts"]
+}
