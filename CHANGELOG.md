@@ -1,3 +1,10 @@
+## [1.2.1](https://gitlab.com/imapps/shoppingo/compare/v1.2.0...v1.2.1) (2025-10-31)
+
+
+### Bug Fixes
+
+* **ci:** configure publish jobs to allow insecure registry ([443e30c](https://gitlab.com/imapps/shoppingo/commit/443e30c93dffad6bd5f516a58d75d2463782017e))
+
 # [1.2.0](https://gitlab.com/imapps/shoppingo/compare/v1.1.2...v1.2.0) (2025-10-31)
 
 
