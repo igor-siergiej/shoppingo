@@ -1,3 +1,11 @@
+# [1.2.0](https://gitlab.com/imapps/shoppingo/compare/v1.1.2...v1.2.0) (2025-10-31)
+
+
+### Features
+
+* add clean orphanes tags script ([a168329](https://gitlab.com/imapps/shoppingo/commit/a16832914ad08eb9e4080c63c14e90f3ed04dcf7))
+* use jewellery-catalogue pipeline ([69d8d2e](https://gitlab.com/imapps/shoppingo/commit/69d8d2ec6be2e5d48355ef64d73ca311d859306e))
+
 ## [1.1.2](https://gitlab.com/imapps/shoppingo/compare/v1.1.1...v1.1.2) (2025-10-04)
 
 
