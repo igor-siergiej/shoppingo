@@ -64,11 +64,16 @@ publish-web:
   stage: docker-publish
   tags:
     - server
-  image: docker:27-dind
+  image: docker:27
   services:
-    - docker:27-dind
+    - name: docker:27-dind
+      command: ["--insecure-registry=192.168.68.33:5000"]
   variables:
+    DOCKER_HOST: tcp://docker:2376
     DOCKER_TLS_CERTDIR: "/certs"
+    DOCKER_TLS_VERIFY: 1
+    DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
+    DOCKER_DRIVER: overlay2
     APP_NAME: "shoppingo-web"
     DOCKERFILE_PATH: "packages/web/Dockerfile"
   before_script:
@@ -103,11 +108,16 @@ publish-api:
   stage: docker-publish
   tags:
     - server
-  image: docker:27-dind
+  image: docker:27
   services:
-    - docker:27-dind
+    - name: docker:27-dind
+      command: ["--insecure-registry=192.168.68.33:5000"]
   variables:
+    DOCKER_HOST: tcp://docker:2376
     DOCKER_TLS_CERTDIR: "/certs"
+    DOCKER_TLS_VERIFY: 1
+    DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
+    DOCKER_DRIVER: overlay2
     APP_NAME: "shoppingo-api"
     DOCKERFILE_PATH: "packages/api/Dockerfile"
   before_script:
