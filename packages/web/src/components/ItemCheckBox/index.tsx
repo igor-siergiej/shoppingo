@@ -1,19 +1,12 @@
 import type { Item } from '@shoppingo/types';
-import { Check, Edit2, ImageOff, Loader2, Minus, Plus, Trash2, X as XIcon } from 'lucide-react';
+import { Edit2, ImageOff, Loader2, Minus, Plus, Trash2 } from 'lucide-react';
 import { motion, useAnimation, useMotionValue } from 'motion/react';
 import { type MouseEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import {
-    Drawer,
-    DrawerClose,
-    DrawerContent,
-    DrawerFooter,
-    DrawerHeader,
-    DrawerTitle,
-} from '@/components/ui/drawer';
+import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -26,15 +19,27 @@ export interface ItemCheckBoxProps {
 }
 
 const ItemCheckBox = ({ item, listTitle }: ItemCheckBoxProps) => {
+    // All useState hooks grouped together
     const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false);
     const [drawerEditValue, setDrawerEditValue] = useState('');
     const [swipeState, setSwipeState] = useState<'closed' | 'left' | 'right'>('closed');
     const [isDeleting, setIsDeleting] = useState(false);
+    const [hasLoadedImage, setHasLoadedImage] = useState(false);
+    const [hasImageError, setHasImageError] = useState(false);
 
+    // All useRef hooks grouped together
+    const drawerInputRef = useRef<HTMLInputElement>(null);
+    const imageRef = useRef<HTMLImageElement>(null);
+
+    // Motion hooks
     const x = useMotionValue(0);
     const controls = useAnimation();
+
+    // Query client
     const queryClient = useQueryClient();
-    const drawerInputRef = useRef<HTMLInputElement>(null);
+
+    // Memoized values
+    const imageSrc = useMemo(() => `/api/image/${encodeURIComponent(item.name)}`, [item.name]);
 
     // Mutation for toggling item selection
     const toggleMutation = useMutation({
@@ -150,11 +155,7 @@ const ItemCheckBox = ({ item, listTitle }: ItemCheckBoxProps) => {
         setDrawerEditValue('');
     };
 
-    const imageSrc = useMemo(() => `/api/image/${encodeURIComponent(item.name)}`, [item.name]);
-    const [hasLoadedImage, setHasLoadedImage] = useState(false);
-    const [hasImageError, setHasImageError] = useState(false);
-    const imageRef = useRef<HTMLImageElement>(null);
-
+    // Reset image loading state when image source changes
     useEffect(() => {
         setHasLoadedImage(false);
         setHasImageError(false);
@@ -170,7 +171,7 @@ const ItemCheckBox = ({ item, listTitle }: ItemCheckBoxProps) => {
                 setHasImageError(true);
             }
         }
-    }, [imageSrc]);
+    }, []);
 
     const handleToggleSelected = async () => {
         if (toggleMutation.isLoading || swipeState !== 'closed') return;

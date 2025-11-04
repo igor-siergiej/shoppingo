@@ -1,16 +1,14 @@
+import type { Item } from '@shoppingo/types';
 import { AlertTriangle, ShoppingCart } from 'lucide-react';
 import { useRef } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { useNavigate, useParams } from 'react-router-dom';
-
 import { Button } from '@/components/ui/button';
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
-
 import { addItem, clearList, clearSelected, getListQuery } from '../../api';
 import ItemCheckBoxList from '../../components/ItemCheckBoxList';
 import { ItemsSkeleton } from '../../components/LoadingSkeleton';
 import ToolBar, { type ToolBarRef } from '../../components/ToolBar';
-import type { Item } from '@shoppingo/types';
 
 const ItemsPage = () => {
     const { listTitle } = useParams();
@@ -21,10 +19,6 @@ const ItemsPage = () => {
     const { data, isLoading, isError, refetch } = useQuery({
         ...getListQuery(listTitle),
     });
-
-    if (!listTitle) {
-        return <div>Need a valid list title</div>;
-    }
 
     // Mutation for adding items
     const addItemMutation = useMutation({
@@ -39,9 +33,7 @@ const ItemsPage = () => {
                 isSelected: false,
                 dateAdded: new Date().toISOString(),
             };
-            queryClient.setQueryData<Item[]>([listTitle], (old) =>
-                old ? [...old, newItem] : [newItem]
-            );
+            queryClient.setQueryData<Item[]>([listTitle], (old) => (old ? [...old, newItem] : [newItem]));
 
             return { previousItems };
         },
@@ -63,9 +55,7 @@ const ItemsPage = () => {
             const previousItems = queryClient.getQueryData<Item[]>([listTitle]);
 
             // Optimistically remove selected items
-            queryClient.setQueryData<Item[]>([listTitle], (old) =>
-                old ? old.filter((i) => !i.isSelected) : []
-            );
+            queryClient.setQueryData<Item[]>([listTitle], (old) => (old ? old.filter((i) => !i.isSelected) : []));
 
             return { previousItems };
         },
@@ -100,6 +90,11 @@ const ItemsPage = () => {
             void queryClient.invalidateQueries([listTitle]);
         },
     });
+
+    // Early return after all hooks are defined
+    if (!listTitle) {
+        return <div>Need a valid list title</div>;
+    }
 
     const errorPageContent = (
         <div className="flex flex-col items-center justify-center py-10 text-center">
