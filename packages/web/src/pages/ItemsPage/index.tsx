@@ -1,6 +1,6 @@
 import { AlertTriangle, ShoppingCart } from 'lucide-react';
 import { useRef } from 'react';
-import { useQuery } from 'react-query';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { Button } from '@/components/ui/button';
@@ -10,11 +10,13 @@ import { addItem, clearList, clearSelected, getListQuery } from '../../api';
 import ItemCheckBoxList from '../../components/ItemCheckBoxList';
 import { ItemsSkeleton } from '../../components/LoadingSkeleton';
 import ToolBar, { type ToolBarRef } from '../../components/ToolBar';
+import type { Item } from '@shoppingo/types';
 
 const ItemsPage = () => {
     const { listTitle } = useParams();
     const navigate = useNavigate();
     const toolbarRef = useRef<ToolBarRef>(null);
+    const queryClient = useQueryClient();
 
     const { data, isLoading, isError, refetch } = useQuery({
         ...getListQuery(listTitle),
@@ -23,6 +25,81 @@ const ItemsPage = () => {
     if (!listTitle) {
         return <div>Need a valid list title</div>;
     }
+
+    // Mutation for adding items
+    const addItemMutation = useMutation({
+        mutationFn: (itemName: string) => addItem(itemName, listTitle),
+        onMutate: async (itemName) => {
+            await queryClient.cancelQueries([listTitle]);
+            const previousItems = queryClient.getQueryData<Item[]>([listTitle]);
+
+            // Optimistically add new item
+            const newItem: Item = {
+                name: itemName,
+                isSelected: false,
+                dateAdded: new Date().toISOString(),
+            };
+            queryClient.setQueryData<Item[]>([listTitle], (old) =>
+                old ? [...old, newItem] : [newItem]
+            );
+
+            return { previousItems };
+        },
+        onError: (_err, _itemName, context) => {
+            if (context?.previousItems) {
+                queryClient.setQueryData([listTitle], context.previousItems);
+            }
+        },
+        onSettled: () => {
+            void queryClient.invalidateQueries([listTitle]);
+        },
+    });
+
+    // Mutation for clearing selected items
+    const clearSelectedMutation = useMutation({
+        mutationFn: () => clearSelected(listTitle),
+        onMutate: async () => {
+            await queryClient.cancelQueries([listTitle]);
+            const previousItems = queryClient.getQueryData<Item[]>([listTitle]);
+
+            // Optimistically remove selected items
+            queryClient.setQueryData<Item[]>([listTitle], (old) =>
+                old ? old.filter((i) => !i.isSelected) : []
+            );
+
+            return { previousItems };
+        },
+        onError: (_err, _variables, context) => {
+            if (context?.previousItems) {
+                queryClient.setQueryData([listTitle], context.previousItems);
+            }
+        },
+        onSettled: () => {
+            void queryClient.invalidateQueries([listTitle]);
+        },
+    });
+
+    // Mutation for clearing all items
+    const clearListMutation = useMutation({
+        mutationFn: () => clearList(listTitle),
+        onMutate: async () => {
+            await queryClient.cancelQueries([listTitle]);
+            const previousItems = queryClient.getQueryData<Item[]>([listTitle]);
+
+            // Optimistically clear all items
+            queryClient.setQueryData<Item[]>([listTitle], []);
+
+            return { previousItems };
+        },
+        onError: (_err, _variables, context) => {
+            if (context?.previousItems) {
+                queryClient.setQueryData([listTitle], context.previousItems);
+            }
+        },
+        onSettled: () => {
+            void queryClient.invalidateQueries([listTitle]);
+        },
+    });
 
     const errorPageContent = (
         <div className="flex flex-col items-center justify-center py-10 text-center">
@@ -61,25 +138,22 @@ const ItemsPage = () => {
                         </EmptyContent>
                     </Empty>
                 ) : (
-                    <ItemCheckBoxList items={data} refetch={refetch} listTitle={listTitle} />
+                    <ItemCheckBoxList items={data} listTitle={listTitle} />
                 )
             ) : null}
         </div>
     );
 
     const handleClearList = async () => {
-        await clearList(listTitle);
-        await refetch();
+        clearListMutation.mutate();
     };
 
     const handleClearSelected = async () => {
-        await clearSelected(listTitle);
-        await refetch();
+        clearSelectedMutation.mutate();
     };
 
     const handleAddItem = async (itemName: string) => {
-        await addItem(itemName, listTitle);
-        await refetch();
+        addItemMutation.mutate(itemName);
     };
 
     const handleGoBack = () => {

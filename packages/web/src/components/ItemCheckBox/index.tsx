@@ -2,6 +2,7 @@ import type { Item } from '@shoppingo/types';
 import { Check, Edit2, ImageOff, Loader2, Minus, Plus, Trash2, X as XIcon } from 'lucide-react';
 import { motion, useAnimation, useMotionValue } from 'motion/react';
 import { type MouseEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { useMutation, useQueryClient } from 'react-query';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -14,12 +15,9 @@ import { deleteItem, updateItem, updateItemName } from '../../api';
 export interface ItemCheckBoxProps {
     item: Item;
     listTitle: string;
-    refetch: () => void;
 }
 
-const ItemCheckBox = ({ item, listTitle, refetch }: ItemCheckBoxProps) => {
-    const [isDeleteLoading, setIsDeleteLoading] = useState(false);
-    const [isToggleLoading, setIsToggleLoading] = useState(false);
+const ItemCheckBox = ({ item, listTitle }: ItemCheckBoxProps) => {
     const [isEditing, setIsEditing] = useState(false);
     const [editValue, setEditValue] = useState('');
     const [swipeState, setSwipeState] = useState<'closed' | 'left' | 'right'>('closed');
@@ -27,22 +25,94 @@ const ItemCheckBox = ({ item, listTitle, refetch }: ItemCheckBoxProps) => {
 
     const x = useMotionValue(0);
     const controls = useAnimation();
+    const queryClient = useQueryClient();
+
+    // Mutation for toggling item selection
+    const toggleMutation = useMutation({
+        mutationFn: (isSelected: boolean) => updateItem(item.name, isSelected, listTitle),
+        onMutate: async (isSelected) => {
+            // Cancel outgoing refetches
+            await queryClient.cancelQueries([listTitle]);
+
+            // Snapshot previous value
+            const previousItems = queryClient.getQueryData<Item[]>([listTitle]);
+
+            // Optimistically update cache
+            queryClient.setQueryData<Item[]>([listTitle], (old) =>
+                old ? old.map((i) => (i.name === item.name ? { ...i, isSelected } : i)) : []
+            );
+
+            return { previousItems };
+        },
+        onError: (_err, _isSelected, context) => {
+            // Rollback on error
+            if (context?.previousItems) {
+                queryClient.setQueryData([listTitle], context.previousItems);
+            }
+        },
+        onSettled: () => {
+            // Refetch to ensure consistency
+            void queryClient.invalidateQueries([listTitle]);
+        },
+    });
+
+    // Mutation for deleting item
+    const deleteMutation = useMutation({
+        mutationFn: () => deleteItem(item.name, listTitle),
+        onMutate: async () => {
+            await queryClient.cancelQueries([listTitle]);
+            const previousItems = queryClient.getQueryData<Item[]>([listTitle]);
+
+            // Optimistically remove item
+            queryClient.setQueryData<Item[]>([listTitle], (old) =>
+                old ? old.filter((i) => i.name !== item.name) : []
+            );
+
+            return { previousItems };
+        },
+        onError: (_err, _variables, context) => {
+            if (context?.previousItems) {
+                queryClient.setQueryData([listTitle], context.previousItems);
+            }
+        },
+        onSettled: () => {
+            void queryClient.invalidateQueries([listTitle]);
+        },
+    });
+
+    // Mutation for updating item name
+    const updateNameMutation = useMutation({
+        mutationFn: (newName: string) => updateItemName(listTitle, item.name, newName),
+        onMutate: async (newName) => {
+            await queryClient.cancelQueries([listTitle]);
+            const previousItems = queryClient.getQueryData<Item[]>([listTitle]);
+
+            // Optimistically update item name
+            queryClient.setQueryData<Item[]>([listTitle], (old) =>
+                old ? old.map((i) => (i.name === item.name ? { ...i, name: newName } : i)) : []
+            );
+
+            return { previousItems };
+        },
+        onError: (_err, _newName, context) => {
+            if (context?.previousItems) {
+                queryClient.setQueryData([listTitle], context.previousItems);
+            }
+        },
+        onSettled: () => {
+            void queryClient.invalidateQueries([listTitle]);
+        },
+    });
 
     const handleDeleteItem = async (e?: MouseEvent) => {
         e?.stopPropagation();
-        setIsDeleteLoading(true);
+
+        // Immediately close swipe and start delete animation
+        setSwipeState('closed');
         setIsDeleting(true);
 
-        // Animate card out
-        await controls.start({
-            opacity: 0,
-            x: -400,
-            transition: { duration: 0.3 },
-        });
-
-        await deleteItem(item.name, listTitle);
-        refetch();
-        setIsDeleteLoading(false);
+        // Delete the item - the animation will play while this happens
+        deleteMutation.mutate();
     };
 
     const handleEditStart = (e?: MouseEvent) => {
@@ -55,12 +125,7 @@ const ItemCheckBox = ({ item, listTitle, refetch }: ItemCheckBoxProps) => {
 
     const handleEditSave = async () => {
         if (editValue.trim() && editValue !== item.name) {
-            try {
-                await updateItemName(listTitle, item.name, editValue.trim());
-                refetch();
-            } catch (error) {
-                console.error('Error updating item name:', error);
-            }
+            updateNameMutation.mutate(editValue.trim());
         }
 
         setIsEditing(false);
@@ -95,16 +160,10 @@ const ItemCheckBox = ({ item, listTitle, refetch }: ItemCheckBoxProps) => {
     }, []);
 
     const handleToggleSelected = async () => {
-        if (isEditing || isDeleteLoading || isToggleLoading || swipeState !== 'closed') return;
-        setIsToggleLoading(true);
-        try {
-            const next = !item.isSelected;
+        if (isEditing || toggleMutation.isLoading || swipeState !== 'closed') return;
 
-            await updateItem(item.name, next, listTitle);
-            refetch();
-        } finally {
-            setIsToggleLoading(false);
-        }
+        const next = !item.isSelected;
+        toggleMutation.mutate(next);
     };
 
     const handleDragEnd = (_: any, info: { offset: { x: number }; velocity: { x: number } }) => {
@@ -153,31 +212,54 @@ const ItemCheckBox = ({ item, listTitle, refetch }: ItemCheckBoxProps) => {
 
     return (
         <motion.div
+            layout
             className="relative mb-2 rounded-lg overflow-hidden"
-            animate={isDeleting ? { opacity: 0, x: -100, height: 0, marginBottom: 0 } : { opacity: 1, x: 0 }}
-            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            initial={{ opacity: 1, scale: 1, height: 'auto' }}
+            animate={
+                isDeleting
+                    ? {
+                          opacity: 0,
+                          scale: 0.9,
+                          height: 0,
+                          marginBottom: 0,
+                      }
+                    : {
+                          opacity: 1,
+                          scale: item.isSelected ? 0.97 : 1,
+                          height: 'auto',
+                      }
+            }
+            transition={{
+                duration: 0.35,
+                ease: [0.4, 0, 0.2, 1],
+                layout: { duration: 0.4, ease: [0.4, 0, 0.2, 1] },
+            }}
         >
             {/* Action buttons underneath - Delete on right (revealed by swiping left) */}
-            {!isEditing && (
+            {!isEditing && !isDeleting && (
                 <div className="absolute inset-y-0 right-0 flex items-center justify-end w-32">
                     <Button
                         onClick={handleDeleteItem}
-                        disabled={isDeleteLoading}
-                        className="h-full w-full rounded-lg bg-destructive hover:bg-destructive/90 text-white border border-destructive/20 shadow-sm flex items-center justify-end mr-1"
+                        disabled={deleteMutation.isLoading}
+                        className="h-[calc(100%-2px)] w-full rounded-lg bg-destructive hover:bg-destructive/90 text-white border border-destructive/20 shadow-sm flex items-center justify-end mr-1"
                     >
                         <div className="flex items-center justify-center pr-3.5">
-                            {isDeleteLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Trash2 size={20} />}
+                            {deleteMutation.isLoading ? (
+                                <Loader2 className="h-5 w-5 animate-spin" />
+                            ) : (
+                                <Trash2 size={20} />
+                            )}
                         </div>
                     </Button>
                 </div>
             )}
 
             {/* Action buttons underneath - Edit on left (revealed by swiping right) */}
-            {!isEditing && (
+            {!isEditing && !isDeleting && (
                 <div className="absolute inset-y-0 left-0 flex items-center justify-start pl-1 w-32">
                     <Button
                         onClick={handleEditStart}
-                        className="h-full w-full rounded-lg bg-blue-500 hover:bg-blue-600 text-white border border-blue-600/20 shadow-sm flex items-center"
+                        className="h-[calc(100%-2px)] w-full rounded-lg bg-blue-500 hover:bg-blue-600 text-white border border-blue-600/20 shadow-sm flex items-center"
                     >
                         <div className="flex items-center justify-center pr-10">
                             <Edit2 size={20} />
@@ -188,13 +270,13 @@ const ItemCheckBox = ({ item, listTitle, refetch }: ItemCheckBoxProps) => {
 
             {/* Draggable card */}
             <motion.div
-                drag={!isEditing && !isDeleteLoading ? 'x' : false}
+                drag={!isEditing && !deleteMutation.isLoading ? 'x' : false}
                 dragConstraints={{ left: -80, right: 80 }}
                 dragElastic={0.1}
                 onDragEnd={handleDragEnd}
                 animate={controls}
                 style={{ x }}
-                className="relative"
+                className="relative z-10 bg-background rounded-lg"
                 onClick={() => {
                     // Tap card when open to close it
                     if (swipeState !== 'closed') {
@@ -202,120 +284,142 @@ const ItemCheckBox = ({ item, listTitle, refetch }: ItemCheckBoxProps) => {
                     }
                 }}
             >
-                <Card
-                    key={item.name}
-                    className={`transition-all rounded-lg duration-200 py-0.5 px-1 ${
-                        item.isSelected
-                            ? 'bg-primary/10 border-primary/20 shadow-md'
-                            : 'bg-background hover:bg-accent/50'
-                    } ${isEditing ? '' : swipeState === 'closed' ? 'cursor-pointer' : 'cursor-grab active:cursor-grabbing'} ${isDeleting ? 'pointer-events-none' : ''}`}
-                    onClick={() => void handleToggleSelected()}
-                    onClickCapture={(e) => {
-                        const target = e.target as HTMLElement;
-
-                        if (target.closest('button') || target.closest('input, textarea')) {
-                            return;
-                        }
-                        // Allow bubbling onClick to handle the toggle
+                <motion.div
+                    animate={{
+                        opacity: toggleMutation.isLoading ? 0.5 : 1,
                     }}
-                    role="button"
-                    aria-pressed={item.isSelected}
-                    aria-busy={isToggleLoading}
-                    tabIndex={isEditing ? -1 : 0}
-                    onKeyDown={(e) => {
-                        if (isEditing) return;
-                        if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            void handleToggleSelected();
-                        }
-                        if (e.key === 'Escape' && swipeState !== 'closed') {
-                            e.preventDefault();
-                            closeSwipe();
-                        }
-                    }}
+                    transition={{ duration: 0.2, ease: 'easeInOut' }}
                 >
-                    <CardContent className="flex items-center justify-between p-0.5">
-                        <div className="flex items-center gap-4 flex-1">
-                            {/* Item image: single <img> to avoid duplicate requests. Overlays for loading/spinner/error. */}
-                            {!isEditing && (
-                                <div className="relative h-12 w-12 shrink-0">
-                                    {/* Image */}
-                                    <img
-                                        ref={imageRef}
-                                        src={imageSrc}
-                                        alt={item.name}
-                                        className={`h-12 w-12 rounded-full object-cover border ${hasLoadedImage && !hasImageError ? 'opacity-100' : 'opacity-0'}`}
-                                        onLoad={() => setHasLoadedImage(true)}
-                                        onError={() => setHasImageError(true)}
-                                    />
+                    <Card
+                        key={item.name}
+                        className={`transition-all rounded-lg duration-200 py-0.5 px-1 ${
+                            item.isSelected
+                                ? 'bg-primary/10 border-primary/20 shadow-md'
+                                : 'bg-background hover:bg-accent/50 border-border'
+                        } ${isEditing ? '' : swipeState === 'closed' ? 'cursor-pointer' : 'cursor-grab active:cursor-grabbing'} ${isDeleting || toggleMutation.isLoading ? 'pointer-events-none' : ''}`}
+                        onClick={() => void handleToggleSelected()}
+                        onClickCapture={(e) => {
+                            const target = e.target as HTMLElement;
 
-                                    {/* Loading skeleton (only before load and no error) */}
-                                    {!hasLoadedImage && !hasImageError && (
-                                        <Skeleton className="absolute inset-0 h-12 w-12 rounded-full border" />
-                                    )}
+                            if (target.closest('button') || target.closest('input, textarea')) {
+                                return;
+                            }
+                            // Allow bubbling onClick to handle the toggle
+                        }}
+                        role="button"
+                        aria-pressed={item.isSelected}
+                        aria-busy={toggleMutation.isLoading}
+                        tabIndex={isEditing ? -1 : 0}
+                        onKeyDown={(e) => {
+                            if (isEditing) return;
+                            if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                void handleToggleSelected();
+                            }
+                            if (e.key === 'Escape' && swipeState !== 'closed') {
+                                e.preventDefault();
+                                closeSwipe();
+                            }
+                        }}
+                    >
+                        <CardContent className="flex items-center justify-between p-0.5">
+                            <div className="flex items-center gap-4 flex-1">
+                                {/* Item image: single <img> to avoid duplicate requests. Overlays for loading/spinner/error. */}
+                                {!isEditing && (
+                                    <div className="relative h-12 w-12 shrink-0">
+                                        {/* Image */}
+                                        <img
+                                            ref={imageRef}
+                                            src={imageSrc}
+                                            alt={item.name}
+                                            className={`h-12 w-12 rounded-full object-cover border ${hasLoadedImage && !hasImageError ? 'opacity-100' : 'opacity-0'}`}
+                                            onLoad={() => setHasLoadedImage(true)}
+                                            onError={() => setHasImageError(true)}
+                                        />
 
-                                    {/* Toggle spinner overlay */}
-                                    {isToggleLoading && (
-                                        <div className="absolute inset-0 flex items-center justify-center">
-                                            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                                        </div>
-                                    )}
+                                        {/* Loading skeleton (only before load and no error) */}
+                                        {!hasLoadedImage && !hasImageError && (
+                                            <Skeleton className="absolute inset-0 h-12 w-12 rounded-full border" />
+                                        )}
 
-                                    {/* Error fallback icon */}
-                                    {hasImageError && (
-                                        <div className="absolute inset-0 h-12 w-12 rounded-full border flex items-center justify-center bg-muted/20 text-muted-foreground">
-                                            <ImageOff className="h-5 w-5" />
-                                        </div>
-                                    )}
-                                </div>
-                            )}
+                                        {/* Toggle spinner overlay */}
+                                        {toggleMutation.isLoading && (
+                                            <motion.div
+                                                className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm rounded-full"
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                transition={{ duration: 0.15 }}
+                                            >
+                                                <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                                            </motion.div>
+                                        )}
 
-                            {isEditing ? (
-                                <div className="flex items-center gap-2 flex-1">
-                                    <Input
-                                        value={editValue}
-                                        onChange={(e) => setEditValue(e.target.value)}
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter') {
-                                                handleEditSave();
-                                            }
+                                        {/* Error fallback icon */}
+                                        {hasImageError && (
+                                            <div className="absolute inset-0 h-12 w-12 rounded-full border flex items-center justify-center bg-muted/20 text-muted-foreground">
+                                                <ImageOff className="h-5 w-5" />
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
 
-                                            if (e.key === 'Escape') {
-                                                handleEditCancel();
-                                            }
-                                        }}
-                                        className="flex-1"
-                                        autoFocus
-                                    />
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={handleEditSave}
-                                        className="h-8 w-8 text-green-600 hover:bg-green-50"
+                                {isEditing ? (
+                                    <div className="flex items-center gap-2 flex-1">
+                                        <Input
+                                            value={editValue}
+                                            onChange={(e) => setEditValue(e.target.value)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter') {
+                                                    handleEditSave();
+                                                }
+
+                                                if (e.key === 'Escape') {
+                                                    handleEditCancel();
+                                                }
+                                            }}
+                                            className="flex-1"
+                                            autoFocus
+                                        />
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={handleEditSave}
+                                            className="h-8 w-8 text-green-600 hover:bg-green-50"
+                                        >
+                                            <Check size={16} />
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={handleEditCancel}
+                                            className="h-8 w-8 text-gray-500 hover:bg-gray-50"
+                                        >
+                                            <XIcon size={16} />
+                                        </Button>
+                                    </div>
+                                ) : (
+                                    <Label
+                                        className={`flex-1 cursor-pointer text-base transition-all duration-300 ${
+                                            item.isSelected ? 'text-muted-foreground' : 'text-foreground'
+                                        }`}
                                     >
-                                        <Check size={16} />
-                                    </Button>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={handleEditCancel}
-                                        className="h-8 w-8 text-gray-500 hover:bg-gray-50"
-                                    >
-                                        <XIcon size={16} />
-                                    </Button>
-                                </div>
-                            ) : (
-                                <Label
-                                    className={`flex-1 cursor-pointer text-base ${
-                                        item.isSelected ? 'line-through text-muted-foreground' : 'text-foreground'
-                                    }`}
-                                >
-                                    {item.name}
-                                </Label>
-                            )}
-                        </div>
-                    </CardContent>
-                </Card>
+                                        <span className="relative inline-block">
+                                            {item.name}
+                                            {item.isSelected && (
+                                                <motion.div
+                                                    className="absolute left-0 right-0 top-1/2 h-[2px] bg-muted-foreground/60"
+                                                    initial={{ scaleX: 0, originX: 0 }}
+                                                    animate={{ scaleX: 1 }}
+                                                    transition={{ duration: 0.3, ease: 'easeOut' }}
+                                                />
+                                            )}
+                                        </span>
+                                    </Label>
+                                )}
+                            </div>
+                        </CardContent>
+                    </Card>
+                </motion.div>
             </motion.div>
         </motion.div>
     );
