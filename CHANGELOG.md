@@ -1,3 +1,17 @@
+# [1.3.0](https://gitlab.com/imapps/shoppingo/compare/v1.2.1...v1.3.0) (2025-11-04)
+
+
+### Bug Fixes
+
+* lint ([86ecf14](https://gitlab.com/imapps/shoppingo/commit/86ecf149415212c47c2f5ef79e7c22016ed4e972))
+
+
+### Features
+
+* added optimistic state changes with tanstack ([f51a259](https://gitlab.com/imapps/shoppingo/commit/f51a25950c92cc74bc51f0e222f395bf1c1bd9e5))
+* added swiping to show edit and delete ([0185b9f](https://gitlab.com/imapps/shoppingo/commit/0185b9fb6441801e2898c44945e099bb8a17ddaa))
+* move edit to a dialog ([7db30b6](https://gitlab.com/imapps/shoppingo/commit/7db30b6586ffb4f769cb0b97d3595275d615124c))
+
 ## [1.2.1](https://gitlab.com/imapps/shoppingo/compare/v1.2.0...v1.2.1) (2025-10-31)
 
 
