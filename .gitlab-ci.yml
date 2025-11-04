@@ -16,17 +16,7 @@ ci:
 
 # Version release - bump version and create tag after successful builds
 version-release:
-  extends: .version-release-template
-  before_script:
-    - corepack enable
-    - yarn install --immutable
-    - git config --global user.name "gitlab-ci[bot]"
-    - git config --global user.email "gitlab-ci@noreply.gitlab.com"
-    - git config --global credential.helper store
-    - echo "https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.com" > ~/.git-credentials
-    - git remote set-url origin "https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.com/${CI_PROJECT_PATH}.git"
-    - git fetch origin --tags --force
-    - bash scripts/clean-orphaned-tags.sh
+  extends: .version-release-monorepo-template
   rules:
     - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_REF_NAME == "main"
     - if: $CI_PIPELINE_SOURCE == "web"
@@ -61,41 +51,10 @@ build-api:
 
 # Build and publish shoppingo-web with semantic version
 publish-web:
-  stage: docker-publish
-  tags:
-    - server
-  image: docker:27
-  services:
-    - name: docker:27-dind
-      command: ["--insecure-registry=192.168.68.33:5000"]
+  extends: .docker-publish-rebuild-template
   variables:
-    DOCKER_HOST: tcp://docker:2376
-    DOCKER_TLS_CERTDIR: "/certs"
-    DOCKER_TLS_VERIFY: 1
-    DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
-    DOCKER_DRIVER: overlay2
     APP_NAME: "shoppingo-web"
     DOCKERFILE_PATH: "packages/web/Dockerfile"
-  before_script:
-    - docker info
-    - |
-      if [ -z "${VERSION:-}" ]; then
-        echo "❌ ERROR: VERSION not found. Make sure version-release job runs before this job."
-        exit 1
-      fi
-      echo "🔨 Building ${APP_NAME} with semantic version: ${VERSION}"
-  script:
-    - export IMAGE_TAG="${PRIVATE_REGISTRY}/${APP_NAME}:${VERSION}"
-
-    # Build the Docker image with semantic version as APP_VERSION
-    - echo "🔨 Building Docker image with version ${VERSION}..."
-    - docker build --build-arg APP_VERSION=${VERSION} --secret id=CI_JOB_TOKEN,env=CI_JOB_TOKEN -f ${DOCKERFILE_PATH} -t ${IMAGE_TAG} .
-
-    # Push to private registry with semantic version tag
-    - echo "📤 Pushing versioned image to registry..."
-    - docker push ${IMAGE_TAG}
-
-    - echo "✅ Built and pushed ${APP_NAME}:${VERSION} to ${IMAGE_TAG}"
   rules:
     - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_REF_NAME == "main"
     - if: $CI_PIPELINE_SOURCE == "web"
@@ -105,41 +64,10 @@ publish-web:
 
 # Build and publish shoppingo-api with semantic version
 publish-api:
-  stage: docker-publish
-  tags:
-    - server
-  image: docker:27
-  services:
-    - name: docker:27-dind
-      command: ["--insecure-registry=192.168.68.33:5000"]
+  extends: .docker-publish-rebuild-template
   variables:
-    DOCKER_HOST: tcp://docker:2376
-    DOCKER_TLS_CERTDIR: "/certs"
-    DOCKER_TLS_VERIFY: 1
-    DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
-    DOCKER_DRIVER: overlay2
     APP_NAME: "shoppingo-api"
     DOCKERFILE_PATH: "packages/api/Dockerfile"
-  before_script:
-    - docker info
-    - |
-      if [ -z "${VERSION:-}" ]; then
-        echo "❌ ERROR: VERSION not found. Make sure version-release job runs before this job."
-        exit 1
-      fi
-      echo "🔨 Building ${APP_NAME} with semantic version: ${VERSION}"
-  script:
-    - export IMAGE_TAG="${PRIVATE_REGISTRY}/${APP_NAME}:${VERSION}"
-
-    # Build the Docker image with semantic version as APP_VERSION
-    - echo "🔨 Building Docker image with version ${VERSION}..."
-    - docker build --build-arg APP_VERSION=${VERSION} --secret id=CI_JOB_TOKEN,env=CI_JOB_TOKEN -f ${DOCKERFILE_PATH} -t ${IMAGE_TAG} .
-
-    # Push to private registry with semantic version tag
-    - echo "📤 Pushing versioned image to registry..."
-    - docker push ${IMAGE_TAG}
-
-    - echo "✅ Built and pushed ${APP_NAME}:${VERSION} to ${IMAGE_TAG}"
   rules:
     - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_REF_NAME == "main"
     - if: $CI_PIPELINE_SOURCE == "web"
@@ -168,4 +96,3 @@ gitops-production:
   needs:
     - version-release
     - gitops-staging
-

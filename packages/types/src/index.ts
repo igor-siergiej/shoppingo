@@ -3,6 +3,7 @@ export interface Item {
     name: string;
     isSelected: boolean;
     dateAdded: Date;
+    quantity?: number;
 }
 
 export interface List {
