@@ -6,6 +6,14 @@ import { useMutation, useQueryClient } from 'react-query';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import {
+    Drawer,
+    DrawerClose,
+    DrawerContent,
+    DrawerFooter,
+    DrawerHeader,
+    DrawerTitle,
+} from '@/components/ui/drawer';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -18,14 +26,15 @@ export interface ItemCheckBoxProps {
 }
 
 const ItemCheckBox = ({ item, listTitle }: ItemCheckBoxProps) => {
-    const [isEditing, setIsEditing] = useState(false);
-    const [editValue, setEditValue] = useState('');
+    const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false);
+    const [drawerEditValue, setDrawerEditValue] = useState('');
     const [swipeState, setSwipeState] = useState<'closed' | 'left' | 'right'>('closed');
     const [isDeleting, setIsDeleting] = useState(false);
 
     const x = useMotionValue(0);
     const controls = useAnimation();
     const queryClient = useQueryClient();
+    const drawerInputRef = useRef<HTMLInputElement>(null);
 
     // Mutation for toggling item selection
     const toggleMutation = useMutation({
@@ -119,22 +128,26 @@ const ItemCheckBox = ({ item, listTitle }: ItemCheckBoxProps) => {
         e?.stopPropagation();
         setSwipeState('closed');
         void controls.start({ x: 0 });
-        setIsEditing(true);
-        setEditValue(item.name);
+        setDrawerEditValue(item.name);
+        setIsEditDrawerOpen(true);
+
+        // Auto-focus input after drawer animation
+        setTimeout(() => {
+            drawerInputRef.current?.focus();
+        }, 250);
     };
 
-    const handleEditSave = async () => {
-        if (editValue.trim() && editValue !== item.name) {
-            updateNameMutation.mutate(editValue.trim());
+    const handleDrawerEditSave = () => {
+        if (drawerEditValue.trim() && drawerEditValue !== item.name) {
+            updateNameMutation.mutate(drawerEditValue.trim());
         }
-
-        setIsEditing(false);
-        setEditValue('');
+        setIsEditDrawerOpen(false);
+        setDrawerEditValue('');
     };
 
-    const handleEditCancel = () => {
-        setIsEditing(false);
-        setEditValue('');
+    const handleDrawerEditCancel = () => {
+        setIsEditDrawerOpen(false);
+        setDrawerEditValue('');
     };
 
     const imageSrc = useMemo(() => `/api/image/${encodeURIComponent(item.name)}`, [item.name]);
@@ -157,10 +170,10 @@ const ItemCheckBox = ({ item, listTitle }: ItemCheckBoxProps) => {
                 setHasImageError(true);
             }
         }
-    }, []);
+    }, [imageSrc]);
 
     const handleToggleSelected = async () => {
-        if (isEditing || toggleMutation.isLoading || swipeState !== 'closed') return;
+        if (toggleMutation.isLoading || swipeState !== 'closed') return;
 
         const next = !item.isSelected;
         toggleMutation.mutate(next);
@@ -236,7 +249,7 @@ const ItemCheckBox = ({ item, listTitle }: ItemCheckBoxProps) => {
             }}
         >
             {/* Action buttons underneath - Delete on right (revealed by swiping left) */}
-            {!isEditing && !isDeleting && (
+            {!isDeleting && (
                 <div className="absolute inset-y-0 right-0 flex items-center justify-end w-32">
                     <Button
                         onClick={handleDeleteItem}
@@ -255,7 +268,7 @@ const ItemCheckBox = ({ item, listTitle }: ItemCheckBoxProps) => {
             )}
 
             {/* Action buttons underneath - Edit on left (revealed by swiping right) */}
-            {!isEditing && !isDeleting && (
+            {!isDeleting && (
                 <div className="absolute inset-y-0 left-0 flex items-center justify-start pl-1 w-32">
                     <Button
                         onClick={handleEditStart}
@@ -270,7 +283,7 @@ const ItemCheckBox = ({ item, listTitle }: ItemCheckBoxProps) => {
 
             {/* Draggable card */}
             <motion.div
-                drag={!isEditing && !deleteMutation.isLoading ? 'x' : false}
+                drag={!deleteMutation.isLoading ? 'x' : false}
                 dragConstraints={{ left: -80, right: 80 }}
                 dragElastic={0.1}
                 onDragEnd={handleDragEnd}
@@ -296,12 +309,12 @@ const ItemCheckBox = ({ item, listTitle }: ItemCheckBoxProps) => {
                             item.isSelected
                                 ? 'bg-primary/10 border-primary/20 shadow-md'
                                 : 'bg-background hover:bg-accent/50 border-border'
-                        } ${isEditing ? '' : swipeState === 'closed' ? 'cursor-pointer' : 'cursor-grab active:cursor-grabbing'} ${isDeleting || toggleMutation.isLoading ? 'pointer-events-none' : ''}`}
+                        } ${swipeState === 'closed' ? 'cursor-pointer' : 'cursor-grab active:cursor-grabbing'} ${isDeleting || toggleMutation.isLoading ? 'pointer-events-none' : ''}`}
                         onClick={() => void handleToggleSelected()}
                         onClickCapture={(e) => {
                             const target = e.target as HTMLElement;
 
-                            if (target.closest('button') || target.closest('input, textarea')) {
+                            if (target.closest('button')) {
                                 return;
                             }
                             // Allow bubbling onClick to handle the toggle
@@ -309,9 +322,8 @@ const ItemCheckBox = ({ item, listTitle }: ItemCheckBoxProps) => {
                         role="button"
                         aria-pressed={item.isSelected}
                         aria-busy={toggleMutation.isLoading}
-                        tabIndex={isEditing ? -1 : 0}
+                        tabIndex={0}
                         onKeyDown={(e) => {
-                            if (isEditing) return;
                             if (e.key === 'Enter' || e.key === ' ') {
                                 e.preventDefault();
                                 void handleToggleSelected();
@@ -325,102 +337,104 @@ const ItemCheckBox = ({ item, listTitle }: ItemCheckBoxProps) => {
                         <CardContent className="flex items-center justify-between p-0.5">
                             <div className="flex items-center gap-4 flex-1">
                                 {/* Item image: single <img> to avoid duplicate requests. Overlays for loading/spinner/error. */}
-                                {!isEditing && (
-                                    <div className="relative h-12 w-12 shrink-0">
-                                        {/* Image */}
-                                        <img
-                                            ref={imageRef}
-                                            src={imageSrc}
-                                            alt={item.name}
-                                            className={`h-12 w-12 rounded-full object-cover border ${hasLoadedImage && !hasImageError ? 'opacity-100' : 'opacity-0'}`}
-                                            onLoad={() => setHasLoadedImage(true)}
-                                            onError={() => setHasImageError(true)}
-                                        />
+                                <div className="relative h-12 w-12 shrink-0">
+                                    {/* Image */}
+                                    <img
+                                        ref={imageRef}
+                                        src={imageSrc}
+                                        alt={item.name}
+                                        className={`h-12 w-12 rounded-full object-cover border ${hasLoadedImage && !hasImageError ? 'opacity-100' : 'opacity-0'}`}
+                                        onLoad={() => setHasLoadedImage(true)}
+                                        onError={() => setHasImageError(true)}
+                                    />
 
-                                        {/* Loading skeleton (only before load and no error) */}
-                                        {!hasLoadedImage && !hasImageError && (
-                                            <Skeleton className="absolute inset-0 h-12 w-12 rounded-full border" />
-                                        )}
+                                    {/* Loading skeleton (only before load and no error) */}
+                                    {!hasLoadedImage && !hasImageError && (
+                                        <Skeleton className="absolute inset-0 h-12 w-12 rounded-full border" />
+                                    )}
 
-                                        {/* Toggle spinner overlay */}
-                                        {toggleMutation.isLoading && (
+                                    {/* Toggle spinner overlay */}
+                                    {toggleMutation.isLoading && (
+                                        <motion.div
+                                            className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm rounded-full"
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            transition={{ duration: 0.15 }}
+                                        >
+                                            <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                                        </motion.div>
+                                    )}
+
+                                    {/* Error fallback icon */}
+                                    {hasImageError && (
+                                        <div className="absolute inset-0 h-12 w-12 rounded-full border flex items-center justify-center bg-muted/20 text-muted-foreground">
+                                            <ImageOff className="h-5 w-5" />
+                                        </div>
+                                    )}
+                                </div>
+
+                                <Label
+                                    className={`flex-1 cursor-pointer text-base transition-all duration-300 ${
+                                        item.isSelected ? 'text-muted-foreground' : 'text-foreground'
+                                    }`}
+                                >
+                                    <span className="relative inline-block">
+                                        {item.name}
+                                        {item.isSelected && (
                                             <motion.div
-                                                className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm rounded-full"
-                                                initial={{ opacity: 0 }}
-                                                animate={{ opacity: 1 }}
-                                                transition={{ duration: 0.15 }}
-                                            >
-                                                <Loader2 className="h-5 w-5 animate-spin text-primary" />
-                                            </motion.div>
+                                                className="absolute left-0 right-0 top-1/2 h-[2px] bg-muted-foreground/60"
+                                                initial={{ scaleX: 0, originX: 0 }}
+                                                animate={{ scaleX: 1 }}
+                                                transition={{ duration: 0.3, ease: 'easeOut' }}
+                                            />
                                         )}
-
-                                        {/* Error fallback icon */}
-                                        {hasImageError && (
-                                            <div className="absolute inset-0 h-12 w-12 rounded-full border flex items-center justify-center bg-muted/20 text-muted-foreground">
-                                                <ImageOff className="h-5 w-5" />
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-
-                                {isEditing ? (
-                                    <div className="flex items-center gap-2 flex-1">
-                                        <Input
-                                            value={editValue}
-                                            onChange={(e) => setEditValue(e.target.value)}
-                                            onKeyDown={(e) => {
-                                                if (e.key === 'Enter') {
-                                                    handleEditSave();
-                                                }
-
-                                                if (e.key === 'Escape') {
-                                                    handleEditCancel();
-                                                }
-                                            }}
-                                            className="flex-1"
-                                            autoFocus
-                                        />
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            onClick={handleEditSave}
-                                            className="h-8 w-8 text-green-600 hover:bg-green-50"
-                                        >
-                                            <Check size={16} />
-                                        </Button>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            onClick={handleEditCancel}
-                                            className="h-8 w-8 text-gray-500 hover:bg-gray-50"
-                                        >
-                                            <XIcon size={16} />
-                                        </Button>
-                                    </div>
-                                ) : (
-                                    <Label
-                                        className={`flex-1 cursor-pointer text-base transition-all duration-300 ${
-                                            item.isSelected ? 'text-muted-foreground' : 'text-foreground'
-                                        }`}
-                                    >
-                                        <span className="relative inline-block">
-                                            {item.name}
-                                            {item.isSelected && (
-                                                <motion.div
-                                                    className="absolute left-0 right-0 top-1/2 h-[2px] bg-muted-foreground/60"
-                                                    initial={{ scaleX: 0, originX: 0 }}
-                                                    animate={{ scaleX: 1 }}
-                                                    transition={{ duration: 0.3, ease: 'easeOut' }}
-                                                />
-                                            )}
-                                        </span>
-                                    </Label>
-                                )}
+                                    </span>
+                                </Label>
                             </div>
                         </CardContent>
                     </Card>
                 </motion.div>
             </motion.div>
+
+            {/* Edit Item Drawer */}
+            <Drawer open={isEditDrawerOpen} onOpenChange={setIsEditDrawerOpen}>
+                <DrawerContent>
+                    <DrawerHeader>
+                        <DrawerTitle>Edit Item</DrawerTitle>
+                    </DrawerHeader>
+                    <div className="p-4 pb-0">
+                        <Label htmlFor="edit-item-name">Item Name</Label>
+                        <Input
+                            id="edit-item-name"
+                            ref={drawerInputRef}
+                            value={drawerEditValue}
+                            onChange={(e) => setDrawerEditValue(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    handleDrawerEditSave();
+                                }
+                                if (e.key === 'Escape') {
+                                    e.preventDefault();
+                                    handleDrawerEditCancel();
+                                }
+                            }}
+                            placeholder="Enter item name"
+                            className="mt-2"
+                        />
+                    </div>
+                    <DrawerFooter>
+                        <Button onClick={handleDrawerEditSave} disabled={!drawerEditValue.trim()}>
+                            Save Changes
+                        </Button>
+                        <DrawerClose asChild>
+                            <Button variant="outline" onClick={handleDrawerEditCancel}>
+                                Cancel
+                            </Button>
+                        </DrawerClose>
+                    </DrawerFooter>
+                </DrawerContent>
+            </Drawer>
         </motion.div>
     );
 };
