@@ -6,8 +6,8 @@
   "author": "Igor Siergiej <igorsiergiej@gmail.com>",
   "scripts": {
     "start:web": "yarn workspace @shoppingo/web start",
-    "start:web:with-mock": "dotenv -e .env -- yarn workspace @shoppingo/web start:with-mock",
-    "start:api": "dotenv -e .env -- yarn workspace @shoppingo/api start",
+    "start:web:with-mock": "dotenv -e .env.dev -- yarn workspace @shoppingo/web start:with-mock",
+    "start:api": "dotenv -e .env.dev -- yarn workspace @shoppingo/api start",
     "start": "yarn start:web & yarn start:api",
     "start:with-mock": "yarn start:web:with-mock & yarn start:api",
     "lint": "biome check .",

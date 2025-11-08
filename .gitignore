@@ -4,6 +4,7 @@ node_modules
 .github
 build
 .env
+!.env.dev
 tsconfig.tsbuildinfo
 .yarn/releases/
 .pnp.*
