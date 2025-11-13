@@ -299,9 +299,9 @@ describe('ListService', () => {
 
                 await mockRepository.insert(mockList);
 
-                await expect(
-                    listService.addItem('Test List', 'existing item', new Date('2023-01-01'))
-                ).rejects.toThrow('An item with that name already exists in this list');
+                await expect(listService.addItem('Test List', 'existing item', new Date('2023-01-01'))).rejects.toThrow(
+                    'An item with that name already exists in this list'
+                );
             });
         });
 
