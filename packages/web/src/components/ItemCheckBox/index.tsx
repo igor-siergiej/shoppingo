@@ -20,7 +20,6 @@ export interface ItemCheckBoxProps {
 }
 
 const ItemCheckBox = ({ item, listTitle }: ItemCheckBoxProps) => {
-    // All useState hooks grouped together
     const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false);
     const [drawerEditValue, setDrawerEditValue] = useState('');
     const [drawerQuantityValue, setDrawerQuantityValue] = useState('');
@@ -30,18 +29,14 @@ const ItemCheckBox = ({ item, listTitle }: ItemCheckBoxProps) => {
     const [hasLoadedImage, setHasLoadedImage] = useState(false);
     const [hasImageError, setHasImageError] = useState(false);
 
-    // All useRef hooks grouped together
     const drawerInputRef = useRef<HTMLInputElement>(null);
     const imageRef = useRef<HTMLImageElement>(null);
 
-    // Motion hooks
     const x = useMotionValue(0);
     const controls = useAnimation();
 
-    // Query client
     const queryClient = useQueryClient();
 
-    // Memoized values
     const imageSrc = useMemo(() => `/api/image/${encodeURIComponent(item.name)}`, [item.name]);
 
     // Mutation for toggling item selection
