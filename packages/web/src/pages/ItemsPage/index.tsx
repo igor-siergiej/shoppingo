@@ -22,22 +22,26 @@ const ItemsPage = () => {
 
     // Mutation for adding items
     const addItemMutation = useMutation({
-        mutationFn: (itemName: string) => addItem(itemName, listTitle),
-        onMutate: async (itemName) => {
+        mutationFn: ({ itemName, quantity, unit }: { itemName: string; quantity?: number; unit?: string }) =>
+            addItem(itemName, listTitle, quantity, unit),
+        onMutate: async ({ itemName, quantity, unit }) => {
             await queryClient.cancelQueries([listTitle]);
             const previousItems = queryClient.getQueryData<Item[]>([listTitle]);
 
             // Optimistically add new item
             const newItem: Item = {
+                id: `temp-${Date.now()}`, // Temporary ID for optimistic update
                 name: itemName,
                 isSelected: false,
-                dateAdded: new Date().toISOString(),
+                dateAdded: new Date() as any, // Will be replaced by server response
+                ...(quantity !== undefined && { quantity }),
+                ...(unit !== undefined && { unit }),
             };
             queryClient.setQueryData<Item[]>([listTitle], (old) => (old ? [...old, newItem] : [newItem]));
 
             return { previousItems };
         },
-        onError: (_err, _itemName, context) => {
+        onError: (_err, _variables, context) => {
             if (context?.previousItems) {
                 queryClient.setQueryData([listTitle], context.previousItems);
             }
@@ -147,8 +151,8 @@ const ItemsPage = () => {
         clearSelectedMutation.mutate();
     };
 
-    const handleAddItem = async (itemName: string) => {
-        addItemMutation.mutate(itemName);
+    const handleAddItem = async (itemName: string, quantity?: number, unit?: string) => {
+        addItemMutation.mutate({ itemName, quantity, unit });
     };
 
     const handleGoBack = () => {

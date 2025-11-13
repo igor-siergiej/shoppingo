@@ -62,13 +62,15 @@ export const addList = async (ctx: Context) => {
 
 export const addItem = async (ctx: Context) => {
     const { title } = ctx.params as { title: string };
-    const { itemName, dateAdded } = ctx.request.body as {
+    const { itemName, dateAdded, quantity, unit } = ctx.request.body as {
         itemName: string;
         dateAdded: Date;
+        quantity?: number;
+        unit?: string;
     };
 
     try {
-        const item = await getListService().addItem(title, itemName, dateAdded);
+        const item = await getListService().addItem(title, itemName, dateAdded, quantity, unit);
 
         ctx.status = 200;
         ctx.body = item;
@@ -82,9 +84,11 @@ export const addItem = async (ctx: Context) => {
 
 export const updateItem = async (ctx: Context) => {
     const { title, itemName } = ctx.params as { title: string; itemName: string };
-    const { isSelected, newItemName } = ctx.request.body as {
+    const { isSelected, newItemName, quantity, unit } = ctx.request.body as {
         isSelected?: boolean;
         newItemName?: string;
+        quantity?: number;
+        unit?: string;
     };
     ctx.status = 200;
 
@@ -93,10 +97,12 @@ export const updateItem = async (ctx: Context) => {
             ctx.body = await getListService().updateItemName(title, itemName, newItemName);
         } else if (typeof isSelected === 'boolean') {
             ctx.body = await getListService().setItemSelected(title, itemName, isSelected);
+        } else if (quantity !== undefined || unit !== undefined) {
+            ctx.body = await getListService().updateItemQuantity(title, itemName, quantity, unit);
         } else {
             ctx.status = 400;
             ctx.body = {
-                error: 'Either isSelected (boolean) or newItemName (string) must be provided',
+                error: 'Either isSelected (boolean), newItemName (string), or quantity/unit must be provided',
             };
 
             return;

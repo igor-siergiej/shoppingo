@@ -212,6 +212,48 @@ describe('ListService', () => {
                 expect(result.isSelected).toBe(false);
             });
         });
+
+        describe('When adding an item with quantity and unit', () => {
+            it('should add the item with quantity and unit', async () => {
+                const mockList: List = {
+                    id: 'list-1',
+                    title: 'Test List',
+                    dateAdded: new Date('2023-01-01'),
+                    items: [],
+                    users: [mockUser],
+                };
+
+                await mockRepository.insert(mockList);
+
+                const result = await listService.addItem('Test List', 'New Item', new Date('2023-01-01'), 2, 'kg');
+
+                expect(result.name).toBe('New Item');
+                expect(result.id).toBe('id-1');
+                expect(result.isSelected).toBe(false);
+                expect(result.quantity).toBe(2);
+                expect(result.unit).toBe('kg');
+            });
+        });
+
+        describe('When adding an item without quantity and unit', () => {
+            it('should add the item without quantity and unit fields', async () => {
+                const mockList: List = {
+                    id: 'list-1',
+                    title: 'Test List',
+                    dateAdded: new Date('2023-01-01'),
+                    items: [],
+                    users: [mockUser],
+                };
+
+                await mockRepository.insert(mockList);
+
+                const result = await listService.addItem('Test List', 'New Item', new Date('2023-01-01'));
+
+                expect(result.name).toBe('New Item');
+                expect(result.quantity).toBeUndefined();
+                expect(result.unit).toBeUndefined();
+            });
+        });
     });
 
     describe('Updating item names', () => {
@@ -354,6 +396,103 @@ describe('ListService', () => {
         describe('When the list does not exist', () => {
             it('should throw an error indicating the list was not found', async () => {
                 await expect(listService.setItemSelected('Non-existent', 'Item', true)).rejects.toThrow(
+                    'List not found'
+                );
+            });
+        });
+    });
+
+    describe('Updating item quantities', () => {
+        describe('When updating an item with quantity and unit', () => {
+            it('should update the quantity and unit successfully', async () => {
+                const mockList: List = {
+                    id: 'list-1',
+                    title: 'Test List',
+                    dateAdded: new Date('2023-01-01'),
+                    items: [
+                        {
+                            id: 'item-1',
+                            name: 'Item 1',
+                            dateAdded: new Date(),
+                            isSelected: false,
+                        },
+                    ],
+                    users: [mockUser],
+                };
+
+                await mockRepository.insert(mockList);
+
+                const result = await listService.updateItemQuantity('Test List', 'Item 1', 3, 'ml');
+
+                expect(result.message).toBe('Quantity updated successfully');
+
+                const updatedList = await mockRepository.getByTitle('Test List');
+                expect(updatedList?.items[0].quantity).toBe(3);
+                expect(updatedList?.items[0].unit).toBe('ml');
+            });
+        });
+
+        describe('When updating only quantity', () => {
+            it('should update only the quantity', async () => {
+                const mockList: List = {
+                    id: 'list-1',
+                    title: 'Test List',
+                    dateAdded: new Date('2023-01-01'),
+                    items: [
+                        {
+                            id: 'item-1',
+                            name: 'Item 1',
+                            dateAdded: new Date(),
+                            isSelected: false,
+                            quantity: 5,
+                            unit: 'kg',
+                        },
+                    ],
+                    users: [mockUser],
+                };
+
+                await mockRepository.insert(mockList);
+
+                await listService.updateItemQuantity('Test List', 'Item 1', 10, undefined);
+
+                const updatedList = await mockRepository.getByTitle('Test List');
+                expect(updatedList?.items[0].quantity).toBe(10);
+                expect(updatedList?.items[0].unit).toBe('kg');
+            });
+        });
+
+        describe('When updating only unit', () => {
+            it('should update only the unit', async () => {
+                const mockList: List = {
+                    id: 'list-1',
+                    title: 'Test List',
+                    dateAdded: new Date('2023-01-01'),
+                    items: [
+                        {
+                            id: 'item-1',
+                            name: 'Item 1',
+                            dateAdded: new Date(),
+                            isSelected: false,
+                            quantity: 5,
+                            unit: 'kg',
+                        },
+                    ],
+                    users: [mockUser],
+                };
+
+                await mockRepository.insert(mockList);
+
+                await listService.updateItemQuantity('Test List', 'Item 1', undefined, 'L');
+
+                const updatedList = await mockRepository.getByTitle('Test List');
+                expect(updatedList?.items[0].quantity).toBe(5);
+                expect(updatedList?.items[0].unit).toBe('L');
+            });
+        });
+
+        describe('When the list does not exist', () => {
+            it('should throw an error indicating the list was not found', async () => {
+                await expect(listService.updateItemQuantity('Non-existent', 'Item', 1, 'pcs')).rejects.toThrow(
                     'List not found'
                 );
             });

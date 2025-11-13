@@ -9,9 +9,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 
-import { deleteItem, updateItem, updateItemName } from '../../api';
+import { deleteItem, updateItem, updateItemName, updateItemQuantity } from '../../api';
 
 export interface ItemCheckBoxProps {
     item: Item;
@@ -22,6 +23,8 @@ const ItemCheckBox = ({ item, listTitle }: ItemCheckBoxProps) => {
     // All useState hooks grouped together
     const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false);
     const [drawerEditValue, setDrawerEditValue] = useState('');
+    const [drawerQuantityValue, setDrawerQuantityValue] = useState('');
+    const [drawerUnitValue, setDrawerUnitValue] = useState('');
     const [swipeState, setSwipeState] = useState<'closed' | 'left' | 'right'>('closed');
     const [isDeleting, setIsDeleting] = useState(false);
     const [hasLoadedImage, setHasLoadedImage] = useState(false);
@@ -118,6 +121,41 @@ const ItemCheckBox = ({ item, listTitle }: ItemCheckBoxProps) => {
         },
     });
 
+    // Mutation for updating item quantity
+    const updateQuantityMutation = useMutation({
+        mutationFn: ({ quantity, unit }: { quantity?: number; unit?: string }) =>
+            updateItemQuantity(listTitle, item.name, quantity, unit),
+        onMutate: async ({ quantity, unit }) => {
+            await queryClient.cancelQueries([listTitle]);
+            const previousItems = queryClient.getQueryData<Item[]>([listTitle]);
+
+            // Optimistically update item quantity/unit
+            queryClient.setQueryData<Item[]>([listTitle], (old) =>
+                old
+                    ? old.map((i) =>
+                          i.name === item.name
+                              ? {
+                                    ...i,
+                                    ...(quantity !== undefined && { quantity }),
+                                    ...(unit !== undefined && { unit }),
+                                }
+                              : i
+                      )
+                    : []
+            );
+
+            return { previousItems };
+        },
+        onError: (_err, _variables, context) => {
+            if (context?.previousItems) {
+                queryClient.setQueryData([listTitle], context.previousItems);
+            }
+        },
+        onSettled: () => {
+            void queryClient.invalidateQueries([listTitle]);
+        },
+    });
+
     const handleDeleteItem = async (e?: MouseEvent) => {
         e?.stopPropagation();
 
@@ -134,6 +172,8 @@ const ItemCheckBox = ({ item, listTitle }: ItemCheckBoxProps) => {
         setSwipeState('closed');
         void controls.start({ x: 0 });
         setDrawerEditValue(item.name);
+        setDrawerQuantityValue(item.quantity?.toString() ?? '');
+        setDrawerUnitValue(item.unit ?? '');
         setIsEditDrawerOpen(true);
 
         // Auto-focus input after drawer animation
@@ -143,16 +183,30 @@ const ItemCheckBox = ({ item, listTitle }: ItemCheckBoxProps) => {
     };
 
     const handleDrawerEditSave = () => {
-        if (drawerEditValue.trim() && drawerEditValue !== item.name) {
+        const hasNameChange = drawerEditValue.trim() && drawerEditValue !== item.name;
+        const newQuantity = drawerQuantityValue.trim() ? parseFloat(drawerQuantityValue) : undefined;
+        const newUnit = drawerUnitValue.trim() || undefined;
+        const hasQuantityChange = newQuantity !== item.quantity || newUnit !== item.unit;
+
+        if (hasNameChange) {
             updateNameMutation.mutate(drawerEditValue.trim());
         }
+
+        if (hasQuantityChange) {
+            updateQuantityMutation.mutate({ quantity: newQuantity, unit: newUnit });
+        }
+
         setIsEditDrawerOpen(false);
         setDrawerEditValue('');
+        setDrawerQuantityValue('');
+        setDrawerUnitValue('');
     };
 
     const handleDrawerEditCancel = () => {
         setIsEditDrawerOpen(false);
         setDrawerEditValue('');
+        setDrawerQuantityValue('');
+        setDrawerUnitValue('');
     };
 
     // Reset image loading state when image source changes
@@ -392,6 +446,15 @@ const ItemCheckBox = ({ item, listTitle }: ItemCheckBoxProps) => {
                                     </span>
                                 </Label>
                             </div>
+
+                            {/* Quantity badge on the right */}
+                            {item.quantity !== undefined && item.unit && (
+                                <div className="flex items-center justify-center px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 ml-2 shrink-0">
+                                    <span className="text-sm font-semibold text-primary whitespace-nowrap">
+                                        {item.quantity} {item.unit}
+                                    </span>
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
                 </motion.div>
@@ -403,26 +466,58 @@ const ItemCheckBox = ({ item, listTitle }: ItemCheckBoxProps) => {
                     <DrawerHeader>
                         <DrawerTitle>Edit Item</DrawerTitle>
                     </DrawerHeader>
-                    <div className="p-4 pb-0">
-                        <Label htmlFor="edit-item-name">Item Name</Label>
-                        <Input
-                            id="edit-item-name"
-                            ref={drawerInputRef}
-                            value={drawerEditValue}
-                            onChange={(e) => setDrawerEditValue(e.target.value)}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                    e.preventDefault();
-                                    handleDrawerEditSave();
-                                }
-                                if (e.key === 'Escape') {
-                                    e.preventDefault();
-                                    handleDrawerEditCancel();
-                                }
-                            }}
-                            placeholder="Enter item name"
-                            className="mt-2"
-                        />
+                    <div className="p-4 pb-0 space-y-4">
+                        <div>
+                            <Label htmlFor="edit-item-name">Item Name</Label>
+                            <Input
+                                id="edit-item-name"
+                                ref={drawerInputRef}
+                                value={drawerEditValue}
+                                onChange={(e) => setDrawerEditValue(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        handleDrawerEditSave();
+                                    }
+                                    if (e.key === 'Escape') {
+                                        e.preventDefault();
+                                        handleDrawerEditCancel();
+                                    }
+                                }}
+                                placeholder="Enter item name"
+                                className="mt-2"
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <Label htmlFor="edit-item-quantity">Quantity</Label>
+                                <Input
+                                    id="edit-item-quantity"
+                                    type="number"
+                                    value={drawerQuantityValue}
+                                    onChange={(e) => setDrawerQuantityValue(e.target.value)}
+                                    placeholder="e.g., 2"
+                                    className="mt-2"
+                                    step="0.01"
+                                />
+                            </div>
+                            <div>
+                                <Label htmlFor="edit-item-unit">Unit</Label>
+                                <Select value={drawerUnitValue} onValueChange={setDrawerUnitValue}>
+                                    <SelectTrigger id="edit-item-unit" className="mt-2">
+                                        <SelectValue placeholder="Select unit" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="pcs">pcs</SelectItem>
+                                        <SelectItem value="g">g</SelectItem>
+                                        <SelectItem value="kg">kg</SelectItem>
+                                        <SelectItem value="ml">ml</SelectItem>
+                                        <SelectItem value="L">L</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
                     </div>
                     <DrawerFooter>
                         <Button onClick={handleDrawerEditSave} disabled={!drawerEditValue.trim()}>

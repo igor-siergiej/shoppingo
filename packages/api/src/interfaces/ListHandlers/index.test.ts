@@ -399,7 +399,13 @@ describe('ListHandlers', () => {
 
             await listHandlers.addItem(ctx);
 
-            expect(mockListService.addItem).toHaveBeenCalledWith('Test List', 'New Item', expect.any(String));
+            expect(mockListService.addItem).toHaveBeenCalledWith(
+                'Test List',
+                'New Item',
+                expect.any(String),
+                undefined,
+                undefined
+            );
             expect(ctx.response.status).toBe(200);
             expect(ctx.body).toEqual(mockItem);
         });

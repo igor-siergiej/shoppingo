@@ -4,6 +4,7 @@ export interface Item {
     isSelected: boolean;
     dateAdded: Date;
     quantity?: number;
+    unit?: string;
 }
 
 export interface List {

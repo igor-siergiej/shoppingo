@@ -21,13 +21,16 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RippleButton } from '@/components/ui/ripple';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 import { usePWA } from '../../hooks/usePWA';
 import { useSearch } from '../../hooks/useSearch';
 import { SearchResults } from '../SearchResults';
 
 interface ToolBarProps {
-    handleAdd: (name: string, selectedUsers?: Array<string>) => Promise<void>;
+    // For lists page: (name, selectedUsers)
+    // For items page: (name, quantity, unit)
+    handleAdd: (name: string, quantityOrUsers?: number | Array<string>, unit?: string) => Promise<void>;
     handleGoBack?: () => void;
     handleClearSelected?: () => void;
     handleRemoveAll?: () => void;
@@ -48,6 +51,8 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
         const [newName, setNewName] = useState('');
         const [error, setError] = useState(false);
         const [selectedUsers, setSelectedUsers] = useState<Array<string>>([]);
+        const [quantity, setQuantity] = useState('');
+        const [unit, setUnit] = useState('');
         const inputRef = useRef<HTMLInputElement>(null);
         const menuCardRef = useRef<HTMLDivElement>(null);
 
@@ -124,10 +129,20 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
                 return;
             }
 
-            await handleAdd(newName.trim(), selectedUsers);
+            if (isListsPage) {
+                await handleAdd(newName.trim(), selectedUsers);
+            } else {
+                // Items page: pass quantity and unit
+                const quantityValue = quantity.trim() ? parseFloat(quantity) : undefined;
+                const unitValue = unit.trim() || undefined;
+                await handleAdd(newName.trim(), quantityValue, unitValue);
+            }
+
             setNewName('');
             setError(false);
             setSelectedUsers([]);
+            setQuantity('');
+            setUnit('');
             setIsDrawerOpen(false);
         };
 
@@ -135,6 +150,8 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
             setNewName('');
             setError(false);
             setSelectedUsers([]);
+            setQuantity('');
+            setUnit('');
             setQuery('');
             clearResults();
             setIsDrawerOpen(false);
@@ -268,6 +285,39 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
                                                         </p>
                                                     )}
                                                 </div>
+
+                                                {/* Quantity and Unit fields for items page */}
+                                                {isItemsPage && (
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        <div>
+                                                            <Label htmlFor="new-item-quantity">Quantity</Label>
+                                                            <Input
+                                                                id="new-item-quantity"
+                                                                type="number"
+                                                                value={quantity}
+                                                                onChange={(e) => setQuantity(e.target.value)}
+                                                                placeholder="e.g., 2"
+                                                                className="mt-2"
+                                                                step="0.01"
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <Label htmlFor="new-item-unit">Unit</Label>
+                                                            <Select value={unit} onValueChange={setUnit}>
+                                                                <SelectTrigger id="new-item-unit" className="mt-2">
+                                                                    <SelectValue placeholder="Select unit" />
+                                                                </SelectTrigger>
+                                                                <SelectContent>
+                                                                    <SelectItem value="pcs">pcs</SelectItem>
+                                                                    <SelectItem value="g">g</SelectItem>
+                                                                    <SelectItem value="kg">kg</SelectItem>
+                                                                    <SelectItem value="ml">ml</SelectItem>
+                                                                    <SelectItem value="L">L</SelectItem>
+                                                                </SelectContent>
+                                                            </Select>
+                                                        </div>
+                                                    </div>
+                                                )}
 
                                                 {/* Search functionality for lists page */}
                                                 {isListsPage && (

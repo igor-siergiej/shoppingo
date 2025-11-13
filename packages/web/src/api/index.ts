@@ -48,7 +48,12 @@ export const addList = async (listTitle: string, user: User, selectedUsers?: Arr
     return result;
 };
 
-export const addItem = async (itemName: string, listTitle: string): Promise<unknown> => {
+export const addItem = async (
+    itemName: string,
+    listTitle: string,
+    quantity?: number,
+    unit?: string
+): Promise<unknown> => {
     const dateAdded = generateTimestamp(new Date());
 
     const result = await makeRequest({
@@ -58,6 +63,8 @@ export const addItem = async (itemName: string, listTitle: string): Promise<unkn
         body: JSON.stringify({
             itemName,
             dateAdded,
+            ...(quantity !== undefined && { quantity }),
+            ...(unit !== undefined && { unit }),
         }),
     });
 
@@ -132,6 +139,18 @@ export const updateItemName = async (listTitle: string, itemName: string, newIte
         operationString: 'update item name',
         body: JSON.stringify({
             newItemName,
+        }),
+    });
+};
+
+export const updateItemQuantity = async (listTitle: string, itemName: string, quantity?: number, unit?: string) => {
+    return await makeRequest({
+        pathname: `/api/lists/${encodeURIComponent(listTitle)}/items/${encodeURIComponent(itemName)}`,
+        method: MethodType.POST,
+        operationString: 'update item quantity',
+        body: JSON.stringify({
+            ...(quantity !== undefined && { quantity }),
+            ...(unit !== undefined && { unit }),
         }),
     });
 };

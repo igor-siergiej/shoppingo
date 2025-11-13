@@ -3,8 +3,6 @@ node_modules
 .git
 .github
 build
-.env
-!.env.dev
 tsconfig.tsbuildinfo
 .yarn/releases/
 .pnp.*

@@ -73,12 +73,14 @@ export class ListService {
         return list;
     }
 
-    async addItem(title: string, itemName: string, dateAdded: Date) {
+    async addItem(title: string, itemName: string, dateAdded: Date, quantity?: number, unit?: string) {
         const item: Item = {
             id: this.idGenerator.generate(),
             name: itemName,
             dateAdded,
             isSelected: false,
+            ...(quantity !== undefined && { quantity }),
+            ...(unit !== undefined && { unit }),
         };
 
         await this.repo.pushItem(title, item);
@@ -131,6 +133,28 @@ export class ListService {
         await this.repo.replaceByTitle(title, list);
 
         return { message: 'Updated Successfully' };
+    }
+
+    async updateItemQuantity(title: string, itemName: string, quantity?: number, unit?: string) {
+        const list = await this.repo.getByTitle(title);
+
+        if (!list) {
+            throw Object.assign(new Error('List not found'), { status: 404 });
+        }
+
+        list.items = list.items.map((item) =>
+            item.name === itemName
+                ? {
+                      ...item,
+                      ...(quantity !== undefined && { quantity }),
+                      ...(unit !== undefined && { unit }),
+                  }
+                : item
+        );
+
+        await this.repo.replaceByTitle(title, list);
+
+        return { message: 'Quantity updated successfully' };
     }
 
     async clearSelectedItems(title: string) {
