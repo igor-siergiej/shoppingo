@@ -49,7 +49,7 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
 
         const [isDrawerOpen, setIsDrawerOpen] = useState(false);
         const [newName, setNewName] = useState('');
-        const [error, setError] = useState(false);
+        const [error, setError] = useState<string>('');
         const [selectedUsers, setSelectedUsers] = useState<Array<string>>([]);
         const [quantity, setQuantity] = useState('');
         const [unit, setUnit] = useState('');
@@ -124,31 +124,36 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
 
         const handleSubmit = async () => {
             if (validateForm()) {
-                setError(true);
+                setError('Name cannot be blank.');
 
                 return;
             }
 
-            if (isListsPage) {
-                await handleAdd(newName.trim(), selectedUsers);
-            } else {
-                // Items page: pass quantity and unit
-                const quantityValue = quantity.trim() ? parseFloat(quantity) : undefined;
-                const unitValue = unit.trim() || undefined;
-                await handleAdd(newName.trim(), quantityValue, unitValue);
-            }
+            try {
+                if (isListsPage) {
+                    await handleAdd(newName.trim(), selectedUsers);
+                } else {
+                    // Items page: pass quantity and unit
+                    const quantityValue = quantity.trim() ? parseFloat(quantity) : undefined;
+                    const unitValue = unit.trim() || undefined;
+                    await handleAdd(newName.trim(), quantityValue, unitValue);
+                }
 
-            setNewName('');
-            setError(false);
-            setSelectedUsers([]);
-            setQuantity('');
-            setUnit('');
-            setIsDrawerOpen(false);
+                setNewName('');
+                setError('');
+                setSelectedUsers([]);
+                setQuantity('');
+                setUnit('');
+                setIsDrawerOpen(false);
+            } catch (err: any) {
+                // Display error message from backend
+                setError(err?.message || 'Failed to add item. Please try again.');
+            }
         };
 
         const handleCancel = () => {
             setNewName('');
-            setError(false);
+            setError('');
             setSelectedUsers([]);
             setQuantity('');
             setUnit('');
@@ -267,7 +272,7 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
                                                         autoFocus
                                                         className={error ? 'border-destructive' : ''}
                                                         onChange={(event) => {
-                                                            setError(false);
+                                                            setError('');
                                                             setNewName(event.target.value);
                                                         }}
                                                         placeholder={placeholder}
@@ -279,11 +284,7 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
                                                             }
                                                         }}
                                                     />
-                                                    {error && (
-                                                        <p className="text-sm text-destructive">
-                                                            Name cannot be blank.
-                                                        </p>
-                                                    )}
+                                                    {error && <p className="text-sm text-destructive">{error}</p>}
                                                 </div>
 
                                                 {/* Quantity and Unit fields for items page */}

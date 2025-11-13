@@ -24,29 +24,8 @@ const ItemsPage = () => {
     const addItemMutation = useMutation({
         mutationFn: ({ itemName, quantity, unit }: { itemName: string; quantity?: number; unit?: string }) =>
             addItem(itemName, listTitle, quantity, unit),
-        onMutate: async ({ itemName, quantity, unit }) => {
-            await queryClient.cancelQueries([listTitle]);
-            const previousItems = queryClient.getQueryData<Item[]>([listTitle]);
-
-            // Optimistically add new item
-            const newItem: Item = {
-                id: `temp-${Date.now()}`, // Temporary ID for optimistic update
-                name: itemName,
-                isSelected: false,
-                dateAdded: new Date() as any, // Will be replaced by server response
-                ...(quantity !== undefined && { quantity }),
-                ...(unit !== undefined && { unit }),
-            };
-            queryClient.setQueryData<Item[]>([listTitle], (old) => (old ? [...old, newItem] : [newItem]));
-
-            return { previousItems };
-        },
-        onError: (_err, _variables, context) => {
-            if (context?.previousItems) {
-                queryClient.setQueryData([listTitle], context.previousItems);
-            }
-        },
-        onSettled: () => {
+        onSuccess: () => {
+            // Refetch after successful add
             void queryClient.invalidateQueries([listTitle]);
         },
     });
@@ -152,7 +131,15 @@ const ItemsPage = () => {
     };
 
     const handleAddItem = async (itemName: string, quantity?: number, unit?: string) => {
-        addItemMutation.mutate({ itemName, quantity, unit });
+        return new Promise((resolve, reject) => {
+            addItemMutation.mutate(
+                { itemName, quantity, unit },
+                {
+                    onSuccess: resolve,
+                    onError: reject,
+                }
+            );
+        });
     };
 
     const handleGoBack = () => {

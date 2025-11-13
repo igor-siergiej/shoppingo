@@ -254,6 +254,64 @@ describe('ListService', () => {
                 expect(result.unit).toBeUndefined();
             });
         });
+
+        describe('When adding a duplicate item', () => {
+            it('should throw an error indicating the item already exists', async () => {
+                const mockList: List = {
+                    id: 'list-1',
+                    title: 'Test List',
+                    dateAdded: new Date('2023-01-01'),
+                    items: [
+                        {
+                            id: 'item-1',
+                            name: 'Existing Item',
+                            dateAdded: new Date(),
+                            isSelected: false,
+                        },
+                    ],
+                    users: [mockUser],
+                };
+
+                await mockRepository.insert(mockList);
+
+                await expect(listService.addItem('Test List', 'Existing Item', new Date('2023-01-01'))).rejects.toThrow(
+                    'An item with that name already exists in this list'
+                );
+            });
+        });
+
+        describe('When adding a duplicate item with different case', () => {
+            it('should throw an error (case-insensitive check)', async () => {
+                const mockList: List = {
+                    id: 'list-1',
+                    title: 'Test List',
+                    dateAdded: new Date('2023-01-01'),
+                    items: [
+                        {
+                            id: 'item-1',
+                            name: 'Existing Item',
+                            dateAdded: new Date(),
+                            isSelected: false,
+                        },
+                    ],
+                    users: [mockUser],
+                };
+
+                await mockRepository.insert(mockList);
+
+                await expect(
+                    listService.addItem('Test List', 'existing item', new Date('2023-01-01'))
+                ).rejects.toThrow('An item with that name already exists in this list');
+            });
+        });
+
+        describe('When the list does not exist', () => {
+            it('should throw an error indicating the list was not found', async () => {
+                await expect(listService.addItem('Non-existent', 'Item', new Date('2023-01-01'))).rejects.toThrow(
+                    'List not found'
+                );
+            });
+        });
     });
 
     describe('Updating item names', () => {

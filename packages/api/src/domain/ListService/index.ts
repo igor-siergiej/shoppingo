@@ -74,6 +74,19 @@ export class ListService {
     }
 
     async addItem(title: string, itemName: string, dateAdded: Date, quantity?: number, unit?: string) {
+        const list = await this.repo.getByTitle(title);
+
+        if (!list) {
+            throw Object.assign(new Error('List not found'), { status: 404 });
+        }
+
+        // Check if an item with the same name already exists (case-insensitive)
+        const existingItem = list.items.find((item) => item.name.toLowerCase() === itemName.toLowerCase());
+
+        if (existingItem) {
+            throw Object.assign(new Error('An item with that name already exists in this list'), { status: 409 });
+        }
+
         const item: Item = {
             id: this.idGenerator.generate(),
             name: itemName,

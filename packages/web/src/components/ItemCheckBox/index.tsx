@@ -345,7 +345,13 @@ const ItemCheckBox = ({ item, listTitle }: ItemCheckBoxProps) => {
                 animate={controls}
                 style={{ x }}
                 className="relative z-10 bg-background rounded-lg"
-                onClick={() => {
+                onClick={(e) => {
+                    // Don't close if clicking on a button (let button handle its own click)
+                    const target = e.target as HTMLElement;
+                    if (target.closest('button')) {
+                        return;
+                    }
+
                     // Tap card when open to close it
                     if (swipeState !== 'closed') {
                         closeSwipe();

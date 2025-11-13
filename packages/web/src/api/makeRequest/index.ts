@@ -21,12 +21,24 @@ export const makeRequest = async ({ pathname, method, operationString, body, que
         if (response.ok) {
             return await response.json();
         } else {
-            console.error(`Failed to ${operationString}:`, response.status, response.statusText);
-            throw new Error(`Response was not ok ${response.status}: ${response.statusText}`);
+            // Try to parse error message from response body
+            let errorMessage = response.statusText;
+            try {
+                const errorBody = await response.json();
+                if (errorBody?.error) {
+                    errorMessage = errorBody.error;
+                }
+            } catch {
+                // If parsing fails, use status text
+            }
+
+            console.error(`Failed to ${operationString}:`, response.status, errorMessage);
+            throw new Error(errorMessage);
         }
     } catch (error: unknown) {
         if (error instanceof Error) {
-            throw new Error(`Error while trying to ${operationString}: ${error.message}`);
+            throw error;
         }
+        throw new Error(`Error while trying to ${operationString}`);
     }
 };
