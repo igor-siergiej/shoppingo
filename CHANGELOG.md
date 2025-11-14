@@ -1,3 +1,10 @@
+# [1.4.0](https://gitlab.com/imapps/shoppingo/compare/v1.3.0...v1.4.0) (2025-11-14)
+
+
+### Features
+
+* deploy new version ([c0b1d57](https://gitlab.com/imapps/shoppingo/commit/c0b1d570e38541727c83a191a5210b55a0546d0b))
+
 # [1.3.0](https://gitlab.com/imapps/shoppingo/compare/v1.2.1...v1.3.0) (2025-11-04)
 
 
