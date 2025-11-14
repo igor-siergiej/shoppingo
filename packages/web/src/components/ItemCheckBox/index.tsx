@@ -1,5 +1,5 @@
 import type { Item } from '@shoppingo/types';
-import { Edit2, ImageOff, Loader2, Minus, Plus, Trash2 } from 'lucide-react';
+import { Edit2, ImageOff, Loader2, Trash2 } from 'lucide-react';
 import { motion, useAnimation, useMotionValue } from 'motion/react';
 import { type MouseEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
@@ -537,27 +537,3 @@ const ItemCheckBox = ({ item, listTitle }: ItemCheckBoxProps) => {
 };
 
 export default ItemCheckBox;
-
-export const test = () => (
-    <div className="flex items-center w-full max-w-[130px] border rounded-md mr-0.5">
-        {/* Minus Button */}
-        <Button variant="outline" size="icon" className="h-10 w-10 shrink-0 rounded-r-none border-r-0">
-            <Minus className="h-4 w-4" />
-        </Button>
-
-        {/* Number Input (The center component) */}
-        <Input
-            type="number"
-            defaultValue={1}
-            className="h-10 w-full text-center focus-visible:ring-0 rounded-none px-0
-                   [&::-webkit-outer-spin-button]:appearance-none 
-                   [&::-webkit-inner-spin-button]:appearance-none"
-            style={{ MozAppearance: 'textfield' }}
-        />
-
-        {/* Plus Button */}
-        <Button variant="outline" size="icon" className="h-10 w-10 shrink-0 rounded-l-none border-l-0">
-            <Plus className="h-4 w-4" />
-        </Button>
-    </div>
-);
