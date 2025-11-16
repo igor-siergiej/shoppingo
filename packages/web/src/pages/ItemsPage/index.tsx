@@ -20,7 +20,6 @@ const ItemsPage = () => {
         ...getListQuery(listTitle),
     });
 
-    // Mutation for adding items
     const addItemMutation = useMutation({
         mutationFn: ({ itemName, quantity, unit }: { itemName: string; quantity?: number; unit?: string }) =>
             addItem(itemName, listTitle, quantity, unit),
