@@ -1,3 +1,13 @@
+# [1.5.0](https://gitlab.com/imapps/shoppingo/compare/v1.4.0...v1.5.0) (2025-11-17)
+
+
+### Features
+
+* add commitlint for conventional commits ([eb14c67](https://gitlab.com/imapps/shoppingo/commit/eb14c677885fbdf6ef0195690f3442edd5e6ab77))
+* fix commit lint linting lol ([fd644c4](https://gitlab.com/imapps/shoppingo/commit/fd644c468254280ea48fa26270ac1f03e93fc577))
+* get commit hook working ([771176a](https://gitlab.com/imapps/shoppingo/commit/771176a09d41326443f74664e2c7ad5cc5bce485))
+* new version ([feaea12](https://gitlab.com/imapps/shoppingo/commit/feaea1261a5cf0fb53d5aae32de4810c81fb298f))
+
 # [1.4.0](https://gitlab.com/imapps/shoppingo/compare/v1.3.0...v1.4.0) (2025-11-14)
 
 
