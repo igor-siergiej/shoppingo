@@ -12,6 +12,8 @@ variables:
   # Additional variables to ensure TLS is disabled
   DOCKER_CERT_PATH: ""
   DOCKER_TLS_CA_CERT: ""
+  # Use cluster-internal registry DNS name
+  REGISTRY_URL: "registry.registry.svc.cluster.local:5000"
 
 # CI job - extends the reusable template
 ci:
