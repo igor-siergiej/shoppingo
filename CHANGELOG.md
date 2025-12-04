@@ -1,3 +1,10 @@
+# [1.6.0](https://gitlab.com/imapps/shoppingo/compare/v1.5.0...v1.6.0) (2025-12-04)
+
+
+### Features
+
+* move the add button to the middle ([71e1170](https://gitlab.com/imapps/shoppingo/commit/71e1170796649f21d6d465eb353dc1732e343922))
+
 # [1.5.0](https://gitlab.com/imapps/shoppingo/compare/v1.4.0...v1.5.0) (2025-11-17)
 
 
