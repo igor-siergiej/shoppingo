@@ -43,6 +43,8 @@ build-web:
   variables:
     APP_NAME: "shoppingo-web"
     DOCKERFILE_PATH: "packages/web/Dockerfile"
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
   rules:
     - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_REF_NAME == "main"
     - if: $CI_PIPELINE_SOURCE == "web"
@@ -55,6 +57,8 @@ build-api:
   variables:
     APP_NAME: "shoppingo-api"
     DOCKERFILE_PATH: "packages/api/Dockerfile"
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
   rules:
     - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_REF_NAME == "main"
     - if: $CI_PIPELINE_SOURCE == "web"
@@ -67,6 +71,8 @@ publish-web:
   variables:
     APP_NAME: "shoppingo-web"
     DOCKERFILE_PATH: "packages/web/Dockerfile"
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
   rules:
     - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_REF_NAME == "main"
     - if: $CI_PIPELINE_SOURCE == "web"
@@ -80,6 +86,8 @@ publish-api:
   variables:
     APP_NAME: "shoppingo-api"
     DOCKERFILE_PATH: "packages/api/Dockerfile"
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
   rules:
     - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_REF_NAME == "main"
     - if: $CI_PIPELINE_SOURCE == "web"
