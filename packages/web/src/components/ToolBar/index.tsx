@@ -241,15 +241,47 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
                                     ) : null}
                                 </AnimatePresence>
                             </div>
-                            <CardContent className="flex items-center justify-between" ref={menuRef}>
-                                {/* Add Button - Always on the left */}
+                            <CardContent className={`flex items-center justify-between`} ref={menuRef}>
+                                {(isItemsPage || location.pathname !== '/') && (
+                                    <RippleButton
+                                        size="icon"
+                                        variant="ghost"
+                                        className="h-12 w-12 rounded-full transition-colors"
+                                        rippleClassName="bg-gray-500/30"
+                                        title={isItemsPage && handleGoBack ? 'Go back' : 'Go home'}
+                                        onClick={() => {
+                                            if (isItemsPage && handleGoBack) {
+                                                handleGoBack();
+                                            } else {
+                                                navigate('/');
+                                            }
+                                        }}
+                                    >
+                                        <ArrowLeft className="size-5" />
+                                    </RippleButton>
+                                )}
+
+                                {/* Clear Selected Button - Separate button */}
+                                {handleClearSelected && (
+                                    <RippleButton
+                                        size="icon"
+                                        variant="ghost"
+                                        className="h-12 w-12 rounded-full transition-colors"
+                                        rippleClassName="bg-gray-500/30"
+                                        title="Clear selected items"
+                                        onClick={handleClearSelected}
+                                    >
+                                        <CheckCheck className="size-5" />
+                                    </RippleButton>
+                                )}
+
                                 <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
                                     <DrawerTrigger asChild>
                                         <RippleButton
                                             size="icon"
                                             className="h-12 w-12 rounded-full border-2 border-primary/20 hover:border-primary/40 transition-colors"
                                         >
-                                            <Plus className="h-5 w-5" />
+                                            <Plus className="size-5" />
                                         </RippleButton>
                                     </DrawerTrigger>
                                     <DrawerContent>
@@ -391,39 +423,6 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
                                     </DrawerContent>
                                 </Drawer>
 
-                                {(isItemsPage || location.pathname !== '/') && (
-                                    <RippleButton
-                                        size="icon"
-                                        variant="ghost"
-                                        className="h-12 w-12 rounded-full transition-colors"
-                                        rippleClassName="bg-gray-500/30"
-                                        title={isItemsPage && handleGoBack ? 'Go back' : 'Go home'}
-                                        onClick={() => {
-                                            if (isItemsPage && handleGoBack) {
-                                                handleGoBack();
-                                            } else {
-                                                navigate('/');
-                                            }
-                                        }}
-                                    >
-                                        <ArrowLeft className="h-5 w-5" />
-                                    </RippleButton>
-                                )}
-
-                                {/* Clear Selected Button - Separate button */}
-                                {handleClearSelected && (
-                                    <RippleButton
-                                        size="icon"
-                                        variant="ghost"
-                                        className="h-12 w-12 rounded-full transition-colors"
-                                        rippleClassName="bg-gray-500/30"
-                                        title="Clear selected items"
-                                        onClick={handleClearSelected}
-                                    >
-                                        <CheckCheck className="h-5 w-5" />
-                                    </RippleButton>
-                                )}
-
                                 {/* Delete All Button - Separate button */}
                                 {handleRemoveAll && (
                                     <RippleButton
@@ -434,7 +433,7 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
                                         title="Delete all items"
                                         onClick={handleRemoveAll}
                                     >
-                                        <Trash2 className="h-5 w-5" />
+                                        <Trash2 className="size-5" />
                                     </RippleButton>
                                 )}
 
@@ -457,7 +456,7 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
                                         setMenuActive(1);
                                     }}
                                 >
-                                    <Menu className="h-5 w-5" />
+                                    <Menu className="size-5" />
                                 </RippleButton>
                             </CardContent>
                         </Card>
