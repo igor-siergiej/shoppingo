@@ -3,8 +3,16 @@ include:
   - project: 'imapps/utils'
     file: 'templates.yml'
 
+# Docker-in-Docker service for building images
+services:
+  - docker:27-dind
+
 variables:
   PROJECT_NAME: "shoppingo"
+  DOCKER_HOST: tcp://docker:2376
+  DOCKER_TLS_CERTDIR: "/certs"
+  DOCKER_TLS_VERIFY: 1
+  DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
 
 # CI job - extends the reusable template
 ci:
