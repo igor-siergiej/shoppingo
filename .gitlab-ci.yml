@@ -40,6 +40,8 @@ version-release:
 # Build shoppingo-web Docker image (test build with SHA tag)
 build-web:
   extends: .docker-build-template
+  before_script:
+    - until docker info; do sleep 1; done
   variables:
     APP_NAME: "shoppingo-web"
     DOCKERFILE_PATH: "packages/web/Dockerfile"
@@ -56,6 +58,8 @@ build-web:
 # Build shoppingo-api Docker image (test build with SHA tag)
 build-api:
   extends: .docker-build-template
+  before_script:
+    - until docker info; do sleep 1; done
   variables:
     APP_NAME: "shoppingo-api"
     DOCKERFILE_PATH: "packages/api/Dockerfile"
