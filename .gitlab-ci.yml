@@ -10,9 +10,13 @@ services:
 
 variables:
   PROJECT_NAME: "shoppingo"
-  # Use non-TLS connection to DinD service
+  # Disable TLS for Docker-in-Docker
   DOCKER_HOST: tcp://docker:2375
   DOCKER_TLS_CERTDIR: ""
+  DOCKER_TLS_VERIFY: ""
+  # Additional variables to ensure TLS is disabled
+  DOCKER_CERT_PATH: ""
+  DOCKER_TLS_CA_CERT: ""
 
 # CI job - extends the reusable template
 ci:
