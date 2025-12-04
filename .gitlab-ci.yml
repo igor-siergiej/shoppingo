@@ -5,14 +5,14 @@ include:
 
 # Docker-in-Docker service for building images
 services:
-  - docker:27-dind
+  - name: docker:27-dind
+    command: ["--tls=false"]
 
 variables:
   PROJECT_NAME: "shoppingo"
-  DOCKER_HOST: tcp://docker:2376
-  DOCKER_TLS_CERTDIR: "/certs"
-  DOCKER_TLS_VERIFY: 1
-  DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
+  # Use non-TLS connection to DinD service
+  DOCKER_HOST: tcp://docker:2375
+  DOCKER_TLS_CERTDIR: ""
 
 # CI job - extends the reusable template
 ci:
