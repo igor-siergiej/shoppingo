@@ -3,11 +3,6 @@ include:
   - project: 'imapps/utils'
     file: 'templates.yml'
 
-# Docker-in-Docker service for building images
-services:
-  - name: docker:27-dind
-    command: ["--tls=false"]
-
 variables:
   PROJECT_NAME: "shoppingo"
   # Disable TLS for Docker-in-Docker
