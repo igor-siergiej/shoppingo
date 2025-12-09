@@ -1,3 +1,10 @@
+# [1.7.0](https://gitlab.com/imapps/shoppingo/compare/v1.6.0...v1.7.0) (2025-12-09)
+
+
+### Features
+
+* migrate CI/CD pipeline to Helm chart GitOps templates ([02ae5b5](https://gitlab.com/imapps/shoppingo/commit/02ae5b5fe7f44069cf1452984885e6ee42633419))
+
 # [1.6.0](https://gitlab.com/imapps/shoppingo/compare/v1.5.0...v1.6.0) (2025-12-04)
 
 
