@@ -17,6 +17,13 @@ const mockImageService = {
     getImage: ReturnType<typeof vi.fn>;
 };
 
+const mockLogger = {
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
+    debug: vi.fn(),
+};
+
 const createMockContext = (overrides: Partial<Context> = {}): Context =>
     ({
         params: {},
@@ -33,7 +40,11 @@ const createMockContext = (overrides: Partial<Context> = {}): Context =>
 describe('ImageHandlers', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        mockDependencyContainer.resolve.mockReturnValue(mockImageService);
+        mockDependencyContainer.resolve.mockImplementation((token: string) => {
+            if (token === 'ImageService') return mockImageService;
+            if (token === 'Logger') return mockLogger;
+            return null;
+        });
     });
 
     describe('getImage', () => {

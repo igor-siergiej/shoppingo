@@ -14,8 +14,10 @@ const mockImageGenerator = {
 };
 
 const mockLogger = {
+    info: vi.fn(),
     warn: vi.fn(),
     error: vi.fn(),
+    debug: vi.fn(),
 } as unknown as Logger;
 
 describe('ImageService', () => {
@@ -99,8 +101,8 @@ describe('ImageService', () => {
                 const result = await imageService.getImage('test-item');
 
                 expect(mockLogger.error).toHaveBeenCalledWith('Failed to store generated image', {
-                    name: 'test-item',
-                    error: new Error('Upload failed'),
+                    itemName: 'test-item',
+                    error: expect.any(Error),
                 });
                 expect(result.contentType).toBe('image/webp');
             });

@@ -26,6 +26,13 @@ const mockListService = {
     addItem: vi.fn(),
 };
 
+const mockLogger = {
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
+    debug: vi.fn(),
+};
+
 const createMockContext = (overrides: Partial<Context> = {}): Context => {
     const ctx = {
         params: {},
@@ -62,7 +69,11 @@ const createMockContext = (overrides: Partial<Context> = {}): Context => {
 describe('ListHandlers', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        mockDependencyContainer.resolve.mockReturnValue(mockListService);
+        mockDependencyContainer.resolve.mockImplementation((token: string) => {
+            if (token === 'ListService') return mockListService;
+            if (token === 'Logger') return mockLogger;
+            return null;
+        });
     });
 
     describe('getList', () => {
