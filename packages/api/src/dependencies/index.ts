@@ -38,7 +38,8 @@ export const registerDepdendencies = () => {
                 return new ListService(
                     dependencyContainer.resolve(DependencyToken.ListRepository),
                     dependencyContainer.resolve(DependencyToken.IdGenerator),
-                    dependencyContainer.resolve(DependencyToken.AuthClient)
+                    dependencyContainer.resolve(DependencyToken.AuthClient),
+                    dependencyContainer.resolve(DependencyToken.Logger)
                 );
             }
         } as any

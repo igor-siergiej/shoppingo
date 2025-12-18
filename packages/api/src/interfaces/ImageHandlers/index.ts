@@ -5,12 +5,19 @@ import { DependencyToken } from '../../dependencies/types';
 import type { ImageService } from '../../domain/ImageService';
 
 const getImageService = (): ImageService => dependencyContainer.resolve(DependencyToken.ImageService);
+const getLogger = () => dependencyContainer.resolve(DependencyToken.Logger);
 
 export const getImage = async (ctx: Context) => {
     const { name } = ctx.params as { name: string };
+    const logger = getLogger();
 
     try {
         const { stream, contentType, cacheControl } = await getImageService().getImage(name);
+
+        logger.info('API: Image retrieved', {
+            itemName: name,
+            contentType,
+        });
 
         ctx.set('Content-Type', contentType);
         ctx.set('Cache-Control', cacheControl);
@@ -24,6 +31,10 @@ export const getImage = async (ctx: Context) => {
     } catch (error: unknown) {
         const err = error as { status?: number; message?: string };
 
+        logger.error('API: Failed to retrieve image', {
+            itemName: name,
+            error: err.message,
+        });
         ctx.status = err.status ?? 500;
         ctx.body = { error: err.message ?? 'Internal Server Error' };
     }

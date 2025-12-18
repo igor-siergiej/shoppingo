@@ -14,48 +14,68 @@ export class ImageService {
         contentType: string;
         cacheControl: string;
     }> {
-        if (!name) {
-            throw Object.assign(new Error('Image name is required'), { status: 400 });
-        }
-
-        const normalisedName = name.trim().toLowerCase();
-
-        // Try to fetch from store first
         try {
-            const head = await this.store.getHeadObject(normalisedName);
-            const contentType = head?.metaData?.['content-type'] ?? 'image/webp';
-            const stream = await this.store.getObjectStream(normalisedName);
+            if (!name) {
+                throw Object.assign(new Error('Image name is required'), { status: 400 });
+            }
+
+            const normalisedName = name.trim().toLowerCase();
+
+            // Try to fetch from store first
+            try {
+                const head = await this.store.getHeadObject(normalisedName);
+                const contentType = head?.metaData?.['content-type'] ?? 'image/webp';
+                const stream = await this.store.getObjectStream(normalisedName);
+
+                this.logger?.info('Image retrieved from cache', {
+                    itemName: normalisedName,
+                    contentType,
+                    source: 'cache',
+                });
+
+                return {
+                    stream,
+                    contentType,
+                    cacheControl: 'public, max-age=31536000, immutable',
+                };
+            } catch {
+                this.logger?.warn('Image not found in store, falling back to generator', {
+                    itemName: normalisedName,
+                });
+            }
+
+            // Generate new image
+            const prompt = this.generatePrompt(normalisedName);
+            const { buffer, contentType } = await this.generator.generateImage(prompt);
+
+            this.logger?.info('Image generated using AI', {
+                itemName: normalisedName,
+                contentType,
+                source: 'gemini',
+            });
+
+            // Store the generated image (fire and forget)
+            try {
+                await this.store.putObject(normalisedName, buffer, { contentType });
+            } catch (uploadErr) {
+                this.logger?.error('Failed to store generated image', {
+                    itemName: normalisedName,
+                    error: uploadErr,
+                });
+            }
 
             return {
-                stream,
+                stream: this.bufferToStream(buffer),
                 contentType,
                 cacheControl: 'public, max-age=31536000, immutable',
             };
-        } catch {
-            this.logger?.warn('Image not found in store, falling back to generator', {
-                name: normalisedName,
+        } catch (error) {
+            this.logger?.error('Failed to get image', {
+                itemName: name,
+                error,
             });
+            throw error;
         }
-
-        // Generate new image
-        const prompt = this.generatePrompt(normalisedName);
-        const { buffer, contentType } = await this.generator.generateImage(prompt);
-
-        // Store the generated image (fire and forget)
-        try {
-            await this.store.putObject(normalisedName, buffer, { contentType });
-        } catch (uploadErr) {
-            this.logger?.error('Failed to store generated image', {
-                name: normalisedName,
-                error: uploadErr,
-            });
-        }
-
-        return {
-            stream: this.bufferToStream(buffer),
-            contentType,
-            cacheControl: 'public, max-age=31536000, immutable',
-        };
     }
 
     private generatePrompt(name: string): string {
