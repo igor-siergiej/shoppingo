@@ -1,3 +1,10 @@
+# [1.8.0](https://gitlab.com/imapps/shoppingo/compare/v1.7.0...v1.8.0) (2025-12-18)
+
+
+### Features
+
+* add comprehensive audit logging to shoppingo API ([77763b3](https://gitlab.com/imapps/shoppingo/commit/77763b36dd9bd8f02571ef632057b6db33237878))
+
 # [1.7.0](https://gitlab.com/imapps/shoppingo/compare/v1.6.0...v1.7.0) (2025-12-09)
 
 
