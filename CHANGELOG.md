@@ -1,3 +1,10 @@
+## [1.8.1](https://gitlab.com/imapps/shoppingo/compare/v1.8.0...v1.8.1) (2025-12-18)
+
+
+### Bug Fixes
+
+* **ci:** update helm values paths for proper image tag configuration ([0d1e251](https://gitlab.com/imapps/shoppingo/commit/0d1e2515c0b835eed1b82be322b685c767039b86))
+
 # [1.8.0](https://gitlab.com/imapps/shoppingo/compare/v1.7.0...v1.8.0) (2025-12-18)
 
 
