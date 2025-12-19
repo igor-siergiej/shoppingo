@@ -1,15 +1,15 @@
 import { useUser } from '@imapps/web-utils';
 import { AlertTriangle, ListPlus, Users } from 'lucide-react';
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useQuery } from 'react-query';
 
 import { Button } from '@/components/ui/button';
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
-
 import { addList, getListsQuery } from '../../api';
 import ListsList from '../../components/ListsList';
 import { ListsSkeleton } from '../../components/LoadingSkeleton';
 import ToolBar, { type ToolBarRef } from '../../components/ToolBar';
+import { logger } from '../../utils/logger';
 
 const ListsPage = () => {
     const { user } = useUser();
@@ -19,7 +19,14 @@ const ListsPage = () => {
         enabled: !!user?.id,
     });
 
+    useEffect(() => {
+        if (user?.id) {
+            logger.info('Lists page loaded', { userId: user.id, username: user.username });
+        }
+    }, [user?.id, user?.username]);
+
     if (!user?.id) {
+        logger.warn('Lists page accessed without user');
         return <div>User not available</div>;
     }
 
@@ -76,16 +83,20 @@ const ListsPage = () => {
 
     const handleAddList = async (listTitle: string, selectedUsers?: Array<string>) => {
         if (!user) {
-            console.error('No user logged in');
+            logger.warn('Attempted to add list without user');
 
             return;
         }
 
+        logger.info('Creating list', { listTitle, sharedWith: selectedUsers?.length || 0 });
+
         try {
             await addList(listTitle, user, selectedUsers);
+            logger.info('List created successfully', { listTitle, sharedWith: selectedUsers?.length || 0 });
             await refetch();
         } catch (error) {
-            console.error('Error adding list:', error);
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            logger.error('Failed to create list', { listTitle, error: errorMessage });
         }
     };
 

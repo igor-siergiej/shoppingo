@@ -1,6 +1,6 @@
 import type { Item } from '@shoppingo/types';
 import { AlertTriangle, ShoppingCart } from 'lucide-react';
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,7 @@ import { addItem, clearList, clearSelected, getListQuery } from '../../api';
 import ItemCheckBoxList from '../../components/ItemCheckBoxList';
 import { ItemsSkeleton } from '../../components/LoadingSkeleton';
 import ToolBar, { type ToolBarRef } from '../../components/ToolBar';
+import { logger } from '../../utils/logger';
 
 const ItemsPage = () => {
     const { listTitle } = useParams();
@@ -20,12 +21,28 @@ const ItemsPage = () => {
         ...getListQuery(listTitle),
     });
 
+    useEffect(() => {
+        if (listTitle) {
+            logger.info('Items page loaded', { listTitle, itemCount: data?.length || 0 });
+        }
+    }, [listTitle, data?.length]);
+
     const addItemMutation = useMutation({
         mutationFn: ({ itemName, quantity, unit }: { itemName: string; quantity?: number; unit?: string }) =>
             addItem(itemName, listTitle, quantity, unit),
-        onSuccess: () => {
+        onSuccess: (_, variables) => {
+            logger.info('Item added', {
+                listTitle,
+                itemName: variables.itemName,
+                quantity: variables.quantity,
+                unit: variables.unit,
+            });
             // Refetch after successful add
             void queryClient.invalidateQueries([listTitle]);
+        },
+        onError: (error, variables) => {
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            logger.error('Failed to add item', { listTitle, itemName: variables.itemName, error: errorMessage });
         },
     });
 
@@ -35,6 +52,9 @@ const ItemsPage = () => {
         onMutate: async () => {
             await queryClient.cancelQueries([listTitle]);
             const previousItems = queryClient.getQueryData<Item[]>([listTitle]);
+            const selectedCount = previousItems?.filter((i) => i.isSelected).length || 0;
+
+            logger.info('Clearing selected items', { listTitle, count: selectedCount });
 
             // Optimistically remove selected items
             queryClient.setQueryData<Item[]>([listTitle], (old) => (old ? old.filter((i) => !i.isSelected) : []));
@@ -42,6 +62,7 @@ const ItemsPage = () => {
             return { previousItems };
         },
         onError: (_err, _variables, context) => {
+            logger.warn('Failed to clear selected items', { listTitle });
             if (context?.previousItems) {
                 queryClient.setQueryData([listTitle], context.previousItems);
             }
@@ -57,6 +78,9 @@ const ItemsPage = () => {
         onMutate: async () => {
             await queryClient.cancelQueries([listTitle]);
             const previousItems = queryClient.getQueryData<Item[]>([listTitle]);
+            const itemCount = previousItems?.length || 0;
+
+            logger.info('Clearing all items', { listTitle, count: itemCount });
 
             // Optimistically clear all items
             queryClient.setQueryData<Item[]>([listTitle], []);
@@ -64,6 +88,7 @@ const ItemsPage = () => {
             return { previousItems };
         },
         onError: (_err, _variables, context) => {
+            logger.warn('Failed to clear all items', { listTitle });
             if (context?.previousItems) {
                 queryClient.setQueryData([listTitle], context.previousItems);
             }

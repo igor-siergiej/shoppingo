@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 
+import { logger } from '../../utils/logger';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Input } from '../ui/input';
@@ -41,6 +42,7 @@ export const LoginForm: React.FC = () => {
     });
 
     const onSubmit = async (data: LoginFormData) => {
+        logger.info('Login attempt', { username: data.username });
         try {
             const response = await fetch(`${config.authUrl}/login`, {
                 method: 'POST',
@@ -66,12 +68,15 @@ export const LoginForm: React.FC = () => {
 
             login(responseData.token || responseData.accessToken);
 
+            logger.info('Login successful', { username: data.username });
+
             const from = location.state?.from?.pathname || '/';
 
             navigate(from, { replace: true });
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Login failed';
 
+            logger.warn('Login failed', { username: data.username, error: errorMessage });
             setError('root', { message: errorMessage });
         }
     };

@@ -1,8 +1,8 @@
 import { useAuth, useAuthConfig } from '@imapps/web-utils';
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-
 import { cn } from '@/lib/utils';
+import { logger } from '../../utils/logger';
 
 import { Button } from '../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
@@ -28,17 +28,21 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<'div'
 
         if (password !== repeatPassword) {
             setValidationError('Passwords do not match');
+            logger.warn('Registration validation failed', { reason: 'passwords do not match', username });
 
             return;
         }
 
         if (password.length < 6) {
             setValidationError('Password must be at least 6 characters long');
+            logger.warn('Registration validation failed', { reason: 'password too short', username });
 
             return;
         }
 
         setIsLoading(true);
+
+        logger.info('Registration attempt', { username });
 
         try {
             const response = await fetch(`${config.authUrl}/register`, {
@@ -60,6 +64,8 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<'div'
 
             login(data.accessToken);
 
+            logger.info('Registration successful', { username });
+
             // Redirect to the page they were trying to access, or home
             const from = location.state?.from?.pathname || '/';
 
@@ -67,6 +73,7 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<'div'
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Registration failed';
 
+            logger.warn('Registration failed', { username, error: errorMessage });
             setError(errorMessage);
         } finally {
             setIsLoading(false);

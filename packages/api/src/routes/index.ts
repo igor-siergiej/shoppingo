@@ -2,6 +2,7 @@ import Router from 'koa-router';
 
 import { getImage } from '../interfaces/ImageHandlers';
 import * as listHandlers from '../interfaces/ListHandlers';
+import { receiveLogs } from '../interfaces/LogHandlers';
 
 const router = new Router();
 
@@ -13,6 +14,9 @@ router.get('/api/health', async (ctx) => {
         timestamp: new Date().toISOString(),
     };
 });
+
+// Frontend logging endpoint
+router.post('/api/logs', receiveLogs);
 
 router.get('/api/lists/title/:title', listHandlers.getList);
 router.get('/api/lists/user/:userId', listHandlers.getLists);
