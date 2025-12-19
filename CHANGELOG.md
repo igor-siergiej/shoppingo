@@ -1,3 +1,10 @@
+# [1.9.0](https://gitlab.com/imapps/shoppingo/compare/v1.8.1...v1.9.0) (2025-12-19)
+
+
+### Features
+
+* add frontend and backend logging pipeline to Loki ([e9aabc4](https://gitlab.com/imapps/shoppingo/commit/e9aabc447637298269a6534b169d71c754b86c5e))
+
 ## [1.8.1](https://gitlab.com/imapps/shoppingo/compare/v1.8.0...v1.8.1) (2025-12-18)
 
 
