@@ -1,3 +1,10 @@
+## [1.9.1](https://gitlab.com/imapps/shoppingo/compare/v1.9.0...v1.9.1) (2025-12-29)
+
+
+### Bug Fixes
+
+* add .env to .gitignore to prevent credential leaks ([babab97](https://gitlab.com/imapps/shoppingo/commit/babab97fdae5d5d6aa6f0393e195de94cc52b04e))
+
 # [1.9.0](https://gitlab.com/imapps/shoppingo/compare/v1.8.1...v1.9.0) (2025-12-19)
 
 
