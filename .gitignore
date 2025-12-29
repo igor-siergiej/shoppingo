@@ -10,4 +10,9 @@ tsconfig.tsbuildinfo
 dev-dist
 coverage/
 
+# SECURITY: Never commit environment files with credentials
+.env
+.env.local
+.env.*.local
+
 
