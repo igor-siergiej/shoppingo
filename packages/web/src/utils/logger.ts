@@ -3,6 +3,8 @@
  * Logs are then collected by Promtail and sent to Loki
  */
 
+import { getStorageItem } from '@imapps/web-utils';
+
 interface LogEntry {
     level: 'debug' | 'info' | 'warn' | 'error';
     message: string;
@@ -18,6 +20,20 @@ class FrontendLogger {
     private batchTimeout = 5000; // 5 seconds
     private batchTimer: NodeJS.Timeout | null = null;
     private apiUrl = '/api/logs';
+
+    private getAuthHeaders(): Record<string, string> {
+        const headers: Record<string, string> = {
+            'Content-Type': 'application/json',
+        };
+
+        // Get access token from localStorage if available
+        const accessToken = getStorageItem('accessToken', 'localStorage');
+        if (accessToken) {
+            headers.Authorization = `Bearer ${accessToken}`;
+        }
+
+        return headers;
+    }
 
     private createLogEntry(level: LogEntry['level'], message: string, context?: Record<string, unknown>): LogEntry {
         return {
@@ -42,12 +58,12 @@ class FrontendLogger {
             this.batchTimer = null;
         }
 
-        // Send logs to backend
+        // Send logs to backend with authentication
         for (const log of logsToSend) {
             try {
                 await fetch(this.apiUrl, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: this.getAuthHeaders(),
                     body: JSON.stringify(log),
                     // Don't wait for response, fire and forget
                 }).catch((err) => {
@@ -106,12 +122,28 @@ class FrontendLogger {
      * Flush remaining logs before page unload
      */
     async flushBeforeUnload() {
-        // Use sendBeacon for unload events (more reliable)
-        if (this.queue.length > 0 && navigator.sendBeacon) {
-            for (const log of this.queue) {
-                navigator.sendBeacon(this.apiUrl, JSON.stringify(log));
+        if (this.queue.length === 0) return;
+
+        const logsToSend = [...this.queue];
+        this.queue = [];
+
+        // Use fetch with keepalive flag for unload events (supports Authorization header)
+        for (const log of logsToSend) {
+            try {
+                // keepalive ensures request completes even if page unloads
+                fetch(this.apiUrl, {
+                    method: 'POST',
+                    headers: this.getAuthHeaders(),
+                    body: JSON.stringify(log),
+                    keepalive: true,
+                }).catch((err) => {
+                    // Silently fail for unload - page is closing
+                    console.error('Failed to send log on unload:', err);
+                });
+            } catch (err) {
+                // Fallback: silently fail if something goes wrong
+                console.error('Logger unload error:', err);
             }
-            this.queue = [];
         }
     }
 }
