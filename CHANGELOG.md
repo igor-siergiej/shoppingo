@@ -1,3 +1,10 @@
+# [1.10.0](https://gitlab.com/imapps/shoppingo/compare/v1.9.1...v1.10.0) (2026-01-01)
+
+
+### Features
+
+* implement end-to-end JWT authentication with Kivo integration ([daa50ee](https://gitlab.com/imapps/shoppingo/commit/daa50eedbc673c476b523b92d17813a92043910c))
+
 ## [1.9.1](https://gitlab.com/imapps/shoppingo/compare/v1.9.0...v1.9.1) (2025-12-29)
 
 
