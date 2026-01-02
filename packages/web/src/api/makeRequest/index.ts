@@ -1,5 +1,6 @@
 import { getStorageItem, setStorageItem, tryRefreshToken } from '@imapps/web-utils';
 import { getAuthConfig } from '../../config/auth';
+import { logger } from '../../utils/logger';
 import type { MakeRequestProps } from '../types';
 
 export const makeRequest = async ({ pathname, method, operationString, body, queryParams }: MakeRequestProps) => {
@@ -42,8 +43,7 @@ export const makeRequest = async ({ pathname, method, operationString, body, que
 
         // Handle 401 - token may be expired, try to refresh
         if (response.status === 401 && accessToken) {
-            console.log('Token expired, attempting refresh...');
-
+            logger.info('Token expired, attempting to refresh');
             const newToken = await tryRefreshToken(authConfig);
 
             if (newToken) {
@@ -54,13 +54,12 @@ export const makeRequest = async ({ pathname, method, operationString, body, que
                     authConfig.storageType || 'localStorage'
                 );
 
-                console.log('Token refreshed successfully, retrying request...');
-
+                logger.info('Token refreshed successfully, retrying request');
                 // Retry the original request with new token
                 response = await executeRequest(newToken);
             } else {
                 // Token refresh failed, redirect to login
-                console.error('Token refresh failed, redirecting to login...');
+                logger.warn('Token refresh failed, redirecting to login');
                 window.location.href = '/login';
                 throw new Error('Session expired. Please log in again.');
             }
@@ -80,13 +79,22 @@ export const makeRequest = async ({ pathname, method, operationString, body, que
                 // If parsing fails, use status text
             }
 
-            console.error(`Failed to ${operationString}:`, response.status, errorMessage);
+            logger.warn(`Request failed for ${operationString}`, {
+                status: response.status,
+                statusText: response.statusText,
+            });
             throw new Error(errorMessage);
         }
     } catch (error: unknown) {
         if (error instanceof Error) {
+            logger.error(`Error while trying to ${operationString}`, {
+                error: error.message,
+            });
             throw error;
         }
+        logger.error(`Error while trying to ${operationString}`, {
+            error: 'Unknown error',
+        });
         throw new Error(`Error while trying to ${operationString}`);
     }
 };

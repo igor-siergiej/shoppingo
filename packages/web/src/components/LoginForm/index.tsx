@@ -62,7 +62,7 @@ export const LoginForm: React.FC = () => {
             const responseData = await response.json();
 
             if (!responseData.token && !responseData.accessToken) {
-                console.error('No token found in response:', responseData);
+                logger.error('No token found in response from login endpoint');
                 throw new Error('Login successful but no token received');
             }
 
