@@ -16,8 +16,8 @@ router.get('/api/health', async (ctx) => {
     };
 });
 
-// Protected endpoints - all require valid JWT token
-router.post('/api/logs', authenticate, receiveLogs);
+// Logs endpoint - public to allow logging even when unauthenticated (e.g., during failed login)
+router.post('/api/logs', receiveLogs);
 
 router.get('/api/lists/title/:title', authenticate, listHandlers.getList);
 router.get('/api/lists/user/:userId', authenticate, listHandlers.getLists);

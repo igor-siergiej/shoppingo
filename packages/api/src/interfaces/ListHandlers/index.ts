@@ -7,11 +7,39 @@ import type { ListService } from '../../domain/ListService';
 const getListService = (): ListService => dependencyContainer.resolve(DependencyToken.ListService);
 const getLogger = () => dependencyContainer.resolve(DependencyToken.Logger);
 
+// Helper function to verify user has access to a list
+const verifyListAccess = async (
+    title: string,
+    authenticatedUser: { id: string; username: string },
+    _ctx: Context
+): Promise<boolean> => {
+    try {
+        const list = await getListService().getList(title);
+        // Check if authenticated user is in the list's users array
+        return list.users?.some((u: { id: string; username: string }) => u.id === authenticatedUser.id);
+    } catch {
+        return false;
+    }
+};
+
 export const getList = async (ctx: Context) => {
     const { title } = ctx.params as { title: string };
     const logger = getLogger();
+    const authenticatedUser = ctx.state.user as { id: string; username: string };
 
     try {
+        // Verify user has access to this list
+        const hasAccess = await verifyListAccess(title, authenticatedUser, ctx);
+        if (!hasAccess) {
+            logger.warn('Unauthorized list access attempt', {
+                authenticatedUserId: authenticatedUser.id,
+                listTitle: title,
+            });
+            ctx.status = 403;
+            ctx.body = { error: 'Forbidden' };
+            return;
+        }
+
         const items = await getListService().getListItems(title);
 
         logger.info('API: List items retrieved', { listTitle: title, itemCount: items.length });
@@ -31,6 +59,18 @@ export const getList = async (ctx: Context) => {
 export const getLists = async (ctx: Context) => {
     const { userId } = ctx.params as { userId: string };
     const logger = getLogger();
+    const authenticatedUser = ctx.state.user as { id: string; username: string };
+
+    // Verify user is only accessing their own lists
+    if (userId !== authenticatedUser.id) {
+        logger.warn('Unauthorized list access attempt', {
+            authenticatedUserId: authenticatedUser.id,
+            requestedUserId: userId,
+        });
+        ctx.status = 403;
+        ctx.body = { error: 'Forbidden' };
+        return;
+    }
 
     try {
         const lists = await getListService().getListsForUser(userId);
@@ -49,21 +89,28 @@ export const getLists = async (ctx: Context) => {
 };
 
 export const addList = async (ctx: Context) => {
-    const { title, dateAdded, user, selectedUsers } = ctx.request.body as {
+    const { title, dateAdded, selectedUsers } = ctx.request.body as {
         title: string;
         dateAdded: Date;
-        user: unknown;
         selectedUsers?: Array<string>;
     };
     const logger = getLogger();
-    const userObj = user as any;
+    // Use authenticated user from context, not from request body
+    const authenticatedUser = ctx.state.user as { id: string; username: string };
+
+    // Minimal input validation
+    if (!title || typeof title !== 'string' || title.trim() === '') {
+        ctx.status = 400;
+        ctx.body = { error: 'Title is required and must be a non-empty string' };
+        return;
+    }
 
     try {
-        const list = await getListService().addList(title, dateAdded, userObj, selectedUsers);
+        const list = await getListService().addList(title, dateAdded, authenticatedUser, selectedUsers);
 
         logger.info('API: List created', {
-            userId: userObj.id,
-            username: userObj.username,
+            userId: authenticatedUser.id,
+            username: authenticatedUser.username,
             listId: list.id,
             listTitle: title,
         });
@@ -74,8 +121,8 @@ export const addList = async (ctx: Context) => {
         const err = error as { status?: number; message?: string };
 
         logger.error('API: Failed to create list', {
-            userId: userObj?.id,
-            username: userObj?.username,
+            userId: authenticatedUser.id,
+            username: authenticatedUser.username,
             listTitle: title,
             error: err.message,
         });
@@ -94,8 +141,28 @@ export const addItem = async (ctx: Context) => {
         unit?: string;
     };
     const logger = getLogger();
+    const authenticatedUser = ctx.state.user as { id: string; username: string };
+
+    // Minimal input validation
+    if (!itemName || typeof itemName !== 'string' || itemName.trim() === '') {
+        ctx.status = 400;
+        ctx.body = { error: 'Item name is required and must be a non-empty string' };
+        return;
+    }
 
     try {
+        // Verify user has access to this list
+        const hasAccess = await verifyListAccess(title, authenticatedUser, ctx);
+        if (!hasAccess) {
+            logger.warn('Unauthorized list access attempt', {
+                authenticatedUserId: authenticatedUser.id,
+                listTitle: title,
+            });
+            ctx.status = 403;
+            ctx.body = { error: 'Forbidden' };
+            return;
+        }
+
         const item = await getListService().addItem(title, itemName, dateAdded, quantity, unit);
 
         logger.info('API: Item added to list', {
@@ -130,10 +197,29 @@ export const updateItem = async (ctx: Context) => {
         unit?: string;
     };
     const logger = getLogger();
+    const authenticatedUser = ctx.state.user as { id: string; username: string };
     ctx.status = 200;
 
     try {
+        // Verify user has access to this list
+        const hasAccess = await verifyListAccess(title, authenticatedUser, ctx);
+        if (!hasAccess) {
+            logger.warn('Unauthorized list access attempt', {
+                authenticatedUserId: authenticatedUser.id,
+                listTitle: title,
+            });
+            ctx.status = 403;
+            ctx.body = { error: 'Forbidden' };
+            return;
+        }
+
         if (newItemName !== undefined) {
+            // Validate newItemName
+            if (typeof newItemName !== 'string' || newItemName.trim() === '') {
+                ctx.status = 400;
+                ctx.body = { error: 'New item name must be a non-empty string' };
+                return;
+            }
             ctx.body = await getListService().updateItemName(title, itemName, newItemName);
             logger.info('API: Item name updated', {
                 listTitle: title,
@@ -185,8 +271,21 @@ export const updateItem = async (ctx: Context) => {
 export const deleteItem = async (ctx: Context) => {
     const { title, itemName } = ctx.params as { title: string; itemName: string };
     const logger = getLogger();
+    const authenticatedUser = ctx.state.user as { id: string; username: string };
 
     try {
+        // Verify user has access to this list
+        const hasAccess = await verifyListAccess(title, authenticatedUser, ctx);
+        if (!hasAccess) {
+            logger.warn('Unauthorized list access attempt', {
+                authenticatedUserId: authenticatedUser.id,
+                listTitle: title,
+            });
+            ctx.status = 403;
+            ctx.body = { error: 'Forbidden' };
+            return;
+        }
+
         const list = await getListService().deleteItem(title, itemName);
 
         logger.info('API: Item deleted from list', {
@@ -213,8 +312,21 @@ export const deleteItem = async (ctx: Context) => {
 export const deleteList = async (ctx: Context) => {
     const { title } = ctx.params as { title: string };
     const logger = getLogger();
+    const authenticatedUser = ctx.state.user as { id: string; username: string };
 
     try {
+        // Verify user has access to this list
+        const hasAccess = await verifyListAccess(title, authenticatedUser, ctx);
+        if (!hasAccess) {
+            logger.warn('Unauthorized list access attempt', {
+                authenticatedUserId: authenticatedUser.id,
+                listTitle: title,
+            });
+            ctx.status = 403;
+            ctx.body = { error: 'Forbidden' };
+            return;
+        }
+
         const result = await getListService().deleteList(title);
 
         logger.info('API: List deleted', { listTitle: title });
@@ -237,9 +349,29 @@ export const updateList = async (ctx: Context) => {
     const { title } = ctx.params as { title: string };
     const { newTitle } = ctx.request.body as { newTitle?: string };
     const logger = getLogger();
+    const authenticatedUser = ctx.state.user as { id: string; username: string };
 
     try {
-        const result = await getListService().updateListTitle(title, newTitle!);
+        // Verify user has access to this list
+        const hasAccess = await verifyListAccess(title, authenticatedUser, ctx);
+        if (!hasAccess) {
+            logger.warn('Unauthorized list access attempt', {
+                authenticatedUserId: authenticatedUser.id,
+                listTitle: title,
+            });
+            ctx.status = 403;
+            ctx.body = { error: 'Forbidden' };
+            return;
+        }
+
+        // Validate newTitle
+        if (!newTitle || typeof newTitle !== 'string' || newTitle.trim() === '') {
+            ctx.status = 400;
+            ctx.body = { error: 'New title is required and must be a non-empty string' };
+            return;
+        }
+
+        const result = await getListService().updateListTitle(title, newTitle);
 
         logger.info('API: List title updated', {
             oldTitle: title,
@@ -264,8 +396,21 @@ export const updateList = async (ctx: Context) => {
 export const clearList = async (ctx: Context) => {
     const { title } = ctx.params as { title: string };
     const logger = getLogger();
+    const authenticatedUser = ctx.state.user as { id: string; username: string };
 
     try {
+        // Verify user has access to this list
+        const hasAccess = await verifyListAccess(title, authenticatedUser, ctx);
+        if (!hasAccess) {
+            logger.warn('Unauthorized list access attempt', {
+                authenticatedUserId: authenticatedUser.id,
+                listTitle: title,
+            });
+            ctx.status = 403;
+            ctx.body = { error: 'Forbidden' };
+            return;
+        }
+
         const list = await getListService().clearList(title);
 
         logger.info('API: List cleared', {
@@ -290,8 +435,21 @@ export const clearList = async (ctx: Context) => {
 export const deleteSelected = async (ctx: Context) => {
     const { title } = ctx.params as { title: string };
     const logger = getLogger();
+    const authenticatedUser = ctx.state.user as { id: string; username: string };
 
     try {
+        // Verify user has access to this list
+        const hasAccess = await verifyListAccess(title, authenticatedUser, ctx);
+        if (!hasAccess) {
+            logger.warn('Unauthorized list access attempt', {
+                authenticatedUserId: authenticatedUser.id,
+                listTitle: title,
+            });
+            ctx.status = 403;
+            ctx.body = { error: 'Forbidden' };
+            return;
+        }
+
         const list = await getListService().clearSelectedItems(title);
 
         logger.info('API: Selected items cleared from list', {
