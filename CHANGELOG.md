@@ -1,3 +1,11 @@
+## [1.10.1](https://gitlab.com/imapps/shoppingo/compare/v1.10.0...v1.10.1) (2026-01-02)
+
+
+### Bug Fixes
+
+* implement authorization layer for Shoppingo API ([9c714d3](https://gitlab.com/imapps/shoppingo/commit/9c714d36165f9acd8cbd74eea59f339713527647))
+* implement authorization layer for Shoppingo API ([a8bffc1](https://gitlab.com/imapps/shoppingo/commit/a8bffc19317b367c33761b199a4821f9dbf24f72))
+
 # [1.10.0](https://gitlab.com/imapps/shoppingo/compare/v1.9.1...v1.10.0) (2026-01-01)
 
 
