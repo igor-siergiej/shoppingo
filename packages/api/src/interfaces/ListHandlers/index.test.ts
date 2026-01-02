@@ -13,6 +13,7 @@ vi.mock('../../dependencies', () => ({
 }));
 
 const mockListService = {
+    getList: vi.fn(),
     getListItems: vi.fn(),
     getListsForUser: vi.fn(),
     addList: vi.fn(),
@@ -24,6 +25,7 @@ const mockListService = {
     deleteList: vi.fn(),
     clearList: vi.fn(),
     addItem: vi.fn(),
+    updateItemQuantity: vi.fn(),
 };
 
 const mockLogger = {
@@ -38,7 +40,7 @@ const createMockContext = (overrides: Partial<Context> = {}): Context => {
         params: {},
         request: { body: {} } as Context['request'],
         response: { status: 200 } as Context['response'],
-        state: {},
+        state: { user: { id: 'test-user-1', username: 'testuser' } },
         set: vi.fn(),
         status: 200,
         body: {},
@@ -73,6 +75,16 @@ describe('ListHandlers', () => {
             if (token === 'ListService') return mockListService;
             if (token === 'Logger') return mockLogger;
             return null;
+        });
+
+        // Default mock for getList (used by verifyListAccess)
+        // Returns a list where the authenticated user has access
+        mockListService.getList.mockResolvedValue({
+            id: 'list-1',
+            title: 'Test List',
+            dateAdded: new Date(),
+            items: [],
+            users: [{ id: 'test-user-1', username: 'testuser' }],
         });
     });
 
@@ -117,22 +129,23 @@ describe('ListHandlers', () => {
                     title: 'Test List',
                     dateAdded: new Date(),
                     items: [],
-                    users: [{ id: 'user-1', username: 'testuser' }],
+                    users: [{ id: 'test-user-1', username: 'testuser' }],
                 },
             ];
-            const ctx = createMockContext({ params: { userId: 'user-1' } });
+            // userId must match authenticated user's id (test-user-1)
+            const ctx = createMockContext({ params: { userId: 'test-user-1' } });
 
             mockListService.getListsForUser.mockResolvedValue(mockLists);
 
             await listHandlers.getLists(ctx);
 
-            expect(mockListService.getListsForUser).toHaveBeenCalledWith('user-1');
+            expect(mockListService.getListsForUser).toHaveBeenCalledWith('test-user-1');
             expect(ctx.response.status).toBe(200);
             expect(ctx.body).toEqual(mockLists);
         });
 
         it('should handle service errors', async () => {
-            const ctx = createMockContext({ params: { userId: '' } });
+            const ctx = createMockContext({ params: { userId: 'test-user-1' } });
 
             mockListService.getListsForUser.mockRejectedValue(new Error('userId is required'));
 
@@ -140,6 +153,15 @@ describe('ListHandlers', () => {
 
             expect(ctx.response.status).toBe(500);
             expect(ctx.body).toEqual({ error: 'userId is required' });
+        });
+
+        it('should deny access if userId does not match authenticated user', async () => {
+            const ctx = createMockContext({ params: { userId: 'different-user-id' } });
+
+            await listHandlers.getLists(ctx);
+
+            expect(ctx.response.status).toBe(403);
+            expect(ctx.body).toEqual({ error: 'Forbidden' });
         });
     });
 
@@ -150,7 +172,7 @@ describe('ListHandlers', () => {
                 title: 'New List',
                 dateAdded: new Date(),
                 items: [],
-                users: [{ id: 'user-1', username: 'testuser' }],
+                users: [{ id: 'test-user-1', username: 'testuser' }],
             };
             const ctx = createMockContext({
                 response: { status: 201 } as any,
@@ -158,7 +180,6 @@ describe('ListHandlers', () => {
                     body: {
                         title: 'New List',
                         dateAdded: new Date().toISOString(),
-                        user: { id: 'user-1', username: 'testuser' },
                         selectedUsers: [],
                     },
                 } as any,
@@ -168,10 +189,11 @@ describe('ListHandlers', () => {
 
             await listHandlers.addList(ctx);
 
+            // Should use authenticated user from ctx.state.user, not request body
             expect(mockListService.addList).toHaveBeenCalledWith(
                 'New List',
                 expect.any(String),
-                { id: 'user-1', username: 'testuser' },
+                { id: 'test-user-1', username: 'testuser' },
                 []
             );
             expect(ctx.response.status).toBe(200);
@@ -184,7 +206,6 @@ describe('ListHandlers', () => {
                     body: {
                         title: 'New List',
                         dateAdded: new Date().toISOString(),
-                        user: { id: 'user-1', username: 'testuser' },
                     },
                 } as Context['request'],
             });
@@ -195,6 +216,22 @@ describe('ListHandlers', () => {
 
             expect(ctx.response.status).toBe(500);
             expect(ctx.body).toEqual({ error: 'Auth service not configured' });
+        });
+
+        it('should reject empty title', async () => {
+            const ctx = createMockContext({
+                request: {
+                    body: {
+                        title: '',
+                        dateAdded: new Date().toISOString(),
+                    },
+                } as Context['request'],
+            });
+
+            await listHandlers.addList(ctx);
+
+            expect(ctx.response.status).toBe(400);
+            expect(ctx.body).toEqual({ error: 'Title is required and must be a non-empty string' });
         });
     });
 
@@ -240,6 +277,22 @@ describe('ListHandlers', () => {
 
             expect(ctx.response.status).toBe(500);
             expect(ctx.body).toEqual({ error: 'List not found' });
+        });
+
+        it('should reject empty newItemName', async () => {
+            const ctx = createMockContext({
+                params: { title: 'Test List', itemName: 'Old Name' },
+                request: {
+                    body: {
+                        newItemName: '',
+                    },
+                } as Context['request'],
+            });
+
+            await listHandlers.updateItem(ctx);
+
+            expect(ctx.response.status).toBe(400);
+            expect(ctx.body).toEqual({ error: 'New item name must be a non-empty string' });
         });
     });
 
@@ -386,6 +439,22 @@ describe('ListHandlers', () => {
             expect(ctx.response.status).toBe(500);
             expect(ctx.body).toEqual({ error: 'List not found' });
         });
+
+        it('should reject empty newTitle', async () => {
+            const ctx = createMockContext({
+                params: { title: 'Old Title' },
+                request: {
+                    body: {
+                        newTitle: '',
+                    },
+                } as Context['request'],
+            });
+
+            await listHandlers.updateList(ctx);
+
+            expect(ctx.response.status).toBe(400);
+            expect(ctx.body).toEqual({ error: 'New title is required and must be a non-empty string' });
+        });
     });
 
     describe('addItem', () => {
@@ -438,6 +507,23 @@ describe('ListHandlers', () => {
 
             expect(ctx.response.status).toBe(500);
             expect(ctx.body).toEqual({ error: 'List not found' });
+        });
+
+        it('should reject empty itemName', async () => {
+            const ctx = createMockContext({
+                params: { title: 'Test List' },
+                request: {
+                    body: {
+                        itemName: '',
+                        dateAdded: new Date().toISOString(),
+                    },
+                } as Context['request'],
+            });
+
+            await listHandlers.addItem(ctx);
+
+            expect(ctx.response.status).toBe(400);
+            expect(ctx.body).toEqual({ error: 'Item name is required and must be a non-empty string' });
         });
     });
 
