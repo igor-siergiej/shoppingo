@@ -1,3 +1,10 @@
+## [1.10.2](https://gitlab.com/imapps/shoppingo/compare/v1.10.1...v1.10.2) (2026-01-02)
+
+
+### Bug Fixes
+
+* implement phase 1 web security hardening and sanitized logging ([7f912de](https://gitlab.com/imapps/shoppingo/commit/7f912de3152cd53fdce04fe6d639c4069c0eaf6e))
+
 ## [1.10.1](https://gitlab.com/imapps/shoppingo/compare/v1.10.0...v1.10.1) (2026-01-02)
 
 
