@@ -1,3 +1,10 @@
+## [1.10.3](https://gitlab.com/imapps/shoppingo/compare/v1.10.2...v1.10.3) (2026-01-03)
+
+
+### Bug Fixes
+
+* add missing getList method to ListService for access control checks ([56a5d93](https://gitlab.com/imapps/shoppingo/commit/56a5d939b6930e1c2f9c7f03614563713558bc37))
+
 ## [1.10.2](https://gitlab.com/imapps/shoppingo/compare/v1.10.1...v1.10.2) (2026-01-02)
 
 
