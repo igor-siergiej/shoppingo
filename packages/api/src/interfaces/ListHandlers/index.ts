@@ -16,7 +16,7 @@ const verifyListAccess = async (
     try {
         const list = await getListService().getList(title);
         // Check if authenticated user is in the list's users array
-        return list.users?.some((u: { id: string; username: string }) => u.id === authenticatedUser.id);
+        return list.users?.some((u: { id: string; username: string }) => u.id === authenticatedUser.id) || false;
     } catch {
         return false;
     }

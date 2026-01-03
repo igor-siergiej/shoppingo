@@ -14,13 +14,18 @@ export class ListService {
         private readonly logger?: Logger
     ) {}
 
-    async getListItems(title: string): Promise<Array<Item>> {
+    async getList(title: string): Promise<List> {
         const list = await this.repo.getByTitle(title);
 
         if (!list) {
             throw Object.assign(new Error('List not found'), { status: 404 });
         }
 
+        return list;
+    }
+
+    async getListItems(title: string): Promise<Array<Item>> {
+        const list = await this.getList(title);
         return list.items;
     }
 
