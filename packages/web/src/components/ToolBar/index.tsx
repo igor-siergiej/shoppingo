@@ -3,6 +3,7 @@
 import { useAuth } from '@imapps/web-utils';
 import type { ListType } from '@shoppingo/types';
 import { ListType as ListTypeEnum } from '@shoppingo/types';
+import { format } from 'date-fns';
 import {
     ArrowLeft,
     Calendar as CalendarIcon,
@@ -80,7 +81,7 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
         const [quantity, setQuantity] = useState('');
         const [unit, setUnit] = useState('');
         const [listType, setListType] = useState<ListType>(ListTypeEnum.SHOPPING);
-        const [dueDate, setDueDate] = useState<string>('');
+        const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
         const inputRef = useRef<HTMLInputElement>(null);
         const menuCardRef = useRef<HTMLDivElement>(null);
 
@@ -165,8 +166,7 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
                     // Items page: pass quantity, unit, and dueDate
                     const quantityValue = quantity.trim() ? parseFloat(quantity) : undefined;
                     const unitValue = unit.trim() || undefined;
-                    const dueDateValue = dueDate.trim() ? new Date(dueDate) : undefined;
-                    await handleAdd(newName.trim(), quantityValue, unitValue, dueDateValue);
+                    await handleAdd(newName.trim(), quantityValue, unitValue, dueDate);
                 }
 
                 setNewName('');
@@ -175,7 +175,7 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
                 setQuantity('');
                 setUnit('');
                 setListType(ListTypeEnum.SHOPPING);
-                setDueDate('');
+                setDueDate(undefined);
                 setIsDrawerOpen(false);
             } catch (err: any) {
                 // Display error message from backend
@@ -190,7 +190,7 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
             setQuantity('');
             setUnit('');
             setListType(ListTypeEnum.SHOPPING);
-            setDueDate('');
+            setDueDate(undefined);
             setQuery('');
             clearResults();
             setIsDrawerOpen(false);
@@ -443,34 +443,18 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
                                                             <PopoverTrigger asChild>
                                                                 <Button
                                                                     variant="outline"
-                                                                    className="w-full h-12 justify-start text-base font-normal"
+                                                                    data-empty={!dueDate}
+                                                                    className="data-[empty=true]:text-muted-foreground w-full justify-start text-left font-normal"
                                                                 >
                                                                     <CalendarIcon className="mr-2 h-4 w-4" />
-                                                                    {dueDate
-                                                                        ? new Date(dueDate).toLocaleDateString(
-                                                                              'en-US',
-                                                                              {
-                                                                                  month: 'short',
-                                                                                  day: 'numeric',
-                                                                                  year: 'numeric',
-                                                                              }
-                                                                          )
-                                                                        : 'Pick a date'}
+                                                                    {dueDate ? format(dueDate, 'PPP') : 'Pick a date'}
                                                                 </Button>
                                                             </PopoverTrigger>
-                                                            <PopoverContent align="start" className="w-auto p-4">
+                                                            <PopoverContent className="w-auto p-0">
                                                                 <Calendar
                                                                     mode="single"
-                                                                    selected={dueDate ? new Date(dueDate) : undefined}
-                                                                    onSelect={(date) => {
-                                                                        if (date) {
-                                                                            setDueDate(
-                                                                                date.toISOString().split('T')[0]
-                                                                            );
-                                                                        } else {
-                                                                            setDueDate('');
-                                                                        }
-                                                                    }}
+                                                                    selected={dueDate}
+                                                                    onSelect={setDueDate}
                                                                     disabled={(date) =>
                                                                         date < new Date(new Date().setHours(0, 0, 0, 0))
                                                                     }
