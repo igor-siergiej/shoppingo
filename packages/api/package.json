@@ -7,8 +7,7 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
-    "test:run": "vitest run",
-    "migrate:list-types": "tsx src/scripts/migrate-list-types.ts"
+    "test:run": "vitest run"
   },
   "dependencies": {
     "@google/genai": "^1.16.0",
