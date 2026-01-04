@@ -53,6 +53,7 @@ export class ListService {
                 dateAdded: list.dateAdded,
                 items: list.items,
                 users: list.users.map((user) => ({ username: user.username })),
+                listType: list.listType || ListTypeEnum.SHOPPING,
             }));
         } catch (error) {
             this.logger?.error('Failed to retrieve lists for user', { userId, error });
