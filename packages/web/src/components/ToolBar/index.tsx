@@ -81,7 +81,7 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
         const [quantity, setQuantity] = useState('');
         const [unit, setUnit] = useState('');
         const [listType, setListType] = useState<ListType>(ListTypeEnum.SHOPPING);
-        const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
+        const [dueDate, setDueDate] = useState<Date | undefined>(new Date());
         const inputRef = useRef<HTMLInputElement>(null);
         const menuCardRef = useRef<HTMLDivElement>(null);
 
@@ -454,11 +454,18 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
                                                                     )}
                                                                 </Button>
                                                             </PopoverTrigger>
-                                                            <PopoverContent className="w-auto p-0">
+                                                            <PopoverContent
+                                                                className="w-auto overflow-visible p-0"
+                                                                align="start"
+                                                                side="top"
+                                                                sideOffset={4}
+                                                            >
                                                                 <Calendar
                                                                     mode="single"
                                                                     selected={dueDate}
                                                                     onSelect={setDueDate}
+                                                                    className="rounded-md border shadow-sm"
+                                                                    captionLayout="dropdown"
                                                                 />
                                                             </PopoverContent>
                                                         </Popover>
