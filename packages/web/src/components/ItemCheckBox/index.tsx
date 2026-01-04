@@ -292,7 +292,7 @@ const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
         toggleMutation.mutate(next);
     };
 
-    const handleDragEnd = (_: any, info: { offset: { x: number }; velocity: { x: number } }) => {
+    const handleDragEnd = (_event: PointerEvent, info: { offset: { x: number }; velocity: { x: number } }) => {
         const threshold = 60;
         const swipeVelocityThreshold = 500;
         const closeThreshold = 30; // Easier to close - if dragging less than this toward center

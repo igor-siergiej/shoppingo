@@ -15,7 +15,7 @@ import RouterErrorHandler from './components/RouterErrorHandler';
 import { getAuthConfig } from './config/auth';
 import { PWAProvider } from './contexts/PWAContext';
 
-const lazyLoadPage = (importFn: () => Promise<any>, fallbackName: string) =>
+const lazyLoadPage = (importFn: () => Promise<unknown>, fallbackName: string) =>
     React.lazy(() =>
         Promise.all([
             importFn(),

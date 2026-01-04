@@ -44,7 +44,7 @@ const ErrorContent: React.FC<ErrorDisplayProps> = ({ error }) => (
     </div>
 );
 
-const ErrorPage: React.FC<ErrorDisplayProps> = ({ error }) => {
+const ErrorPage: React.FC<ErrorDisplayProps> = () => {
     return (
         <div className="min-h-screen bg-background flex flex-col">
             <Appbar />
