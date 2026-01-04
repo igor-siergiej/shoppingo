@@ -1,3 +1,17 @@
+# [1.12.0](https://gitlab.com/imapps/shoppingo/compare/v1.11.0...v1.12.0) (2026-01-04)
+
+
+### Bug Fixes
+
+* include listType in getListsForUser response ([32bf518](https://gitlab.com/imapps/shoppingo/commit/32bf518a928d75cd44943c134d502ec29f39a304))
+
+
+### Features
+
+* add conditional empty state messages for list types ([10e67bd](https://gitlab.com/imapps/shoppingo/commit/10e67bd54c9a302359c2f3423aedb2288840974c))
+* improve add item/task modal UI ([416546d](https://gitlab.com/imapps/shoppingo/commit/416546df10e702f0f40c526e5f89c3df32d7c113))
+* replace CheckSquare with ListTodo icon for TODO lists ([2958d6c](https://gitlab.com/imapps/shoppingo/commit/2958d6c29c48cc896625283e2aa238d777749414))
+
 # [1.11.0](https://gitlab.com/imapps/shoppingo/compare/v1.10.3...v1.11.0) (2026-01-04)
 
 
