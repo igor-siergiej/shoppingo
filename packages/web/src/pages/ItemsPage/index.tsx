@@ -1,6 +1,6 @@
 import type { Item, ListType } from '@shoppingo/types';
 import { ListType as ListTypeEnum } from '@shoppingo/types';
-import { AlertTriangle, ShoppingCart } from 'lucide-react';
+import { AlertTriangle, ListTodo, ShoppingCart } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -147,20 +147,35 @@ const ItemsPage = () => {
 
     const isEmpty = items.length === 0;
 
+    const emptyStateConfig = {
+        [ListTypeEnum.SHOPPING]: {
+            icon: ShoppingCart,
+            title: 'No items yet',
+            description: 'Start adding items to your shopping list',
+            buttonLabel: 'Add Item',
+        },
+        [ListTypeEnum.TODO]: {
+            icon: ListTodo,
+            title: 'No tasks yet',
+            description: 'Start adding tasks to your to-do list',
+            buttonLabel: 'Add Task',
+        },
+    };
+
+    const config = emptyStateConfig[currentListType];
+
     const pageContent = (
         <div className="flex flex-col">
             {data ? (
                 isEmpty ? (
                     <Empty className="flex-none justify-start p-4">
                         <EmptyHeader>
-                            <EmptyMedia variant="icon">
-                                <ShoppingCart />
-                            </EmptyMedia>
-                            <EmptyTitle>No items yet</EmptyTitle>
-                            <EmptyDescription>Start adding items to your shopping list</EmptyDescription>
+                            <EmptyMedia variant="icon">{config && <config.icon />}</EmptyMedia>
+                            <EmptyTitle>{config?.title}</EmptyTitle>
+                            <EmptyDescription>{config?.description}</EmptyDescription>
                         </EmptyHeader>
                         <EmptyContent>
-                            <Button onClick={() => toolbarRef.current?.openDrawer()}>Add Item</Button>
+                            <Button onClick={() => toolbarRef.current?.openDrawer()}>{config?.buttonLabel}</Button>
                         </EmptyContent>
                     </Empty>
                 ) : (
