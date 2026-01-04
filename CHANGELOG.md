@@ -1,3 +1,15 @@
+# [1.11.0](https://gitlab.com/imapps/shoppingo/compare/v1.10.3...v1.11.0) (2026-01-04)
+
+
+### Bug Fixes
+
+* update ListHandlers tests for TODO list feature ([9a959ac](https://gitlab.com/imapps/shoppingo/commit/9a959ac8f00dcfecb7993f91807de45edc02ea3d))
+
+
+### Features
+
+* add todo list feature with due dates support ([be6e8a8](https://gitlab.com/imapps/shoppingo/commit/be6e8a8e9c664038bf8c5d4f3b9f3e2106467bd2))
+
 ## [1.10.3](https://gitlab.com/imapps/shoppingo/compare/v1.10.2...v1.10.3) (2026-01-03)
 
 
