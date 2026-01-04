@@ -119,7 +119,8 @@ export const addList = async (ctx: Context) => {
             dateAdded,
             authenticatedUser,
             selectedUsers,
-            listType as any
+            // @ts-expect-error - listType can be undefined from request body
+            listType
         );
 
         logger.info('API: List created', {

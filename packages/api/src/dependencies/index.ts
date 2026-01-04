@@ -24,15 +24,17 @@ export const registerDepdendencies = () => {
     // Domain services using factory classes
     dependencyContainer.registerSingleton(
         DependencyToken.ListRepository,
+        // @ts-expect-error - Dependency injection requires constructor return override
         class {
             constructor() {
                 return new MongoListRepository(dependencyContainer.resolve(DependencyToken.Database));
             }
-        } as any
+        }
     );
 
     dependencyContainer.registerSingleton(
         DependencyToken.ListService,
+        // @ts-expect-error - Dependency injection requires constructor return override
         class {
             constructor() {
                 return new ListService(
@@ -42,30 +44,33 @@ export const registerDepdendencies = () => {
                     dependencyContainer.resolve(DependencyToken.Logger)
                 );
             }
-        } as any
+        }
     );
 
     // Image services
     dependencyContainer.registerSingleton(
         DependencyToken.ImageStore,
+        // @ts-expect-error - Dependency injection requires constructor return override
         class {
             constructor() {
                 return new BucketStore(dependencyContainer.resolve(DependencyToken.Bucket));
             }
-        } as any
+        }
     );
 
     dependencyContainer.registerSingleton(
         DependencyToken.ImageGenerator,
+        // @ts-expect-error - Dependency injection requires constructor return override
         class {
             constructor() {
                 return new GeminiImageGenerator(config.get('geminiApiKey'));
             }
-        } as any
+        }
     );
 
     dependencyContainer.registerSingleton(
         DependencyToken.ImageService,
+        // @ts-expect-error - Dependency injection requires constructor return override
         class {
             constructor() {
                 return new ImageService(
@@ -74,6 +79,6 @@ export const registerDepdendencies = () => {
                     dependencyContainer.resolve(DependencyToken.Logger)
                 );
             }
-        } as any
+        }
     );
 };
