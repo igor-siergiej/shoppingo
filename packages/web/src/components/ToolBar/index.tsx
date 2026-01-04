@@ -309,13 +309,21 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
                                         <div className="mx-auto w-full max-w-sm">
                                             <DrawerHeader>
                                                 <DrawerTitle>
-                                                    {isListsPage ? 'Add New List' : 'Add New Item'}
+                                                    {isListsPage
+                                                        ? 'Add New List'
+                                                        : currentListType === ListTypeEnum.TODO
+                                                          ? 'Add New Task'
+                                                          : 'Add New Item'}
                                                 </DrawerTitle>
                                             </DrawerHeader>
                                             <div className="p-4 pb-0 space-y-4">
                                                 <div className="space-y-2">
                                                     <Label htmlFor="new-item">
-                                                        {isListsPage ? 'List Name' : 'Item Name'}
+                                                        {isListsPage
+                                                            ? 'List Name'
+                                                            : currentListType === ListTypeEnum.TODO
+                                                              ? 'Task Name'
+                                                              : 'Item Name'}
                                                     </Label>
                                                     <Input
                                                         id="new-item"
@@ -323,7 +331,7 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
                                                         value={newName}
                                                         autoComplete="off"
                                                         autoFocus
-                                                        className={error ? 'border-destructive' : ''}
+                                                        className={`${error ? 'border-destructive' : ''} h-12 text-base`}
                                                         onChange={(event) => {
                                                             setError('');
                                                             setNewName(event.target.value);
@@ -423,7 +431,7 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
                                                             type="date"
                                                             value={dueDate}
                                                             onChange={(e) => setDueDate(e.target.value)}
-                                                            className="mt-2"
+                                                            className="mt-2 h-12 text-base cursor-pointer"
                                                         />
                                                     </div>
                                                 )}
