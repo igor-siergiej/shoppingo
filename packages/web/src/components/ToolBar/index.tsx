@@ -3,7 +3,7 @@
 import { useAuth } from '@imapps/web-utils';
 import type { ListType } from '@shoppingo/types';
 import { ListType as ListTypeEnum } from '@shoppingo/types';
-import { ArrowLeft, Calendar, CheckCheck, Download, LogOut, Menu, Plus, Search, Trash2, User } from 'lucide-react';
+import { ArrowLeft, Calendar as CalendarIcon, CheckCheck, Download, LogOut, Menu, Plus, Search, Trash2, User } from 'lucide-react';
 import { AnimatePresence, MotionConfig, motion } from 'motion/react';
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -434,7 +434,7 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
                                                                     variant="outline"
                                                                     className="w-full h-12 justify-start text-base font-normal"
                                                                 >
-                                                                    <Calendar className="mr-2 h-4 w-4" />
+                                                                    <CalendarIcon className="mr-2 h-4 w-4" />
                                                                     {dueDate
                                                                         ? new Date(dueDate).toLocaleDateString('en-US', {
                                                                               month: 'short',
