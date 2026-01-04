@@ -444,10 +444,14 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
                                                                 <Button
                                                                     variant="outline"
                                                                     data-empty={!dueDate}
-                                                                    className="data-[empty=true]:text-muted-foreground w-full justify-start text-left font-normal"
+                                                                    className="data-[empty=true]:text-muted-foreground w-[280px] justify-start text-left font-normal"
                                                                 >
                                                                     <CalendarIcon className="mr-2 h-4 w-4" />
-                                                                    {dueDate ? format(dueDate, 'PPP') : 'Pick a date'}
+                                                                    {dueDate ? (
+                                                                        format(dueDate, 'PPP')
+                                                                    ) : (
+                                                                        <span>Pick a date</span>
+                                                                    )}
                                                                 </Button>
                                                             </PopoverTrigger>
                                                             <PopoverContent className="w-auto p-0">
@@ -455,10 +459,6 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
                                                                     mode="single"
                                                                     selected={dueDate}
                                                                     onSelect={setDueDate}
-                                                                    disabled={(date) =>
-                                                                        date < new Date(new Date().setHours(0, 0, 0, 0))
-                                                                    }
-                                                                    initialFocus
                                                                 />
                                                             </PopoverContent>
                                                         </Popover>
