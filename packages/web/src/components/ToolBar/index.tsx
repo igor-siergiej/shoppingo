@@ -458,14 +458,18 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
                                                                         : 'Pick a date'}
                                                                 </Button>
                                                             </PopoverTrigger>
-                                                            <PopoverContent className="w-auto p-0">
+                                                            <PopoverContent align="start" className="w-auto p-4">
                                                                 <Calendar
                                                                     mode="single"
                                                                     selected={dueDate ? new Date(dueDate) : undefined}
                                                                     onSelect={(date) => {
-                                                                        setDueDate(
-                                                                            date ? date.toISOString().split('T')[0] : ''
-                                                                        );
+                                                                        if (date) {
+                                                                            setDueDate(
+                                                                                date.toISOString().split('T')[0]
+                                                                            );
+                                                                        } else {
+                                                                            setDueDate('');
+                                                                        }
                                                                     }}
                                                                     disabled={(date) =>
                                                                         date < new Date(new Date().setHours(0, 0, 0, 0))

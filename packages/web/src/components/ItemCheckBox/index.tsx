@@ -50,19 +50,21 @@ const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
             await queryClient.cancelQueries([listTitle]);
 
             // Snapshot previous value
-            const previousItems = queryClient.getQueryData<Item[]>([listTitle]);
+            const previousData = queryClient.getQueryData<{ listType: ListType; items: Item[] }>([listTitle]);
 
             // Optimistically update cache
-            queryClient.setQueryData<Item[]>([listTitle], (old) =>
-                old ? old.map((i) => (i.name === item.name ? { ...i, isSelected } : i)) : []
+            queryClient.setQueryData<{ listType: ListType; items: Item[] }>([listTitle], (old) =>
+                old
+                    ? { ...old, items: old.items.map((i) => (i.name === item.name ? { ...i, isSelected } : i)) }
+                    : undefined
             );
 
-            return { previousItems };
+            return { previousData };
         },
         onError: (_err, _isSelected, context) => {
             // Rollback on error
-            if (context?.previousItems) {
-                queryClient.setQueryData([listTitle], context.previousItems);
+            if (context?.previousData) {
+                queryClient.setQueryData([listTitle], context.previousData);
             }
         },
         onSettled: () => {
@@ -76,18 +78,18 @@ const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
         mutationFn: () => deleteItem(item.name, listTitle),
         onMutate: async () => {
             await queryClient.cancelQueries([listTitle]);
-            const previousItems = queryClient.getQueryData<Item[]>([listTitle]);
+            const previousData = queryClient.getQueryData<{ listType: ListType; items: Item[] }>([listTitle]);
 
             // Optimistically remove item
-            queryClient.setQueryData<Item[]>([listTitle], (old) =>
-                old ? old.filter((i) => i.name !== item.name) : []
+            queryClient.setQueryData<{ listType: ListType; items: Item[] }>([listTitle], (old) =>
+                old ? { ...old, items: old.items.filter((i) => i.name !== item.name) } : undefined
             );
 
-            return { previousItems };
+            return { previousData };
         },
         onError: (_err, _variables, context) => {
-            if (context?.previousItems) {
-                queryClient.setQueryData([listTitle], context.previousItems);
+            if (context?.previousData) {
+                queryClient.setQueryData([listTitle], context.previousData);
             }
         },
         onSettled: () => {
@@ -100,18 +102,20 @@ const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
         mutationFn: (newName: string) => updateItemName(listTitle, item.name, newName),
         onMutate: async (newName) => {
             await queryClient.cancelQueries([listTitle]);
-            const previousItems = queryClient.getQueryData<Item[]>([listTitle]);
+            const previousData = queryClient.getQueryData<{ listType: ListType; items: Item[] }>([listTitle]);
 
             // Optimistically update item name
-            queryClient.setQueryData<Item[]>([listTitle], (old) =>
-                old ? old.map((i) => (i.name === item.name ? { ...i, name: newName } : i)) : []
+            queryClient.setQueryData<{ listType: ListType; items: Item[] }>([listTitle], (old) =>
+                old
+                    ? { ...old, items: old.items.map((i) => (i.name === item.name ? { ...i, name: newName } : i)) }
+                    : undefined
             );
 
-            return { previousItems };
+            return { previousData };
         },
         onError: (_err, _newName, context) => {
-            if (context?.previousItems) {
-                queryClient.setQueryData([listTitle], context.previousItems);
+            if (context?.previousData) {
+                queryClient.setQueryData([listTitle], context.previousData);
             }
         },
         onSettled: () => {
@@ -125,28 +129,31 @@ const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
             updateItemQuantity(listTitle, item.name, quantity, unit),
         onMutate: async ({ quantity, unit }) => {
             await queryClient.cancelQueries([listTitle]);
-            const previousItems = queryClient.getQueryData<Item[]>([listTitle]);
+            const previousData = queryClient.getQueryData<{ listType: ListType; items: Item[] }>([listTitle]);
 
             // Optimistically update item quantity/unit
-            queryClient.setQueryData<Item[]>([listTitle], (old) =>
+            queryClient.setQueryData<{ listType: ListType; items: Item[] }>([listTitle], (old) =>
                 old
-                    ? old.map((i) =>
-                          i.name === item.name
-                              ? {
-                                    ...i,
-                                    ...(quantity !== undefined && { quantity }),
-                                    ...(unit !== undefined && { unit }),
-                                }
-                              : i
-                      )
-                    : []
+                    ? {
+                          ...old,
+                          items: old.items.map((i) =>
+                              i.name === item.name
+                                  ? {
+                                        ...i,
+                                        ...(quantity !== undefined && { quantity }),
+                                        ...(unit !== undefined && { unit }),
+                                    }
+                                  : i
+                          ),
+                      }
+                    : undefined
             );
 
-            return { previousItems };
+            return { previousData };
         },
         onError: (_err, _variables, context) => {
-            if (context?.previousItems) {
-                queryClient.setQueryData([listTitle], context.previousItems);
+            if (context?.previousData) {
+                queryClient.setQueryData([listTitle], context.previousData);
             }
         },
         onSettled: () => {
@@ -159,27 +166,30 @@ const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
         mutationFn: (dueDate?: Date) => updateItemDueDate(listTitle, item.name, dueDate),
         onMutate: async (dueDate) => {
             await queryClient.cancelQueries([listTitle]);
-            const previousItems = queryClient.getQueryData<Item[]>([listTitle]);
+            const previousData = queryClient.getQueryData<{ listType: ListType; items: Item[] }>([listTitle]);
 
             // Optimistically update item due date
-            queryClient.setQueryData<Item[]>([listTitle], (old) =>
+            queryClient.setQueryData<{ listType: ListType; items: Item[] }>([listTitle], (old) =>
                 old
-                    ? old.map((i) =>
-                          i.name === item.name
-                              ? {
-                                    ...i,
-                                    ...(dueDate !== undefined && { dueDate }),
-                                }
-                              : i
-                      )
-                    : []
+                    ? {
+                          ...old,
+                          items: old.items.map((i) =>
+                              i.name === item.name
+                                  ? {
+                                        ...i,
+                                        ...(dueDate !== undefined && { dueDate }),
+                                    }
+                                  : i
+                          ),
+                      }
+                    : undefined
             );
 
-            return { previousItems };
+            return { previousData };
         },
         onError: (_err, _variables, context) => {
-            if (context?.previousItems) {
-                queryClient.setQueryData([listTitle], context.previousItems);
+            if (context?.previousData) {
+                queryClient.setQueryData([listTitle], context.previousData);
             }
         },
         onSettled: () => {
