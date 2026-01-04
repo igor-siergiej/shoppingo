@@ -85,6 +85,7 @@ describe('ListHandlers', () => {
             dateAdded: new Date(),
             items: [],
             users: [{ id: 'test-user-1', username: 'testuser' }],
+            listType: 'shopping',
         });
     });
 
@@ -100,23 +101,41 @@ describe('ListHandlers', () => {
             ];
             const ctx = createMockContext({ params: { title: 'Test List' } });
 
-            mockListService.getListItems.mockResolvedValue(mockItems);
+            mockListService.getList.mockResolvedValue({
+                id: 'list-1',
+                title: 'Test List',
+                dateAdded: new Date(),
+                items: mockItems,
+                users: [{ id: 'test-user-1', username: 'testuser' }],
+                listType: 'shopping',
+            });
 
             await listHandlers.getList(ctx);
 
-            expect(mockListService.getListItems).toHaveBeenCalledWith('Test List');
+            expect(mockListService.getList).toHaveBeenCalledWith('Test List');
             expect(ctx.response.status).toBe(200);
-            expect(ctx.body).toEqual(mockItems);
+            expect(ctx.body).toEqual({ listType: 'shopping', items: mockItems });
         });
 
         it('should handle service errors', async () => {
-            const ctx = createMockContext({ params: { title: 'Non-existent' } });
+            const ctx = createMockContext({ params: { title: 'Test List' } });
 
-            mockListService.getListItems.mockRejectedValue(new Error('List not found'));
+            // First call (in verifyListAccess) returns a valid list
+            // Second call (in getList) throws an error
+            mockListService.getList
+                .mockResolvedValueOnce({
+                    id: 'list-1',
+                    title: 'Test List',
+                    dateAdded: new Date(),
+                    items: [],
+                    users: [{ id: 'test-user-1', username: 'testuser' }],
+                    listType: 'shopping',
+                })
+                .mockRejectedValueOnce(Object.assign(new Error('List not found'), { status: 404 }));
 
             await listHandlers.getList(ctx);
 
-            expect(ctx.response.status).toBe(500);
+            expect(ctx.response.status).toBe(404);
             expect(ctx.body).toEqual({ error: 'List not found' });
         });
     });
@@ -130,6 +149,7 @@ describe('ListHandlers', () => {
                     dateAdded: new Date(),
                     items: [],
                     users: [{ id: 'test-user-1', username: 'testuser' }],
+                    listType: 'shopping',
                 },
             ];
             // userId must match authenticated user's id (test-user-1)
@@ -173,6 +193,7 @@ describe('ListHandlers', () => {
                 dateAdded: new Date(),
                 items: [],
                 users: [{ id: 'test-user-1', username: 'testuser' }],
+                listType: 'shopping',
             };
             const ctx = createMockContext({
                 response: { status: 201 } as any,
@@ -181,6 +202,7 @@ describe('ListHandlers', () => {
                         title: 'New List',
                         dateAdded: new Date().toISOString(),
                         selectedUsers: [],
+                        listType: 'shopping',
                     },
                 } as any,
             });
@@ -194,7 +216,8 @@ describe('ListHandlers', () => {
                 'New List',
                 expect.any(String),
                 { id: 'test-user-1', username: 'testuser' },
-                []
+                [],
+                'shopping'
             );
             expect(ctx.response.status).toBe(200);
             expect(ctx.body).toEqual(mockList);
@@ -483,6 +506,7 @@ describe('ListHandlers', () => {
                 'Test List',
                 'New Item',
                 expect.any(String),
+                undefined,
                 undefined,
                 undefined
             );
