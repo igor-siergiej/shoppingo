@@ -1,3 +1,8 @@
+export enum ListType {
+    SHOPPING = 'shopping',
+    TODO = 'todo',
+}
+
 export interface Item {
     id: string;
     name: string;
@@ -5,6 +10,7 @@ export interface Item {
     dateAdded: Date;
     quantity?: number;
     unit?: string;
+    dueDate?: Date;
 }
 
 export interface List {
@@ -13,6 +19,7 @@ export interface List {
     dateAdded: Date;
     items: Array<Item>;
     users: Array<User>;
+    listType: ListType;
 }
 
 export interface ListResponse {
@@ -21,6 +28,7 @@ export interface ListResponse {
     dateAdded: Date;
     items: Array<Item>;
     users: Array<{ username: string }>;
+    listType: ListType;
 }
 
 export interface User {

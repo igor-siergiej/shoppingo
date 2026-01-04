@@ -1,6 +1,8 @@
 'use client';
 
 import { useAuth } from '@imapps/web-utils';
+import type { ListType } from '@shoppingo/types';
+import { ListType as ListTypeEnum } from '@shoppingo/types';
 import { ArrowLeft, CheckCheck, Download, LogOut, Menu, Plus, Search, Trash2, User } from 'lucide-react';
 import { AnimatePresence, MotionConfig, motion } from 'motion/react';
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
@@ -28,13 +30,14 @@ import { useSearch } from '../../hooks/useSearch';
 import { SearchResults } from '../SearchResults';
 
 interface ToolBarProps {
-    // For lists page: (name, selectedUsers)
-    // For items page: (name, quantity, unit)
-    handleAdd: (name: string, quantityOrUsers?: number | Array<string>, unit?: string) => Promise<void>;
+    // For lists page: (name, selectedUsers, listType)
+    // For items page: (name, quantity, unit, dueDate)
+    handleAdd: (name: string, quantityOrUsers?: number | Array<string>, unit?: string, dueDate?: Date) => Promise<void>;
     handleGoBack?: () => void;
     handleClearSelected?: () => void;
     handleRemoveAll?: () => void;
     placeholder?: string;
+    currentListType?: ListType;
 }
 
 export interface ToolBarRef {
@@ -42,7 +45,17 @@ export interface ToolBarRef {
 }
 
 const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
-    ({ handleAdd, handleGoBack, handleClearSelected, handleRemoveAll, placeholder = 'Enter item name...' }, ref) => {
+    (
+        {
+            handleAdd,
+            handleGoBack,
+            handleClearSelected,
+            handleRemoveAll,
+            placeholder = 'Enter item name...',
+            currentListType,
+        },
+        ref
+    ) => {
         const location = useLocation();
         const navigate = useNavigate();
         const { logout } = useAuth();
@@ -53,6 +66,8 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
         const [selectedUsers, setSelectedUsers] = useState<Array<string>>([]);
         const [quantity, setQuantity] = useState('');
         const [unit, setUnit] = useState('');
+        const [listType, setListType] = useState<ListType>(ListTypeEnum.SHOPPING);
+        const [dueDate, setDueDate] = useState<string>('');
         const inputRef = useRef<HTMLInputElement>(null);
         const menuCardRef = useRef<HTMLDivElement>(null);
 
@@ -131,12 +146,14 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
 
             try {
                 if (isListsPage) {
-                    await handleAdd(newName.trim(), selectedUsers);
+                    // For lists: pass name, selectedUsers, and listType
+                    await handleAdd(newName.trim(), selectedUsers, listType);
                 } else {
-                    // Items page: pass quantity and unit
+                    // Items page: pass quantity, unit, and dueDate
                     const quantityValue = quantity.trim() ? parseFloat(quantity) : undefined;
                     const unitValue = unit.trim() || undefined;
-                    await handleAdd(newName.trim(), quantityValue, unitValue);
+                    const dueDateValue = dueDate.trim() ? new Date(dueDate) : undefined;
+                    await handleAdd(newName.trim(), quantityValue, unitValue, dueDateValue);
                 }
 
                 setNewName('');
@@ -144,6 +161,8 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
                 setSelectedUsers([]);
                 setQuantity('');
                 setUnit('');
+                setListType(ListTypeEnum.SHOPPING);
+                setDueDate('');
                 setIsDrawerOpen(false);
             } catch (err: any) {
                 // Display error message from backend
@@ -157,6 +176,8 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
             setSelectedUsers([]);
             setQuantity('');
             setUnit('');
+            setListType(ListTypeEnum.SHOPPING);
+            setDueDate('');
             setQuery('');
             clearResults();
             setIsDrawerOpen(false);
@@ -319,8 +340,96 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
                                                     {error && <p className="text-sm text-destructive">{error}</p>}
                                                 </div>
 
-                                                {/* Quantity and Unit fields for items page */}
-                                                {isItemsPage && (
+                                                {/* List type selector for lists page */}
+                                                {isListsPage && (
+                                                    <div className="space-y-2">
+                                                        <Label>List Type</Label>
+                                                        <div className="flex gap-4">
+                                                            <div className="flex items-center space-x-2">
+                                                                <input
+                                                                    type="radio"
+                                                                    id="shopping"
+                                                                    name="listType"
+                                                                    checked={listType === ListTypeEnum.SHOPPING}
+                                                                    onChange={() => setListType(ListTypeEnum.SHOPPING)}
+                                                                    className="cursor-pointer"
+                                                                />
+                                                                <Label
+                                                                    htmlFor="shopping"
+                                                                    className="cursor-pointer font-normal"
+                                                                >
+                                                                    Shopping
+                                                                </Label>
+                                                            </div>
+                                                            <div className="flex items-center space-x-2">
+                                                                <input
+                                                                    type="radio"
+                                                                    id="todo"
+                                                                    name="listType"
+                                                                    checked={listType === ListTypeEnum.TODO}
+                                                                    onChange={() => setListType(ListTypeEnum.TODO)}
+                                                                    className="cursor-pointer"
+                                                                />
+                                                                <Label
+                                                                    htmlFor="todo"
+                                                                    className="cursor-pointer font-normal"
+                                                                >
+                                                                    TODO
+                                                                </Label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {/* Quantity and Unit fields for shopping lists */}
+                                                {isItemsPage && currentListType === ListTypeEnum.SHOPPING && (
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        <div>
+                                                            <Label htmlFor="new-item-quantity">Quantity</Label>
+                                                            <Input
+                                                                id="new-item-quantity"
+                                                                type="number"
+                                                                value={quantity}
+                                                                onChange={(e) => setQuantity(e.target.value)}
+                                                                placeholder="e.g., 2"
+                                                                className="mt-2"
+                                                                step="0.01"
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <Label htmlFor="new-item-unit">Unit</Label>
+                                                            <Select value={unit} onValueChange={setUnit}>
+                                                                <SelectTrigger id="new-item-unit" className="mt-2">
+                                                                    <SelectValue placeholder="Select unit" />
+                                                                </SelectTrigger>
+                                                                <SelectContent>
+                                                                    <SelectItem value="pcs">pcs</SelectItem>
+                                                                    <SelectItem value="g">g</SelectItem>
+                                                                    <SelectItem value="kg">kg</SelectItem>
+                                                                    <SelectItem value="ml">ml</SelectItem>
+                                                                    <SelectItem value="L">L</SelectItem>
+                                                                </SelectContent>
+                                                            </Select>
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {/* Due date field for TODO lists */}
+                                                {isItemsPage && currentListType === ListTypeEnum.TODO && (
+                                                    <div className="space-y-2">
+                                                        <Label htmlFor="due-date">Due Date (Optional)</Label>
+                                                        <Input
+                                                            id="due-date"
+                                                            type="date"
+                                                            value={dueDate}
+                                                            onChange={(e) => setDueDate(e.target.value)}
+                                                            className="mt-2"
+                                                        />
+                                                    </div>
+                                                )}
+
+                                                {/* Fallback quantity/unit for items page when no list type is known */}
+                                                {isItemsPage && !currentListType && (
                                                     <div className="grid grid-cols-2 gap-4">
                                                         <div>
                                                             <Label htmlFor="new-item-quantity">Quantity</Label>

@@ -1,6 +1,7 @@
-import type { Item } from '@shoppingo/types';
+import type { Item, ListType } from '@shoppingo/types';
+import { ListType as ListTypeEnum } from '@shoppingo/types';
 import { AlertTriangle, ShoppingCart } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -16,26 +17,45 @@ const ItemsPage = () => {
     const navigate = useNavigate();
     const toolbarRef = useRef<ToolBarRef>(null);
     const queryClient = useQueryClient();
+    const [currentListType, setCurrentListType] = useState<ListType>(ListTypeEnum.SHOPPING);
 
     const { data, isLoading, isError, refetch } = useQuery({
         ...getListQuery(listTitle),
     });
 
+    // Extract listType and items from API response
+    const listType = data?.listType || ListTypeEnum.SHOPPING;
+    const items = data?.items || [];
+
+    useEffect(() => {
+        setCurrentListType(listType);
+    }, [listType]);
+
     useEffect(() => {
         if (listTitle) {
-            logger.info('Items page loaded', { listTitle, itemCount: data?.length || 0 });
+            logger.info('Items page loaded', { listTitle, itemCount: items.length, listType });
         }
-    }, [listTitle, data?.length]);
+    }, [listTitle, items.length, listType]);
 
     const addItemMutation = useMutation({
-        mutationFn: ({ itemName, quantity, unit }: { itemName: string; quantity?: number; unit?: string }) =>
-            addItem(itemName, listTitle, quantity, unit),
+        mutationFn: ({
+            itemName,
+            quantity,
+            unit,
+            dueDate,
+        }: {
+            itemName: string;
+            quantity?: number;
+            unit?: string;
+            dueDate?: Date;
+        }) => addItem(itemName, listTitle, quantity, unit, dueDate),
         onSuccess: (_, variables) => {
             logger.info('Item added', {
                 listTitle,
                 itemName: variables.itemName,
                 quantity: variables.quantity,
                 unit: variables.unit,
+                dueDate: variables.dueDate,
             });
             // Refetch after successful add
             void queryClient.invalidateQueries([listTitle]);
@@ -51,20 +71,22 @@ const ItemsPage = () => {
         mutationFn: () => clearSelected(listTitle),
         onMutate: async () => {
             await queryClient.cancelQueries([listTitle]);
-            const previousItems = queryClient.getQueryData<Item[]>([listTitle]);
-            const selectedCount = previousItems?.filter((i) => i.isSelected).length || 0;
+            const previousData = queryClient.getQueryData<{ listType: ListType; items: Item[] }>([listTitle]);
+            const selectedCount = previousData?.items?.filter((i) => i.isSelected).length || 0;
 
             logger.info('Clearing selected items', { listTitle, count: selectedCount });
 
             // Optimistically remove selected items
-            queryClient.setQueryData<Item[]>([listTitle], (old) => (old ? old.filter((i) => !i.isSelected) : []));
+            queryClient.setQueryData<{ listType: ListType; items: Item[] }>([listTitle], (old) =>
+                old ? { ...old, items: old.items.filter((i) => !i.isSelected) } : old
+            );
 
-            return { previousItems };
+            return { previousData };
         },
         onError: (_err, _variables, context) => {
             logger.warn('Failed to clear selected items', { listTitle });
-            if (context?.previousItems) {
-                queryClient.setQueryData([listTitle], context.previousItems);
+            if (context?.previousData) {
+                queryClient.setQueryData([listTitle], context.previousData);
             }
         },
         onSettled: () => {
@@ -77,20 +99,22 @@ const ItemsPage = () => {
         mutationFn: () => clearList(listTitle),
         onMutate: async () => {
             await queryClient.cancelQueries([listTitle]);
-            const previousItems = queryClient.getQueryData<Item[]>([listTitle]);
-            const itemCount = previousItems?.length || 0;
+            const previousData = queryClient.getQueryData<{ listType: ListType; items: Item[] }>([listTitle]);
+            const itemCount = previousData?.items?.length || 0;
 
             logger.info('Clearing all items', { listTitle, count: itemCount });
 
             // Optimistically clear all items
-            queryClient.setQueryData<Item[]>([listTitle], []);
+            queryClient.setQueryData<{ listType: ListType; items: Item[] }>([listTitle], (old) =>
+                old ? { ...old, items: [] } : old
+            );
 
-            return { previousItems };
+            return { previousData };
         },
         onError: (_err, _variables, context) => {
             logger.warn('Failed to clear all items', { listTitle });
-            if (context?.previousItems) {
-                queryClient.setQueryData([listTitle], context.previousItems);
+            if (context?.previousData) {
+                queryClient.setQueryData([listTitle], context.previousData);
             }
         },
         onSettled: () => {
@@ -121,7 +145,7 @@ const ItemsPage = () => {
         </div>
     );
 
-    const isEmpty = Array.isArray(data) && data.length === 0;
+    const isEmpty = items.length === 0;
 
     const pageContent = (
         <div className="flex flex-col">
@@ -140,7 +164,7 @@ const ItemsPage = () => {
                         </EmptyContent>
                     </Empty>
                 ) : (
-                    <ItemCheckBoxList items={data} listTitle={listTitle} />
+                    <ItemCheckBoxList items={items} listTitle={listTitle} listType={listType} />
                 )
             ) : null}
         </div>
@@ -154,10 +178,10 @@ const ItemsPage = () => {
         clearSelectedMutation.mutate();
     };
 
-    const handleAddItem = async (itemName: string, quantity?: number, unit?: string) => {
+    const handleAddItem = async (itemName: string, quantity?: number, unit?: string, dueDate?: Date) => {
         return new Promise((resolve, reject) => {
             addItemMutation.mutate(
-                { itemName, quantity, unit },
+                { itemName, quantity, unit, dueDate },
                 {
                     onSuccess: resolve,
                     onError: reject,
@@ -183,6 +207,7 @@ const ItemsPage = () => {
                 handleClearSelected={handleClearSelected}
                 handleRemoveAll={handleClearList}
                 placeholder="Enter item name..."
+                currentListType={currentListType}
             />
         </>
     );

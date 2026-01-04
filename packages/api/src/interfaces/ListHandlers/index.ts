@@ -40,13 +40,20 @@ export const getList = async (ctx: Context) => {
             return;
         }
 
-        const items = await getListService().getListItems(title);
+        const list = await getListService().getList(title);
 
-        logger.info('API: List items retrieved', { listTitle: title, itemCount: items.length });
+        logger.info('API: List retrieved', {
+            listTitle: title,
+            itemCount: list.items.length,
+            listType: list.listType,
+        });
 
         ctx.set('Cache-Control', 'no-store');
         ctx.status = 200;
-        ctx.body = items;
+        ctx.body = {
+            listType: list.listType,
+            items: list.items,
+        };
     } catch (error: unknown) {
         const err = error as { status?: number; message?: string };
 
@@ -89,10 +96,11 @@ export const getLists = async (ctx: Context) => {
 };
 
 export const addList = async (ctx: Context) => {
-    const { title, dateAdded, selectedUsers } = ctx.request.body as {
+    const { title, dateAdded, selectedUsers, listType } = ctx.request.body as {
         title: string;
         dateAdded: Date;
         selectedUsers?: Array<string>;
+        listType?: string;
     };
     const logger = getLogger();
     // Use authenticated user from context, not from request body
@@ -106,13 +114,20 @@ export const addList = async (ctx: Context) => {
     }
 
     try {
-        const list = await getListService().addList(title, dateAdded, authenticatedUser, selectedUsers);
+        const list = await getListService().addList(
+            title,
+            dateAdded,
+            authenticatedUser,
+            selectedUsers,
+            listType as any
+        );
 
         logger.info('API: List created', {
             userId: authenticatedUser.id,
             username: authenticatedUser.username,
             listId: list.id,
             listTitle: title,
+            listType: list.listType,
         });
 
         ctx.status = 200;
@@ -134,11 +149,12 @@ export const addList = async (ctx: Context) => {
 
 export const addItem = async (ctx: Context) => {
     const { title } = ctx.params as { title: string };
-    const { itemName, dateAdded, quantity, unit } = ctx.request.body as {
+    const { itemName, dateAdded, quantity, unit, dueDate } = ctx.request.body as {
         itemName: string;
         dateAdded: Date;
         quantity?: number;
         unit?: string;
+        dueDate?: Date;
     };
     const logger = getLogger();
     const authenticatedUser = ctx.state.user as { id: string; username: string };
@@ -163,7 +179,7 @@ export const addItem = async (ctx: Context) => {
             return;
         }
 
-        const item = await getListService().addItem(title, itemName, dateAdded, quantity, unit);
+        const item = await getListService().addItem(title, itemName, dateAdded, quantity, unit, dueDate);
 
         logger.info('API: Item added to list', {
             listTitle: title,
@@ -171,6 +187,7 @@ export const addItem = async (ctx: Context) => {
             itemId: item.id,
             quantity,
             unit,
+            dueDate,
         });
 
         ctx.status = 200;
@@ -190,11 +207,12 @@ export const addItem = async (ctx: Context) => {
 
 export const updateItem = async (ctx: Context) => {
     const { title, itemName } = ctx.params as { title: string; itemName: string };
-    const { isSelected, newItemName, quantity, unit } = ctx.request.body as {
+    const { isSelected, newItemName, quantity, unit, dueDate } = ctx.request.body as {
         isSelected?: boolean;
         newItemName?: string;
         quantity?: number;
         unit?: string;
+        dueDate?: Date;
     };
     const logger = getLogger();
     const authenticatedUser = ctx.state.user as { id: string; username: string };
@@ -241,16 +259,23 @@ export const updateItem = async (ctx: Context) => {
                 quantity,
                 unit,
             });
+        } else if (dueDate !== undefined) {
+            ctx.body = await getListService().updateItemDueDate(title, itemName, dueDate);
+            logger.info('API: Item due date updated', {
+                listTitle: title,
+                itemName,
+                dueDate,
+            });
         } else {
             ctx.status = 400;
             ctx.body = {
-                error: 'Either isSelected (boolean), newItemName (string), or quantity/unit must be provided',
+                error: 'Either isSelected (boolean), newItemName (string), quantity/unit, or dueDate must be provided',
             };
 
             logger.warn('API: Invalid item update request', {
                 listTitle: title,
                 itemName,
-                providedFields: { isSelected, newItemName, quantity, unit },
+                providedFields: { isSelected, newItemName, quantity, unit, dueDate },
             });
             return;
         }
@@ -260,7 +285,13 @@ export const updateItem = async (ctx: Context) => {
         logger.error('API: Failed to update item', {
             listTitle: title,
             itemName,
-            updateType: newItemName ? 'name' : isSelected !== undefined ? 'selection' : 'quantity',
+            updateType: newItemName
+                ? 'name'
+                : isSelected !== undefined
+                  ? 'selection'
+                  : dueDate !== undefined
+                    ? 'dueDate'
+                    : 'quantity',
             error: err.message,
         });
         ctx.status = err.status ?? 500;

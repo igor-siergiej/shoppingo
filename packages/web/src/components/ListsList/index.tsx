@@ -1,5 +1,6 @@
 import type { ListResponse } from '@shoppingo/types';
-import { Check, Edit2, X, X as XIcon } from 'lucide-react';
+import { ListType as ListTypeEnum } from '@shoppingo/types';
+import { Check, CheckSquare, Edit2, ShoppingCart, X, X as XIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -85,7 +86,14 @@ const ListsList = ({ lists, refetch }: ListsListProps) => {
                                 navigate(`/list/${list.title}`);
                             }}
                         >
-                            {list.title}
+                            <div className="flex items-center gap-2">
+                                {list.listType === ListTypeEnum.TODO ? (
+                                    <CheckSquare className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                                ) : (
+                                    <ShoppingCart className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                                )}
+                                <span>{list.title}</span>
+                            </div>
                         </Button>
                     )}
                 </div>

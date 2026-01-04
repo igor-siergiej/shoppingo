@@ -1,4 +1,4 @@
-import type { Item, ListResponse, User } from '@shoppingo/types';
+import type { Item, ListResponse, ListType, User } from '@shoppingo/types';
 
 import { makeRequest } from './makeRequest';
 import { MethodType } from './types';
@@ -8,7 +8,7 @@ export const getListQuery = (listTitle: string) => ({
     queryFn: async () => await getList(listTitle),
 });
 
-export const getList = async (listTitle: string): Promise<Array<Item>> => {
+export const getList = async (listTitle: string): Promise<{ listType: ListType; items: Array<Item> }> => {
     return await makeRequest({
         pathname: `/api/lists/title/${encodeURIComponent(listTitle)}`,
         method: MethodType.GET,
@@ -29,13 +29,19 @@ export const getLists = async (userId: string): Promise<Array<ListResponse>> => 
     });
 };
 
-export const addList = async (listTitle: string, user: User, selectedUsers?: Array<string>): Promise<unknown> => {
+export const addList = async (
+    listTitle: string,
+    user: User,
+    selectedUsers?: Array<string>,
+    listType?: ListType
+): Promise<unknown> => {
     const dateAdded = generateTimestamp(new Date());
     const requestBody = {
         title: listTitle,
         dateAdded,
         user,
         selectedUsers: selectedUsers || [],
+        ...(listType !== undefined && { listType }),
     };
 
     const result = await makeRequest({
@@ -52,7 +58,8 @@ export const addItem = async (
     itemName: string,
     listTitle: string,
     quantity?: number,
-    unit?: string
+    unit?: string,
+    dueDate?: Date
 ): Promise<unknown> => {
     const dateAdded = generateTimestamp(new Date());
 
@@ -65,6 +72,7 @@ export const addItem = async (
             dateAdded,
             ...(quantity !== undefined && { quantity }),
             ...(unit !== undefined && { unit }),
+            ...(dueDate !== undefined && { dueDate }),
         }),
     });
 
@@ -151,6 +159,17 @@ export const updateItemQuantity = async (listTitle: string, itemName: string, qu
         body: JSON.stringify({
             ...(quantity !== undefined && { quantity }),
             ...(unit !== undefined && { unit }),
+        }),
+    });
+};
+
+export const updateItemDueDate = async (listTitle: string, itemName: string, dueDate?: Date) => {
+    return await makeRequest({
+        pathname: `/api/lists/${encodeURIComponent(listTitle)}/items/${encodeURIComponent(itemName)}`,
+        method: MethodType.POST,
+        operationString: 'update item due date',
+        body: JSON.stringify({
+            ...(dueDate !== undefined && { dueDate }),
         }),
     });
 };

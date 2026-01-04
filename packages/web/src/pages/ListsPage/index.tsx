@@ -1,4 +1,5 @@
 import { useUser } from '@imapps/web-utils';
+import type { ListType } from '@shoppingo/types';
 import { AlertTriangle, ListPlus, Users } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { useQuery } from 'react-query';
@@ -81,18 +82,18 @@ const ListsPage = () => {
         </div>
     );
 
-    const handleAddList = async (listTitle: string, selectedUsers?: Array<string>) => {
+    const handleAddList = async (listTitle: string, selectedUsers?: Array<string>, listType?: ListType) => {
         if (!user) {
             logger.warn('Attempted to add list without user');
 
             return;
         }
 
-        logger.info('Creating list', { listTitle, sharedWith: selectedUsers?.length || 0 });
+        logger.info('Creating list', { listTitle, sharedWith: selectedUsers?.length || 0, listType });
 
         try {
-            await addList(listTitle, user, selectedUsers);
-            logger.info('List created successfully', { listTitle, sharedWith: selectedUsers?.length || 0 });
+            await addList(listTitle, user, selectedUsers, listType);
+            logger.info('List created successfully', { listTitle, sharedWith: selectedUsers?.length || 0, listType });
             await refetch();
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Unknown error';

@@ -1,5 +1,6 @@
-import type { Item } from '@shoppingo/types';
-import { Edit2, ImageOff, Loader2, Trash2 } from 'lucide-react';
+import type { Item, ListType } from '@shoppingo/types';
+import { ListType as ListTypeEnum } from '@shoppingo/types';
+import { Check, Edit2, ImageOff, Loader2, Trash2 } from 'lucide-react';
 import { motion, useAnimation, useMotionValue } from 'motion/react';
 import { type MouseEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
@@ -12,18 +13,20 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 
-import { deleteItem, updateItem, updateItemName, updateItemQuantity } from '../../api';
+import { deleteItem, updateItem, updateItemDueDate, updateItemName, updateItemQuantity } from '../../api';
 
 export interface ItemCheckBoxProps {
     item: Item;
     listTitle: string;
+    listType: ListType;
 }
 
-const ItemCheckBox = ({ item, listTitle }: ItemCheckBoxProps) => {
+const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
     const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false);
     const [drawerEditValue, setDrawerEditValue] = useState('');
     const [drawerQuantityValue, setDrawerQuantityValue] = useState('');
     const [drawerUnitValue, setDrawerUnitValue] = useState('');
+    const [drawerDueDateValue, setDrawerDueDateValue] = useState('');
     const [swipeState, setSwipeState] = useState<'closed' | 'left' | 'right'>('closed');
     const [isDeleting, setIsDeleting] = useState(false);
     const [hasLoadedImage, setHasLoadedImage] = useState(false);
@@ -151,6 +154,39 @@ const ItemCheckBox = ({ item, listTitle }: ItemCheckBoxProps) => {
         },
     });
 
+    // Mutation for updating item due date
+    const updateDueDateMutation = useMutation({
+        mutationFn: (dueDate?: Date) => updateItemDueDate(listTitle, item.name, dueDate),
+        onMutate: async (dueDate) => {
+            await queryClient.cancelQueries([listTitle]);
+            const previousItems = queryClient.getQueryData<Item[]>([listTitle]);
+
+            // Optimistically update item due date
+            queryClient.setQueryData<Item[]>([listTitle], (old) =>
+                old
+                    ? old.map((i) =>
+                          i.name === item.name
+                              ? {
+                                    ...i,
+                                    ...(dueDate !== undefined && { dueDate }),
+                                }
+                              : i
+                      )
+                    : []
+            );
+
+            return { previousItems };
+        },
+        onError: (_err, _variables, context) => {
+            if (context?.previousItems) {
+                queryClient.setQueryData([listTitle], context.previousItems);
+            }
+        },
+        onSettled: () => {
+            void queryClient.invalidateQueries([listTitle]);
+        },
+    });
+
     const handleDeleteItem = async (e?: MouseEvent) => {
         e?.stopPropagation();
 
@@ -169,6 +205,13 @@ const ItemCheckBox = ({ item, listTitle }: ItemCheckBoxProps) => {
         setDrawerEditValue(item.name);
         setDrawerQuantityValue(item.quantity?.toString() ?? '');
         setDrawerUnitValue(item.unit ?? '');
+        if (item.dueDate instanceof Date) {
+            setDrawerDueDateValue(item.dueDate.toISOString().split('T')[0]);
+        } else if (typeof item.dueDate === 'string') {
+            setDrawerDueDateValue(item.dueDate.split('T')[0]);
+        } else {
+            setDrawerDueDateValue('');
+        }
         setIsEditDrawerOpen(true);
 
         // Auto-focus input after drawer animation
@@ -183,6 +226,10 @@ const ItemCheckBox = ({ item, listTitle }: ItemCheckBoxProps) => {
         const newUnit = drawerUnitValue.trim() || undefined;
         const hasQuantityChange = newQuantity !== item.quantity || newUnit !== item.unit;
 
+        const newDueDate = drawerDueDateValue.trim() ? new Date(drawerDueDateValue) : undefined;
+        const hasDueDateChange =
+            newDueDate?.toDateString() !== (item.dueDate instanceof Date ? item.dueDate.toDateString() : undefined);
+
         if (hasNameChange) {
             updateNameMutation.mutate(drawerEditValue.trim());
         }
@@ -191,10 +238,15 @@ const ItemCheckBox = ({ item, listTitle }: ItemCheckBoxProps) => {
             updateQuantityMutation.mutate({ quantity: newQuantity, unit: newUnit });
         }
 
+        if (hasDueDateChange && listType === ListTypeEnum.TODO) {
+            updateDueDateMutation.mutate(newDueDate);
+        }
+
         setIsEditDrawerOpen(false);
         setDrawerEditValue('');
         setDrawerQuantityValue('');
         setDrawerUnitValue('');
+        setDrawerDueDateValue('');
     };
 
     const handleDrawerEditCancel = () => {
@@ -202,6 +254,7 @@ const ItemCheckBox = ({ item, listTitle }: ItemCheckBoxProps) => {
         setDrawerEditValue('');
         setDrawerQuantityValue('');
         setDrawerUnitValue('');
+        setDrawerDueDateValue('');
     };
 
     // Reset image loading state when image source changes
@@ -392,42 +445,68 @@ const ItemCheckBox = ({ item, listTitle }: ItemCheckBoxProps) => {
                     >
                         <CardContent className="flex items-center justify-between p-0.5">
                             <div className="flex items-center gap-4 flex-1">
-                                {/* Item image: single <img> to avoid duplicate requests. Overlays for loading/spinner/error. */}
-                                <div className="relative h-12 w-12 shrink-0">
-                                    {/* Image */}
-                                    <img
-                                        ref={imageRef}
-                                        src={imageSrc}
-                                        alt={item.name}
-                                        className={`h-12 w-12 rounded-full object-cover border ${hasLoadedImage && !hasImageError ? 'opacity-100' : 'opacity-0'}`}
-                                        onLoad={() => setHasLoadedImage(true)}
-                                        onError={() => setHasImageError(true)}
-                                    />
-
-                                    {/* Loading skeleton (only before load and no error) */}
-                                    {!hasLoadedImage && !hasImageError && (
-                                        <Skeleton className="absolute inset-0 h-12 w-12 rounded-full border" />
-                                    )}
-
-                                    {/* Toggle spinner overlay */}
-                                    {toggleMutation.isLoading && (
-                                        <motion.div
-                                            className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm rounded-full"
-                                            initial={{ opacity: 0 }}
-                                            animate={{ opacity: 1 }}
-                                            transition={{ duration: 0.15 }}
+                                {/* Checkbox/Image display - TODO lists show square checkbox, shopping lists show image */}
+                                {listType === ListTypeEnum.TODO ? (
+                                    // Square checkbox for TODO items
+                                    <div className="relative h-12 w-12 shrink-0 flex items-center justify-center">
+                                        <div
+                                            className={`h-6 w-6 rounded border-2 flex items-center justify-center transition-all ${
+                                                item.isSelected
+                                                    ? 'bg-primary border-primary'
+                                                    : 'border-muted-foreground hover:border-primary'
+                                            }`}
                                         >
-                                            <Loader2 className="h-5 w-5 animate-spin text-primary" />
-                                        </motion.div>
-                                    )}
-
-                                    {/* Error fallback icon */}
-                                    {hasImageError && (
-                                        <div className="absolute inset-0 h-12 w-12 rounded-full border flex items-center justify-center bg-muted/20 text-muted-foreground">
-                                            <ImageOff className="h-5 w-5" />
+                                            {item.isSelected && <Check className="h-4 w-4 text-white" />}
                                         </div>
-                                    )}
-                                </div>
+                                        {toggleMutation.isLoading && (
+                                            <motion.div
+                                                className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm"
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                transition={{ duration: 0.15 }}
+                                            >
+                                                <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                                            </motion.div>
+                                        )}
+                                    </div>
+                                ) : (
+                                    // Circular image for shopping items
+                                    <div className="relative h-12 w-12 shrink-0">
+                                        {/* Image */}
+                                        <img
+                                            ref={imageRef}
+                                            src={imageSrc}
+                                            alt={item.name}
+                                            className={`h-12 w-12 rounded-full object-cover border ${hasLoadedImage && !hasImageError ? 'opacity-100' : 'opacity-0'}`}
+                                            onLoad={() => setHasLoadedImage(true)}
+                                            onError={() => setHasImageError(true)}
+                                        />
+
+                                        {/* Loading skeleton (only before load and no error) */}
+                                        {!hasLoadedImage && !hasImageError && (
+                                            <Skeleton className="absolute inset-0 h-12 w-12 rounded-full border" />
+                                        )}
+
+                                        {/* Toggle spinner overlay */}
+                                        {toggleMutation.isLoading && (
+                                            <motion.div
+                                                className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm rounded-full"
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                transition={{ duration: 0.15 }}
+                                            >
+                                                <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                                            </motion.div>
+                                        )}
+
+                                        {/* Error fallback icon */}
+                                        {hasImageError && (
+                                            <div className="absolute inset-0 h-12 w-12 rounded-full border flex items-center justify-center bg-muted/20 text-muted-foreground">
+                                                <ImageOff className="h-5 w-5" />
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
 
                                 <Label
                                     className={`flex-1 cursor-pointer text-base transition-all duration-300 ${
@@ -448,11 +527,22 @@ const ItemCheckBox = ({ item, listTitle }: ItemCheckBoxProps) => {
                                 </Label>
                             </div>
 
-                            {/* Quantity badge on the right */}
-                            {item.quantity !== undefined && item.unit && (
+                            {/* Quantity badge for shopping lists */}
+                            {listType === ListTypeEnum.SHOPPING && item.quantity !== undefined && item.unit && (
                                 <div className="flex items-center justify-center px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 ml-2 shrink-0">
                                     <span className="text-sm font-semibold text-primary whitespace-nowrap">
                                         {item.quantity} {item.unit}
+                                    </span>
+                                </div>
+                            )}
+
+                            {/* Due date badge for TODO lists */}
+                            {listType === ListTypeEnum.TODO && item.dueDate && (
+                                <div className="flex items-center justify-center px-3 py-1.5 rounded-full border ml-2 shrink-0">
+                                    <span className="text-sm font-semibold whitespace-nowrap">
+                                        {item.dueDate instanceof Date
+                                            ? item.dueDate.toLocaleDateString()
+                                            : new Date(item.dueDate).toLocaleDateString()}
                                     </span>
                                 </div>
                             )}
@@ -490,35 +580,52 @@ const ItemCheckBox = ({ item, listTitle }: ItemCheckBoxProps) => {
                             />
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        {/* Quantity and Unit fields for shopping lists */}
+                        {listType === ListTypeEnum.SHOPPING && (
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <Label htmlFor="edit-item-quantity">Quantity</Label>
+                                    <Input
+                                        id="edit-item-quantity"
+                                        type="number"
+                                        value={drawerQuantityValue}
+                                        onChange={(e) => setDrawerQuantityValue(e.target.value)}
+                                        placeholder="e.g., 2"
+                                        className="mt-2"
+                                        step="0.01"
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="edit-item-unit">Unit</Label>
+                                    <Select value={drawerUnitValue} onValueChange={setDrawerUnitValue}>
+                                        <SelectTrigger id="edit-item-unit" className="mt-2">
+                                            <SelectValue placeholder="Select unit" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="pcs">pcs</SelectItem>
+                                            <SelectItem value="g">g</SelectItem>
+                                            <SelectItem value="kg">kg</SelectItem>
+                                            <SelectItem value="ml">ml</SelectItem>
+                                            <SelectItem value="L">L</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Due Date field for TODO lists */}
+                        {listType === ListTypeEnum.TODO && (
                             <div>
-                                <Label htmlFor="edit-item-quantity">Quantity</Label>
+                                <Label htmlFor="edit-item-due-date">Due Date (Optional)</Label>
                                 <Input
-                                    id="edit-item-quantity"
-                                    type="number"
-                                    value={drawerQuantityValue}
-                                    onChange={(e) => setDrawerQuantityValue(e.target.value)}
-                                    placeholder="e.g., 2"
+                                    id="edit-item-due-date"
+                                    type="date"
+                                    value={drawerDueDateValue}
+                                    onChange={(e) => setDrawerDueDateValue(e.target.value)}
                                     className="mt-2"
-                                    step="0.01"
                                 />
                             </div>
-                            <div>
-                                <Label htmlFor="edit-item-unit">Unit</Label>
-                                <Select value={drawerUnitValue} onValueChange={setDrawerUnitValue}>
-                                    <SelectTrigger id="edit-item-unit" className="mt-2">
-                                        <SelectValue placeholder="Select unit" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="pcs">pcs</SelectItem>
-                                        <SelectItem value="g">g</SelectItem>
-                                        <SelectItem value="kg">kg</SelectItem>
-                                        <SelectItem value="ml">ml</SelectItem>
-                                        <SelectItem value="L">L</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
+                        )}
                     </div>
                     <DrawerFooter>
                         <Button onClick={handleDrawerEditSave} disabled={!drawerEditValue.trim()}>

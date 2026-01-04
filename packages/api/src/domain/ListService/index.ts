@@ -1,6 +1,7 @@
 import type { Logger } from '@imapps/api-utils';
 
-import type { Item, List, User } from '@shoppingo/types';
+import type { Item, List, ListType, User } from '@shoppingo/types';
+import { ListType as ListTypeEnum } from '@shoppingo/types';
 
 import type { IdGenerator } from '../IdGenerator';
 import type { ListRepository } from '../ListRepository';
@@ -19,6 +20,14 @@ export class ListService {
 
         if (!list) {
             throw Object.assign(new Error('List not found'), { status: 404 });
+        }
+
+        // Backward compatibility: default to SHOPPING if listType is missing
+        if (!list.listType) {
+            this.logger?.warn('List missing listType field, defaulting to SHOPPING', {
+                listTitle: title,
+            });
+            list.listType = ListTypeEnum.SHOPPING;
         }
 
         return list;
@@ -51,7 +60,13 @@ export class ListService {
         }
     }
 
-    async addList(title: string, dateAdded: Date, owner: User, selectedUsernames?: Array<string>) {
+    async addList(
+        title: string,
+        dateAdded: Date,
+        owner: User,
+        selectedUsernames?: Array<string>,
+        listType: ListType = ListTypeEnum.SHOPPING
+    ) {
         let users: Array<User> = [owner];
 
         try {
@@ -93,6 +108,7 @@ export class ListService {
                 dateAdded,
                 items: [],
                 users,
+                listType,
             };
 
             await this.repo.insert(list);
@@ -101,6 +117,7 @@ export class ListService {
                 listTitle: title,
                 owner: owner.username,
                 userCount: users.length,
+                listType,
             });
 
             return list;
@@ -114,12 +131,21 @@ export class ListService {
         }
     }
 
-    async addItem(title: string, itemName: string, dateAdded: Date, quantity?: number, unit?: string) {
+    async addItem(title: string, itemName: string, dateAdded: Date, quantity?: number, unit?: string, dueDate?: Date) {
         try {
             const list = await this.repo.getByTitle(title);
 
             if (!list) {
                 throw Object.assign(new Error('List not found'), { status: 404 });
+            }
+
+            // Validate list type constraints
+            if (list.listType === ListTypeEnum.TODO && (quantity !== undefined || unit !== undefined)) {
+                throw Object.assign(new Error('TODO lists cannot have quantity or unit'), { status: 400 });
+            }
+
+            if (list.listType === ListTypeEnum.SHOPPING && dueDate !== undefined) {
+                throw Object.assign(new Error('Shopping lists cannot have due dates'), { status: 400 });
             }
 
             // Check if an item with the same name already exists (case-insensitive)
@@ -136,6 +162,7 @@ export class ListService {
                 isSelected: false,
                 ...(quantity !== undefined && { quantity }),
                 ...(unit !== undefined && { unit }),
+                ...(dueDate !== undefined && { dueDate }),
             };
 
             await this.repo.pushItem(title, item);
@@ -150,6 +177,40 @@ export class ListService {
             return item;
         } catch (error) {
             this.logger?.error('Failed to add item to list', { listTitle: title, itemName, error });
+            throw error;
+        }
+    }
+
+    async updateItemDueDate(title: string, itemName: string, dueDate?: Date) {
+        try {
+            const list = await this.repo.getByTitle(title);
+
+            if (!list) {
+                throw Object.assign(new Error('List not found'), { status: 404 });
+            }
+
+            if (list.listType !== ListTypeEnum.TODO) {
+                throw Object.assign(new Error('Due dates only available for TODO lists'), { status: 400 });
+            }
+
+            list.items = list.items.map((item) => (item.name === itemName ? { ...item, dueDate } : item));
+
+            await this.repo.replaceByTitle(title, list);
+
+            this.logger?.info('Item due date updated', {
+                listTitle: title,
+                itemName,
+                dueDate,
+            });
+
+            return { message: 'Due date updated successfully' };
+        } catch (error) {
+            this.logger?.error('Failed to update item due date', {
+                listTitle: title,
+                itemName,
+                dueDate,
+                error,
+            });
             throw error;
         }
     }
