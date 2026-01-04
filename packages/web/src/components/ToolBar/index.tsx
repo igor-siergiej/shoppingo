@@ -3,13 +3,14 @@
 import { useAuth } from '@imapps/web-utils';
 import type { ListType } from '@shoppingo/types';
 import { ListType as ListTypeEnum } from '@shoppingo/types';
-import { ArrowLeft, CheckCheck, Download, LogOut, Menu, Plus, Search, Trash2, User } from 'lucide-react';
+import { ArrowLeft, Calendar, CheckCheck, Download, LogOut, Menu, Plus, Search, Trash2, User } from 'lucide-react';
 import { AnimatePresence, MotionConfig, motion } from 'motion/react';
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import useMeasure from 'react-use-measure';
 
 import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent } from '@/components/ui/card';
 import {
     Drawer,
@@ -22,6 +23,7 @@ import {
 } from '@/components/ui/drawer';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { RippleButton } from '@/components/ui/ripple';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
@@ -422,17 +424,38 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
                                                     </div>
                                                 )}
 
-                                                {/* Due date field for TODO lists */}
+                                                {/* Due date picker for TODO lists */}
                                                 {isItemsPage && currentListType === ListTypeEnum.TODO && (
                                                     <div className="space-y-2">
-                                                        <Label htmlFor="due-date">Due Date (Optional)</Label>
-                                                        <Input
-                                                            id="due-date"
-                                                            type="date"
-                                                            value={dueDate}
-                                                            onChange={(e) => setDueDate(e.target.value)}
-                                                            className="mt-2 h-12 text-base cursor-pointer"
-                                                        />
+                                                        <Label>Due Date (Optional)</Label>
+                                                        <Popover>
+                                                            <PopoverTrigger asChild>
+                                                                <Button
+                                                                    variant="outline"
+                                                                    className="w-full h-12 justify-start text-base font-normal"
+                                                                >
+                                                                    <Calendar className="mr-2 h-4 w-4" />
+                                                                    {dueDate
+                                                                        ? new Date(dueDate).toLocaleDateString('en-US', {
+                                                                              month: 'short',
+                                                                              day: 'numeric',
+                                                                              year: 'numeric',
+                                                                          })
+                                                                        : 'Pick a date'}
+                                                                </Button>
+                                                            </PopoverTrigger>
+                                                            <PopoverContent className="w-auto p-0">
+                                                                <Calendar
+                                                                    mode="single"
+                                                                    selected={dueDate ? new Date(dueDate) : undefined}
+                                                                    onSelect={(date) => {
+                                                                        setDueDate(date ? date.toISOString().split('T')[0] : '');
+                                                                    }}
+                                                                    disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                                                                    initialFocus
+                                                                />
+                                                            </PopoverContent>
+                                                        </Popover>
                                                     </div>
                                                 )}
 
