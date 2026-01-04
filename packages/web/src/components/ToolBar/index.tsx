@@ -3,7 +3,18 @@
 import { useAuth } from '@imapps/web-utils';
 import type { ListType } from '@shoppingo/types';
 import { ListType as ListTypeEnum } from '@shoppingo/types';
-import { ArrowLeft, Calendar as CalendarIcon, CheckCheck, Download, LogOut, Menu, Plus, Search, Trash2, User } from 'lucide-react';
+import {
+    ArrowLeft,
+    Calendar as CalendarIcon,
+    CheckCheck,
+    Download,
+    LogOut,
+    Menu,
+    Plus,
+    Search,
+    Trash2,
+    User,
+} from 'lucide-react';
 import { AnimatePresence, MotionConfig, motion } from 'motion/react';
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -436,11 +447,14 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
                                                                 >
                                                                     <CalendarIcon className="mr-2 h-4 w-4" />
                                                                     {dueDate
-                                                                        ? new Date(dueDate).toLocaleDateString('en-US', {
-                                                                              month: 'short',
-                                                                              day: 'numeric',
-                                                                              year: 'numeric',
-                                                                          })
+                                                                        ? new Date(dueDate).toLocaleDateString(
+                                                                              'en-US',
+                                                                              {
+                                                                                  month: 'short',
+                                                                                  day: 'numeric',
+                                                                                  year: 'numeric',
+                                                                              }
+                                                                          )
                                                                         : 'Pick a date'}
                                                                 </Button>
                                                             </PopoverTrigger>
@@ -449,9 +463,13 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
                                                                     mode="single"
                                                                     selected={dueDate ? new Date(dueDate) : undefined}
                                                                     onSelect={(date) => {
-                                                                        setDueDate(date ? date.toISOString().split('T')[0] : '');
+                                                                        setDueDate(
+                                                                            date ? date.toISOString().split('T')[0] : ''
+                                                                        );
                                                                     }}
-                                                                    disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                                                                    disabled={(date) =>
+                                                                        date < new Date(new Date().setHours(0, 0, 0, 0))
+                                                                    }
                                                                     initialFocus
                                                                 />
                                                             </PopoverContent>
