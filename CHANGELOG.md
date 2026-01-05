@@ -1,3 +1,23 @@
+# [1.13.0](https://gitlab.com/imapps/shoppingo/compare/v1.12.0...v1.13.0) (2026-01-05)
+
+
+### Bug Fixes
+
+* apply linting auto-fixes for formatting ([223b53d](https://gitlab.com/imapps/shoppingo/commit/223b53d75e6341e68499d4f24123943dc942d2b5))
+* match exact shadcn date-picker example implementation ([af3f23f](https://gitlab.com/imapps/shoppingo/commit/af3f23f380cbc6c47ffdd8f6c6a48698e2a97852))
+* resolve 3 linting errors ([235927a](https://gitlab.com/imapps/shoppingo/commit/235927a9f86dc0f59bcd76ea6ec6ae36af93f0b5))
+* resolve Calendar identifier conflict ([edb3e92](https://gitlab.com/imapps/shoppingo/commit/edb3e920c514d65f65ba888fb09d2a0830dfb61e))
+* resolve date picker in drawer by increasing z-index ([ddac632](https://gitlab.com/imapps/shoppingo/commit/ddac63223bc16ce717faeea9a330647ef4110550))
+* resolve TODO list checkbox error and calendar styling ([45d7b17](https://gitlab.com/imapps/shoppingo/commit/45d7b178d873872abc54316015be6041cbad3f31))
+* use shadcn date-picker pattern with proper state management ([dca8eed](https://gitlab.com/imapps/shoppingo/commit/dca8eede35a8bf05452a474ee3552b0e07aa56c2))
+
+
+### Features
+
+* add date picker popover for TODO items ([8ff5b98](https://gitlab.com/imapps/shoppingo/commit/8ff5b98f2d76073b14e6b16164dd275b38534691))
+* complete TODO list feature with context-aware UI and date picker ([bb78c73](https://gitlab.com/imapps/shoppingo/commit/bb78c7384e16c7e78446c86dc6c3f201149c4939))
+* fix calendar padding ([6a9d9ea](https://gitlab.com/imapps/shoppingo/commit/6a9d9eaa7ace2dff424e57d65e829250ed0eeaae))
+
 # [1.12.0](https://gitlab.com/imapps/shoppingo/compare/v1.11.0...v1.12.0) (2026-01-04)
 
 
