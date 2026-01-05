@@ -1,15 +1,27 @@
 import type { Item, ListType } from '@shoppingo/types';
 import { ListType as ListTypeEnum } from '@shoppingo/types';
-import { Check, Edit2, ImageOff, Loader2, Trash2 } from 'lucide-react';
+import { differenceInHours, format } from 'date-fns';
+import {
+    AlertCircle,
+    AlertTriangle,
+    Calendar as CalendarIcon,
+    Check,
+    Edit2,
+    ImageOff,
+    Loader2,
+    Trash2,
+} from 'lucide-react';
 import { motion, useAnimation, useMotionValue } from 'motion/react';
 import { type MouseEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 
 import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent } from '@/components/ui/card';
 import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -26,7 +38,7 @@ const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
     const [drawerEditValue, setDrawerEditValue] = useState('');
     const [drawerQuantityValue, setDrawerQuantityValue] = useState('');
     const [drawerUnitValue, setDrawerUnitValue] = useState('');
-    const [drawerDueDateValue, setDrawerDueDateValue] = useState('');
+    const [drawerDueDateValue, setDrawerDueDateValue] = useState<Date | undefined>(undefined);
     const [swipeState, setSwipeState] = useState<'closed' | 'left' | 'right'>('closed');
     const [isDeleting, setIsDeleting] = useState(false);
     const [hasLoadedImage, setHasLoadedImage] = useState(false);
@@ -216,11 +228,11 @@ const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
         setDrawerQuantityValue(item.quantity?.toString() ?? '');
         setDrawerUnitValue(item.unit ?? '');
         if (item.dueDate instanceof Date) {
-            setDrawerDueDateValue(item.dueDate.toISOString().split('T')[0]);
+            setDrawerDueDateValue(item.dueDate);
         } else if (typeof item.dueDate === 'string') {
-            setDrawerDueDateValue(item.dueDate.split('T')[0]);
+            setDrawerDueDateValue(new Date(item.dueDate));
         } else {
-            setDrawerDueDateValue('');
+            setDrawerDueDateValue(undefined);
         }
         setIsEditDrawerOpen(true);
 
@@ -236,9 +248,9 @@ const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
         const newUnit = drawerUnitValue.trim() || undefined;
         const hasQuantityChange = newQuantity !== item.quantity || newUnit !== item.unit;
 
-        const newDueDate = drawerDueDateValue.trim() ? new Date(drawerDueDateValue) : undefined;
         const hasDueDateChange =
-            newDueDate?.toDateString() !== (item.dueDate instanceof Date ? item.dueDate.toDateString() : undefined);
+            drawerDueDateValue?.toDateString() !==
+            (item.dueDate instanceof Date ? item.dueDate.toDateString() : undefined);
 
         if (hasNameChange) {
             updateNameMutation.mutate(drawerEditValue.trim());
@@ -249,14 +261,14 @@ const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
         }
 
         if (hasDueDateChange && listType === ListTypeEnum.TODO) {
-            updateDueDateMutation.mutate(newDueDate);
+            updateDueDateMutation.mutate(drawerDueDateValue);
         }
 
         setIsEditDrawerOpen(false);
         setDrawerEditValue('');
         setDrawerQuantityValue('');
         setDrawerUnitValue('');
-        setDrawerDueDateValue('');
+        setDrawerDueDateValue(undefined);
     };
 
     const handleDrawerEditCancel = () => {
@@ -264,7 +276,7 @@ const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
         setDrawerEditValue('');
         setDrawerQuantityValue('');
         setDrawerUnitValue('');
-        setDrawerDueDateValue('');
+        setDrawerDueDateValue(undefined);
     };
 
     // Reset image loading state when image source changes
@@ -547,15 +559,33 @@ const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
                             )}
 
                             {/* Due date badge for TODO lists */}
-                            {listType === ListTypeEnum.TODO && item.dueDate && (
-                                <div className="flex items-center justify-center px-3 py-1.5 rounded-full border ml-2 shrink-0">
-                                    <span className="text-sm font-semibold whitespace-nowrap">
-                                        {item.dueDate instanceof Date
-                                            ? item.dueDate.toLocaleDateString()
-                                            : new Date(item.dueDate).toLocaleDateString()}
-                                    </span>
-                                </div>
-                            )}
+                            {listType === ListTypeEnum.TODO &&
+                                item.dueDate &&
+                                (() => {
+                                    const dueDate =
+                                        item.dueDate instanceof Date ? item.dueDate : new Date(item.dueDate);
+                                    const hoursUntilDue = differenceInHours(dueDate, new Date());
+                                    const isAlertRed = hoursUntilDue < 24;
+                                    const isWarningYellow = hoursUntilDue < 72 && !isAlertRed;
+
+                                    return (
+                                        <div
+                                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border ml-2 shrink-0 ${
+                                                isAlertRed
+                                                    ? 'bg-red-100 text-red-800 border-red-300'
+                                                    : isWarningYellow
+                                                      ? 'bg-yellow-100 text-yellow-800 border-yellow-300'
+                                                      : ''
+                                            }`}
+                                        >
+                                            {isAlertRed && <AlertCircle className="h-4 w-4" />}
+                                            {isWarningYellow && <AlertTriangle className="h-4 w-4" />}
+                                            <span className="text-sm font-semibold whitespace-nowrap">
+                                                {format(dueDate, 'dd/MM/yyyy')}
+                                            </span>
+                                        </div>
+                                    );
+                                })()}
                         </CardContent>
                     </Card>
                 </motion.div>
@@ -564,10 +594,10 @@ const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
             {/* Edit Item Drawer */}
             <Drawer open={isEditDrawerOpen} onOpenChange={setIsEditDrawerOpen}>
                 <DrawerContent>
-                    <DrawerHeader>
-                        <DrawerTitle>Edit Item</DrawerTitle>
-                    </DrawerHeader>
-                    <div className="p-4 pb-0 space-y-4">
+                    <div className="mx-auto w-full max-w-sm">
+                        <DrawerHeader>
+                            <DrawerTitle>Edit Item</DrawerTitle>
+                        </DrawerHeader>
                         <div>
                             <Label htmlFor="edit-item-name">Item Name</Label>
                             <Input
@@ -625,28 +655,49 @@ const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
 
                         {/* Due Date field for TODO lists */}
                         {listType === ListTypeEnum.TODO && (
-                            <div>
-                                <Label htmlFor="edit-item-due-date">Due Date (Optional)</Label>
-                                <Input
-                                    id="edit-item-due-date"
-                                    type="date"
-                                    value={drawerDueDateValue}
-                                    onChange={(e) => setDrawerDueDateValue(e.target.value)}
-                                    className="mt-2"
-                                />
+                            <div className="space-y-2">
+                                <Label>Due Date (Optional)</Label>
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant="outline"
+                                            data-empty={!drawerDueDateValue}
+                                            className="data-[empty=true]:text-muted-foreground w-full justify-start text-left font-normal h-10"
+                                        >
+                                            <CalendarIcon className="mr-2 h-4 w-4" />
+                                            {drawerDueDateValue
+                                                ? format(drawerDueDateValue, 'dd/MM/yyyy')
+                                                : 'Pick a date'}
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent
+                                        className="w-fit overflow-visible p-4 max-w-xs"
+                                        align="start"
+                                        side="top"
+                                        sideOffset={4}
+                                    >
+                                        <div style={{ '--cell-size': '3.5rem' } as React.CSSProperties}>
+                                            <Calendar
+                                                mode="single"
+                                                selected={drawerDueDateValue}
+                                                onSelect={setDrawerDueDateValue}
+                                            />
+                                        </div>
+                                    </PopoverContent>
+                                </Popover>
                             </div>
                         )}
-                    </div>
-                    <DrawerFooter>
-                        <Button onClick={handleDrawerEditSave} disabled={!drawerEditValue.trim()}>
-                            Save Changes
-                        </Button>
-                        <DrawerClose asChild>
-                            <Button variant="outline" onClick={handleDrawerEditCancel}>
-                                Cancel
+                        <DrawerFooter>
+                            <Button onClick={handleDrawerEditSave} disabled={!drawerEditValue.trim()}>
+                                Save Changes
                             </Button>
-                        </DrawerClose>
-                    </DrawerFooter>
+                            <DrawerClose asChild>
+                                <Button variant="outline" onClick={handleDrawerEditCancel}>
+                                    Cancel
+                                </Button>
+                            </DrawerClose>
+                        </DrawerFooter>
+                    </div>
                 </DrawerContent>
             </Drawer>
         </motion.div>

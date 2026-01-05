@@ -444,29 +444,36 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
                                                                 <Button
                                                                     variant="outline"
                                                                     data-empty={!dueDate}
-                                                                    className="data-[empty=true]:text-muted-foreground w-[280px] justify-start text-left font-normal"
+                                                                    className="data-[empty=true]:text-muted-foreground w-full justify-start text-left font-normal h-10"
                                                                 >
                                                                     <CalendarIcon className="mr-2 h-4 w-4" />
                                                                     {dueDate ? (
-                                                                        format(dueDate, 'PPP')
+                                                                        format(dueDate, 'dd/MM/yyyy')
                                                                     ) : (
                                                                         <span>Pick a date</span>
                                                                     )}
                                                                 </Button>
                                                             </PopoverTrigger>
                                                             <PopoverContent
-                                                                className="w-auto overflow-visible p-0"
+                                                                className="w-fit overflow-visible p-4 max-w-xs"
                                                                 align="start"
                                                                 side="top"
                                                                 sideOffset={4}
                                                             >
-                                                                <Calendar
-                                                                    mode="single"
-                                                                    selected={dueDate}
-                                                                    onSelect={setDueDate}
-                                                                    className="rounded-md border shadow-sm"
-                                                                    captionLayout="dropdown"
-                                                                />
+                                                                <div
+                                                                    style={
+                                                                        {
+                                                                            '--cell-size': '3.5rem',
+                                                                        } as React.CSSProperties
+                                                                    }
+                                                                >
+                                                                    <Calendar
+                                                                        mode="single"
+                                                                        selected={dueDate}
+                                                                        onSelect={setDueDate}
+                                                                        captionLayout="dropdown"
+                                                                    />
+                                                                </div>
                                                             </PopoverContent>
                                                         </Popover>
                                                     </div>
