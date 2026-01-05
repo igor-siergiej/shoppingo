@@ -20,5 +20,6 @@ export default defineConfig({
         'minio',
         '@imapps/api-utils',
         '@google/genai',
+        '@shoppingo/types',
     ],
 });
