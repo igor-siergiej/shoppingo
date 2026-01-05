@@ -1,3 +1,10 @@
+# [1.14.0](https://gitlab.com/imapps/shoppingo/compare/v1.13.0...v1.14.0) (2026-01-05)
+
+
+### Features
+
+* fix types package external dependency ([5978217](https://gitlab.com/imapps/shoppingo/commit/59782170912e75b80e829e7cc4af417635b8db34))
+
 # [1.13.0](https://gitlab.com/imapps/shoppingo/compare/v1.12.0...v1.13.0) (2026-01-05)
 
 
