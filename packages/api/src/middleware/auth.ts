@@ -33,11 +33,23 @@ export const authenticate = async (ctx: Context, next: Next) => {
             return;
         }
 
+        // Get the origin for the request (for service-to-service CORS)
+        // Use the request's origin if available, otherwise use a default
+        const originHeader = ctx.request.headers.origin || ctx.request.headers.referer;
+        const headers: Record<string, string> = {
+            Authorization: authHeader,
+        };
+
+        // Add Origin header for service-to-service communication
+        if (originHeader) {
+            // Extract just the origin part from referer if needed (protocol + domain)
+            const origin = originHeader.includes('://') ? originHeader.split('/', 3).join('/') : originHeader;
+            headers.Origin = origin;
+        }
+
         const response = await fetch(`${kivoUrl}/verify`, {
             method: 'GET',
-            headers: {
-                Authorization: authHeader,
-            },
+            headers,
         });
 
         if (!response.ok) {
