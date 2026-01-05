@@ -1,3 +1,10 @@
+# [1.15.0](https://gitlab.com/imapps/shoppingo/compare/v1.14.0...v1.15.0) (2026-01-05)
+
+
+### Features
+
+* add Origin header to kivo /verify requests ([3e2f8df](https://gitlab.com/imapps/shoppingo/commit/3e2f8df909eecb40ec34f25efb61d29df85f47f6))
+
 # [1.14.0](https://gitlab.com/imapps/shoppingo/compare/v1.13.0...v1.14.0) (2026-01-05)
 
 
