@@ -81,7 +81,7 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
         const [quantity, setQuantity] = useState('');
         const [unit, setUnit] = useState('');
         const [listType, setListType] = useState<ListType>(ListTypeEnum.SHOPPING);
-        const [dueDate, setDueDate] = useState<Date | undefined>(new Date());
+        const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
         const inputRef = useRef<HTMLInputElement>(null);
         const menuCardRef = useRef<HTMLDivElement>(null);
 
