@@ -1,3 +1,15 @@
+# [1.16.0](https://gitlab.com/imapps/shoppingo/compare/v1.15.0...v1.16.0) (2026-01-29)
+
+
+### Bug Fixes
+
+* not being able to add shopping list items ([86a4000](https://gitlab.com/imapps/shoppingo/commit/86a40003a71de0a981548741be23a0151a231af6))
+
+
+### Features
+
+* added support for openai models for image generation ([64aa415](https://gitlab.com/imapps/shoppingo/commit/64aa415325f8a8cfd9ab224246c9df9a8ed75629))
+
 # [1.15.0](https://gitlab.com/imapps/shoppingo/compare/v1.14.0...v1.15.0) (2026-01-05)
 
 
