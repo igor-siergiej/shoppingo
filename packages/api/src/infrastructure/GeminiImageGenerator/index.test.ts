@@ -59,7 +59,7 @@ describe('GeminiImageGenerator', () => {
                 const result = await generator.generateImage('test prompt');
 
                 expect(mockGenerateContent).toHaveBeenCalledWith({
-                    model: 'gemini-2.5-flash-image-preview',
+                    model: 'imagen-3.0-fast-001',
                     contents: 'test prompt',
                 });
                 expect(mockSharpInstance.resize).toHaveBeenCalled();
@@ -74,9 +74,7 @@ describe('GeminiImageGenerator', () => {
         describe('When no candidates are returned', () => {
             it('should throw an error', async () => {
                 const mockResponse = {
-                    response: {
-                        candidates: [],
-                    },
+                    candidates: [],
                 };
 
                 mockGenerateContent.mockResolvedValue(mockResponse);
@@ -91,9 +89,7 @@ describe('GeminiImageGenerator', () => {
         describe('When no content in candidate', () => {
             it('should throw an error', async () => {
                 const mockResponse = {
-                    response: {
-                        candidates: [{}],
-                    },
+                    candidates: [{}],
                 };
 
                 mockGenerateContent.mockResolvedValue(mockResponse);
@@ -108,13 +104,11 @@ describe('GeminiImageGenerator', () => {
         describe('When no parts in content', () => {
             it('should throw an error', async () => {
                 const mockResponse = {
-                    response: {
-                        candidates: [
-                            {
-                                content: {},
-                            },
-                        ],
-                    },
+                    candidates: [
+                        {
+                            content: {},
+                        },
+                    ],
                 };
 
                 mockGenerateContent.mockResolvedValue(mockResponse);
@@ -129,15 +123,13 @@ describe('GeminiImageGenerator', () => {
         describe('When no inline data in parts', () => {
             it('should throw an error', async () => {
                 const mockResponse = {
-                    response: {
-                        candidates: [
-                            {
-                                content: {
-                                    parts: [{}],
-                                },
+                    candidates: [
+                        {
+                            content: {
+                                parts: [{}],
                             },
-                        ],
-                    },
+                        },
+                    ],
                 };
 
                 mockGenerateContent.mockResolvedValue(mockResponse);

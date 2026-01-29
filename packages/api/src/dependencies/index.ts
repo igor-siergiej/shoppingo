@@ -8,6 +8,7 @@ import { HttpAuthClient } from '../infrastructure/AuthClient';
 import { BucketStore } from '../infrastructure/BucketStore';
 import { GeminiImageGenerator } from '../infrastructure/GeminiImageGenerator';
 import { MongoListRepository } from '../infrastructure/MongoListRepository';
+import { OpenAIImageGenerator } from '../infrastructure/OpenAIImageGenerator';
 import { UuidGenerator } from '../infrastructure/UuidGenerator';
 import { type Dependencies, DependencyToken } from './types';
 
@@ -63,7 +64,15 @@ export const registerDepdendencies = () => {
         // @ts-expect-error - Dependency injection requires constructor return override
         class {
             constructor() {
-                return new GeminiImageGenerator(config.get('geminiApiKey'));
+                const provider = config.get('imageProvider') || 'gemini';
+
+                if (provider === 'openai') {
+                    const model = config.get('openaiModel') || 'gpt-image-1-mini';
+                    return new OpenAIImageGenerator(config.get('openaiApiKey') || '', model);
+                } else {
+                    const model = config.get('geminiModel') || 'imagen-3.0-fast-001';
+                    return new GeminiImageGenerator(config.get('geminiApiKey') || '', model);
+                }
             }
         }
     );

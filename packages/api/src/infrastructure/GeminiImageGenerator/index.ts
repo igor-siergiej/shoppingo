@@ -4,7 +4,10 @@ import sharp from 'sharp';
 import type { ImageGenerator } from '../../domain/ImageService/types';
 
 export class GeminiImageGenerator implements ImageGenerator {
-    constructor(private readonly apiKey: string) {}
+    constructor(
+        private readonly apiKey: string,
+        private readonly model: string = 'imagen-3.0-fast-001'
+    ) {}
 
     async generateImage(prompt: string): Promise<{ buffer: Buffer; contentType: string }> {
         if (!this.apiKey) {
@@ -14,51 +17,41 @@ export class GeminiImageGenerator implements ImageGenerator {
         const ai = new GoogleGenAI({ apiKey: this.apiKey });
 
         const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash-image-preview',
+            model: this.model,
             contents: prompt,
         });
 
-        const candidates = response?.candidates ?? [];
-        const parts = candidates[0]?.content?.parts ?? [];
-
-        const imagePart = parts.find((p: unknown) =>
-            Boolean(
-                (p as { inlineData?: { data?: string } })?.inlineData?.data ||
-                    (p as { inline_data?: { data?: string } })?.inline_data?.data
-            )
-        ) as
-            | {
-                  inlineData?: { data?: string; mimeType?: string };
-                  inline_data?: { data?: string; mime_type?: string };
-              }
-            | undefined;
-
-        const inlineDataField = imagePart?.inlineData || imagePart?.inline_data;
-        const base64 = inlineDataField?.data;
-
-        let responseContentType = 'image/png';
-
-        if (inlineDataField) {
-            if (
-                'mimeType' in inlineDataField &&
-                typeof (inlineDataField as { mimeType?: unknown }).mimeType === 'string'
-            ) {
-                responseContentType = (inlineDataField as { mimeType: string }).mimeType;
-            } else if (
-                'mime_type' in inlineDataField &&
-                typeof (inlineDataField as { mime_type?: unknown }).mime_type === 'string'
-            ) {
-                responseContentType = (inlineDataField as { mime_type: string }).mime_type;
+        // Extract image data from response
+        const candidates = (
+            response as {
+                candidates?: Array<{
+                    content?: { parts?: Array<{ inlineData?: { data: string; mimeType: string } }> };
+                }>;
             }
-        }
+        ).candidates;
 
-        if (!base64) {
+        if (!candidates || candidates.length === 0) {
             throw Object.assign(new Error('Invalid image generation response'), {
                 status: 502,
             });
         }
 
-        const originalBuffer = Buffer.from(base64, 'base64');
+        const candidate = candidates[0];
+        if (!candidate.content || !candidate.content.parts || candidate.content.parts.length === 0) {
+            throw Object.assign(new Error('Invalid image generation response'), {
+                status: 502,
+            });
+        }
+
+        const inlineData = candidate.content.parts[0].inlineData;
+        if (!inlineData) {
+            throw Object.assign(new Error('Invalid image generation response'), {
+                status: 502,
+            });
+        }
+
+        const originalBuffer = Buffer.from(inlineData.data, 'base64');
+        const responseContentType = inlineData.mimeType;
 
         // Process the image: convert to WebP, resize, and compress
         let processedBuffer: Buffer;
@@ -67,14 +60,9 @@ export class GeminiImageGenerator implements ImageGenerator {
         try {
             processedBuffer = await this.processImage(originalBuffer);
         } catch {
-            // Fallback: try to at least convert to WebP without resizing
-            try {
-                processedBuffer = await sharp(originalBuffer).webp({ quality: 85 }).withMetadata({}).toBuffer();
-                finalContentType = 'image/webp';
-            } catch {
-                processedBuffer = originalBuffer;
-                finalContentType = responseContentType;
-            }
+            // Fallback: use original buffer with original content type
+            processedBuffer = originalBuffer;
+            finalContentType = responseContentType;
         }
 
         return {

@@ -1,3 +1,4 @@
+import { getStorageItem } from '@imapps/web-utils';
 import type { Item, ListType } from '@shoppingo/types';
 import { ListType as ListTypeEnum } from '@shoppingo/types';
 import { differenceInHours, format } from 'date-fns';
@@ -12,9 +13,8 @@ import {
     Trash2,
 } from 'lucide-react';
 import { motion, useAnimation, useMotionValue } from 'motion/react';
-import { type MouseEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { type MouseEvent, useEffect, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
-
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent } from '@/components/ui/card';
@@ -24,8 +24,8 @@ import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-
 import { deleteItem, updateItem, updateItemDueDate, updateItemName, updateItemQuantity } from '../../api';
+import { getAuthConfig } from '../../config/auth';
 
 export interface ItemCheckBoxProps {
     item: Item;
@@ -43,6 +43,7 @@ const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
     const [isDeleting, setIsDeleting] = useState(false);
     const [hasLoadedImage, setHasLoadedImage] = useState(false);
     const [hasImageError, setHasImageError] = useState(false);
+    const [imageBlobUrl, setImageBlobUrl] = useState<string | null>(null);
 
     const drawerInputRef = useRef<HTMLInputElement>(null);
     const imageRef = useRef<HTMLImageElement>(null);
@@ -52,7 +53,61 @@ const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
 
     const queryClient = useQueryClient();
 
-    const imageSrc = useMemo(() => `/api/image/${encodeURIComponent(item.name)}`, [item.name]);
+    // Fetch image with proper authorization header
+    useEffect(() => {
+        let isMounted = true;
+        let currentBlobUrl: string | null = null;
+
+        const fetchImage = async () => {
+            try {
+                const authConfig = getAuthConfig();
+                const accessToken = getStorageItem(
+                    authConfig.accessTokenKey || 'accessToken',
+                    authConfig.storageType || 'localStorage'
+                );
+
+                const headers: Record<string, string> = {};
+                if (accessToken) {
+                    headers.Authorization = `Bearer ${accessToken}`;
+                }
+
+                const response = await fetch(`/api/image/${encodeURIComponent(item.name)}`, {
+                    method: 'GET',
+                    headers,
+                });
+
+                if (!isMounted) return;
+
+                if (!response.ok) {
+                    if (isMounted) {
+                        setHasImageError(true);
+                    }
+                    return;
+                }
+
+                const blob = await response.blob();
+                currentBlobUrl = URL.createObjectURL(blob);
+                if (isMounted) {
+                    setImageBlobUrl(currentBlobUrl);
+                }
+            } catch (_error) {
+                // Image fetch failed - component will show error fallback
+                if (isMounted) {
+                    setHasImageError(true);
+                }
+            }
+        };
+
+        void fetchImage();
+
+        return () => {
+            isMounted = false;
+            // Revoke blob URL to free memory
+            if (currentBlobUrl) {
+                URL.revokeObjectURL(currentBlobUrl);
+            }
+        };
+    }, [item.name]);
 
     // Mutation for toggling item selection
     const toggleMutation = useMutation({
@@ -279,22 +334,10 @@ const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
         setDrawerDueDateValue(undefined);
     };
 
-    // Reset image loading state when image source changes
+    // Reset image loading state when blob URL changes
     useEffect(() => {
         setHasLoadedImage(false);
-        setHasImageError(false);
-
-        const img = imageRef.current;
-
-        // If the image is already in the browser cache, the load event may not fire.
-        // Detect that case and set the loaded/error state accordingly.
-        if (img?.complete) {
-            if (img.naturalWidth > 0) {
-                setHasLoadedImage(true);
-            } else {
-                setHasImageError(true);
-            }
-        }
+        // Don't reset error state here - let the image load handler manage it
     }, []);
 
     const handleToggleSelected = async () => {
@@ -495,14 +538,16 @@ const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
                                     // Circular image for shopping items
                                     <div className="relative h-12 w-12 shrink-0">
                                         {/* Image */}
-                                        <img
-                                            ref={imageRef}
-                                            src={imageSrc}
-                                            alt={item.name}
-                                            className={`h-12 w-12 rounded-full object-cover border ${hasLoadedImage && !hasImageError ? 'opacity-100' : 'opacity-0'}`}
-                                            onLoad={() => setHasLoadedImage(true)}
-                                            onError={() => setHasImageError(true)}
-                                        />
+                                        {imageBlobUrl && (
+                                            <img
+                                                ref={imageRef}
+                                                src={imageBlobUrl}
+                                                alt={item.name}
+                                                className={`h-12 w-12 rounded-full object-cover border ${hasLoadedImage && !hasImageError ? 'opacity-100' : 'opacity-0'}`}
+                                                onLoad={() => setHasLoadedImage(true)}
+                                                onError={() => setHasImageError(true)}
+                                            />
+                                        )}
 
                                         {/* Loading skeleton (only before load and no error) */}
                                         {!hasLoadedImage && !hasImageError && (
