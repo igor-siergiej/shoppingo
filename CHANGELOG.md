@@ -1,3 +1,10 @@
+## [1.16.1](https://gitlab.com/imapps/shoppingo/compare/v1.16.0...v1.16.1) (2026-01-30)
+
+
+### Bug Fixes
+
+* ensure gitops jobs receive VERSION artifact from version-release ([b9a76a8](https://gitlab.com/imapps/shoppingo/commit/b9a76a83415aef28a142458cd0599aa8a2a5e3a4))
+
 # [1.16.0](https://gitlab.com/imapps/shoppingo/compare/v1.15.0...v1.16.0) (2026-01-29)
 
 
