@@ -114,7 +114,8 @@ gitops-staging:
     - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_REF_NAME == "main"
     - if: $CI_PIPELINE_SOURCE == "web"
   needs:
-    - version-release
+    - job: version-release
+      artifacts: true
     - publish-web
     - publish-api
 
@@ -124,5 +125,6 @@ gitops-production:
   variables:
     HELM_VALUES: "apps/workloads/shoppingo/values.yaml,web.image.tag;apps/workloads/shoppingo/values.yaml,api.image.tag;apps/workloads/shoppingo/values-production.yaml,web.image.tag;apps/workloads/shoppingo/values-production.yaml,api.image.tag"
   needs:
-    - version-release
+    - job: version-release
+      artifacts: true
     - gitops-staging
