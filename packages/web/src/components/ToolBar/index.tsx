@@ -178,8 +178,15 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
                 setDueDate(undefined);
                 setIsDrawerOpen(false);
             } catch (err: any) {
-                // Display error message from backend
-                setError(err?.message || 'Failed to add item. Please try again.');
+                // Provide user-friendly error messages
+                let errorMessage = err?.message || 'Failed to add item. Please try again.';
+
+                if (errorMessage.includes('Users not found:')) {
+                    // Extract usernames from error message and provide helpful feedback
+                    errorMessage = `${errorMessage}. Please check the spelling or make sure these users have registered.`;
+                }
+
+                setError(errorMessage);
             }
         };
 

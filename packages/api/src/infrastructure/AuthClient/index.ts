@@ -27,6 +27,7 @@ export class HttpAuthClient implements AuthClient {
             console.error('Auth service error response:', errorText);
             throw Object.assign(new Error(`Auth service error: ${response.status}`), {
                 status: 502,
+                authServiceError: true,
             });
         }
 
@@ -39,14 +40,28 @@ export class HttpAuthClient implements AuthClient {
             throw Object.assign(new Error('Auth service returned error'), {
                 status: 502,
                 details: data.message,
+                authServiceError: true,
             });
         }
 
         const users = data.users || [];
+        const notFoundUsernames = data.notFoundUsernames || [];
+
+        if (notFoundUsernames.length > 0) {
+            console.warn('Some users not found:', notFoundUsernames);
+            throw Object.assign(new Error(`Users not found: ${notFoundUsernames.join(', ')}`), {
+                status: 400,
+                notFoundUsernames,
+                usersNotFound: true,
+            });
+        }
 
         if (!users || users.length === 0) {
             console.warn('No users found for usernames:', usernames);
-            throw Object.assign(new Error('No users found for the provided usernames'), { status: 400 });
+            throw Object.assign(new Error('No users found for the provided usernames'), {
+                status: 400,
+                usersNotFound: true,
+            });
         }
 
         console.log(`Successfully fetched ${users.length} users`);

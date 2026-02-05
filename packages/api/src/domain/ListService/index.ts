@@ -93,13 +93,43 @@ export class ListService {
                         sharedWith: fetched.map((u) => u.username),
                     });
                 } catch (error) {
-                    this.logger?.error('Failed to share list with users', {
-                        listTitle: title,
-                        owner: owner.username,
-                        selectedUsernames,
-                        error,
-                    });
-                    throw Object.assign(new Error('Failed to fetch users from auth service'), { status: 502 });
+                    const errorWithStatus = error as {
+                        status?: number;
+                        usersNotFound?: boolean;
+                        authServiceError?: boolean;
+                    };
+
+                    // Re-throw with proper status code
+                    if (errorWithStatus.usersNotFound) {
+                        // Users don't exist - client error
+                        this.logger?.warn('Attempted to share list with non-existent users', {
+                            listTitle: title,
+                            owner: owner.username,
+                            selectedUsernames,
+                            message: (error as Error).message,
+                        });
+                        throw error;
+                    } else if (errorWithStatus.authServiceError) {
+                        // Auth service is down/erroring - server error
+                        this.logger?.error('Auth service unavailable when sharing list', {
+                            listTitle: title,
+                            owner: owner.username,
+                            selectedUsernames,
+                            message: (error as Error).message,
+                        });
+                        throw Object.assign(new Error('Auth service unavailable. Please try again later.'), {
+                            status: 502,
+                        });
+                    } else {
+                        // Unknown error
+                        this.logger?.error('Failed to share list with users', {
+                            listTitle: title,
+                            owner: owner.username,
+                            selectedUsernames,
+                            error,
+                        });
+                        throw Object.assign(new Error('Failed to share list. Please try again.'), { status: 500 });
+                    }
                 }
             }
 
