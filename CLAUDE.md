@@ -83,10 +83,19 @@ Common TypeScript interfaces and types shared between frontend and backend.
 1. **Starting development**: Run `yarn start` to start both services
 2. **Code style**: The project uses ESLint with TypeScript, React, and import sorting rules
 3. **Testing**: Uses Vitest for both packages with coverage reporting
-4. **Building**: Use `yarn workspace @shoppingo/web build` for production build
+4. **Linting before commits**: **IMPORTANT** - Run `yarn lint:fix` to fix all linting issues before committing
+5. **Building**: Use `yarn workspace @shoppingo/web build` for production build
+
+## Code Quality Checklist (Before Committing)
+**Claude must perform these checks before creating any commit:**
+1. **Linting**: Run `yarn lint:fix` to auto-fix all linting issues
+2. **Tests**: Run `yarn workspace @shoppingo/api test` to verify all API tests pass
+3. **Builds**: Verify `yarn workspace @shoppingo/web build` and `yarn workspace @shoppingo/api build` succeed
+4. **Git status**: Ensure no untracked files are accidentally committed (except `.env` configs)
 
 ## Useful Commands for Claude
 - Check project status: `yarn lint` and individual package tests
+- Fix linting: `yarn lint:fix` (run before every commit)
 - Start development: `yarn start` (or separate services as needed)
 - File structure: Main code in `packages/api/src/` and `packages/web/src/`
 - Types: Check `packages/types/` for shared interfaces
