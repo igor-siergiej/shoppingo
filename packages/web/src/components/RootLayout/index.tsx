@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { Outlet } from 'react-router-dom';
+import { Toaster } from 'sonner';
 
 import Appbar from '../Appbar';
 import { Layout } from '../Layout';
@@ -24,6 +25,7 @@ export const RootLayout = ({ children, showLayout = true }: RootLayoutProps) => 
                     <div className="w-full max-w-md">{content}</div>
                 </main>
             )}
+            <Toaster />
         </div>
     );
 };

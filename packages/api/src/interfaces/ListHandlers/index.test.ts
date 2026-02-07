@@ -114,7 +114,12 @@ describe('ListHandlers', () => {
 
             expect(mockListService.getList).toHaveBeenCalledWith('Test List');
             expect(ctx.response.status).toBe(200);
-            expect(ctx.body).toEqual({ listType: 'shopping', items: mockItems });
+            expect(ctx.body).toEqual({
+                listType: 'shopping',
+                items: mockItems,
+                ownerId: 'test-user-1',
+                users: [{ id: 'test-user-1', username: 'testuser' }],
+            });
         });
 
         it('should handle service errors', async () => {

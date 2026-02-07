@@ -160,9 +160,9 @@ describe('ListService', () => {
                 const result = await listService.addList(title, dateAdded, mockUser, selectedUsers);
 
                 expect(result.users).toHaveLength(3);
-                expect(result.users[0].username).toBe('user2');
-                expect(result.users[1].username).toBe('user3');
-                expect(result.users[2]).toEqual(mockUser);
+                expect(result.users[0]).toEqual(mockUser);
+                expect(result.users[1].username).toBe('user2');
+                expect(result.users[2].username).toBe('user3');
             });
         });
 
@@ -187,7 +187,7 @@ describe('ListService', () => {
 
                 await expect(
                     serviceWithEmptyAuth.addList('New List', new Date('2023-01-01'), mockUser, ['user2'])
-                ).rejects.toThrow('Failed to fetch users from auth service');
+                ).rejects.toThrow('Failed to share list. Please try again.');
             });
         });
     });
