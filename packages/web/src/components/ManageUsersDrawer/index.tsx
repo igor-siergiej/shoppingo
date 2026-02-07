@@ -5,11 +5,19 @@ import { useCallback, useMemo, useState } from 'react';
 import { useMutation } from 'react-query';
 import { toast } from 'sonner';
 import { addUserToList, removeUserFromList } from '@/api';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
+import {
+    Drawer,
+    DrawerClose,
+    DrawerContent,
+    DrawerDescription,
+    DrawerFooter,
+    DrawerHeader,
+    DrawerTitle,
+} from '@/components/ui/drawer';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import { useSearch } from '@/hooks/useSearch';
 
 interface ManageUsersDrawerProps {
@@ -35,7 +43,12 @@ export const ManageUsersDrawer = ({
 }: ManageUsersDrawerProps) => {
     const [confirmRemoveUserId, setConfirmRemoveUserId] = useState<string | null>(null);
 
-    const { query: searchInput, setQuery: setSearchInput, results: searchResults, isLoading: isSearching } = useSearch();
+    const {
+        query: searchInput,
+        setQuery: setSearchInput,
+        results: searchResults,
+        isLoading: isSearching,
+    } = useSearch();
 
     // Filter out users already in the list and convert usernames to user objects
     const availableUsers = useMemo(() => {
@@ -52,7 +65,7 @@ export const ManageUsersDrawer = ({
     const addUserMutation = useMutation({
         mutationFn: (username: string) => addUserToList(listTitle, username),
         onSuccess: () => {
-            toast.success("User added successfully");
+            toast.success('User added successfully');
             setSearchInput('');
             onUserAdded();
         },
@@ -65,7 +78,7 @@ export const ManageUsersDrawer = ({
     const removeUserMutation = useMutation({
         mutationFn: (userId: string) => removeUserFromList(listTitle, userId),
         onSuccess: () => {
-            toast.success("User removed successfully");
+            toast.success('User removed successfully');
             setConfirmRemoveUserId(null);
             onUserRemoved();
         },
@@ -122,52 +135,53 @@ export const ManageUsersDrawer = ({
                                             <div className="flex items-center gap-1.5 flex-1 min-w-0">
                                                 <span className="text-xs font-medium truncate">{user.username}</span>
                                                 {user.id === ownerId && (
-                                                    <Badge variant="secondary" className="gap-0.5 flex-shrink-0 text-xs py-0 px-1.5 h-5">
+                                                    <Badge
+                                                        variant="secondary"
+                                                        className="gap-0.5 flex-shrink-0 text-xs py-0 px-1.5 h-5"
+                                                    >
                                                         <Crown className="h-2.5 w-2.5" />
                                                         Owner
                                                     </Badge>
                                                 )}
                                             </div>
 
-                                            {user.id !== ownerId && user.id !== currentUserId && (
-                                                <>
-                                                    {confirmRemoveUserId === user.id ? (
-                                                        <div className="flex items-center gap-1 flex-shrink-0">
-                                                            <Button
-                                                                size="sm"
-                                                                variant="outline"
-                                                                onClick={() => setConfirmRemoveUserId(null)}
-                                                                disabled={removeUserMutation.isLoading}
-                                                                className="h-6 px-2 text-xs"
-                                                            >
-                                                                Cancel
-                                                            </Button>
-                                                            <Button
-                                                                size="sm"
-                                                                variant="destructive"
-                                                                onClick={() => handleRemoveUser(user.id)}
-                                                                disabled={removeUserMutation.isLoading}
-                                                                className="h-6 px-2 text-xs"
-                                                            >
-                                                                {removeUserMutation.isLoading ? (
-                                                                    <Loader2 className="h-3 w-3 animate-spin" />
-                                                                ) : (
-                                                                    'Remove'
-                                                                )}
-                                                            </Button>
-                                                        </div>
-                                                    ) : (
+                                            {user.id !== ownerId &&
+                                                user.id !== currentUserId &&
+                                                (confirmRemoveUserId === user.id ? (
+                                                    <div className="flex items-center gap-1 flex-shrink-0">
                                                         <Button
                                                             size="sm"
-                                                            variant="ghost"
-                                                            onClick={() => setConfirmRemoveUserId(user.id)}
-                                                            className="flex-shrink-0 h-6 w-6 p-0"
+                                                            variant="outline"
+                                                            onClick={() => setConfirmRemoveUserId(null)}
+                                                            disabled={removeUserMutation.isLoading}
+                                                            className="h-6 px-2 text-xs"
                                                         >
-                                                            <X className="h-3 w-3" />
+                                                            Cancel
                                                         </Button>
-                                                    )}
-                                                </>
-                                            )}
+                                                        <Button
+                                                            size="sm"
+                                                            variant="destructive"
+                                                            onClick={() => handleRemoveUser(user.id)}
+                                                            disabled={removeUserMutation.isLoading}
+                                                            className="h-6 px-2 text-xs"
+                                                        >
+                                                            {removeUserMutation.isLoading ? (
+                                                                <Loader2 className="h-3 w-3 animate-spin" />
+                                                            ) : (
+                                                                'Remove'
+                                                            )}
+                                                        </Button>
+                                                    </div>
+                                                ) : (
+                                                    <Button
+                                                        size="sm"
+                                                        variant="ghost"
+                                                        onClick={() => setConfirmRemoveUserId(user.id)}
+                                                        className="flex-shrink-0 h-6 w-6 p-0"
+                                                    >
+                                                        <X className="h-3 w-3" />
+                                                    </Button>
+                                                ))}
                                         </div>
                                     ))}
                                 </div>

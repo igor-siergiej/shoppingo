@@ -243,481 +243,488 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
 
         return (
             <>
-            <div className="fixed bottom-4 left-0 right-0 z-40 px-4">
-                <div className="mx-auto max-w-[400px]">
-                    <MotionConfig transition={transition}>
-                        {/* Menu Container - Layered Glass Effect */}
-                        {isMenuOpen && (
-                            <motion.div
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                className="absolute bottom-0 left-0 right-0 pointer-events-none"
-                                style={{
-                                    background: 'linear-gradient(180deg, transparent 0%, rgba(15, 23, 42, 0.02) 100%)',
-                                }}
-                            />
-                        )}
+                <div className="fixed bottom-4 left-0 right-0 z-40 px-4">
+                    <div className="mx-auto max-w-[400px]">
+                        <MotionConfig transition={transition}>
+                            {/* Menu Container - Layered Glass Effect */}
+                            {isMenuOpen && (
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    className="absolute bottom-0 left-0 right-0 pointer-events-none"
+                                    style={{
+                                        background:
+                                            'linear-gradient(180deg, transparent 0%, rgba(15, 23, 42, 0.02) 100%)',
+                                    }}
+                                />
+                            )}
 
-                        <Card ref={menuCardRef} className="shadow-xl py-0 !gap-0 backdrop-blur-sm border border-slate-200/50 relative z-10">
-                            {/* Menu Content with Staggered Animation */}
-                            <div className="overflow-hidden">
-                                <AnimatePresence initial={false} mode="sync">
-                                    {isMenuOpen ? (
-                                        <motion.div
-                                            key="content"
-                                            initial={{ height: 0, opacity: 0 }}
-                                            animate={{ height: contentHeight || 0, opacity: 1 }}
-                                            exit={{ height: 0, opacity: 0 }}
-                                            transition={{ height: { duration: 0.3 }, opacity: { duration: 0.2 } }}
-                                            style={{ width: maxWidth }}
-                                        >
-                                            <div ref={contentRef} className="px-3 py-4">
-                                                {menuActive === 1 && (
-                                                    <div className="flex flex-col gap-2.5">
-                                                        {/* Manage Users action (shows only on items page and user is owner) */}
-                                                        {currentList && currentList.ownerId === userId && (
+                            <Card
+                                ref={menuCardRef}
+                                className="shadow-xl py-0 !gap-0 backdrop-blur-sm border border-slate-200/50 relative z-10"
+                            >
+                                {/* Menu Content with Staggered Animation */}
+                                <div className="overflow-hidden">
+                                    <AnimatePresence initial={false} mode="sync">
+                                        {isMenuOpen ? (
+                                            <motion.div
+                                                key="content"
+                                                initial={{ height: 0, opacity: 0 }}
+                                                animate={{ height: contentHeight || 0, opacity: 1 }}
+                                                exit={{ height: 0, opacity: 0 }}
+                                                transition={{ height: { duration: 0.3 }, opacity: { duration: 0.2 } }}
+                                                style={{ width: maxWidth }}
+                                            >
+                                                <div ref={contentRef} className="px-3 py-4">
+                                                    {menuActive === 1 && (
+                                                        <div className="flex flex-col gap-2.5">
+                                                            {/* Manage Users action (shows only on items page and user is owner) */}
+                                                            {currentList && currentList.ownerId === userId && (
+                                                                <motion.div
+                                                                    initial={{ opacity: 0, y: -8 }}
+                                                                    animate={{ opacity: 1, y: 0 }}
+                                                                    transition={{ delay: 0.05, duration: 0.2 }}
+                                                                >
+                                                                    <Button
+                                                                        variant="outline"
+                                                                        onClick={() => {
+                                                                            setIsManageUsersOpen(true);
+                                                                            setIsMenuOpen(false);
+                                                                            setMenuActive(null);
+                                                                        }}
+                                                                        className="w-full justify-center h-9 text-sm font-medium transition-all duration-200 hover:bg-slate-50 active:scale-95"
+                                                                    >
+                                                                        <Users className="h-4 w-4 mr-2" />
+                                                                        Manage Users
+                                                                    </Button>
+                                                                </motion.div>
+                                                            )}
+                                                            {/* Install app action (shows only if available and not installed) */}
+                                                            {canInstall && !isInstalled && (
+                                                                <motion.div
+                                                                    initial={{ opacity: 0, y: -8 }}
+                                                                    animate={{ opacity: 1, y: 0 }}
+                                                                    transition={{ delay: 0.1, duration: 0.2 }}
+                                                                >
+                                                                    <Button
+                                                                        variant="outline"
+                                                                        onClick={async () => {
+                                                                            const success = await installApp();
+
+                                                                            if (success) {
+                                                                                setIsMenuOpen(false);
+                                                                                setMenuActive(null);
+                                                                            }
+                                                                        }}
+                                                                        className="w-full justify-center h-9 text-sm font-medium transition-all duration-200 hover:bg-slate-50 active:scale-95"
+                                                                    >
+                                                                        <Download className="h-4 w-4 mr-2" />
+                                                                        Install app
+                                                                    </Button>
+                                                                </motion.div>
+                                                            )}
                                                             <motion.div
                                                                 initial={{ opacity: 0, y: -8 }}
                                                                 animate={{ opacity: 1, y: 0 }}
-                                                                transition={{ delay: 0.05, duration: 0.2 }}
+                                                                transition={{ delay: 0.15, duration: 0.2 }}
                                                             >
                                                                 <Button
-                                                                    variant="outline"
+                                                                    variant="destructive"
                                                                     onClick={() => {
-                                                                        setIsManageUsersOpen(true);
+                                                                        void handleLogout();
                                                                         setIsMenuOpen(false);
                                                                         setMenuActive(null);
                                                                     }}
-                                                                    className="w-full justify-center h-9 text-sm font-medium transition-all duration-200 hover:bg-slate-50 active:scale-95"
+                                                                    className="w-full justify-center h-9 text-sm font-medium transition-all duration-200 hover:bg-red-600 active:scale-95"
                                                                 >
-                                                                    <Users className="h-4 w-4 mr-2" />
-                                                                    Manage Users
+                                                                    <LogOut className="h-4 w-4 mr-2" />
+                                                                    Log out
                                                                 </Button>
                                                             </motion.div>
-                                                        )}
-                                                        {/* Install app action (shows only if available and not installed) */}
-                                                        {canInstall && !isInstalled && (
-                                                            <motion.div
-                                                                initial={{ opacity: 0, y: -8 }}
-                                                                animate={{ opacity: 1, y: 0 }}
-                                                                transition={{ delay: 0.1, duration: 0.2 }}
-                                                            >
-                                                                <Button
-                                                                    variant="outline"
-                                                                    onClick={async () => {
-                                                                        const success = await installApp();
-
-                                                                        if (success) {
-                                                                            setIsMenuOpen(false);
-                                                                            setMenuActive(null);
-                                                                        }
-                                                                    }}
-                                                                    className="w-full justify-center h-9 text-sm font-medium transition-all duration-200 hover:bg-slate-50 active:scale-95"
-                                                                >
-                                                                    <Download className="h-4 w-4 mr-2" />
-                                                                    Install app
-                                                                </Button>
-                                                            </motion.div>
-                                                        )}
-                                                        <motion.div
-                                                            initial={{ opacity: 0, y: -8 }}
-                                                            animate={{ opacity: 1, y: 0 }}
-                                                            transition={{ delay: 0.15, duration: 0.2 }}
-                                                        >
-                                                            <Button
-                                                                variant="destructive"
-                                                                onClick={() => {
-                                                                    void handleLogout();
-                                                                    setIsMenuOpen(false);
-                                                                    setMenuActive(null);
-                                                                }}
-                                                                className="w-full justify-center h-9 text-sm font-medium transition-all duration-200 hover:bg-red-600 active:scale-95"
-                                                            >
-                                                                <LogOut className="h-4 w-4 mr-2" />
-                                                                Log out
-                                                            </Button>
-                                                        </motion.div>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </motion.div>
-                                    ) : null}
-                                </AnimatePresence>
-                            </div>
-                            {/* Visual Separator - Divider Line */}
-                            {isMenuOpen && (
-                                <div className="h-0.5 bg-gradient-to-r from-transparent via-slate-300 to-transparent" />
-                            )}
-
-                            {/* App Bar - The persistent bottom navigation */}
-                            <CardContent className={`flex items-center justify-between py-2.5`} ref={menuRef}>
-                                {(isItemsPage || location.pathname !== '/') && (
-                                    <RippleButton
-                                        size="icon"
-                                        variant="ghost"
-                                        className="h-12 w-12 rounded-full transition-colors"
-                                        rippleClassName="bg-gray-500/30"
-                                        title={isItemsPage && handleGoBack ? 'Go back' : 'Go home'}
-                                        onClick={() => {
-                                            if (isItemsPage && handleGoBack) {
-                                                handleGoBack();
-                                            } else {
-                                                navigate('/');
-                                            }
-                                        }}
-                                    >
-                                        <ArrowLeft className="size-5" />
-                                    </RippleButton>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </motion.div>
+                                        ) : null}
+                                    </AnimatePresence>
+                                </div>
+                                {/* Visual Separator - Divider Line */}
+                                {isMenuOpen && (
+                                    <div className="h-0.5 bg-gradient-to-r from-transparent via-slate-300 to-transparent" />
                                 )}
 
-                                {/* Clear Selected Button - Separate button */}
-                                {handleClearSelected && (
-                                    <RippleButton
-                                        size="icon"
-                                        variant="ghost"
-                                        className="h-12 w-12 rounded-full transition-colors"
-                                        rippleClassName="bg-gray-500/30"
-                                        title="Clear selected items"
-                                        onClick={handleClearSelected}
-                                    >
-                                        <CheckCheck className="size-5" />
-                                    </RippleButton>
-                                )}
-
-                                <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
-                                    <DrawerTrigger asChild>
+                                {/* App Bar - The persistent bottom navigation */}
+                                <CardContent className={`flex items-center justify-between py-2.5`} ref={menuRef}>
+                                    {(isItemsPage || location.pathname !== '/') && (
                                         <RippleButton
                                             size="icon"
-                                            className="h-12 w-12 rounded-full border-2 border-primary/20 hover:border-primary/40 transition-colors"
+                                            variant="ghost"
+                                            className="h-12 w-12 rounded-full transition-colors"
+                                            rippleClassName="bg-gray-500/30"
+                                            title={isItemsPage && handleGoBack ? 'Go back' : 'Go home'}
+                                            onClick={() => {
+                                                if (isItemsPage && handleGoBack) {
+                                                    handleGoBack();
+                                                } else {
+                                                    navigate('/');
+                                                }
+                                            }}
                                         >
-                                            <Plus className="size-5" />
+                                            <ArrowLeft className="size-5" />
                                         </RippleButton>
-                                    </DrawerTrigger>
-                                    <DrawerContent>
-                                        <div className="w-full sm:mx-auto sm:max-w-[400px]">
-                                            <DrawerHeader>
-                                                <DrawerTitle>
-                                                    {isListsPage
-                                                        ? 'Add New List'
-                                                        : currentListType === ListTypeEnum.TODO
-                                                          ? 'Add New Task'
-                                                          : 'Add New Item'}
-                                                </DrawerTitle>
-                                            </DrawerHeader>
-                                            <div className="p-4 pb-0 space-y-4">
-                                                <div className="space-y-2">
-                                                    <Label htmlFor="new-item">
+                                    )}
+
+                                    {/* Clear Selected Button - Separate button */}
+                                    {handleClearSelected && (
+                                        <RippleButton
+                                            size="icon"
+                                            variant="ghost"
+                                            className="h-12 w-12 rounded-full transition-colors"
+                                            rippleClassName="bg-gray-500/30"
+                                            title="Clear selected items"
+                                            onClick={handleClearSelected}
+                                        >
+                                            <CheckCheck className="size-5" />
+                                        </RippleButton>
+                                    )}
+
+                                    <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+                                        <DrawerTrigger asChild>
+                                            <RippleButton
+                                                size="icon"
+                                                className="h-12 w-12 rounded-full border-2 border-primary/20 hover:border-primary/40 transition-colors"
+                                            >
+                                                <Plus className="size-5" />
+                                            </RippleButton>
+                                        </DrawerTrigger>
+                                        <DrawerContent>
+                                            <div className="w-full sm:mx-auto sm:max-w-[400px]">
+                                                <DrawerHeader>
+                                                    <DrawerTitle>
                                                         {isListsPage
-                                                            ? 'List Name'
+                                                            ? 'Add New List'
                                                             : currentListType === ListTypeEnum.TODO
-                                                              ? 'Task Name'
-                                                              : 'Item Name'}
-                                                    </Label>
-                                                    <Input
-                                                        id="new-item"
-                                                        ref={inputRef}
-                                                        value={newName}
-                                                        autoComplete="off"
-                                                        autoFocus
-                                                        className={`${error ? 'border-destructive' : ''} h-12 text-base`}
-                                                        onChange={(event) => {
-                                                            setError('');
-                                                            setNewName(event.target.value);
-                                                        }}
-                                                        placeholder={placeholder}
-                                                        onKeyDown={(e) => {
-                                                            if (e.key === 'Enter') {
-                                                                handleSubmit();
-                                                            } else if (e.key === 'Escape') {
-                                                                handleCancel();
-                                                            }
-                                                        }}
-                                                    />
-                                                    {error && <p className="text-sm text-destructive">{error}</p>}
-                                                </div>
-
-                                                {/* List type selector for lists page */}
-                                                {isListsPage && (
+                                                              ? 'Add New Task'
+                                                              : 'Add New Item'}
+                                                    </DrawerTitle>
+                                                </DrawerHeader>
+                                                <div className="p-4 pb-0 space-y-4">
                                                     <div className="space-y-2">
-                                                        <Label>List Type</Label>
-                                                        <div className="flex gap-4">
-                                                            <div className="flex items-center space-x-2">
-                                                                <input
-                                                                    type="radio"
-                                                                    id="shopping"
-                                                                    name="listType"
-                                                                    checked={listType === ListTypeEnum.SHOPPING}
-                                                                    onChange={() => setListType(ListTypeEnum.SHOPPING)}
-                                                                    className="cursor-pointer"
-                                                                />
-                                                                <Label
-                                                                    htmlFor="shopping"
-                                                                    className="cursor-pointer font-normal"
-                                                                >
-                                                                    Shopping
-                                                                </Label>
-                                                            </div>
-                                                            <div className="flex items-center space-x-2">
-                                                                <input
-                                                                    type="radio"
-                                                                    id="todo"
-                                                                    name="listType"
-                                                                    checked={listType === ListTypeEnum.TODO}
-                                                                    onChange={() => setListType(ListTypeEnum.TODO)}
-                                                                    className="cursor-pointer"
-                                                                />
-                                                                <Label
-                                                                    htmlFor="todo"
-                                                                    className="cursor-pointer font-normal"
-                                                                >
-                                                                    TODO
-                                                                </Label>
-                                                            </div>
-                                                        </div>
+                                                        <Label htmlFor="new-item">
+                                                            {isListsPage
+                                                                ? 'List Name'
+                                                                : currentListType === ListTypeEnum.TODO
+                                                                  ? 'Task Name'
+                                                                  : 'Item Name'}
+                                                        </Label>
+                                                        <Input
+                                                            id="new-item"
+                                                            ref={inputRef}
+                                                            value={newName}
+                                                            autoComplete="off"
+                                                            autoFocus
+                                                            className={`${error ? 'border-destructive' : ''} h-12 text-base`}
+                                                            onChange={(event) => {
+                                                                setError('');
+                                                                setNewName(event.target.value);
+                                                            }}
+                                                            placeholder={placeholder}
+                                                            onKeyDown={(e) => {
+                                                                if (e.key === 'Enter') {
+                                                                    handleSubmit();
+                                                                } else if (e.key === 'Escape') {
+                                                                    handleCancel();
+                                                                }
+                                                            }}
+                                                        />
+                                                        {error && <p className="text-sm text-destructive">{error}</p>}
                                                     </div>
-                                                )}
 
-                                                {/* Quantity and Unit fields for shopping lists */}
-                                                {isItemsPage && currentListType === ListTypeEnum.SHOPPING && (
-                                                    <div className="grid grid-cols-2 gap-4">
-                                                        <div>
-                                                            <Label htmlFor="new-item-quantity">Quantity</Label>
-                                                            <Input
-                                                                id="new-item-quantity"
-                                                                type="number"
-                                                                value={quantity}
-                                                                onChange={(e) => setQuantity(e.target.value)}
-                                                                placeholder="e.g., 2"
-                                                                className="mt-2"
-                                                                step="0.01"
-                                                            />
+                                                    {/* List type selector for lists page */}
+                                                    {isListsPage && (
+                                                        <div className="space-y-2">
+                                                            <Label>List Type</Label>
+                                                            <div className="flex gap-4">
+                                                                <div className="flex items-center space-x-2">
+                                                                    <input
+                                                                        type="radio"
+                                                                        id="shopping"
+                                                                        name="listType"
+                                                                        checked={listType === ListTypeEnum.SHOPPING}
+                                                                        onChange={() =>
+                                                                            setListType(ListTypeEnum.SHOPPING)
+                                                                        }
+                                                                        className="cursor-pointer"
+                                                                    />
+                                                                    <Label
+                                                                        htmlFor="shopping"
+                                                                        className="cursor-pointer font-normal"
+                                                                    >
+                                                                        Shopping
+                                                                    </Label>
+                                                                </div>
+                                                                <div className="flex items-center space-x-2">
+                                                                    <input
+                                                                        type="radio"
+                                                                        id="todo"
+                                                                        name="listType"
+                                                                        checked={listType === ListTypeEnum.TODO}
+                                                                        onChange={() => setListType(ListTypeEnum.TODO)}
+                                                                        className="cursor-pointer"
+                                                                    />
+                                                                    <Label
+                                                                        htmlFor="todo"
+                                                                        className="cursor-pointer font-normal"
+                                                                    >
+                                                                        TODO
+                                                                    </Label>
+                                                                </div>
+                                                            </div>
                                                         </div>
-                                                        <div>
-                                                            <Label htmlFor="new-item-unit">Unit</Label>
-                                                            <Select value={unit} onValueChange={setUnit}>
-                                                                <SelectTrigger id="new-item-unit" className="mt-2">
-                                                                    <SelectValue placeholder="Select unit" />
-                                                                </SelectTrigger>
-                                                                <SelectContent>
-                                                                    <SelectItem value="pcs">pcs</SelectItem>
-                                                                    <SelectItem value="g">g</SelectItem>
-                                                                    <SelectItem value="kg">kg</SelectItem>
-                                                                    <SelectItem value="ml">ml</SelectItem>
-                                                                    <SelectItem value="L">L</SelectItem>
-                                                                </SelectContent>
-                                                            </Select>
-                                                        </div>
-                                                    </div>
-                                                )}
+                                                    )}
 
-                                                {/* Due date picker for TODO lists */}
-                                                {isItemsPage && currentListType === ListTypeEnum.TODO && (
-                                                    <div className="space-y-2">
-                                                        <Label>Due Date (Optional)</Label>
-                                                        <Popover>
-                                                            <PopoverTrigger asChild>
-                                                                <Button
-                                                                    variant="outline"
-                                                                    data-empty={!dueDate}
-                                                                    className="data-[empty=true]:text-muted-foreground w-full justify-start text-left font-normal h-10"
+                                                    {/* Quantity and Unit fields for shopping lists */}
+                                                    {isItemsPage && currentListType === ListTypeEnum.SHOPPING && (
+                                                        <div className="grid grid-cols-2 gap-4">
+                                                            <div>
+                                                                <Label htmlFor="new-item-quantity">Quantity</Label>
+                                                                <Input
+                                                                    id="new-item-quantity"
+                                                                    type="number"
+                                                                    value={quantity}
+                                                                    onChange={(e) => setQuantity(e.target.value)}
+                                                                    placeholder="e.g., 2"
+                                                                    className="mt-2"
+                                                                    step="0.01"
+                                                                />
+                                                            </div>
+                                                            <div>
+                                                                <Label htmlFor="new-item-unit">Unit</Label>
+                                                                <Select value={unit} onValueChange={setUnit}>
+                                                                    <SelectTrigger id="new-item-unit" className="mt-2">
+                                                                        <SelectValue placeholder="Select unit" />
+                                                                    </SelectTrigger>
+                                                                    <SelectContent>
+                                                                        <SelectItem value="pcs">pcs</SelectItem>
+                                                                        <SelectItem value="g">g</SelectItem>
+                                                                        <SelectItem value="kg">kg</SelectItem>
+                                                                        <SelectItem value="ml">ml</SelectItem>
+                                                                        <SelectItem value="L">L</SelectItem>
+                                                                    </SelectContent>
+                                                                </Select>
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Due date picker for TODO lists */}
+                                                    {isItemsPage && currentListType === ListTypeEnum.TODO && (
+                                                        <div className="space-y-2">
+                                                            <Label>Due Date (Optional)</Label>
+                                                            <Popover>
+                                                                <PopoverTrigger asChild>
+                                                                    <Button
+                                                                        variant="outline"
+                                                                        data-empty={!dueDate}
+                                                                        className="data-[empty=true]:text-muted-foreground w-full justify-start text-left font-normal h-10"
+                                                                    >
+                                                                        <CalendarIcon className="mr-2 h-4 w-4" />
+                                                                        {dueDate ? (
+                                                                            format(dueDate, 'dd/MM/yyyy')
+                                                                        ) : (
+                                                                            <span>Pick a date</span>
+                                                                        )}
+                                                                    </Button>
+                                                                </PopoverTrigger>
+                                                                <PopoverContent
+                                                                    className="w-fit overflow-visible p-4 max-w-xs"
+                                                                    align="start"
+                                                                    side="top"
+                                                                    sideOffset={4}
                                                                 >
-                                                                    <CalendarIcon className="mr-2 h-4 w-4" />
-                                                                    {dueDate ? (
-                                                                        format(dueDate, 'dd/MM/yyyy')
-                                                                    ) : (
-                                                                        <span>Pick a date</span>
-                                                                    )}
-                                                                </Button>
-                                                            </PopoverTrigger>
-                                                            <PopoverContent
-                                                                className="w-fit overflow-visible p-4 max-w-xs"
-                                                                align="start"
-                                                                side="top"
-                                                                sideOffset={4}
-                                                            >
-                                                                <div
-                                                                    style={
-                                                                        {
-                                                                            '--cell-size': '3.5rem',
-                                                                        } as React.CSSProperties
-                                                                    }
-                                                                >
-                                                                    <Calendar
-                                                                        mode="single"
-                                                                        selected={dueDate}
-                                                                        onSelect={setDueDate}
-                                                                        captionLayout="dropdown"
+                                                                    <div
+                                                                        style={
+                                                                            {
+                                                                                '--cell-size': '3.5rem',
+                                                                            } as React.CSSProperties
+                                                                        }
+                                                                    >
+                                                                        <Calendar
+                                                                            mode="single"
+                                                                            selected={dueDate}
+                                                                            onSelect={setDueDate}
+                                                                            captionLayout="dropdown"
+                                                                        />
+                                                                    </div>
+                                                                </PopoverContent>
+                                                            </Popover>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Fallback quantity/unit for items page when no list type is known */}
+                                                    {isItemsPage && !currentListType && (
+                                                        <div className="grid grid-cols-2 gap-4">
+                                                            <div>
+                                                                <Label htmlFor="new-item-quantity">Quantity</Label>
+                                                                <Input
+                                                                    id="new-item-quantity"
+                                                                    type="number"
+                                                                    value={quantity}
+                                                                    onChange={(e) => setQuantity(e.target.value)}
+                                                                    placeholder="e.g., 2"
+                                                                    className="mt-2"
+                                                                    step="0.01"
+                                                                />
+                                                            </div>
+                                                            <div>
+                                                                <Label htmlFor="new-item-unit">Unit</Label>
+                                                                <Select value={unit} onValueChange={setUnit}>
+                                                                    <SelectTrigger id="new-item-unit" className="mt-2">
+                                                                        <SelectValue placeholder="Select unit" />
+                                                                    </SelectTrigger>
+                                                                    <SelectContent>
+                                                                        <SelectItem value="pcs">pcs</SelectItem>
+                                                                        <SelectItem value="g">g</SelectItem>
+                                                                        <SelectItem value="kg">kg</SelectItem>
+                                                                        <SelectItem value="ml">ml</SelectItem>
+                                                                        <SelectItem value="L">L</SelectItem>
+                                                                    </SelectContent>
+                                                                </Select>
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Search functionality for lists page */}
+                                                    {isListsPage && (
+                                                        <div className="space-y-2">
+                                                            <Label htmlFor="search-users">
+                                                                Search Users to Share With
+                                                            </Label>
+                                                            <div className="relative">
+                                                                <div className="relative">
+                                                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                                                    <Input
+                                                                        id="search-users"
+                                                                        value={query}
+                                                                        onChange={(e) => setQuery(e.target.value)}
+                                                                        placeholder="Search users..."
+                                                                        className="pl-10"
                                                                     />
                                                                 </div>
-                                                            </PopoverContent>
-                                                        </Popover>
-                                                    </div>
-                                                )}
-
-                                                {/* Fallback quantity/unit for items page when no list type is known */}
-                                                {isItemsPage && !currentListType && (
-                                                    <div className="grid grid-cols-2 gap-4">
-                                                        <div>
-                                                            <Label htmlFor="new-item-quantity">Quantity</Label>
-                                                            <Input
-                                                                id="new-item-quantity"
-                                                                type="number"
-                                                                value={quantity}
-                                                                onChange={(e) => setQuantity(e.target.value)}
-                                                                placeholder="e.g., 2"
-                                                                className="mt-2"
-                                                                step="0.01"
-                                                            />
-                                                        </div>
-                                                        <div>
-                                                            <Label htmlFor="new-item-unit">Unit</Label>
-                                                            <Select value={unit} onValueChange={setUnit}>
-                                                                <SelectTrigger id="new-item-unit" className="mt-2">
-                                                                    <SelectValue placeholder="Select unit" />
-                                                                </SelectTrigger>
-                                                                <SelectContent>
-                                                                    <SelectItem value="pcs">pcs</SelectItem>
-                                                                    <SelectItem value="g">g</SelectItem>
-                                                                    <SelectItem value="kg">kg</SelectItem>
-                                                                    <SelectItem value="ml">ml</SelectItem>
-                                                                    <SelectItem value="L">L</SelectItem>
-                                                                </SelectContent>
-                                                            </Select>
-                                                        </div>
-                                                    </div>
-                                                )}
-
-                                                {/* Search functionality for lists page */}
-                                                {isListsPage && (
-                                                    <div className="space-y-2">
-                                                        <Label htmlFor="search-users">Search Users to Share With</Label>
-                                                        <div className="relative">
-                                                            <div className="relative">
-                                                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                                                <Input
-                                                                    id="search-users"
-                                                                    value={query}
-                                                                    onChange={(e) => setQuery(e.target.value)}
-                                                                    placeholder="Search users..."
-                                                                    className="pl-10"
+                                                                <SearchResults
+                                                                    results={results}
+                                                                    isLoading={isLoading}
+                                                                    error={searchError}
+                                                                    onSelect={handleUserSelect}
+                                                                    onClose={clearResults}
+                                                                    query={query}
                                                                 />
                                                             </div>
-                                                            <SearchResults
-                                                                results={results}
-                                                                isLoading={isLoading}
-                                                                error={searchError}
-                                                                onSelect={handleUserSelect}
-                                                                onClose={clearResults}
-                                                                query={query}
-                                                            />
-                                                        </div>
 
-                                                        {/* Selected users */}
-                                                        {selectedUsers.length > 0 && (
-                                                            <div className="space-y-2">
-                                                                <Label className="text-sm text-muted-foreground">
-                                                                    Selected Users:
-                                                                </Label>
-                                                                <div className="flex flex-wrap gap-2">
-                                                                    {selectedUsers.map((username) => (
-                                                                        <div
-                                                                            key={username}
-                                                                            className="flex items-center gap-1 bg-secondary text-secondary-foreground px-2 py-1 rounded-md text-sm"
-                                                                        >
-                                                                            <User className="h-3 w-3" />
-                                                                            <span>{username}</span>
-                                                                            <Button
-                                                                                variant="ghost"
-                                                                                size="sm"
-                                                                                className="h-4 w-4 p-0 hover:bg-secondary-foreground/20"
-                                                                                onClick={() =>
-                                                                                    removeSelectedUser(username)
-                                                                                }
+                                                            {/* Selected users */}
+                                                            {selectedUsers.length > 0 && (
+                                                                <div className="space-y-2">
+                                                                    <Label className="text-sm text-muted-foreground">
+                                                                        Selected Users:
+                                                                    </Label>
+                                                                    <div className="flex flex-wrap gap-2">
+                                                                        {selectedUsers.map((username) => (
+                                                                            <div
+                                                                                key={username}
+                                                                                className="flex items-center gap-1 bg-secondary text-secondary-foreground px-2 py-1 rounded-md text-sm"
                                                                             >
-                                                                                ×
-                                                                            </Button>
-                                                                        </div>
-                                                                    ))}
+                                                                                <User className="h-3 w-3" />
+                                                                                <span>{username}</span>
+                                                                                <Button
+                                                                                    variant="ghost"
+                                                                                    size="sm"
+                                                                                    className="h-4 w-4 p-0 hover:bg-secondary-foreground/20"
+                                                                                    onClick={() =>
+                                                                                        removeSelectedUser(username)
+                                                                                    }
+                                                                                >
+                                                                                    ×
+                                                                                </Button>
+                                                                            </div>
+                                                                        ))}
+                                                                    </div>
                                                                 </div>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                )}
-                                            </div>
-                                            <DrawerFooter>
-                                                <Button onClick={handleSubmit}>
-                                                    {isListsPage ? 'Add List' : 'Add Item'}
-                                                </Button>
-                                                <DrawerClose asChild>
-                                                    <Button variant="outline" onClick={handleCancel}>
-                                                        Cancel
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <DrawerFooter>
+                                                    <Button onClick={handleSubmit}>
+                                                        {isListsPage ? 'Add List' : 'Add Item'}
                                                     </Button>
-                                                </DrawerClose>
-                                            </DrawerFooter>
-                                        </div>
-                                    </DrawerContent>
-                                </Drawer>
+                                                    <DrawerClose asChild>
+                                                        <Button variant="outline" onClick={handleCancel}>
+                                                            Cancel
+                                                        </Button>
+                                                    </DrawerClose>
+                                                </DrawerFooter>
+                                            </div>
+                                        </DrawerContent>
+                                    </Drawer>
 
-                                {/* Delete All Button - Separate button */}
-                                {handleRemoveAll && (
+                                    {/* Delete All Button - Separate button */}
+                                    {handleRemoveAll && (
+                                        <RippleButton
+                                            size="icon"
+                                            variant="ghost"
+                                            className="h-12 w-12 rounded-full text-destructive hover:text-destructive transition-colors"
+                                            rippleClassName="bg-red-500/30"
+                                            title="Delete all items"
+                                            onClick={handleRemoveAll}
+                                        >
+                                            <Trash2 className="size-5" />
+                                        </RippleButton>
+                                    )}
+
+                                    {/* Hamburger Menu - far right */}
                                     <RippleButton
                                         size="icon"
                                         variant="ghost"
-                                        className="h-12 w-12 rounded-full text-destructive hover:text-destructive transition-colors"
-                                        rippleClassName="bg-red-500/30"
-                                        title="Delete all items"
-                                        onClick={handleRemoveAll}
+                                        className="h-12 w-12 rounded-full transition-colors"
+                                        rippleClassName="bg-gray-500/30"
+                                        title="More"
+                                        onClick={() => {
+                                            if (!isMenuOpen) setIsMenuOpen(true);
+                                            if (menuActive === 1) {
+                                                setIsMenuOpen(false);
+                                                setMenuActive(null);
+
+                                                return;
+                                            }
+
+                                            setMenuActive(1);
+                                        }}
                                     >
-                                        <Trash2 className="size-5" />
+                                        <Menu className="size-5" />
                                     </RippleButton>
-                                )}
-
-                                {/* Hamburger Menu - far right */}
-                                <RippleButton
-                                    size="icon"
-                                    variant="ghost"
-                                    className="h-12 w-12 rounded-full transition-colors"
-                                    rippleClassName="bg-gray-500/30"
-                                    title="More"
-                                    onClick={() => {
-                                        if (!isMenuOpen) setIsMenuOpen(true);
-                                        if (menuActive === 1) {
-                                            setIsMenuOpen(false);
-                                            setMenuActive(null);
-
-                                            return;
-                                        }
-
-                                        setMenuActive(1);
-                                    }}
-                                >
-                                    <Menu className="size-5" />
-                                </RippleButton>
-                            </CardContent>
-                        </Card>
-                    </MotionConfig>
+                                </CardContent>
+                            </Card>
+                        </MotionConfig>
+                    </div>
                 </div>
-            </div>
 
-
-            {/* Manage Users Drawer */}
-            {currentList && user && (
-                <ManageUsersDrawer
-                    open={isManageUsersOpen}
-                    onOpenChange={setIsManageUsersOpen}
-                    listTitle={currentList.title}
-                    currentUsers={currentList.users}
-                    ownerId={currentList.ownerId || currentList.users[0]?.id || ''}
-                    currentUserId={user.id}
-                    onUserAdded={() => {
-                        refetchList?.();
-                    }}
-                    onUserRemoved={() => {
-                        refetchList?.();
-                    }}
-                />
-            )}
+                {/* Manage Users Drawer */}
+                {currentList && user && (
+                    <ManageUsersDrawer
+                        open={isManageUsersOpen}
+                        onOpenChange={setIsManageUsersOpen}
+                        listTitle={currentList.title}
+                        currentUsers={currentList.users}
+                        ownerId={currentList.ownerId || currentList.users[0]?.id || ''}
+                        currentUserId={user.id}
+                        onUserAdded={() => {
+                            refetchList?.();
+                        }}
+                        onUserRemoved={() => {
+                            refetchList?.();
+                        }}
+                    />
+                )}
             </>
         );
     }
