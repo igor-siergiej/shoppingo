@@ -26,6 +26,8 @@ const ItemsPage = () => {
     // Extract listType and items from API response
     const listType = data?.listType || ListTypeEnum.SHOPPING;
     const items = data?.items || [];
+    const users = data?.users || [];
+    const ownerId = data?.ownerId;
 
     useEffect(() => {
         setCurrentListType(listType);
@@ -223,6 +225,16 @@ const ItemsPage = () => {
                 handleRemoveAll={handleClearList}
                 placeholder="Enter item name..."
                 currentListType={currentListType}
+                currentList={
+                    listTitle && users.length > 0
+                        ? {
+                              title: listTitle,
+                              users,
+                              ownerId,
+                          }
+                        : undefined
+                }
+                refetchList={refetch}
             />
         </>
     );

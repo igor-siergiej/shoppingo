@@ -20,6 +20,7 @@ export interface List {
     items: Array<Item>;
     users: Array<User>;
     listType: ListType;
+    ownerId?: string;
 }
 
 export interface ListResponse {
@@ -29,6 +30,7 @@ export interface ListResponse {
     items: Array<Item>;
     users: Array<{ username: string }>;
     listType: ListType;
+    ownerId?: string;
 }
 
 export interface User {

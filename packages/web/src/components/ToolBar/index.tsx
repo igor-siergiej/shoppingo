@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuth } from '@imapps/web-utils';
+import { useAuth, useUser } from '@imapps/web-utils';
 import type { ListType } from '@shoppingo/types';
 import { ListType as ListTypeEnum } from '@shoppingo/types';
 import { format } from 'date-fns';
@@ -15,6 +15,7 @@ import {
     Search,
     Trash2,
     User,
+    Users,
 } from 'lucide-react';
 import { AnimatePresence, MotionConfig, motion } from 'motion/react';
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
@@ -41,6 +42,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 import { usePWA } from '../../hooks/usePWA';
 import { useSearch } from '../../hooks/useSearch';
+import { ManageUsersDrawer } from '../ManageUsersDrawer';
 import { SearchResults } from '../SearchResults';
 
 interface ToolBarProps {
@@ -52,6 +54,13 @@ interface ToolBarProps {
     handleRemoveAll?: () => void;
     placeholder?: string;
     currentListType?: ListType;
+    // For items page: current list data
+    currentList?: {
+        title: string;
+        users: Array<{ id: string; username: string }>;
+        ownerId?: string;
+    };
+    refetchList?: () => void;
 }
 
 export interface ToolBarRef {
@@ -67,14 +76,19 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
             handleRemoveAll,
             placeholder = 'Enter item name...',
             currentListType,
+            currentList,
+            refetchList,
         },
         ref
     ) => {
         const location = useLocation();
         const navigate = useNavigate();
         const { logout } = useAuth();
+        const { user } = useUser();
+        const userId = user?.id;
 
         const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+        const [isManageUsersOpen, setIsManageUsersOpen] = useState(false);
         const [newName, setNewName] = useState('');
         const [error, setError] = useState<string>('');
         const [selectedUsers, setSelectedUsers] = useState<Array<string>>([]);
@@ -228,53 +242,102 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
         };
 
         return (
+            <>
             <div className="fixed bottom-4 left-0 right-0 z-40 px-4">
                 <div className="mx-auto max-w-[400px]">
                     <MotionConfig transition={transition}>
-                        <Card ref={menuCardRef} className="shadow-lg py-2 !gap-0">
+                        {/* Menu Container - Layered Glass Effect */}
+                        {isMenuOpen && (
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="absolute bottom-0 left-0 right-0 pointer-events-none"
+                                style={{
+                                    background: 'linear-gradient(180deg, transparent 0%, rgba(15, 23, 42, 0.02) 100%)',
+                                }}
+                            />
+                        )}
+
+                        <Card ref={menuCardRef} className="shadow-xl py-0 !gap-0 backdrop-blur-sm border border-slate-200/50 relative z-10">
+                            {/* Menu Content with Staggered Animation */}
                             <div className="overflow-hidden">
                                 <AnimatePresence initial={false} mode="sync">
                                     {isMenuOpen ? (
                                         <motion.div
                                             key="content"
-                                            initial={{ height: 0 }}
-                                            animate={{ height: contentHeight || 0 }}
-                                            exit={{ height: 0 }}
+                                            initial={{ height: 0, opacity: 0 }}
+                                            animate={{ height: contentHeight || 0, opacity: 1 }}
+                                            exit={{ height: 0, opacity: 0 }}
+                                            transition={{ height: { duration: 0.3 }, opacity: { duration: 0.2 } }}
                                             style={{ width: maxWidth }}
                                         >
-                                            <div ref={contentRef} className="p-3">
+                                            <div ref={contentRef} className="px-3 py-4">
                                                 {menuActive === 1 && (
-                                                    <div className="flex flex-col space-y-3">
-                                                        {/* Install app action (shows only if available and not installed) */}
-                                                        {canInstall && !isInstalled && (
-                                                            <Button
-                                                                variant="outline"
-                                                                onClick={async () => {
-                                                                    const success = await installApp();
-
-                                                                    if (success) {
+                                                    <div className="flex flex-col gap-2.5">
+                                                        {/* Manage Users action (shows only on items page and user is owner) */}
+                                                        {currentList && currentList.ownerId === userId && (
+                                                            <motion.div
+                                                                initial={{ opacity: 0, y: -8 }}
+                                                                animate={{ opacity: 1, y: 0 }}
+                                                                transition={{ delay: 0.05, duration: 0.2 }}
+                                                            >
+                                                                <Button
+                                                                    variant="outline"
+                                                                    onClick={() => {
+                                                                        setIsManageUsersOpen(true);
                                                                         setIsMenuOpen(false);
                                                                         setMenuActive(null);
-                                                                    }
-                                                                }}
-                                                                className="justify-center"
-                                                            >
-                                                                <Download className="h-4 w-4 mr-2" />
-                                                                Install app
-                                                            </Button>
+                                                                    }}
+                                                                    className="w-full justify-center h-9 text-sm font-medium transition-all duration-200 hover:bg-slate-50 active:scale-95"
+                                                                >
+                                                                    <Users className="h-4 w-4 mr-2" />
+                                                                    Manage Users
+                                                                </Button>
+                                                            </motion.div>
                                                         )}
-                                                        <Button
-                                                            variant="destructive"
-                                                            onClick={() => {
-                                                                void handleLogout();
-                                                                setIsMenuOpen(false);
-                                                                setMenuActive(null);
-                                                            }}
-                                                            className="justify-center"
+                                                        {/* Install app action (shows only if available and not installed) */}
+                                                        {canInstall && !isInstalled && (
+                                                            <motion.div
+                                                                initial={{ opacity: 0, y: -8 }}
+                                                                animate={{ opacity: 1, y: 0 }}
+                                                                transition={{ delay: 0.1, duration: 0.2 }}
+                                                            >
+                                                                <Button
+                                                                    variant="outline"
+                                                                    onClick={async () => {
+                                                                        const success = await installApp();
+
+                                                                        if (success) {
+                                                                            setIsMenuOpen(false);
+                                                                            setMenuActive(null);
+                                                                        }
+                                                                    }}
+                                                                    className="w-full justify-center h-9 text-sm font-medium transition-all duration-200 hover:bg-slate-50 active:scale-95"
+                                                                >
+                                                                    <Download className="h-4 w-4 mr-2" />
+                                                                    Install app
+                                                                </Button>
+                                                            </motion.div>
+                                                        )}
+                                                        <motion.div
+                                                            initial={{ opacity: 0, y: -8 }}
+                                                            animate={{ opacity: 1, y: 0 }}
+                                                            transition={{ delay: 0.15, duration: 0.2 }}
                                                         >
-                                                            <LogOut className="h-4 w-4 mr-2" />
-                                                            Log out
-                                                        </Button>
+                                                            <Button
+                                                                variant="destructive"
+                                                                onClick={() => {
+                                                                    void handleLogout();
+                                                                    setIsMenuOpen(false);
+                                                                    setMenuActive(null);
+                                                                }}
+                                                                className="w-full justify-center h-9 text-sm font-medium transition-all duration-200 hover:bg-red-600 active:scale-95"
+                                                            >
+                                                                <LogOut className="h-4 w-4 mr-2" />
+                                                                Log out
+                                                            </Button>
+                                                        </motion.div>
                                                     </div>
                                                 )}
                                             </div>
@@ -282,7 +345,13 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
                                     ) : null}
                                 </AnimatePresence>
                             </div>
-                            <CardContent className={`flex items-center justify-between`} ref={menuRef}>
+                            {/* Visual Separator - Divider Line */}
+                            {isMenuOpen && (
+                                <div className="h-0.5 bg-gradient-to-r from-transparent via-slate-300 to-transparent" />
+                            )}
+
+                            {/* App Bar - The persistent bottom navigation */}
+                            <CardContent className={`flex items-center justify-between py-2.5`} ref={menuRef}>
                                 {(isItemsPage || location.pathname !== '/') && (
                                     <RippleButton
                                         size="icon"
@@ -326,7 +395,7 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
                                         </RippleButton>
                                     </DrawerTrigger>
                                     <DrawerContent>
-                                        <div className="mx-auto w-full max-w-sm">
+                                        <div className="w-full sm:mx-auto sm:max-w-[400px]">
                                             <DrawerHeader>
                                                 <DrawerTitle>
                                                     {isListsPage
@@ -630,6 +699,26 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
                     </MotionConfig>
                 </div>
             </div>
+
+
+            {/* Manage Users Drawer */}
+            {currentList && user && (
+                <ManageUsersDrawer
+                    open={isManageUsersOpen}
+                    onOpenChange={setIsManageUsersOpen}
+                    listTitle={currentList.title}
+                    currentUsers={currentList.users}
+                    ownerId={currentList.ownerId || currentList.users[0]?.id || ''}
+                    currentUserId={user.id}
+                    onUserAdded={() => {
+                        refetchList?.();
+                    }}
+                    onUserRemoved={() => {
+                        refetchList?.();
+                    }}
+                />
+            )}
+            </>
         );
     }
 );

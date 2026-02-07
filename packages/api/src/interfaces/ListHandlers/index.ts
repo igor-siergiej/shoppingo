@@ -2,6 +2,7 @@ import type { Context } from 'koa';
 
 import { dependencyContainer } from '../../dependencies';
 import { DependencyToken } from '../../dependencies/types';
+import { AuthorizationService } from '../../domain/AuthorizationService';
 import type { ListService } from '../../domain/ListService';
 
 const getListService = (): ListService => dependencyContainer.resolve(DependencyToken.ListService);
@@ -41,6 +42,8 @@ export const getList = async (ctx: Context) => {
         }
 
         const list = await getListService().getList(title);
+        const authService = new AuthorizationService();
+        const effectiveOwnerId = authService.getEffectiveOwnerId(list);
 
         logger.info('API: List retrieved', {
             listTitle: title,
@@ -53,6 +56,8 @@ export const getList = async (ctx: Context) => {
         ctx.body = {
             listType: list.listType,
             items: list.items,
+            users: list.users.map((u) => ({ id: u.id, username: u.username })),
+            ownerId: effectiveOwnerId,
         };
     } catch (error: unknown) {
         const err = error as { status?: number; message?: string };
@@ -359,6 +364,20 @@ export const deleteList = async (ctx: Context) => {
             return;
         }
 
+        // Check ownership - only owner can delete list
+        const list = await getListService().getList(title);
+        const authService = new AuthorizationService();
+
+        if (!authService.isListOwner(list, authenticatedUser.id)) {
+            logger.warn('Non-owner attempted to delete list', {
+                authenticatedUserId: authenticatedUser.id,
+                listTitle: title,
+            });
+            ctx.status = 403;
+            ctx.body = { error: 'Only the list owner can delete this list' };
+            return;
+        }
+
         const result = await getListService().deleteList(title);
 
         logger.info('API: List deleted', { listTitle: title });
@@ -498,6 +517,92 @@ export const deleteSelected = async (ctx: Context) => {
             listTitle: title,
             error: err.message,
         });
+        ctx.status = err.status ?? 500;
+        ctx.body = { error: err.message ?? 'Internal Server Error' };
+    }
+};
+
+export const addUserToList = async (ctx: Context) => {
+    const { title } = ctx.params as { title: string };
+    const { username } = ctx.request.body as { username: string };
+    const authenticatedUser = ctx.state.user as { id: string; username: string };
+    const logger = getLogger();
+
+    // Validate input
+    if (!username || typeof username !== 'string' || username.trim() === '') {
+        ctx.status = 400;
+        ctx.body = { error: 'Username is required' };
+        return;
+    }
+
+    // Verify list access
+    const hasAccess = await verifyListAccess(title, authenticatedUser, ctx);
+    if (!hasAccess) {
+        return; // verifyListAccess already sets the response
+    }
+
+    try {
+        const list = await getListService().addUserToList(title, username.trim(), authenticatedUser.id);
+
+        logger.info('API: User added to list', {
+            userId: authenticatedUser.id,
+            username: authenticatedUser.username,
+            listTitle: title,
+            addedUser: username,
+        });
+
+        ctx.status = 200;
+        ctx.body = list;
+    } catch (error: unknown) {
+        const err = error as { status?: number; message?: string };
+
+        logger.error('API: Failed to add user to list', {
+            userId: authenticatedUser.id,
+            username: authenticatedUser.username,
+            listTitle: title,
+            addedUser: username,
+            error: err.message,
+        });
+
+        ctx.status = err.status ?? 500;
+        ctx.body = { error: err.message ?? 'Internal Server Error' };
+    }
+};
+
+export const removeUserFromList = async (ctx: Context) => {
+    const { title, userId } = ctx.params as { title: string; userId: string };
+    const authenticatedUser = ctx.state.user as { id: string; username: string };
+    const logger = getLogger();
+
+    // Verify list access
+    const hasAccess = await verifyListAccess(title, authenticatedUser, ctx);
+    if (!hasAccess) {
+        return;
+    }
+
+    try {
+        const list = await getListService().removeUserFromList(title, userId, authenticatedUser.id);
+
+        logger.info('API: User removed from list', {
+            userId: authenticatedUser.id,
+            username: authenticatedUser.username,
+            listTitle: title,
+            removedUserId: userId,
+        });
+
+        ctx.status = 200;
+        ctx.body = list;
+    } catch (error: unknown) {
+        const err = error as { status?: number; message?: string };
+
+        logger.error('API: Failed to remove user from list', {
+            userId: authenticatedUser.id,
+            username: authenticatedUser.username,
+            listTitle: title,
+            removedUserId: userId,
+            error: err.message,
+        });
+
         ctx.status = err.status ?? 500;
         ctx.body = { error: err.message ?? 'Internal Server Error' };
     }

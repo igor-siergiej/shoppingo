@@ -29,6 +29,8 @@ router.post('/api/lists/:title/items/:itemName', authenticate, listHandlers.upda
 router.delete('/api/lists/:title/items/:itemName', authenticate, listHandlers.deleteItem);
 router.delete('/api/lists/:title/clear', authenticate, listHandlers.clearList);
 router.delete('/api/lists/:title/clearSelected', authenticate, listHandlers.deleteSelected);
+router.post('/api/lists/:title/users', authenticate, listHandlers.addUserToList);
+router.delete('/api/lists/:title/users/:userId', authenticate, listHandlers.removeUserFromList);
 router.get('/api/image/:name', authenticate, getImage);
 
 export default router;

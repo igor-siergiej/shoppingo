@@ -8,7 +8,14 @@ export const getListQuery = (listTitle: string) => ({
     queryFn: async () => await getList(listTitle),
 });
 
-export const getList = async (listTitle: string): Promise<{ listType: ListType; items: Array<Item> }> => {
+export const getList = async (
+    listTitle: string
+): Promise<{
+    listType: ListType;
+    items: Array<Item>;
+    users: Array<{ id: string; username: string }>;
+    ownerId?: string;
+}> => {
     return await makeRequest({
         pathname: `/api/lists/title/${encodeURIComponent(listTitle)}`,
         method: MethodType.GET,
@@ -171,6 +178,23 @@ export const updateItemDueDate = async (listTitle: string, itemName: string, due
         body: JSON.stringify({
             ...(dueDate !== undefined && { dueDate }),
         }),
+    });
+};
+
+export const addUserToList = async (listTitle: string, username: string): Promise<ListResponse> => {
+    return await makeRequest({
+        pathname: `/api/lists/${encodeURIComponent(listTitle)}/users`,
+        method: MethodType.POST,
+        operationString: 'add user to list',
+        body: JSON.stringify({ username }),
+    });
+};
+
+export const removeUserFromList = async (listTitle: string, userId: string): Promise<ListResponse> => {
+    return await makeRequest({
+        pathname: `/api/lists/${encodeURIComponent(listTitle)}/users/${encodeURIComponent(userId)}`,
+        method: MethodType.DELETE,
+        operationString: 'remove user from list',
     });
 };
 

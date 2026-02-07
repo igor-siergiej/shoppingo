@@ -2,6 +2,7 @@
 import { DependencyContainer, Logger, MongoDbConnection, ObjectStoreConnection } from '@imapps/api-utils';
 
 import { config } from '../config';
+import { AuthorizationService } from '../domain/AuthorizationService';
 import { ImageService } from '../domain/ImageService';
 import { ListService } from '../domain/ListService';
 import { HttpAuthClient } from '../infrastructure/AuthClient';
@@ -21,6 +22,7 @@ export const registerDepdendencies = () => {
     dependencyContainer.registerSingleton(DependencyToken.Bucket, ObjectStoreConnection);
     dependencyContainer.registerSingleton(DependencyToken.AuthClient, HttpAuthClient);
     dependencyContainer.registerSingleton(DependencyToken.IdGenerator, UuidGenerator);
+    dependencyContainer.registerSingleton(DependencyToken.AuthorizationService, AuthorizationService);
 
     // Domain services using factory classes
     dependencyContainer.registerSingleton(

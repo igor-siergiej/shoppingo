@@ -1,6 +1,7 @@
 import type { Logger, MongoDbConnection, ObjectStoreConnection } from '@imapps/api-utils';
 import type { List } from '@shoppingo/types';
 
+import type { AuthorizationService } from '../domain/AuthorizationService';
 import type { IdGenerator } from '../domain/IdGenerator';
 import type { ImageService } from '../domain/ImageService';
 import type { ImageGenerator, ImageStore } from '../domain/ImageService/types';
@@ -21,6 +22,7 @@ export enum DependencyToken {
     ListRepository = 'ListRepository',
     ListService = 'ListService',
     AuthClient = 'AuthClient',
+    AuthorizationService = 'AuthorizationService',
     ImageStore = 'ImageStore',
     ImageGenerator = 'ImageGenerator',
     ImageService = 'ImageService',
@@ -35,6 +37,7 @@ export type Dependencies = {
     [DependencyToken.ListRepository]: ListRepository;
     [DependencyToken.ListService]: ListService;
     [DependencyToken.AuthClient]: AuthClient;
+    [DependencyToken.AuthorizationService]: AuthorizationService;
     [DependencyToken.ImageStore]: ImageStore;
     [DependencyToken.ImageGenerator]: ImageGenerator;
     [DependencyToken.ImageService]: ImageService;
