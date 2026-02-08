@@ -1,0 +1,314 @@
+[     505ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:4000/api/lists/user/697650266a5d4444166310ad:0
+[    8207ms] [WARNING] Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}. @ http://localhost:4000/node_modules/.vite/deps/vaul.js?v=8fc8e764:793
+[ 1508846ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:4000/api/lists/user/697650266a5d4444166310ad:0
+[ 1508848ms] [ERROR] Failed to load resource: the server responded with a status of 403 (Forbidden) @ http://localhost:3008/refresh:0
+[ 1508848ms] [WARNING] [WARN] Token refresh failed, redirecting to login {} @ http://localhost:4000/src/utils/logger.ts:60
+[ 1508853ms] [ERROR] [ERROR] Error while trying to get lists {error: Session expired. Please log in again.} @ http://localhost:4000/src/utils/logger.ts:60
+[ 1508853ms] [ERROR] Error: Session expired. Please log in again.
+    at makeRequest (http://localhost:4000/src/api/makeRequest/index.ts:44:15)
+    at async getLists (http://localhost:4000/src/api/index.ts:19:10)
+    at async Object.queryFn (http://localhost:4000/src/api/index.ts:16:24) @ http://localhost:4000/node_modules/.vite/deps/react-query.js?v=8fc8e764:921
+[ 1508868ms] [ERROR] Failed to send log on unload: TypeError: Failed to fetch
+    at FrontendLogger.flushBeforeUnload (http://localhost:4000/src/utils/logger.ts:90:9)
+    at HTMLDocument.<anonymous> (http://localhost:4000/src/utils/logger.ts:110:12) @ http://localhost:4000/src/utils/logger.ts:95
+[ 1597597ms] [ERROR] [vite] Internal Server Error
+/home/igors/imapps/shoppingo/packages/web/src/components/ToolBar/index.tsx: Missing initializer in const declaration. (70:51)
+
+  68 | }
+  69 |
+> 70 | const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
+     |                                                    ^
+  71 |     (
+  72 |         {
+  73 |             handleAdd,
+    at constructor (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:367:19)
+    at TypeScriptParserMixin.raise (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:6627:19)
+    at TypeScriptParserMixin.parseVar (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:13391:16)
+    at TypeScriptParserMixin.parseVarStatement (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:13230:10)
+    at TypeScriptParserMixin.parseVarStatement (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:9493:31)
+    at TypeScriptParserMixin.parseStatementContent (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:12851:23)
+    at TypeScriptParserMixin.parseStatementContent (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:9527:18)
+    at TypeScriptParserMixin.parseStatementLike (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:12767:17)
+    at TypeScriptParserMixin.parseModuleItem (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:12744:17)
+    at TypeScriptParserMixin.parseBlockOrModuleBlockBody (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:13316:36)
+    at TypeScriptParserMixin.parseBlockBody (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:13309:10)
+    at TypeScriptParserMixin.parseProgram (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:12625:10)
+    at TypeScriptParserMixin.parseTopLevel (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:12615:25)
+    at TypeScriptParserMixin.parse (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:14492:10)
+    at TypeScriptParserMixin.parse (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:10144:18)
+    at parse (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:14526:38)
+    at parser (/home/igors/imapps/shoppingo/node_modules/@vitejs/plugin-react/node_modules/@babel/core/lib/parser/index.js:41:34)
+    at parser.next (<anonymous>)
+    at normalizeFile (/home/igors/imapps/shoppingo/node_modules/@vitejs/plugin-react/node_modules/@babel/core/lib/transformation/normalize-file.js:64:37)
+    at normalizeFile.next (<anonymous>)
+    at run (/home/igors/imapps/shoppingo/node_modules/@vitejs/plugin-react/node_modules/@babel/core/lib/transformation/index.js:22:50)
+    at run.next (<anonymous>)
+    at transform (/home/igors/imapps/shoppingo/node_modules/@vitejs/plugin-react/node_modules/@babel/core/lib/transform.js:22:33)
+    at transform.next (<anonymous>)
+    at step (/home/igors/imapps/shoppingo/node_modules/gensync/index.js:261:32)
+    at /home/igors/imapps/shoppingo/node_modules/gensync/index.js:273:13
+    at async.call.result.err.err (/home/igors/imapps/shoppingo/node_modules/gensync/index.js:223:11)
+    at /home/igors/imapps/shoppingo/node_modules/gensync/index.js:189:28
+    at /home/igors/imapps/shoppingo/node_modules/@vitejs/plugin-react/node_modules/@babel/core/lib/gensync-utils/async.js:67:7
+    at /home/igors/imapps/shoppingo/node_modules/gensync/index.js:113:33
+    at step (/home/igors/imapps/shoppingo/node_modules/gensync/index.js:287:14)
+    at /home/igors/imapps/shoppingo/node_modules/gensync/index.js:273:13
+    at async.call.result.err.err (/home/igors/imapps/shoppingo/node_modules/gensync/index.js:223:11) @ http://localhost:4000/@vite/client:891
+[ 1601742ms] [ERROR] [vite] Internal Server Error
+/home/igors/imapps/shoppingo/packages/web/src/components/ToolBar/index.tsx: Missing initializer in const declaration. (70:51)
+
+  68 | }
+  69 |
+> 70 | const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
+     |                                                    ^
+  71 |     (
+  72 |         {
+  73 |             handleAdd,
+    at constructor (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:367:19)
+    at TypeScriptParserMixin.raise (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:6627:19)
+    at TypeScriptParserMixin.parseVar (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:13391:16)
+    at TypeScriptParserMixin.parseVarStatement (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:13230:10)
+    at TypeScriptParserMixin.parseVarStatement (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:9493:31)
+    at TypeScriptParserMixin.parseStatementContent (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:12851:23)
+    at TypeScriptParserMixin.parseStatementContent (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:9527:18)
+    at TypeScriptParserMixin.parseStatementLike (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:12767:17)
+    at TypeScriptParserMixin.parseModuleItem (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:12744:17)
+    at TypeScriptParserMixin.parseBlockOrModuleBlockBody (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:13316:36)
+    at TypeScriptParserMixin.parseBlockBody (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:13309:10)
+    at TypeScriptParserMixin.parseProgram (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:12625:10)
+    at TypeScriptParserMixin.parseTopLevel (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:12615:25)
+    at TypeScriptParserMixin.parse (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:14492:10)
+    at TypeScriptParserMixin.parse (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:10144:18)
+    at parse (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:14526:38)
+    at parser (/home/igors/imapps/shoppingo/node_modules/@vitejs/plugin-react/node_modules/@babel/core/lib/parser/index.js:41:34)
+    at parser.next (<anonymous>)
+    at normalizeFile (/home/igors/imapps/shoppingo/node_modules/@vitejs/plugin-react/node_modules/@babel/core/lib/transformation/normalize-file.js:64:37)
+    at normalizeFile.next (<anonymous>)
+    at run (/home/igors/imapps/shoppingo/node_modules/@vitejs/plugin-react/node_modules/@babel/core/lib/transformation/index.js:22:50)
+    at run.next (<anonymous>)
+    at transform (/home/igors/imapps/shoppingo/node_modules/@vitejs/plugin-react/node_modules/@babel/core/lib/transform.js:22:33)
+    at transform.next (<anonymous>)
+    at step (/home/igors/imapps/shoppingo/node_modules/gensync/index.js:261:32)
+    at /home/igors/imapps/shoppingo/node_modules/gensync/index.js:273:13
+    at async.call.result.err.err (/home/igors/imapps/shoppingo/node_modules/gensync/index.js:223:11)
+    at /home/igors/imapps/shoppingo/node_modules/gensync/index.js:189:28
+    at /home/igors/imapps/shoppingo/node_modules/@vitejs/plugin-react/node_modules/@babel/core/lib/gensync-utils/async.js:67:7
+    at /home/igors/imapps/shoppingo/node_modules/gensync/index.js:113:33
+    at step (/home/igors/imapps/shoppingo/node_modules/gensync/index.js:287:14)
+    at /home/igors/imapps/shoppingo/node_modules/gensync/index.js:273:13
+    at async.call.result.err.err (/home/igors/imapps/shoppingo/node_modules/gensync/index.js:223:11) @ http://localhost:4000/@vite/client:891
+[ 1677926ms] [ERROR] [vite] Internal Server Error
+/home/igors/imapps/shoppingo/packages/web/src/components/ToolBar/index.tsx: Missing initializer in const declaration. (70:51)
+
+  68 | }
+  69 |
+> 70 | const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
+     |                                                    ^
+  71 |     (
+  72 |         {
+  73 |             handleAdd,
+    at constructor (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:367:19)
+    at TypeScriptParserMixin.raise (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:6627:19)
+    at TypeScriptParserMixin.parseVar (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:13391:16)
+    at TypeScriptParserMixin.parseVarStatement (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:13230:10)
+    at TypeScriptParserMixin.parseVarStatement (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:9493:31)
+    at TypeScriptParserMixin.parseStatementContent (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:12851:23)
+    at TypeScriptParserMixin.parseStatementContent (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:9527:18)
+    at TypeScriptParserMixin.parseStatementLike (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:12767:17)
+    at TypeScriptParserMixin.parseModuleItem (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:12744:17)
+    at TypeScriptParserMixin.parseBlockOrModuleBlockBody (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:13316:36)
+    at TypeScriptParserMixin.parseBlockBody (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:13309:10)
+    at TypeScriptParserMixin.parseProgram (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:12625:10)
+    at TypeScriptParserMixin.parseTopLevel (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:12615:25)
+    at TypeScriptParserMixin.parse (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:14492:10)
+    at TypeScriptParserMixin.parse (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:10144:18)
+    at parse (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:14526:38)
+    at parser (/home/igors/imapps/shoppingo/node_modules/@vitejs/plugin-react/node_modules/@babel/core/lib/parser/index.js:41:34)
+    at parser.next (<anonymous>)
+    at normalizeFile (/home/igors/imapps/shoppingo/node_modules/@vitejs/plugin-react/node_modules/@babel/core/lib/transformation/normalize-file.js:64:37)
+    at normalizeFile.next (<anonymous>)
+    at run (/home/igors/imapps/shoppingo/node_modules/@vitejs/plugin-react/node_modules/@babel/core/lib/transformation/index.js:22:50)
+    at run.next (<anonymous>)
+    at transform (/home/igors/imapps/shoppingo/node_modules/@vitejs/plugin-react/node_modules/@babel/core/lib/transform.js:22:33)
+    at transform.next (<anonymous>)
+    at step (/home/igors/imapps/shoppingo/node_modules/gensync/index.js:261:32)
+    at /home/igors/imapps/shoppingo/node_modules/gensync/index.js:273:13
+    at async.call.result.err.err (/home/igors/imapps/shoppingo/node_modules/gensync/index.js:223:11)
+    at /home/igors/imapps/shoppingo/node_modules/gensync/index.js:189:28
+    at /home/igors/imapps/shoppingo/node_modules/@vitejs/plugin-react/node_modules/@babel/core/lib/gensync-utils/async.js:67:7
+    at /home/igors/imapps/shoppingo/node_modules/gensync/index.js:113:33
+    at step (/home/igors/imapps/shoppingo/node_modules/gensync/index.js:287:14)
+    at /home/igors/imapps/shoppingo/node_modules/gensync/index.js:273:13
+    at async.call.result.err.err (/home/igors/imapps/shoppingo/node_modules/gensync/index.js:223:11) @ http://localhost:4000/@vite/client:891
+[ 1684295ms] [ERROR] [vite] Internal Server Error
+/home/igors/imapps/shoppingo/packages/web/src/components/ToolBar/index.tsx: Missing initializer in const declaration. (70:51)
+
+  68 | }
+  69 |
+> 70 | const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
+     |                                                    ^
+  71 |     (
+  72 |         {
+  73 |             handleAdd,
+    at constructor (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:367:19)
+    at TypeScriptParserMixin.raise (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:6627:19)
+    at TypeScriptParserMixin.parseVar (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:13391:16)
+    at TypeScriptParserMixin.parseVarStatement (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:13230:10)
+    at TypeScriptParserMixin.parseVarStatement (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:9493:31)
+    at TypeScriptParserMixin.parseStatementContent (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:12851:23)
+    at TypeScriptParserMixin.parseStatementContent (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:9527:18)
+    at TypeScriptParserMixin.parseStatementLike (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:12767:17)
+    at TypeScriptParserMixin.parseModuleItem (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:12744:17)
+    at TypeScriptParserMixin.parseBlockOrModuleBlockBody (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:13316:36)
+    at TypeScriptParserMixin.parseBlockBody (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:13309:10)
+    at TypeScriptParserMixin.parseProgram (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:12625:10)
+    at TypeScriptParserMixin.parseTopLevel (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:12615:25)
+    at TypeScriptParserMixin.parse (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:14492:10)
+    at TypeScriptParserMixin.parse (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:10144:18)
+    at parse (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:14526:38)
+    at parser (/home/igors/imapps/shoppingo/node_modules/@vitejs/plugin-react/node_modules/@babel/core/lib/parser/index.js:41:34)
+    at parser.next (<anonymous>)
+    at normalizeFile (/home/igors/imapps/shoppingo/node_modules/@vitejs/plugin-react/node_modules/@babel/core/lib/transformation/normalize-file.js:64:37)
+    at normalizeFile.next (<anonymous>)
+    at run (/home/igors/imapps/shoppingo/node_modules/@vitejs/plugin-react/node_modules/@babel/core/lib/transformation/index.js:22:50)
+    at run.next (<anonymous>)
+    at transform (/home/igors/imapps/shoppingo/node_modules/@vitejs/plugin-react/node_modules/@babel/core/lib/transform.js:22:33)
+    at transform.next (<anonymous>)
+    at step (/home/igors/imapps/shoppingo/node_modules/gensync/index.js:261:32)
+    at /home/igors/imapps/shoppingo/node_modules/gensync/index.js:273:13
+    at async.call.result.err.err (/home/igors/imapps/shoppingo/node_modules/gensync/index.js:223:11)
+    at /home/igors/imapps/shoppingo/node_modules/gensync/index.js:189:28
+    at /home/igors/imapps/shoppingo/node_modules/@vitejs/plugin-react/node_modules/@babel/core/lib/gensync-utils/async.js:67:7
+    at /home/igors/imapps/shoppingo/node_modules/gensync/index.js:113:33
+    at step (/home/igors/imapps/shoppingo/node_modules/gensync/index.js:287:14)
+    at /home/igors/imapps/shoppingo/node_modules/gensync/index.js:273:13
+    at async.call.result.err.err (/home/igors/imapps/shoppingo/node_modules/gensync/index.js:223:11) @ http://localhost:4000/@vite/client:891
+[ 1701938ms] [ERROR] [vite] Internal Server Error
+/home/igors/imapps/shoppingo/packages/web/src/components/ToolBar/index.tsx: Missing initializer in const declaration. (70:51)
+
+  68 | }
+  69 |
+> 70 | const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
+     |                                                    ^
+  71 |     (
+  72 |         {
+  73 |             handleAdd,
+    at constructor (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:367:19)
+    at TypeScriptParserMixin.raise (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:6627:19)
+    at TypeScriptParserMixin.parseVar (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:13391:16)
+    at TypeScriptParserMixin.parseVarStatement (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:13230:10)
+    at TypeScriptParserMixin.parseVarStatement (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:9493:31)
+    at TypeScriptParserMixin.parseStatementContent (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:12851:23)
+    at TypeScriptParserMixin.parseStatementContent (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:9527:18)
+    at TypeScriptParserMixin.parseStatementLike (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:12767:17)
+    at TypeScriptParserMixin.parseModuleItem (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:12744:17)
+    at TypeScriptParserMixin.parseBlockOrModuleBlockBody (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:13316:36)
+    at TypeScriptParserMixin.parseBlockBody (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:13309:10)
+    at TypeScriptParserMixin.parseProgram (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:12625:10)
+    at TypeScriptParserMixin.parseTopLevel (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:12615:25)
+    at TypeScriptParserMixin.parse (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:14492:10)
+    at TypeScriptParserMixin.parse (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:10144:18)
+    at parse (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:14526:38)
+    at parser (/home/igors/imapps/shoppingo/node_modules/@vitejs/plugin-react/node_modules/@babel/core/lib/parser/index.js:41:34)
+    at parser.next (<anonymous>)
+    at normalizeFile (/home/igors/imapps/shoppingo/node_modules/@vitejs/plugin-react/node_modules/@babel/core/lib/transformation/normalize-file.js:64:37)
+    at normalizeFile.next (<anonymous>)
+    at run (/home/igors/imapps/shoppingo/node_modules/@vitejs/plugin-react/node_modules/@babel/core/lib/transformation/index.js:22:50)
+    at run.next (<anonymous>)
+    at transform (/home/igors/imapps/shoppingo/node_modules/@vitejs/plugin-react/node_modules/@babel/core/lib/transform.js:22:33)
+    at transform.next (<anonymous>)
+    at step (/home/igors/imapps/shoppingo/node_modules/gensync/index.js:261:32)
+    at /home/igors/imapps/shoppingo/node_modules/gensync/index.js:273:13
+    at async.call.result.err.err (/home/igors/imapps/shoppingo/node_modules/gensync/index.js:223:11)
+    at /home/igors/imapps/shoppingo/node_modules/gensync/index.js:189:28
+    at /home/igors/imapps/shoppingo/node_modules/@vitejs/plugin-react/node_modules/@babel/core/lib/gensync-utils/async.js:67:7
+    at /home/igors/imapps/shoppingo/node_modules/gensync/index.js:113:33
+    at step (/home/igors/imapps/shoppingo/node_modules/gensync/index.js:287:14)
+    at /home/igors/imapps/shoppingo/node_modules/gensync/index.js:273:13
+    at async.call.result.err.err (/home/igors/imapps/shoppingo/node_modules/gensync/index.js:223:11) @ http://localhost:4000/@vite/client:891
+[ 1713428ms] [ERROR] [vite] Internal Server Error
+/home/igors/imapps/shoppingo/packages/web/src/components/ToolBar/index.tsx: Missing initializer in const declaration. (70:51)
+
+  68 | }
+  69 |
+> 70 | const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
+     |                                                    ^
+  71 |     (
+  72 |         {
+  73 |             handleAdd,
+    at constructor (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:367:19)
+    at TypeScriptParserMixin.raise (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:6627:19)
+    at TypeScriptParserMixin.parseVar (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:13391:16)
+    at TypeScriptParserMixin.parseVarStatement (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:13230:10)
+    at TypeScriptParserMixin.parseVarStatement (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:9493:31)
+    at TypeScriptParserMixin.parseStatementContent (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:12851:23)
+    at TypeScriptParserMixin.parseStatementContent (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:9527:18)
+    at TypeScriptParserMixin.parseStatementLike (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:12767:17)
+    at TypeScriptParserMixin.parseModuleItem (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:12744:17)
+    at TypeScriptParserMixin.parseBlockOrModuleBlockBody (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:13316:36)
+    at TypeScriptParserMixin.parseBlockBody (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:13309:10)
+    at TypeScriptParserMixin.parseProgram (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:12625:10)
+    at TypeScriptParserMixin.parseTopLevel (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:12615:25)
+    at TypeScriptParserMixin.parse (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:14492:10)
+    at TypeScriptParserMixin.parse (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:10144:18)
+    at parse (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:14526:38)
+    at parser (/home/igors/imapps/shoppingo/node_modules/@vitejs/plugin-react/node_modules/@babel/core/lib/parser/index.js:41:34)
+    at parser.next (<anonymous>)
+    at normalizeFile (/home/igors/imapps/shoppingo/node_modules/@vitejs/plugin-react/node_modules/@babel/core/lib/transformation/normalize-file.js:64:37)
+    at normalizeFile.next (<anonymous>)
+    at run (/home/igors/imapps/shoppingo/node_modules/@vitejs/plugin-react/node_modules/@babel/core/lib/transformation/index.js:22:50)
+    at run.next (<anonymous>)
+    at transform (/home/igors/imapps/shoppingo/node_modules/@vitejs/plugin-react/node_modules/@babel/core/lib/transform.js:22:33)
+    at transform.next (<anonymous>)
+    at step (/home/igors/imapps/shoppingo/node_modules/gensync/index.js:261:32)
+    at /home/igors/imapps/shoppingo/node_modules/gensync/index.js:273:13
+    at async.call.result.err.err (/home/igors/imapps/shoppingo/node_modules/gensync/index.js:223:11)
+    at /home/igors/imapps/shoppingo/node_modules/gensync/index.js:189:28
+    at /home/igors/imapps/shoppingo/node_modules/@vitejs/plugin-react/node_modules/@babel/core/lib/gensync-utils/async.js:67:7
+    at /home/igors/imapps/shoppingo/node_modules/gensync/index.js:113:33
+    at step (/home/igors/imapps/shoppingo/node_modules/gensync/index.js:287:14)
+    at /home/igors/imapps/shoppingo/node_modules/gensync/index.js:273:13
+    at async.call.result.err.err (/home/igors/imapps/shoppingo/node_modules/gensync/index.js:223:11) @ http://localhost:4000/@vite/client:891
+[ 1716873ms] [ERROR] [vite] Internal Server Error
+/home/igors/imapps/shoppingo/packages/web/src/components/ToolBar/index.tsx: Missing initializer in const declaration. (70:51)
+
+  68 | }
+  69 |
+> 70 | const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
+     |                                                    ^
+  71 |     (
+  72 |         {
+  73 |             handleAdd,
+    at constructor (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:367:19)
+    at TypeScriptParserMixin.raise (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:6627:19)
+    at TypeScriptParserMixin.parseVar (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:13391:16)
+    at TypeScriptParserMixin.parseVarStatement (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:13230:10)
+    at TypeScriptParserMixin.parseVarStatement (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:9493:31)
+    at TypeScriptParserMixin.parseStatementContent (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:12851:23)
+    at TypeScriptParserMixin.parseStatementContent (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:9527:18)
+    at TypeScriptParserMixin.parseStatementLike (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:12767:17)
+    at TypeScriptParserMixin.parseModuleItem (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:12744:17)
+    at TypeScriptParserMixin.parseBlockOrModuleBlockBody (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:13316:36)
+    at TypeScriptParserMixin.parseBlockBody (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:13309:10)
+    at TypeScriptParserMixin.parseProgram (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:12625:10)
+    at TypeScriptParserMixin.parseTopLevel (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:12615:25)
+    at TypeScriptParserMixin.parse (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:14492:10)
+    at TypeScriptParserMixin.parse (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:10144:18)
+    at parse (/home/igors/imapps/shoppingo/node_modules/@babel/parser/lib/index.js:14526:38)
+    at parser (/home/igors/imapps/shoppingo/node_modules/@vitejs/plugin-react/node_modules/@babel/core/lib/parser/index.js:41:34)
+    at parser.next (<anonymous>)
+    at normalizeFile (/home/igors/imapps/shoppingo/node_modules/@vitejs/plugin-react/node_modules/@babel/core/lib/transformation/normalize-file.js:64:37)
+    at normalizeFile.next (<anonymous>)
+    at run (/home/igors/imapps/shoppingo/node_modules/@vitejs/plugin-react/node_modules/@babel/core/lib/transformation/index.js:22:50)
+    at run.next (<anonymous>)
+    at transform (/home/igors/imapps/shoppingo/node_modules/@vitejs/plugin-react/node_modules/@babel/core/lib/transform.js:22:33)
+    at transform.next (<anonymous>)
+    at step (/home/igors/imapps/shoppingo/node_modules/gensync/index.js:261:32)
+    at /home/igors/imapps/shoppingo/node_modules/gensync/index.js:273:13
+    at async.call.result.err.err (/home/igors/imapps/shoppingo/node_modules/gensync/index.js:223:11)
+    at /home/igors/imapps/shoppingo/node_modules/gensync/index.js:189:28
+    at /home/igors/imapps/shoppingo/node_modules/@vitejs/plugin-react/node_modules/@babel/core/lib/gensync-utils/async.js:67:7
+    at /home/igors/imapps/shoppingo/node_modules/gensync/index.js:113:33
+    at step (/home/igors/imapps/shoppingo/node_modules/gensync/index.js:287:14)
+    at /home/igors/imapps/shoppingo/node_modules/gensync/index.js:273:13
+    at async.call.result.err.err (/home/igors/imapps/shoppingo/node_modules/gensync/index.js:223:11) @ http://localhost:4000/@vite/client:891
