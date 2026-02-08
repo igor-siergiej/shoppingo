@@ -1,3 +1,10 @@
+## [1.17.1](https://gitlab.com/imapps/shoppingo/compare/v1.17.0...v1.17.1) (2026-02-08)
+
+
+### Bug Fixes
+
+* improve Kubernetes pod scheduling by optimizing kubelet resources ([9e93339](https://gitlab.com/imapps/shoppingo/commit/9e9333946161a5cb19bd7968655d993a022cd9be))
+
 # [1.17.0](https://gitlab.com/imapps/shoppingo/compare/v1.16.1...v1.17.0) (2026-02-08)
 
 
