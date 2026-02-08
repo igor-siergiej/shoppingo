@@ -1,4 +1,5 @@
 # GitLab CI configuration for Shoppingo
+# Note: Depends on imapps/utils templates with semantic-release SSH-to-HTTPS fix
 include:
   - project: 'imapps/utils'
     file: 'templates.yml'
