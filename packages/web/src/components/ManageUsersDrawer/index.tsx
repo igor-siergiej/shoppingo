@@ -71,7 +71,13 @@ export const ManageUsersDrawer = ({
         },
         onError: (error: unknown) => {
             const err = error as { message?: string };
-            toast.error(err.message || 'Failed to add user');
+            toast.error(err.message || 'Failed to add user', {
+                style: {
+                    backgroundColor: '#ef4444',
+                    color: '#ffffff',
+                    border: 'none',
+                },
+            });
         },
     });
 
@@ -84,7 +90,13 @@ export const ManageUsersDrawer = ({
         },
         onError: (error: unknown) => {
             const err = error as { message?: string };
-            toast.error(err.message || 'Failed to remove user');
+            toast.error(err.message || 'Failed to remove user', {
+                style: {
+                    backgroundColor: '#ef4444',
+                    color: '#ffffff',
+                    border: 'none',
+                },
+            });
             setConfirmRemoveUserId(null);
         },
     });
@@ -99,7 +111,13 @@ export const ManageUsersDrawer = ({
     const handleRemoveUser = useCallback(
         (userId: string) => {
             if (userId === ownerId) {
-                toast.error('Cannot remove the list owner');
+                toast.error('Cannot remove the list owner', {
+                    style: {
+                        backgroundColor: '#ef4444',
+                        color: '#ffffff',
+                        border: 'none',
+                    },
+                });
                 return;
             }
 
