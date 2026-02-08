@@ -1,3 +1,16 @@
+# [1.17.0](https://gitlab.com/imapps/shoppingo/compare/v1.16.1...v1.17.0) (2026-02-08)
+
+
+### Bug Fixes
+
+* improve Docker daemon startup timeout in CI pipelines ([56f4682](https://gitlab.com/imapps/shoppingo/commit/56f46828fb4b629b2642fa81edf0580a0b2652f4))
+* improve error handling and messaging for user sharing and list creation ([2788988](https://gitlab.com/imapps/shoppingo/commit/27889888142173832216d936800ec442192e8561))
+
+
+### Features
+
+* manage users menu ([acbc14c](https://gitlab.com/imapps/shoppingo/commit/acbc14c5ec5cb39afb6e4eef6837b356a8687796))
+
 ## [1.16.1](https://gitlab.com/imapps/shoppingo/compare/v1.16.0...v1.16.1) (2026-01-30)
 
 
