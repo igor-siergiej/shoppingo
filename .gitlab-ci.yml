@@ -39,7 +39,8 @@ version-release:
 build-web:
   extends: .docker-build-template
   before_script:
-    - until docker info; do sleep 1; done
+    - echo "⏳ Waiting for Docker daemon to be ready..."
+    - for i in {1..60}; do docker info > /dev/null 2>&1 && echo "✅ Docker ready!" && break; echo "Attempt $i/60..."; sleep 2; done || (echo "❌ Docker daemon failed to start"; exit 1)
   variables:
     APP_NAME: "shoppingo-web"
     DOCKERFILE_PATH: "packages/web/Dockerfile"
@@ -47,6 +48,7 @@ build-web:
     DOCKER_TLS_CERTDIR: ""
     DOCKER_TLS_VERIFY: ""
     DOCKER_CERT_PATH: ""
+  timeout: 3h
   rules:
     - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_REF_NAME == "main"
     - if: $CI_PIPELINE_SOURCE == "web"
@@ -57,7 +59,8 @@ build-web:
 build-api:
   extends: .docker-build-template
   before_script:
-    - until docker info; do sleep 1; done
+    - echo "⏳ Waiting for Docker daemon to be ready..."
+    - for i in {1..60}; do docker info > /dev/null 2>&1 && echo "✅ Docker ready!" && break; echo "Attempt $i/60..."; sleep 2; done || (echo "❌ Docker daemon failed to start"; exit 1)
   variables:
     APP_NAME: "shoppingo-api"
     DOCKERFILE_PATH: "packages/api/Dockerfile"
@@ -65,6 +68,7 @@ build-api:
     DOCKER_TLS_CERTDIR: ""
     DOCKER_TLS_VERIFY: ""
     DOCKER_CERT_PATH: ""
+  timeout: 3h
   rules:
     - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_REF_NAME == "main"
     - if: $CI_PIPELINE_SOURCE == "web"
