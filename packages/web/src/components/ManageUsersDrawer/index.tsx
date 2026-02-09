@@ -217,7 +217,6 @@ export const ManageUsersDrawer = ({
                                         placeholder="Search for users..."
                                         value={searchInput}
                                         onChange={(e) => setSearchInput(e.target.value)}
-                                        disabled={isSearching}
                                         className={isSearching ? 'pr-8' : ''}
                                     />
                                     {isSearching && (
