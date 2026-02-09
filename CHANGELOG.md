@@ -1,3 +1,10 @@
+## [1.17.2](https://gitlab.com/imapps/shoppingo/compare/v1.17.1...v1.17.2) (2026-02-09)
+
+
+### Bug Fixes
+
+* Properly extract and log error messages in user management endpoints ([7c4b595](https://gitlab.com/imapps/shoppingo/commit/7c4b5955d4f5f7fef4d5afcde09ece64be143c2f))
+
 ## [1.17.1](https://gitlab.com/imapps/shoppingo/compare/v1.17.0...v1.17.1) (2026-02-08)
 
 
