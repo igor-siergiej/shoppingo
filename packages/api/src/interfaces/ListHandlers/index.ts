@@ -538,7 +538,13 @@ export const addUserToList = async (ctx: Context) => {
     // Verify list access
     const hasAccess = await verifyListAccess(title, authenticatedUser, ctx);
     if (!hasAccess) {
-        return; // verifyListAccess already sets the response
+        logger.warn('Unauthorized list access attempt', {
+            authenticatedUserId: authenticatedUser.id,
+            listTitle: title,
+        });
+        ctx.status = 403;
+        ctx.body = { error: 'Forbidden' };
+        return;
     }
 
     try {
@@ -577,6 +583,12 @@ export const removeUserFromList = async (ctx: Context) => {
     // Verify list access
     const hasAccess = await verifyListAccess(title, authenticatedUser, ctx);
     if (!hasAccess) {
+        logger.warn('Unauthorized list access attempt', {
+            authenticatedUserId: authenticatedUser.id,
+            listTitle: title,
+        });
+        ctx.status = 403;
+        ctx.body = { error: 'Forbidden' };
         return;
     }
 
