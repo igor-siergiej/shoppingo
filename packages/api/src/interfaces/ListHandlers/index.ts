@@ -560,18 +560,21 @@ export const addUserToList = async (ctx: Context) => {
         ctx.status = 200;
         ctx.body = list;
     } catch (error: unknown) {
-        const err = error as { status?: number; message?: string };
+        const err = error instanceof Error ? error : new Error(String(error));
+        const status = (error as any)?.status ?? 500;
+        const errorMessage = err.message || 'Internal Server Error';
 
         logger.error('API: Failed to add user to list', {
             userId: authenticatedUser.id,
             username: authenticatedUser.username,
             listTitle: title,
             addedUser: username,
-            error: err.message,
+            error: errorMessage,
+            status,
         });
 
-        ctx.status = err.status ?? 500;
-        ctx.body = { error: err.message ?? 'Internal Server Error' };
+        ctx.status = status;
+        ctx.body = { error: errorMessage };
     }
 };
 
@@ -605,17 +608,20 @@ export const removeUserFromList = async (ctx: Context) => {
         ctx.status = 200;
         ctx.body = list;
     } catch (error: unknown) {
-        const err = error as { status?: number; message?: string };
+        const err = error instanceof Error ? error : new Error(String(error));
+        const status = (error as any)?.status ?? 500;
+        const errorMessage = err.message || 'Internal Server Error';
 
         logger.error('API: Failed to remove user from list', {
             userId: authenticatedUser.id,
             username: authenticatedUser.username,
             listTitle: title,
             removedUserId: userId,
-            error: err.message,
+            error: errorMessage,
+            status,
         });
 
-        ctx.status = err.status ?? 500;
-        ctx.body = { error: err.message ?? 'Internal Server Error' };
+        ctx.status = status;
+        ctx.body = { error: errorMessage };
     }
 };
