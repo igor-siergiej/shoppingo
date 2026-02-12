@@ -43,7 +43,7 @@ const ListsPage = () => {
             <div>
                 <h2 className="text-lg font-semibold mb-3 text-foreground">Your Lists</h2>
                 {yourLists.length > 0 ? (
-                    <ListsList lists={yourLists} refetch={refetch} />
+                    <ListsList lists={yourLists} refetch={refetch} currentUserId={user.id} />
                 ) : (
                     <Empty className="flex-none justify-start p-4">
                         <EmptyHeader>
@@ -64,7 +64,7 @@ const ListsPage = () => {
             <div>
                 <h2 className="text-lg font-semibold mb-3 text-foreground">Shared Lists</h2>
                 {sharedLists.length > 0 ? (
-                    <ListsList lists={sharedLists} refetch={refetch} />
+                    <ListsList lists={sharedLists} refetch={refetch} currentUserId={user.id} />
                 ) : (
                     <Empty className="flex-none justify-start p-4">
                         <EmptyHeader>

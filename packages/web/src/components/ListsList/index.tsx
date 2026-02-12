@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { deleteList, updateListName } from '../../api';
 import type { ListsListProps } from './types';
 
-const ListsList = ({ lists, refetch }: ListsListProps) => {
+const ListsList = ({ lists, refetch, currentUserId }: ListsListProps) => {
     const navigate = useNavigate();
     const [editingList, setEditingList] = useState<string | null>(null);
     const [editValue, setEditValue] = useState<string>('');
@@ -99,7 +99,7 @@ const ListsList = ({ lists, refetch }: ListsListProps) => {
                 </div>
 
                 <div className="flex items-center">
-                    {editingList !== list.title && (
+                    {editingList !== list.title && list.ownerId === currentUserId && (
                         <Button
                             variant="ghost"
                             size="icon"
@@ -109,18 +109,20 @@ const ListsList = ({ lists, refetch }: ListsListProps) => {
                             <Edit2 size={20} strokeWidth={1.75} />
                         </Button>
                     )}
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={async () => {
-                            await deleteList(list.title);
-                            refetch();
-                        }}
-                        className="h-12 w-12 hover:bg-destructive/10 hover:text-destructive"
-                        disabled={editingList === list.title}
-                    >
-                        <X size={24} strokeWidth={1.75} />
-                    </Button>
+                    {list.ownerId === currentUserId && (
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={async () => {
+                                await deleteList(list.title);
+                                refetch();
+                            }}
+                            className="h-12 w-12 hover:bg-destructive/10 hover:text-destructive"
+                            disabled={editingList === list.title}
+                        >
+                            <X size={24} strokeWidth={1.75} />
+                        </Button>
+                    )}
                 </div>
             </CardContent>
         </Card>

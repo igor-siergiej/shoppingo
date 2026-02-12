@@ -65,7 +65,13 @@ export const ManageUsersDrawer = ({
     const addUserMutation = useMutation({
         mutationFn: (username: string) => addUserToList(listTitle, username),
         onSuccess: () => {
-            toast.success('User added successfully');
+            toast.success('User added successfully', {
+                style: {
+                    backgroundColor: '#10b981',
+                    color: '#ffffff',
+                    border: 'none',
+                },
+            });
             setSearchInput('');
             onUserAdded();
         },
@@ -84,7 +90,13 @@ export const ManageUsersDrawer = ({
     const removeUserMutation = useMutation({
         mutationFn: (userId: string) => removeUserFromList(listTitle, userId),
         onSuccess: () => {
-            toast.success('User removed successfully');
+            toast.success('User removed successfully', {
+                style: {
+                    backgroundColor: '#10b981',
+                    color: '#ffffff',
+                    border: 'none',
+                },
+            });
             setConfirmRemoveUserId(null);
             onUserRemoved();
         },
