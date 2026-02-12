@@ -1,3 +1,10 @@
+# [1.18.0](https://gitlab.com/imapps/shoppingo/compare/v1.17.2...v1.18.0) (2026-02-12)
+
+
+### Features
+
+* Update toast styling and add list ownership controls ([b43e753](https://gitlab.com/imapps/shoppingo/commit/b43e753782c67aba5366e7f0c74dda771362cc24)), closes [#10b981](https://gitlab.com/imapps/shoppingo/issues/10b981)
+
 ## [1.17.2](https://gitlab.com/imapps/shoppingo/compare/v1.17.1...v1.17.2) (2026-02-09)
 
 
