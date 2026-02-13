@@ -42,7 +42,7 @@ const ListsList = ({ lists, refetch, currentUserId }: ListsListProps) => {
 
     const renderedOutput = lists.map((list: ListResponse) => (
         <Card key={list.title} className="mb-2 transition-all duration-200 bg-background hover:bg-accent/50 py-0">
-            <CardContent className="flex items-center justify-between p-0.5 ">
+            <CardContent className="flex items-center justify-between p-0.5 min-h-12">
                 <div className="flex-1">
                     {editingList === list.title ? (
                         <div className="flex items-center space-x-2 px-3">
