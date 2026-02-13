@@ -1,3 +1,11 @@
+# [1.19.0](https://gitlab.com/imapps/shoppingo/compare/v1.18.1...v1.19.0) (2026-02-13)
+
+
+### Features
+
+* Add confirmation dialog for clear selected items and disable buttons ([6113809](https://gitlab.com/imapps/shoppingo/commit/6113809ac055e6c0d0a588839e1005e5b67bb6fa))
+* Add confirmation dialogs for delete operations ([adaab22](https://gitlab.com/imapps/shoppingo/commit/adaab2247e077f5e23fa286a9129b5b289d14eca))
+
 ## [1.18.1](https://gitlab.com/imapps/shoppingo/compare/v1.18.0...v1.18.1) (2026-02-13)
 
 

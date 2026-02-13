@@ -1,6 +1,6 @@
 {
   "name": "shoppingo",
-  "version": "1.18.1",
+  "version": "1.19.0",
   "private": true,
   "repository": "git@gitlab.com:imapps/shoppingo.git",
   "author": "Igor Siergiej <igorsiergiej@gmail.com>",
