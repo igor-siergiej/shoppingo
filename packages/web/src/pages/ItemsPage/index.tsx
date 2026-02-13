@@ -40,6 +40,7 @@ const ItemsPage = () => {
     const items = data?.items || [];
     const users = data?.users || [];
     const ownerId = data?.ownerId;
+    const selectedItemsCount = items.filter((item) => item.isSelected).length;
 
     useEffect(() => {
         setCurrentListType(listType);
@@ -200,6 +201,8 @@ const ItemsPage = () => {
     );
 
     const handleClearList = () => {
+        if (items.length === 0) return;
+
         confirm({
             title: 'Clear All Items?',
             description: `Are you sure you want to delete all ${items.length} items from this list? This action cannot be undone.`,
@@ -210,8 +213,17 @@ const ItemsPage = () => {
         });
     };
 
-    const handleClearSelected = async () => {
-        clearSelectedMutation.mutate();
+    const handleClearSelected = () => {
+        if (selectedItemsCount === 0) return;
+
+        confirm({
+            title: 'Clear Selected Items?',
+            description: `Are you sure you want to delete ${selectedItemsCount} selected item${selectedItemsCount === 1 ? '' : 's'}? This action cannot be undone.`,
+            actionLabel: 'Clear Selected',
+            onConfirm: () => {
+                clearSelectedMutation.mutate();
+            },
+        });
     };
 
     const handleAddItem = async (itemName: string, quantity?: number, unit?: string, dueDate?: Date) => {
@@ -254,6 +266,8 @@ const ItemsPage = () => {
                         : undefined
                 }
                 refetchList={refetch}
+                disableClearSelected={selectedItemsCount === 0}
+                disableClearAll={items.length === 0}
             />
 
             <AlertDialog open={isOpen} onOpenChange={(open) => !open && handleCancel()}>

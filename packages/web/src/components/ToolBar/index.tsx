@@ -61,6 +61,8 @@ interface ToolBarProps {
         ownerId?: string;
     };
     refetchList?: () => void;
+    disableClearSelected?: boolean;
+    disableClearAll?: boolean;
 }
 
 export interface ToolBarRef {
@@ -78,6 +80,8 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
             currentListType,
             currentList,
             refetchList,
+            disableClearSelected = false,
+            disableClearAll = false,
         },
         ref
     ) => {
@@ -384,6 +388,7 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
                                             rippleClassName="bg-gray-500/30"
                                             title="Clear selected items"
                                             onClick={handleClearSelected}
+                                            disabled={disableClearSelected}
                                         >
                                             <CheckCheck className="size-5" />
                                         </RippleButton>
@@ -676,6 +681,7 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
                                             rippleClassName="bg-red-500/30"
                                             title="Delete all items"
                                             onClick={handleRemoveAll}
+                                            disabled={disableClearAll}
                                         >
                                             <Trash2 className="size-5" />
                                         </RippleButton>
