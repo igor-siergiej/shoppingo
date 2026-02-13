@@ -11,8 +11,10 @@ import {
     Download,
     LogOut,
     Menu,
+    Moon,
     Plus,
     Search,
+    Sun,
     Trash2,
     User,
     Users,
@@ -39,7 +41,9 @@ import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { RippleButton } from '@/components/ui/ripple';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 
+import { useTheme } from '@/contexts/ThemeContext';
 import { usePWA } from '../../hooks/usePWA';
 import { useSearch } from '../../hooks/useSearch';
 import { ManageUsersDrawer } from '../ManageUsersDrawer';
@@ -90,6 +94,7 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
         const { logout } = useAuth();
         const { user } = useUser();
         const userId = user?.id;
+        const { theme, toggleTheme } = useTheme();
 
         const [isDrawerOpen, setIsDrawerOpen] = useState(false);
         const [isManageUsersOpen, setIsManageUsersOpen] = useState(false);
@@ -304,6 +309,41 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
                                                                     </Button>
                                                                 </motion.div>
                                                             )}
+                                                            {/* Dark Mode Toggle */}
+                                                            <motion.div
+                                                                initial={{ opacity: 0, y: -8 }}
+                                                                animate={{ opacity: 1, y: 0 }}
+                                                                transition={{
+                                                                    delay:
+                                                                        currentList && currentList.ownerId === userId
+                                                                            ? 0.1
+                                                                            : 0.05,
+                                                                    duration: 0.2,
+                                                                }}
+                                                            >
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={toggleTheme}
+                                                                    className="flex items-center justify-between w-full px-4 py-2.5 rounded-lg transition-colors duration-200 hover:bg-slate-50 active:scale-95"
+                                                                >
+                                                                    <div className="flex items-center gap-3">
+                                                                        {theme === 'dark' ? (
+                                                                            <Moon className="h-4 w-4 text-slate-600" />
+                                                                        ) : (
+                                                                            <Sun className="h-4 w-4 text-slate-600" />
+                                                                        )}
+                                                                        <span className="text-sm font-medium">
+                                                                            {theme === 'dark'
+                                                                                ? 'Dark Mode'
+                                                                                : 'Light Mode'}
+                                                                        </span>
+                                                                    </div>
+                                                                    <Switch
+                                                                        checked={theme === 'dark'}
+                                                                        onCheckedChange={toggleTheme}
+                                                                    />
+                                                                </button>
+                                                            </motion.div>
                                                             {/* Install app action (shows only if available and not installed) */}
                                                             {canInstall && !isInstalled && (
                                                                 <motion.div

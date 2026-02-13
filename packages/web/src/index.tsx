@@ -14,6 +14,7 @@ import { RootLayout } from './components/RootLayout';
 import RouterErrorHandler from './components/RouterErrorHandler';
 import { getAuthConfig } from './config/auth';
 import { PWAProvider } from './contexts/PWAContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 
 const lazyLoadPage = (importFn: () => Promise<unknown>, fallbackName: string) =>
     React.lazy(() =>
@@ -106,9 +107,11 @@ const AppContent: React.FC = () => {
             <AuthConfigProvider config={getAuthConfig()}>
                 <UserProvider>
                     <AuthProvider>
-                        <PWAProvider>
-                            <RouterProvider router={router} />
-                        </PWAProvider>
+                        <ThemeProvider>
+                            <PWAProvider>
+                                <RouterProvider router={router} />
+                            </PWAProvider>
+                        </ThemeProvider>
                     </AuthProvider>
                 </UserProvider>
             </AuthConfigProvider>
