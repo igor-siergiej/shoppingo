@@ -4,9 +4,20 @@ import { Check, Edit2, ListTodo, ShoppingCart, X, X as XIcon } from 'lucide-reac
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { useConfirmation } from '@/hooks/useConfirmation';
 
 import { deleteList, updateListName } from '../../api';
 import type { ListsListProps } from './types';
@@ -15,6 +26,7 @@ const ListsList = ({ lists, refetch, currentUserId }: ListsListProps) => {
     const navigate = useNavigate();
     const [editingList, setEditingList] = useState<string | null>(null);
     const [editValue, setEditValue] = useState<string>('');
+    const { confirm, isOpen, config, handleConfirm, handleCancel } = useConfirmation();
 
     const handleEditStart = (listTitle: string) => {
         setEditingList(listTitle);
@@ -113,9 +125,16 @@ const ListsList = ({ lists, refetch, currentUserId }: ListsListProps) => {
                         <Button
                             variant="ghost"
                             size="icon"
-                            onClick={async () => {
-                                await deleteList(list.title);
-                                refetch();
+                            onClick={() => {
+                                confirm({
+                                    title: 'Delete List?',
+                                    description: `Are you sure you want to delete "${list.title}"? This action cannot be undone and all items will be permanently removed.`,
+                                    actionLabel: 'Delete List',
+                                    onConfirm: async () => {
+                                        await deleteList(list.title);
+                                        refetch();
+                                    },
+                                });
                             }}
                             className="h-12 w-12 hover:bg-destructive/10 hover:text-destructive"
                             disabled={editingList === list.title}
@@ -128,7 +147,25 @@ const ListsList = ({ lists, refetch, currentUserId }: ListsListProps) => {
         </Card>
     ));
 
-    return renderedOutput;
+    return (
+        <>
+            {renderedOutput}
+            <AlertDialog open={isOpen} onOpenChange={(open) => !open && handleCancel()}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>{config?.title}</AlertDialogTitle>
+                        <AlertDialogDescription>{config?.description}</AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel onClick={handleCancel}>{config?.cancelLabel || 'Cancel'}</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleConfirm}>
+                            {config?.actionLabel || 'Confirm'}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+        </>
+    );
 };
 
 export default ListsList;

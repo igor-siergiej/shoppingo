@@ -4,8 +4,19 @@ import { AlertTriangle, ListTodo, ShoppingCart } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { useNavigate, useParams } from 'react-router-dom';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
+import { useConfirmation } from '@/hooks/useConfirmation';
 import { addItem, clearList, clearSelected, getListQuery } from '../../api';
 import ItemCheckBoxList from '../../components/ItemCheckBoxList';
 import { ItemsSkeleton } from '../../components/LoadingSkeleton';
@@ -18,6 +29,7 @@ const ItemsPage = () => {
     const toolbarRef = useRef<ToolBarRef>(null);
     const queryClient = useQueryClient();
     const [currentListType, setCurrentListType] = useState<ListType>(ListTypeEnum.SHOPPING);
+    const { confirm, isOpen, config: confirmConfig, handleConfirm, handleCancel } = useConfirmation();
 
     const { data, isLoading, isError, refetch } = useQuery({
         ...getListQuery(listTitle),
@@ -187,8 +199,15 @@ const ItemsPage = () => {
         </div>
     );
 
-    const handleClearList = async () => {
-        clearListMutation.mutate();
+    const handleClearList = () => {
+        confirm({
+            title: 'Clear All Items?',
+            description: `Are you sure you want to delete all ${items.length} items from this list? This action cannot be undone.`,
+            actionLabel: 'Clear All Items',
+            onConfirm: () => {
+                clearListMutation.mutate();
+            },
+        });
     };
 
     const handleClearSelected = async () => {
@@ -236,6 +255,23 @@ const ItemsPage = () => {
                 }
                 refetchList={refetch}
             />
+
+            <AlertDialog open={isOpen} onOpenChange={(open) => !open && handleCancel()}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>{confirmConfig?.title}</AlertDialogTitle>
+                        <AlertDialogDescription>{confirmConfig?.description}</AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel onClick={handleCancel}>
+                            {confirmConfig?.cancelLabel || 'Cancel'}
+                        </AlertDialogCancel>
+                        <AlertDialogAction onClick={handleConfirm}>
+                            {confirmConfig?.actionLabel || 'Confirm'}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </>
     );
 };
