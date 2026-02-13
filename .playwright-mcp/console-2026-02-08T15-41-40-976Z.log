@@ -1,0 +1,9 @@
+[     742ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://kivo.imapps.co.uk/refresh:0
+[   18869ms] [ERROR] Failed to load resource: the server responded with a status of 502 () @ https://shoppingo.imapps.co.uk/api/image/Children%20from%20Jeffrey%20Epstein%20island:0
+[   19022ms] [ERROR] Failed to load resource: the server responded with a status of 502 () @ https://shoppingo.imapps.co.uk/api/image/Butthole:0
+[   22190ms] [ERROR] Failed to load resource: the server responded with a status of 502 () @ https://shoppingo.imapps.co.uk/api/image/Scrotum:0
+[   23443ms] [ERROR] Failed to load resource: the server responded with a status of 502 () @ https://shoppingo.imapps.co.uk/api/image/Ball%20sack:0
+[   39092ms] [ERROR] Failed to load resource: the server responded with a status of 502 () @ https://shoppingo.imapps.co.uk/api/lists/Groceries/users:0
+[   39098ms] [ERROR] Error
+    at Pe (https://shoppingo.imapps.co.uk/assets/index-BZWmbca3.js:1:3647)
+    at async jf (https://shoppingo.imapps.co.uk/assets/index-BZWmbca3.js:1:6405) @ https://shoppingo.imapps.co.uk/assets/query-vendor-wiyuFQCs.js:0
