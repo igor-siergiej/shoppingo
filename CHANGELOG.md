@@ -1,3 +1,11 @@
+## [1.18.1](https://gitlab.com/imapps/shoppingo/compare/v1.18.0...v1.18.1) (2026-02-13)
+
+
+### Bug Fixes
+
+* Include ownerId in getListsForUser response ([1b5d870](https://gitlab.com/imapps/shoppingo/commit/1b5d8700ea157a767c6dea1f1f5eb17963c63583))
+* Make list cards consistent height ([51c29e1](https://gitlab.com/imapps/shoppingo/commit/51c29e198a35c490ff2e4b2b6c75cf8199e91e59))
+
 # [1.18.0](https://gitlab.com/imapps/shoppingo/compare/v1.17.2...v1.18.0) (2026-02-12)
 
 
