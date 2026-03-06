@@ -1,1 +1,2 @@
 # Shoppingo
+# Trigger CI pipeline
