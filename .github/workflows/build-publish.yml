@@ -8,7 +8,9 @@ on:
 jobs:
   build-publish:
     runs-on: ubuntu-latest
-    if: hashFiles('Dockerfile') != ''
+    strategy:
+      matrix:
+        service: [api, web]
     steps:
       - uses: actions/checkout@v4
 
@@ -33,14 +35,15 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
+          file: ./Dockerfile.${{ matrix.service }}
           push: true
           tags: |
-            ${{ secrets.DOCKER_USERNAME }}/${{ steps.repo-name.outputs.repo }}:${{ steps.version.outputs.version }}
-            ${{ secrets.DOCKER_USERNAME }}/${{ steps.repo-name.outputs.repo }}:latest
+            ${{ secrets.DOCKER_USERNAME }}/${{ steps.repo-name.outputs.repo }}-${{ matrix.service }}:${{ steps.version.outputs.version }}
+            ${{ secrets.DOCKER_USERNAME }}/${{ steps.repo-name.outputs.repo }}-${{ matrix.service }}:latest
           platforms: linux/amd64,linux/arm64
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Image digest
         run: |
-          echo "Published image: ${{ secrets.DOCKER_USERNAME }}/${{ steps.repo-name.outputs.repo }}:${{ steps.version.outputs.version }}"
+          echo "Published image: ${{ secrets.DOCKER_USERNAME }}/${{ steps.repo-name.outputs.repo }}-${{ matrix.service }}:${{ steps.version.outputs.version }}"
