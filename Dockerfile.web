@@ -1,15 +1,18 @@
-FROM oven/bun:1.1.38-alpine AS builder
+FROM node:22-alpine AS builder
 
 WORKDIR /app
 
-COPY package.json bun.lock bunfig.toml ./
-COPY packages/web/package.json packages/web/
+RUN corepack enable
 
-RUN bun install --frozen-lockfile
+COPY package.json yarn.lock ./
+COPY .yarn .yarnrc.yml ./
+COPY packages packages/
+
+RUN yarn install --frozen-lockfile
 
 COPY . .
 
-RUN bun run --workspace=@shoppingo/web build
+RUN yarn workspace @shoppingo/web build
 
 FROM nginx:alpine
 
@@ -32,7 +35,7 @@ server {
 }
 EOF
 
-COPY --from=builder /app/packages/web/dist /usr/share/nginx/html
+COPY --from=builder /app/packages/web/build /usr/share/nginx/html
 
 EXPOSE 3000
 
