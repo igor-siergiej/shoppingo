@@ -1,7 +1,6 @@
 node_modules
 .yarn
 .git
-.github
 build
 tsconfig.tsbuildinfo
 .yarn/releases/
