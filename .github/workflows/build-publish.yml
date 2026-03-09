@@ -25,25 +25,25 @@ jobs:
 
       - name: Extract version from tag
         id: version
-        run: echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
 
       - name: Extract repo name
         id: repo-name
         run: echo "repo=$(basename ${{ github.repository }})" >> $GITHUB_OUTPUT
 
       - name: Build and push
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Dockerfile.${{ matrix.service }}
           push: true
           tags: |
-            ${{ secrets.DOCKER_USERNAME }}/${{ steps.repo-name.outputs.repo }}-${{ matrix.service }}:${{ steps.version.outputs.version }}
-            ${{ secrets.DOCKER_USERNAME }}/${{ steps.repo-name.outputs.repo }}-${{ matrix.service }}:latest
+            igurusama/imapps:${{ steps.repo-name.outputs.repo }}-${{ matrix.service }}-${{ steps.version.outputs.version }}
+            igurusama/imapps:${{ steps.repo-name.outputs.repo }}-${{ matrix.service }}-latest
           platforms: linux/amd64,linux/arm64
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Image digest
         run: |
-          echo "Published image: ${{ secrets.DOCKER_USERNAME }}/${{ steps.repo-name.outputs.repo }}-${{ matrix.service }}:${{ steps.version.outputs.version }}"
+          echo "Published image: igurusama/imapps:${{ steps.repo-name.outputs.repo }}-${{ matrix.service }}-${{ steps.version.outputs.version }}"
