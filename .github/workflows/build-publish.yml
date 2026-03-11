@@ -35,7 +35,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: ./Dockerfile.${{ matrix.service }}
+          file: ./packages/${{ matrix.service }}/Dockerfile
           push: true
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/${{ steps.repo-name.outputs.repo }}-${{ matrix.service }}:${{ steps.version.outputs.version }}
@@ -43,6 +43,10 @@ jobs:
           platforms: linux/amd64,linux/arm64
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          secrets: |
+            CI_JOB_TOKEN=${{ secrets.GITHUB_TOKEN }}
+          args: |
+            APP_VERSION=${{ steps.version.outputs.version }}
 
       - name: Image digest
         run: |
