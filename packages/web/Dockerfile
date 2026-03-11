@@ -18,9 +18,8 @@ RUN corepack enable && corepack prepare yarn@4.9.2 --activate
 
 # Configure GitHub Packages authentication
 RUN --mount=type=secret,id=GITHUB_TOKEN \
-    GITHUB_TOKEN=$(cat /run/secrets/GITHUB_TOKEN) && \
     yarn config set npmScopes.imapps.npmRegistryServer "https://npm.pkg.github.com" && \
-    yarn config set npmScopes.imapps.npmAuthToken "$GITHUB_TOKEN"
+    yarn config set npmScopes.imapps.npmAuthToken "$(cat /run/secrets/GITHUB_TOKEN)"
 
 RUN yarn install --immutable
 
