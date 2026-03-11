@@ -4,6 +4,8 @@ WORKDIR /app
 
 RUN corepack enable
 
+ARG NODE_AUTH_TOKEN
+
 COPY package.json yarn.lock ./
 COPY .yarn .yarnrc.yml ./
 COPY packages packages/

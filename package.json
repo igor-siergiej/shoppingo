@@ -2,7 +2,7 @@
   "name": "shoppingo",
   "version": "1.20.0",
   "private": true,
-  "repository": "git@gitlab.com:imapps/shoppingo.git",
+  "repository": "https://github.com/imapps/shoppingo",
   "author": "Igor Siergiej <igorsiergiej@gmail.com>",
   "scripts": {
     "start:web": "yarn workspace @shoppingo/web start",
