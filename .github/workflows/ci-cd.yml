@@ -1,0 +1,93 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  ci-cd:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: corepack enable
+
+      # Install
+      - run: yarn install --immutable
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+      # Lint
+      - run: yarn lint
+
+      # Typecheck
+      - run: yarn tsc --noEmit
+
+      # Test
+      - run: |
+          echo "🧪 Running tests for packages..."
+          if [ -f "yarn.lock" ] && grep -q '"workspaces":' package.json 2>/dev/null; then
+            echo "📦 Detected monorepo structure"
+            if [ -d "packages" ]; then
+              for package_dir in packages/*/; do
+                package_dir=${package_dir%/}
+                if [ -f "${package_dir}/package.json" ]; then
+                  package_name=$(node -p "require('./${package_dir}/package.json').name" 2>/dev/null || echo "")
+                  if [ -n "$package_name" ]; then
+                    if grep -q '"test":' "${package_dir}/package.json"; then
+                      echo "✅ Running tests for $package_name..."
+                      yarn workspace "$package_name" test
+                    fi
+                  fi
+                fi
+              done
+            fi
+          fi
+
+      # Build & Publish Docker (only on release tags)
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Extract version
+        id: version
+        run: echo "version=$(git describe --tags --always)" >> $GITHUB_OUTPUT
+      - uses: docker/build-push-action@v6
+        name: Build & push api
+        with:
+          context: .
+          file: ./Dockerfile.api
+          push: ${{ startsWith(github.ref, 'refs/tags/v') }}
+          tags: |
+            igurusama/imapps:shoppingo-api-${{ steps.version.outputs.version }}
+            igurusama/imapps:shoppingo-api-latest
+          platforms: linux/amd64,linux/arm64
+          build-args: NODE_AUTH_TOKEN=${{ secrets.GH_TOKEN }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - uses: docker/build-push-action@v6
+        name: Build & push web
+        with:
+          context: .
+          file: ./Dockerfile.web
+          push: ${{ startsWith(github.ref, 'refs/tags/v') }}
+          tags: |
+            igurusama/imapps:shoppingo-web-${{ steps.version.outputs.version }}
+            igurusama/imapps:shoppingo-web-latest
+          platforms: linux/amd64,linux/arm64
+          build-args: NODE_AUTH_TOKEN=${{ secrets.GH_TOKEN }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Release
+      - run: npx semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
