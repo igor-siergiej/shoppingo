@@ -17,11 +17,12 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      - name: Login to Docker Hub
+      - name: Login to GitHub Container Registry
         uses: docker/login-action@v2
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract version from tag
         id: version
@@ -35,15 +36,19 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: ./Dockerfile.${{ matrix.service }}
+          file: ./packages/${{ matrix.service }}/Dockerfile
           push: true
           tags: |
-            ${{ secrets.DOCKER_USERNAME }}/${{ steps.repo-name.outputs.repo }}-${{ matrix.service }}:${{ steps.version.outputs.version }}
-            ${{ secrets.DOCKER_USERNAME }}/${{ steps.repo-name.outputs.repo }}-${{ matrix.service }}:latest
+            ghcr.io/${{ github.repository_owner }}/${{ steps.repo-name.outputs.repo }}-${{ matrix.service }}:${{ steps.version.outputs.version }}
+            ghcr.io/${{ github.repository_owner }}/${{ steps.repo-name.outputs.repo }}-${{ matrix.service }}:latest
           platforms: linux/amd64,linux/arm64
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          secrets: |
+            GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
+          args: |
+            APP_VERSION=${{ steps.version.outputs.version }}
 
       - name: Image digest
         run: |
-          echo "Published image: ${{ secrets.DOCKER_USERNAME }}/${{ steps.repo-name.outputs.repo }}-${{ matrix.service }}:${{ steps.version.outputs.version }}"
+          echo "Published image: ghcr.io/${{ github.repository_owner }}/${{ steps.repo-name.outputs.repo }}-${{ matrix.service }}:${{ steps.version.outputs.version }}"
