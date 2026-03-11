@@ -1,3 +1,20 @@
+## [1.20.2](https://github.com/igor-siergiej/shoppingo/compare/v1.20.1...v1.20.2) (2026-03-11)
+
+
+### Bug Fixes
+
+* add NODE_AUTH_TOKEN to yarn install and change release condition to success ([3aa35a5](https://github.com/igor-siergiej/shoppingo/commit/3aa35a5a598ef8f7bcd188ac5a9e542b9eda661c))
+* add npmAuthToken to .yarnrc.yml for GitHub Packages authentication ([11b8e92](https://github.com/igor-siergiej/shoppingo/commit/11b8e921f695f6942632a4f914d2d56a6d01fffc))
+* add packages:read permission to jobs for GitHub Packages access ([cf5dcf3](https://github.com/igor-siergiej/shoppingo/commit/cf5dcf354d9afe6d0ea37f2220538cc652e4ad9b))
+* downgrade to 0.4.5 which is published to GitHub Packages ([3afe061](https://github.com/igor-siergiej/shoppingo/commit/3afe06168e3919496e6806464c579a43aa2236c2))
+* pass NODE_AUTH_TOKEN env var to yarn install in Dockerfiles ([3b79855](https://github.com/igor-siergiej/shoppingo/commit/3b79855c1ed1a418a949cb2f66132eda41a5b01a))
+* remove circular dependency and add git pull to build-publish ([ed96084](https://github.com/igor-siergiej/shoppingo/commit/ed9608490245d2dba11dce73aa000d373543b697))
+* serial dependencies and version extraction from package.json ([ae29557](https://github.com/igor-siergiej/shoppingo/commit/ae29557a7e0c8ee2283009c3e048885d7654a0ef))
+* update yarn lock and utils versions ([52fb99c](https://github.com/igor-siergiej/shoppingo/commit/52fb99c4cbfd7abc2b7110bf26edd7ee5cae6a7d))
+* use GH_TOKEN which has explicit read:packages permission ([efda9a6](https://github.com/igor-siergiej/shoppingo/commit/efda9a61c78f1815205f393d646fb22e818941a3))
+* use GITHUB_TOKEN instead of GH_TOKEN secret ([557124b](https://github.com/igor-siergiej/shoppingo/commit/557124b07f95e9b6b17c1d961e6bea6d8d2bdc42))
+* use NODE_AUTH_TOKEN in .yarnrc.yml to match workflow ([28cac7d](https://github.com/igor-siergiej/shoppingo/commit/28cac7d3314054c488c77a796787416a54086745))
+
 ## [1.20.1](https://github.com/igor-siergiej/shoppingo/compare/v1.20.0...v1.20.1) (2026-03-11)
 
 
