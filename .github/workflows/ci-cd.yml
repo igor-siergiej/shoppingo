@@ -5,32 +5,32 @@ on:
     branches: [main]
 
 jobs:
-  ci-cd:
+  lint:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/setup-node@v4
         with:
           node-version: 22
       - run: corepack enable
-
-      # Install
       - run: yarn install --immutable
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GH_TOKEN }}
-
-      # Lint
       - run: yarn lint
 
-      # Typecheck
+  test:
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: corepack enable
+      - run: yarn install --immutable
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GH_TOKEN }}
       - run: yarn tsc --noEmit
-
-      # Test
       - run: |
           echo "🧪 Running tests for packages..."
           if [ -f "yarn.lock" ] && grep -q '"workspaces":' package.json 2>/dev/null; then
@@ -51,7 +51,12 @@ jobs:
             fi
           fi
 
-      # Build & Publish Docker (only on release tags)
+  build-publish:
+    runs-on: ubuntu-latest
+    needs: test
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
       - uses: docker/login-action@v3
         with:
@@ -59,13 +64,13 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
       - name: Extract version
         id: version
-        run: echo "version=$(git describe --tags --always)" >> $GITHUB_OUTPUT
+        run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
       - uses: docker/build-push-action@v6
         name: Build & push api
         with:
           context: .
           file: ./Dockerfile.api
-          push: ${{ startsWith(github.ref, 'refs/tags/v') }}
+          push: true
           tags: |
             igurusama/imapps:shoppingo-api-${{ steps.version.outputs.version }}
             igurusama/imapps:shoppingo-api-latest
@@ -78,7 +83,7 @@ jobs:
         with:
           context: .
           file: ./Dockerfile.web
-          push: ${{ startsWith(github.ref, 'refs/tags/v') }}
+          push: true
           tags: |
             igurusama/imapps:shoppingo-web-${{ steps.version.outputs.version }}
             igurusama/imapps:shoppingo-web-latest
@@ -87,7 +92,24 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      # Release
+  release:
+    runs-on: ubuntu-latest
+    needs: [test, build-publish]
+    if: always()
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: corepack enable
+      - run: yarn install --immutable
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GH_TOKEN }}
       - run: npx semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
