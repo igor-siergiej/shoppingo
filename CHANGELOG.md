@@ -1,3 +1,10 @@
+## [1.20.3](https://github.com/igor-siergiej/shoppingo/compare/v1.20.2...v1.20.3) (2026-03-11)
+
+
+### Bug Fixes
+
+* remove .yarn from dockerfile copy (not in repo) ([e3dea2b](https://github.com/igor-siergiej/shoppingo/commit/e3dea2bfc214a6c5dd699f7abb08b8fa9a642406))
+
 ## [1.20.2](https://github.com/igor-siergiej/shoppingo/compare/v1.20.1...v1.20.2) (2026-03-11)
 
 
