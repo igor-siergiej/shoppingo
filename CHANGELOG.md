@@ -1,3 +1,10 @@
+## [1.20.1](https://github.com/igor-siergiej/shoppingo/compare/v1.20.0...v1.20.1) (2026-03-11)
+
+
+### Bug Fixes
+
+* correct reusable workflow org reference ([d6f1811](https://github.com/igor-siergiej/shoppingo/commit/d6f181118ec0b8efb79e1b5d3af911d917dd4281))
+
 # [1.20.0](https://github.com/igor-siergiej/shoppingo/compare/v1.19.0...v1.20.0) (2026-03-11)
 
 
