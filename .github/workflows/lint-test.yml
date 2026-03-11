@@ -8,6 +8,6 @@ on:
 
 jobs:
   lint-test:
-    uses: imapps/utils/.github/workflows/lint-test.yml@main
+    uses: igor-siergiej/utils/.github/workflows/lint-test.yml@main
     secrets:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
