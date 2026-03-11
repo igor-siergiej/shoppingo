@@ -13,11 +13,11 @@ ENV YARN_NODE_LINKER=node-modules
 
 RUN corepack enable && corepack prepare yarn@4.9.2 --activate
 
-# Configure GitLab Package Registry authentication
-RUN --mount=type=secret,id=CI_JOB_TOKEN \
-    CI_JOB_TOKEN=$(cat /run/secrets/CI_JOB_TOKEN) && \
-    yarn config set npmScopes.imapps.npmRegistryServer "https://gitlab.com/api/v4/projects/116310254/packages/npm/" && \
-    yarn config set npmScopes.imapps.npmAuthToken "$CI_JOB_TOKEN"
+# Configure GitHub Packages authentication
+RUN --mount=type=secret,id=GITHUB_TOKEN \
+    GITHUB_TOKEN=$(cat /run/secrets/GITHUB_TOKEN) && \
+    yarn config set npmScopes.imapps.npmRegistryServer "https://npm.pkg.github.com" && \
+    yarn config set npmScopes.imapps.npmAuthToken "$GITHUB_TOKEN"
 
 RUN yarn install --immutable
 
