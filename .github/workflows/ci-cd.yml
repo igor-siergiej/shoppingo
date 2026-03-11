@@ -15,7 +15,7 @@ jobs:
       - run: corepack enable
       - run: yarn install --immutable
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GH_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: yarn lint
 
   test:
@@ -29,7 +29,7 @@ jobs:
       - run: corepack enable
       - run: yarn install --immutable
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GH_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: yarn tsc --noEmit
       - run: |
           echo "🧪 Running tests for packages..."
@@ -109,7 +109,7 @@ jobs:
       - run: corepack enable
       - run: yarn install --immutable
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GH_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: npx semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
