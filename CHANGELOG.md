@@ -1,3 +1,27 @@
+# [1.20.0](https://github.com/igor-siergiej/shoppingo/compare/v1.19.0...v1.20.0) (2026-03-11)
+
+
+### Bug Fixes
+
+* add mime.types include to nginx config for correct MIME type serving ([e19cf50](https://github.com/igor-siergiej/shoppingo/commit/e19cf5046a1a32a081f6e8321c6960dd06b99a16))
+* correct Docker build output paths for web (build) and api (build) ([15b262d](https://github.com/igor-siergiej/shoppingo/commit/15b262d7d95fe043bb168b14278da6dcc8b975ef))
+* correct repository URL to igor-siergiej org ([67a40a2](https://github.com/igor-siergiej/shoppingo/commit/67a40a2ff7df3fc27b6ee8303b1265213e06c17d))
+* Improve dark mode colors for Appbar and theme toggle button ([2a87f6e](https://github.com/igor-siergiej/shoppingo/commit/2a87f6e29517e1bcde72efbcb76da2482309eb4a))
+* make NODE_AUTH_TOKEN optional in yarn config ([0c1e094](https://github.com/igor-siergiej/shoppingo/commit/0c1e0948a156ed374d4e7ba023d5207dbd79790c))
+
+
+### Features
+
+* Add dark mode toggle to Shoppingo ([2be4d7a](https://github.com/igor-siergiej/shoppingo/commit/2be4d7aecfb808ec5f9d211b1cc0a3fb886f0dd4))
+* add separate Dockerfiles for API and web services ([dcfd45d](https://github.com/igor-siergiej/shoppingo/commit/dcfd45d50aa148aa51ccfd05a325072fc92c2bb5))
+* Adjust card color to better match cream background ([b73136a](https://github.com/igor-siergiej/shoppingo/commit/b73136a16703005ec73e41c9934fb157aadbbfd2))
+* Different green shades for light and dark modes ([37e0820](https://github.com/igor-siergiej/shoppingo/commit/37e0820d8f0ee5757b0e28bc080c04f9b26a9f87))
+* Make app bar green in both light and dark modes ([5f44a28](https://github.com/igor-siergiej/shoppingo/commit/5f44a28c6ca9785b42a181537c57155a9993f044))
+* Replace green color scheme with neutral gray ([2b9f29e](https://github.com/igor-siergiej/shoppingo/commit/2b9f29ee69650a05be885bc2d98dba96923c200d))
+* Restore green app bar in light mode ([0708e05](https://github.com/igor-siergiej/shoppingo/commit/0708e05c8c5f0ee8aa6d6ce8c23bd15e4635cb34))
+* Use cream color for light mode background ([6969dcb](https://github.com/igor-siergiej/shoppingo/commit/6969dcb30ebb903d8fdc496cda5ef2dd8ca1d017))
+* Use darker green for primary color ([b07d13f](https://github.com/igor-siergiej/shoppingo/commit/b07d13f5ce5b0282df23872a92a193ff358053f6))
+
 # [1.20.0](https://gitlab.com/imapps/shoppingo/compare/v1.19.0...v1.20.0) (2026-02-13)
 
 
