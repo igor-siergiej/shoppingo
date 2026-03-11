@@ -1,4 +1,4 @@
-import type { ObjectStoreConnection } from '@imapps/api-utils';
+import type { ObjectStoreConnection } from '@igor-siergiej/api-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { BucketStore } from './index';
