@@ -1,4 +1,4 @@
-import { useAuth, useAuthConfig } from '@imapps/web-utils';
+import { useAuth, useAuthConfig } from '@igor-siergiej/web-utils';
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';

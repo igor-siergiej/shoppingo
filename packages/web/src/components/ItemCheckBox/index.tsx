@@ -1,4 +1,4 @@
-import { getStorageItem } from '@imapps/web-utils';
+import { getStorageItem } from '@igor-siergiej/web-utils';
 import type { Item, ListType } from '@shoppingo/types';
 import { ListType as ListTypeEnum } from '@shoppingo/types';
 import { differenceInHours, format } from 'date-fns';
