@@ -80,7 +80,7 @@ jobs:
           tags: |
             igurusama/imapps:shoppingo-api-${{ steps.version.outputs.version }}
             igurusama/imapps:shoppingo-api-latest
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           build-args: NODE_AUTH_TOKEN=${{ secrets.GH_TOKEN }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -93,7 +93,7 @@ jobs:
           tags: |
             igurusama/imapps:shoppingo-web-${{ steps.version.outputs.version }}
             igurusama/imapps:shoppingo-web-latest
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           build-args: NODE_AUTH_TOKEN=${{ secrets.GH_TOKEN }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
