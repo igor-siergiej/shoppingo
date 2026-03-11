@@ -1,3 +1,11 @@
+## [1.20.4](https://github.com/igor-siergiej/shoppingo/compare/v1.20.3...v1.20.4) (2026-03-11)
+
+
+### Bug Fixes
+
+* install dependencies before workspaces focus in runner stage ([78acb52](https://github.com/igor-siergiej/shoppingo/commit/78acb52dac6922303baf762bd23866d5d4e393f6))
+* pass NODE_AUTH_TOKEN to runner stage for GitHub Packages auth ([e186374](https://github.com/igor-siergiej/shoppingo/commit/e1863741fc2fcb9040ea4d431062d89695108bb0))
+
 ## [1.20.3](https://github.com/igor-siergiej/shoppingo/compare/v1.20.2...v1.20.3) (2026-03-11)
 
 
