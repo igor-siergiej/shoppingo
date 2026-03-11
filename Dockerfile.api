@@ -26,7 +26,8 @@ ARG NODE_AUTH_TOKEN
 COPY package.json yarn.lock .yarnrc.yml ./
 COPY packages packages/
 
-RUN NODE_AUTH_TOKEN=${NODE_AUTH_TOKEN} yarn workspaces focus @shoppingo/api && \
+RUN NODE_AUTH_TOKEN=${NODE_AUTH_TOKEN} yarn install --frozen-lockfile && \
+    yarn workspaces focus @shoppingo/api && \
     yarn cache clean
 
 COPY --from=builder /app/packages/api/build ./dist
