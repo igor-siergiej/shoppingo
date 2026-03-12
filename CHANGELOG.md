@@ -1,3 +1,14 @@
+## [1.21.1](https://github.com/igor-siergiej/shoppingo/compare/v1.21.0...v1.21.1) (2026-03-12)
+
+
+### Bug Fixes
+
+* **ci-cd:** add contents:read permission for checkout action ([058b1c3](https://github.com/igor-siergiej/shoppingo/commit/058b1c336d35de033db2434fe4fdf40274a74c81))
+* **ci-cd:** use GITHUB_TOKEN instead of GH_TOKEN ([854615e](https://github.com/igor-siergiej/shoppingo/commit/854615e6f40b08ed33eeae1ca52c85cebe45fd78))
+* suppress biome linting warnings for Elysia context typing and ConfigService unknown types ([03d5a7a](https://github.com/igor-siergiej/shoppingo/commit/03d5a7a4daf0368b9f61ed2dda321f27c7435467))
+* use Docker Hub credentials instead of GHCR for image push ([9ac2841](https://github.com/igor-siergiej/shoppingo/commit/9ac2841e0cd259174de9c238cffc54c01356dbda))
+* use GitHub Container Registry (ghcr.io) instead of Docker Hub ([3ca5351](https://github.com/igor-siergiej/shoppingo/commit/3ca5351bf134029e4cbe1b6e9c8596cceb107f8e))
+
 # [1.21.0](https://github.com/igor-siergiej/shoppingo/compare/v1.20.4...v1.21.0) (2026-03-12)
 
 
