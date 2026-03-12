@@ -1,3 +1,15 @@
+# [1.21.0](https://github.com/igor-siergiej/shoppingo/compare/v1.20.4...v1.21.0) (2026-03-12)
+
+
+### Bug Fixes
+
+* **ci-cd:** correct version extraction for GitHub Actions ([8ddf3d1](https://github.com/igor-siergiej/shoppingo/commit/8ddf3d1d76165aa6d3a06e45b7e72d4df1b36f64))
+
+
+### Features
+
+* add utils submodule for shared CI/CD pipelines ([8944f9c](https://github.com/igor-siergiej/shoppingo/commit/8944f9c5a1153e2432061c68382f3ccb4b8aee9f))
+
 ## [1.20.4](https://github.com/igor-siergiej/shoppingo/compare/v1.20.3...v1.20.4) (2026-03-11)
 
 
