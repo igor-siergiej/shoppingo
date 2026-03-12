@@ -1,0 +1,3 @@
+[submodule ".github/workflows-utils"]
+	path = .github/workflows-utils
+	url = https://github.com/igor-siergiej/utils
