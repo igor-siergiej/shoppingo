@@ -6,7 +6,10 @@
     "start": "vite --port 4000",
     "start:mock-auth": "node mock-auth-server.js",
     "start:with-mock": "concurrently \"bun run start:mock-auth\" \"bun run start\"",
-    "build": "tsc && vite build --emptyOutDir"
+    "build": "tsc && vite build --emptyOutDir",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
