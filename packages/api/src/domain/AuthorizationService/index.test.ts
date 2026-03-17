@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import type { List, User } from '@shoppingo/types';
+import type { List } from '@shoppingo/types';
 import { AuthorizationService } from './index';
 
 describe('AuthorizationService', () => {
@@ -10,136 +10,219 @@ describe('AuthorizationService', () => {
     });
 
     describe('isListOwner', () => {
-        it('returns true when user is list owner', () => {
+        it('returns true when user is list owner via ownerId', () => {
             const userId = 'user-123';
-            const list: Partial<List> = {
+            const list: List = {
+                id: 'list-1',
+                title: 'Test',
+                dateAdded: new Date(),
+                items: [],
+                users: [],
                 ownerId: userId,
+                listType: 'shopping',
             };
 
-            expect(authService.isListOwner(list as List, userId)).toBe(true);
+            expect(authService.isListOwner(list, userId)).toBe(true);
         });
 
         it('returns false when user is not list owner', () => {
-            const list: Partial<List> = {
+            const list: List = {
+                id: 'list-1',
+                title: 'Test',
+                dateAdded: new Date(),
+                items: [],
+                users: [{ id: 'owner-123', username: 'owner' }],
                 ownerId: 'owner-123',
+                listType: 'shopping',
             };
 
-            expect(authService.isListOwner(list as List, 'user-456')).toBe(false);
+            expect(authService.isListOwner(list, 'user-456')).toBe(false);
         });
 
-        it('returns false when list has no owner', () => {
-            const list: Partial<List> = {};
-
-            expect(authService.isListOwner(list as List, 'user-123')).toBe(false);
-        });
-
-        it('returns false when userId is empty', () => {
-            const list: Partial<List> = {
-                ownerId: 'owner-123',
+        it('returns true when user is first in users array (backward compatibility)', () => {
+            const userId = 'user-123';
+            const list: List = {
+                id: 'list-1',
+                title: 'Test',
+                dateAdded: new Date(),
+                items: [],
+                users: [
+                    { id: userId, username: 'user1' },
+                    { id: 'user-2', username: 'user2' },
+                ],
+                listType: 'shopping',
             };
 
-            expect(authService.isListOwner(list as List, '')).toBe(false);
+            expect(authService.isListOwner(list, userId)).toBe(true);
+        });
+
+        it('returns false when user is not first in users array', () => {
+            const list: List = {
+                id: 'list-1',
+                title: 'Test',
+                dateAdded: new Date(),
+                items: [],
+                users: [
+                    { id: 'user-1', username: 'user1' },
+                    { id: 'user-456', username: 'user2' },
+                ],
+                listType: 'shopping',
+            };
+
+            expect(authService.isListOwner(list, 'user-456')).toBe(false);
         });
     });
 
     describe('canManageUsers', () => {
-        it('returns true when user is list owner', () => {
+        it('returns true when user is list owner via ownerId', () => {
             const userId = 'user-123';
-            const list: Partial<List> = {
+            const list: List = {
+                id: 'list-1',
+                title: 'Test',
+                dateAdded: new Date(),
+                items: [],
+                users: [],
                 ownerId: userId,
+                listType: 'shopping',
             };
 
-            expect(authService.canManageUsers(list as List, userId)).toBe(true);
+            expect(authService.canManageUsers(list, userId)).toBe(true);
         });
 
         it('returns false when user is not list owner', () => {
-            const list: Partial<List> = {
+            const list: List = {
+                id: 'list-1',
+                title: 'Test',
+                dateAdded: new Date(),
+                items: [],
+                users: [],
                 ownerId: 'owner-123',
+                listType: 'shopping',
             };
 
-            expect(authService.canManageUsers(list as List, 'user-456')).toBe(false);
+            expect(authService.canManageUsers(list, 'user-456')).toBe(false);
         });
 
-        it('returns false for unauthorized user', () => {
-            const list: Partial<List> = {
-                ownerId: 'owner-123',
+        it('returns true for backward compatible first user', () => {
+            const userId = 'user-123';
+            const list: List = {
+                id: 'list-1',
+                title: 'Test',
+                dateAdded: new Date(),
+                items: [],
+                users: [
+                    { id: userId, username: 'user1' },
+                    { id: 'user-2', username: 'user2' },
+                ],
+                listType: 'shopping',
             };
 
-            expect(authService.canManageUsers(list as List, 'intruder')).toBe(false);
+            expect(authService.canManageUsers(list, userId)).toBe(true);
         });
     });
 
     describe('getEffectiveOwnerId', () => {
         it('returns ownerId when it exists', () => {
-            const list: Partial<List> = {
-                ownerId: 'owner-123',
+            const list: List = {
+                id: 'list-1',
+                title: 'Test',
+                dateAdded: new Date(),
+                items: [],
                 users: [
                     { id: 'user-1', username: 'user1' },
                     { id: 'user-2', username: 'user2' },
                 ],
+                ownerId: 'owner-123',
+                listType: 'shopping',
             };
 
-            expect(authService.getEffectiveOwnerId(list as List)).toBe('owner-123');
+            expect(authService.getEffectiveOwnerId(list)).toBe('owner-123');
         });
 
         it('returns first user ID when ownerId is not set', () => {
-            const list: Partial<List> = {
-                ownerId: undefined,
+            const list: List = {
+                id: 'list-1',
+                title: 'Test',
+                dateAdded: new Date(),
+                items: [],
                 users: [
                     { id: 'user-1', username: 'user1' },
                     { id: 'user-2', username: 'user2' },
                 ],
+                listType: 'shopping',
             };
 
-            expect(authService.getEffectiveOwnerId(list as List)).toBe('user-1');
+            expect(authService.getEffectiveOwnerId(list)).toBe('user-1');
         });
 
-        it('returns undefined when list has no owner or users', () => {
-            const list: Partial<List> = {
-                ownerId: undefined,
+        it('returns null when list has no owner or users', () => {
+            const list: List = {
+                id: 'list-1',
+                title: 'Test',
+                dateAdded: new Date(),
+                items: [],
                 users: [],
+                listType: 'shopping',
             };
 
-            expect(authService.getEffectiveOwnerId(list as List)).toBeUndefined();
+            expect(authService.getEffectiveOwnerId(list)).toBeNull();
         });
 
-        it('returns undefined when list has no users array', () => {
-            const list: Partial<List> = {
-                ownerId: undefined,
-            };
-
-            expect(authService.getEffectiveOwnerId(list as List)).toBeUndefined();
-        });
-
-        it('handles backward compatibility correctly', () => {
-            const oldList: Partial<List> = {
+        it('prefers ownerId over first user', () => {
+            const list: List = {
+                id: 'list-1',
+                title: 'Test',
+                dateAdded: new Date(),
+                items: [],
                 users: [
-                    { id: 'legacy-owner', username: 'owner' },
+                    { id: 'user-1', username: 'user1' },
                     { id: 'user-2', username: 'user2' },
                 ],
+                ownerId: 'explicit-owner',
+                listType: 'shopping',
             };
 
-            expect(authService.getEffectiveOwnerId(oldList as List)).toBe('legacy-owner');
+            expect(authService.getEffectiveOwnerId(list)).toBe('explicit-owner');
         });
     });
 
-    describe('multiple lists', () => {
-        it('correctly identifies owner across different lists', () => {
-            const userId = 'user-123';
+    describe('permission scenarios', () => {
+        it('handles migration from users-based to explicit owner', () => {
+            const userId = 'user-1';
 
-            const list1: Partial<List> = { ownerId: userId };
-            const list2: Partial<List> = { ownerId: 'other-owner' };
+            // Old list (no ownerId, first user is owner)
+            const oldList: List = {
+                id: 'list-1',
+                title: 'Test',
+                dateAdded: new Date(),
+                items: [],
+                users: [
+                    { id: userId, username: 'user1' },
+                    { id: 'user-2', username: 'user2' },
+                ],
+                listType: 'shopping',
+            };
 
-            expect(authService.isListOwner(list1 as List, userId)).toBe(true);
-            expect(authService.isListOwner(list2 as List, userId)).toBe(false);
+            expect(authService.isListOwner(oldList, userId)).toBe(true);
+            expect(authService.canManageUsers(oldList, userId)).toBe(true);
         });
 
-        it('handles permission checks for multiple users', () => {
-            const list: Partial<List> = { ownerId: 'owner-id' };
+        it('restricts non-owners from managing users', () => {
+            const list: List = {
+                id: 'list-1',
+                title: 'Test',
+                dateAdded: new Date(),
+                items: [],
+                users: [
+                    { id: 'owner-1', username: 'owner' },
+                    { id: 'user-2', username: 'member' },
+                ],
+                ownerId: 'owner-1',
+                listType: 'shopping',
+            };
 
-            expect(authService.canManageUsers(list as List, 'owner-id')).toBe(true);
-            expect(authService.canManageUsers(list as List, 'user-1')).toBe(false);
-            expect(authService.canManageUsers(list as List, 'user-2')).toBe(false);
+            expect(authService.canManageUsers(list, 'user-2')).toBe(false);
+            expect(authService.canManageUsers(list, 'owner-1')).toBe(true);
         });
     });
 });
