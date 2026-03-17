@@ -14,7 +14,7 @@ vi.mock('../config/auth', () => ({
 }));
 
 // Mock web-utils
-vi.mock('@igor-siergiej/web-utils', () => ({
+vi.mock('@imapps/web-utils', () => ({
     getStorageItem: vi.fn(() => 'mock-token'),
 }));
 

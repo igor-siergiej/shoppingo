@@ -1,6 +1,6 @@
 import './index.css';
 
-import { AuthConfigProvider, AuthProvider, ProtectedRoute, UserProvider } from '@igor-siergiej/web-utils';
+import { AuthConfigProvider, AuthProvider, ProtectedRoute, UserProvider } from '@imapps/web-utils';
 import React, { Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from 'react-query';

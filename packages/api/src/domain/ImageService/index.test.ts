@@ -1,4 +1,4 @@
-import type { Logger } from '@igor-siergiej/api-utils';
+import type { Logger } from '@imapps/api-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ImageService } from './index';

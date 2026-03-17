@@ -1,3 +1,3 @@
 [install.scopes]
-# TODO: remove once @igor-siergiej packages are published to public npm
-"igor-siergiej" = { url = "https://npm.pkg.github.com/", token = "$NODE_AUTH_TOKEN" }
+# TODO: remove once @imapps packages are published to public npm
+"imapps" = { url = "https://npm.pkg.github.com/", token = "$NODE_AUTH_TOKEN" }

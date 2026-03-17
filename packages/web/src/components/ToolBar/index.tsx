@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuth, useUser } from '@igor-siergiej/web-utils';
+import { useAuth, useUser } from '@imapps/web-utils';
 import type { ListType } from '@shoppingo/types';
 import { ListType as ListTypeEnum } from '@shoppingo/types';
 import { ArrowLeft, CheckCheck, Menu, Trash2 } from 'lucide-react';

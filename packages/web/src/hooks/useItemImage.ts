@@ -1,4 +1,4 @@
-import { getStorageItem } from '@igor-siergiej/web-utils';
+import { getStorageItem } from '@imapps/web-utils';
 import { useEffect, useState } from 'react';
 import { getAuthConfig } from '../config/auth';
 

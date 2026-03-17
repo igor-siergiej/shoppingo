@@ -1,4 +1,4 @@
-import type { AuthConfig } from '@igor-siergiej/web-utils';
+import type { AuthConfig } from '@imapps/web-utils';
 
 import { getConfig } from '../utils/config';
 

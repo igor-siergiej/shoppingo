@@ -70,7 +70,7 @@ Key dependencies:
 - MinIO for file storage
 - Google Gemini AI or OpenAI for AI image generation
 - Sharp for image processing
-- `@igor-siergiej/api-utils` - Shared utilities for configuration, database connections, and logging
+- `@imapps/api-utils` - Shared utilities for configuration, database connections, and logging
 
 ## Frontend Structure (`packages/web/`)
 Modern React app with:
@@ -87,7 +87,7 @@ Key dependencies:
 - React Query for data fetching
 - Framer Motion for animations
 - react-hook-form + Zod for form validation
-- `@igor-siergiej/web-utils` - Shared utilities for auth, config
+- `@imapps/web-utils` - Shared utilities for auth, config
 
 ## Shared Types (`packages/types/`)
 Common TypeScript interfaces and types shared between frontend and backend.

@@ -1,4 +1,4 @@
-import type { MongoDbConnection } from '@igor-siergiej/api-utils';
+import type { MongoDbConnection } from '@imapps/api-utils';
 import type { Item, List } from '@shoppingo/types';
 
 import { CollectionNames } from '../../dependencies/types';

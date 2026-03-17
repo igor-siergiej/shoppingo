@@ -1,4 +1,4 @@
-import type { Logger, MongoDbConnection, ObjectStoreConnection } from '@igor-siergiej/api-utils';
+import type { Logger, MongoDbConnection, ObjectStoreConnection } from '@imapps/api-utils';
 import type { List } from '@shoppingo/types';
 
 import type { AuthorizationService } from '../domain/AuthorizationService';

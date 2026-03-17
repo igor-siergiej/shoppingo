@@ -1,4 +1,4 @@
-import { getStorageItem, setStorageItem, tryRefreshToken } from '@igor-siergiej/web-utils';
+import { getStorageItem, setStorageItem, tryRefreshToken } from '@imapps/web-utils';
 import { getAuthConfig } from '../../config/auth';
 import { logger } from '../../utils/logger';
 import type { MakeRequestProps } from '../types';

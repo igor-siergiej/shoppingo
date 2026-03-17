@@ -1,4 +1,4 @@
-import type { Logger } from '@igor-siergiej/api-utils';
+import type { Logger } from '@imapps/api-utils';
 
 import type { List } from '@shoppingo/types';
 import { AuthorizationService } from '../AuthorizationService';

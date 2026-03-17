@@ -3,7 +3,7 @@
  * Logs are then collected by Promtail and sent to Loki
  */
 
-import { getStorageItem } from '@igor-siergiej/web-utils';
+import { getStorageItem } from '@imapps/web-utils';
 
 interface LogEntry {
     level: 'debug' | 'info' | 'warn' | 'error';

@@ -1,4 +1,4 @@
-import { useUser } from '@igor-siergiej/web-utils';
+import { useUser } from '@imapps/web-utils';
 import type { ListType } from '@shoppingo/types';
 import { AlertTriangle, ListPlus, Users } from 'lucide-react';
 import { useEffect } from 'react';

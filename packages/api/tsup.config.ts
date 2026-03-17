@@ -18,7 +18,7 @@ export default defineConfig({
         'dotenv',
         'mongodb',
         'minio',
-        '@igor-siergiej/api-utils',
+        '@imapps/api-utils',
         '@google/genai',
         '@shoppingo/types',
     ],

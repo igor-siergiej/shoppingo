@@ -1,4 +1,4 @@
-import type { Logger } from '@igor-siergiej/api-utils';
+import type { Logger } from '@imapps/api-utils';
 
 import type { Item, List, ListType, User } from '@shoppingo/types';
 import { ListType as ListTypeEnum } from '@shoppingo/types';

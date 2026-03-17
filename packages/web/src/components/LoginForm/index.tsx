@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useAuth, useAuthConfig } from '@igor-siergiej/web-utils';
+import { useAuth, useAuthConfig } from '@imapps/web-utils';
 import { useForm } from 'react-hook-form';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { z } from 'zod';

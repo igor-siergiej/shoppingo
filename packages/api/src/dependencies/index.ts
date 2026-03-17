@@ -1,5 +1,5 @@
 // biome-ignore-all lint/correctness/noConstructorReturn: I need to figure out a better way to do this
-import { DependencyContainer, Logger, MongoDbConnection, ObjectStoreConnection } from '@igor-siergiej/api-utils';
+import { DependencyContainer, Logger, MongoDbConnection, ObjectStoreConnection } from '@imapps/api-utils';
 
 import { config } from '../config';
 import { AuthorizationService } from '../domain/AuthorizationService';
