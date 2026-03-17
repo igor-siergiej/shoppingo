@@ -12,12 +12,13 @@ jobs:
       packages: read
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: oven-sh/setup-bun@v2
         with:
-          node-version: 22
-      - run: corepack enable
-      - run: yarn install --immutable
-      - run: yarn lint
+          bun-version: latest
+      - run: bun install
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GH_TOKEN }}
+      - run: bun run lint
 
   test:
     runs-on: ubuntu-latest
@@ -27,31 +28,14 @@ jobs:
       packages: read
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: oven-sh/setup-bun@v2
         with:
-          node-version: 22
-      - run: corepack enable
-      - run: yarn install --immutable
-      - run: yarn tsc --noEmit
-      - run: |
-          echo "🧪 Running tests for packages..."
-          if [ -f "yarn.lock" ] && grep -q '"workspaces":' package.json 2>/dev/null; then
-            echo "📦 Detected monorepo structure"
-            if [ -d "packages" ]; then
-              for package_dir in packages/*/; do
-                package_dir=${package_dir%/}
-                if [ -f "${package_dir}/package.json" ]; then
-                  package_name=$(node -p "require('./${package_dir}/package.json').name" 2>/dev/null || echo "")
-                  if [ -n "$package_name" ]; then
-                    if grep -q '"test":' "${package_dir}/package.json"; then
-                      echo "✅ Running tests for $package_name..."
-                      yarn workspace "$package_name" test
-                    fi
-                  fi
-                fi
-              done
-            fi
-          fi
+          bun-version: latest
+      - run: bun install
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GH_TOKEN }}
+      - run: bun run tsc --noEmit
+      - run: bun run --filter @shoppingo/api test
 
   build-publish:
     runs-on: ubuntu-latest
@@ -92,11 +76,12 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/setup-node@v4
+      - uses: oven-sh/setup-bun@v2
         with:
-          node-version: 22
-      - run: corepack enable
-      - run: yarn install --immutable
-      - run: npx semantic-release
+          bun-version: latest
+      - run: bun install
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GH_TOKEN }}
+      - run: bunx semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}

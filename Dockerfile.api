@@ -1,34 +1,21 @@
-FROM node:22-alpine AS builder
+FROM oven/bun:1-alpine AS builder
 
 WORKDIR /app
 
-RUN corepack enable
-
 ARG NODE_AUTH_TOKEN
 
-COPY package.json yarn.lock .yarnrc.yml ./
+COPY package.json bun.lockb .bunfig.toml ./
 COPY packages packages/
 
-RUN NODE_AUTH_TOKEN=${NODE_AUTH_TOKEN} yarn install --frozen-lockfile
+RUN NODE_AUTH_TOKEN=${NODE_AUTH_TOKEN} bun install --frozen-lockfile
 
 COPY . .
 
-RUN yarn workspace @shoppingo/api build
+RUN bun run --filter @shoppingo/api build
 
 FROM node:22-alpine AS runner
 
 WORKDIR /app
-
-RUN corepack enable
-
-ARG NODE_AUTH_TOKEN
-
-COPY package.json yarn.lock .yarnrc.yml ./
-COPY packages packages/
-
-RUN NODE_AUTH_TOKEN=${NODE_AUTH_TOKEN} yarn install --frozen-lockfile && \
-    yarn workspaces focus @shoppingo/api && \
-    yarn cache clean
 
 COPY --from=builder /app/packages/api/build ./dist
 

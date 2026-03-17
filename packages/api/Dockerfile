@@ -1,31 +1,22 @@
-FROM node:22-alpine AS builder
+FROM oven/bun:1-alpine AS builder
 
 WORKDIR /app
 
-COPY package.json yarn.lock ./
-COPY .yarnrc.yml ./.yarnrc.yml
+COPY package.json bun.lockb .bunfig.toml ./
 
 COPY packages/types/package.json packages/types/package.json
 COPY packages/api/package.json packages/api/package.json
 COPY packages/web/package.json packages/web/package.json
 
-ENV YARN_NODE_LINKER=node-modules
+ARG NODE_AUTH_TOKEN
 
-RUN corepack enable && corepack prepare yarn@4.9.2 --activate
-
-# Configure GitLab Package Registry authentication
-RUN --mount=type=secret,id=CI_JOB_TOKEN \
-    CI_JOB_TOKEN=$(cat /run/secrets/CI_JOB_TOKEN) && \
-    yarn config set npmScopes.imapps.npmRegistryServer "https://gitlab.com/api/v4/projects/116310254/packages/npm/" && \
-    yarn config set npmScopes.imapps.npmAuthToken "$CI_JOB_TOKEN"
-
-RUN yarn install --immutable
+RUN NODE_AUTH_TOKEN=${NODE_AUTH_TOKEN} bun install --frozen-lockfile
 
 COPY . .
 
-RUN yarn install --immutable
+RUN NODE_AUTH_TOKEN=${NODE_AUTH_TOKEN} bun install --frozen-lockfile
 
-RUN yarn workspace @shoppingo/api build
+RUN bun run --filter @shoppingo/api build
 
 FROM node:22-alpine AS runner
 
@@ -39,4 +30,3 @@ RUN npm install --omit=dev --include=optional sharp
 EXPOSE 4001
 
 CMD ["node", "build/index.js"]
-

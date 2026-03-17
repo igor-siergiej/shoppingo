@@ -1,7 +1,7 @@
 # Shoppingo - Claude Code Context
 
 ## Project Overview
-Shoppingo is a full-stack e-commerce application with a React frontend and Node.js API backend. The project uses a monorepo structure managed with Yarn workspaces.
+Shoppingo is a full-stack e-commerce application with a React frontend and Node.js API backend. The project uses a monorepo structure managed with Bun workspaces.
 
 ## Architecture
 - **Frontend**: React 19 + TypeScript + Vite + Tailwind CSS + shadcn/ui + PWA (vite-plugin-pwa)
@@ -9,8 +9,8 @@ Shoppingo is a full-stack e-commerce application with a React frontend and Node.
 - **Additional Services**: MinIO (object storage), AI image generation (Gemini or OpenAI, configurable via `IMAGE_PROVIDER` env var)
 
 ## Requirements
-- **Node.js**: v22
-- **Package manager**: Yarn 4.x (Berry)
+- **Bun**: v1.x
+- **Package manager**: Bun 1.x
 
 ## Project Structure
 ```
@@ -20,29 +20,30 @@ shoppingo/
 │   ├── web/          # Frontend React app
 │   └── types/        # Shared TypeScript types
 ├── .env              # Environment variables
+├── .bunfig.toml      # Bun registry configuration
 ├── biome.json        # Biome linter/formatter config
 ├── commitlint.config.js  # Conventional commit rules
 ├── .releaserc.json   # Semantic-release config (auto changelog & versioning)
 ├── package.json      # Root workspace configuration
-└── yarn.lock         # Dependencies lockfile
+└── bun.lockb         # Dependencies lockfile
 ```
 
 ## Key Scripts
 Run these from the root directory:
 
 ### Development
-- `yarn start` - Start both frontend and API
-- `yarn start:web` - Start only frontend (port 4000)
-- `yarn start:api` - Start only API (port 4001)
-- `yarn start:with-mock` - Start with mock authentication (uses `packages/web/mock-auth-server.js`)
+- `bun run start` - Start both frontend and API
+- `bun run start:web` - Start only frontend (port 4000)
+- `bun run start:api` - Start only API (port 4001)
+- `bun run start:with-mock` - Start with mock authentication (uses `packages/web/mock-auth-server.js`)
 
 ### Code Quality
-- `yarn lint` - Run Biome linter across all packages
-- `yarn lint:fix` - Auto-fix Biome linting issues
-- `yarn tsc --noEmit` - Type-check without emitting (run from root or per package)
+- `bun run lint` - Run Biome linter across all packages
+- `bun run lint:fix` - Auto-fix Biome linting issues
+- `bun run tsc --noEmit` - Type-check without emitting (run from root or per package)
 
 ### Testing
-- `yarn workspace @shoppingo/api test` - Run API tests (Vitest, 90% coverage threshold)
+- `bun run --filter @shoppingo/api test` - Run API tests (Vitest, 90% coverage threshold)
 - Note: the web package currently has no test files
 
 ## Environment Setup
@@ -92,11 +93,11 @@ Key dependencies:
 Common TypeScript interfaces and types shared between frontend and backend.
 
 ## Development Workflow
-1. **Starting development**: Run `yarn start` to start both services
+1. **Starting development**: Run `bun run start` to start both services
 2. **Code style**: The project uses **Biome** for linting and formatting (not ESLint)
 3. **Testing**: Uses Vitest for API tests with coverage reporting
-4. **Linting before commits**: **IMPORTANT** - Run `yarn lint:fix` to fix all linting issues before committing
-5. **Building**: Use `yarn workspace @shoppingo/web build` for production build
+4. **Linting before commits**: **IMPORTANT** - Run `bun run lint:fix` to fix all linting issues before committing
+5. **Building**: Use `bun run --filter @shoppingo/web build` for production build
 6. **Commit messages**: Must follow Conventional Commits (enforced by commitlint + Husky)
 7. **Versioning**: Automated via semantic-release on main branch merges
 
@@ -106,25 +107,25 @@ Common TypeScript interfaces and types shared between frontend and backend.
 
 ## Code Quality Checklist (Before Committing)
 **Claude must perform these checks before creating any commit:**
-1. **Linting**: Run `yarn lint:fix` to auto-fix all Biome linting issues
-2. **Type check**: Run `yarn tsc --noEmit` to verify no TypeScript errors
-3. **Tests**: Run `yarn workspace @shoppingo/api test` to verify all API tests pass
-4. **Builds**: Verify `yarn workspace @shoppingo/web build` and `yarn workspace @shoppingo/api build` succeed
+1. **Linting**: Run `bun run lint:fix` to auto-fix all Biome linting issues
+2. **Type check**: Run `bun run tsc --noEmit` to verify no TypeScript errors
+3. **Tests**: Run `bun run --filter @shoppingo/api test` to verify all API tests pass
+4. **Builds**: Verify `bun run --filter @shoppingo/web build` and `bun run --filter @shoppingo/api build` succeed
 5. **Git status**: Ensure no untracked files are accidentally committed (except `.env` configs)
 
 ## Useful Commands for Claude
-- Check project status: `yarn lint` and `yarn workspace @shoppingo/api test`
-- Fix linting: `yarn lint:fix` (run before every commit)
-- Type check: `yarn tsc --noEmit`
-- Start development: `yarn start` (or separate services as needed)
+- Check project status: `bun run lint` and `bun run --filter @shoppingo/api test`
+- Fix linting: `bun run lint:fix` (run before every commit)
+- Type check: `bun run tsc --noEmit`
+- Start development: `bun run start` (or separate services as needed)
 - File structure: Main code in `packages/api/src/` and `packages/web/src/`
 - Types: Check `packages/types/` for shared interfaces
 
 ## Shared Utilities Integration
-The project uses shared packages published to GitHub Packages:
+The project uses shared packages published to GitHub Packages (migration to public npm in progress):
 - API package uses `@igor-siergiej/api-utils` for database connections, dependency injection, and logging
 - Web package uses `@igor-siergiej/web-utils` for auth, config loading
-- Published to GitHub Packages registry under the `@igor-siergiej` scope
+- Registry configured via `.bunfig.toml` (requires `NODE_AUTH_TOKEN` env var)
 
 ## Deployment & Infrastructure
 The project is deployed using **GitOps** with Kubernetes:
@@ -137,8 +138,8 @@ The project is deployed using **GitOps** with Kubernetes:
 
 ## CI/CD Pipeline (`.github/workflows/ci-cd.yml`)
 Jobs run in sequence: **lint → test → release → build-publish**
-1. **lint**: Biome linting + TypeScript type check (`yarn tsc --noEmit`)
-2. **test**: `yarn workspace @shoppingo/api test`
+1. **lint**: Biome linting + TypeScript type check (`bun run tsc --noEmit`)
+2. **test**: `bun run --filter @shoppingo/api test`
 3. **release**: semantic-release for automated versioning and changelog
 4. **build-publish**: Docker image build and push to container registry
 
