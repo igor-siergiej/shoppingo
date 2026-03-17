@@ -25,7 +25,6 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import useMeasure from 'react-use-measure';
 
 import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent } from '@/components/ui/card';
 import {
     Drawer,
@@ -38,11 +37,12 @@ import {
 } from '@/components/ui/drawer';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { RippleButton } from '@/components/ui/ripple';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 
+import { DueDateField } from '@/components/DueDateField';
+import { QuantityUnitField } from '@/components/QuantityUnitField';
 import { useTheme } from '@/contexts/ThemeContext';
 import { usePWA } from '../../hooks/usePWA';
 import { useSearch } from '../../hooks/useSearch';
@@ -531,112 +531,35 @@ const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
 
                                                     {/* Quantity and Unit fields for shopping lists */}
                                                     {isItemsPage && currentListType === ListTypeEnum.SHOPPING && (
-                                                        <div className="grid grid-cols-2 gap-4">
-                                                            <div>
-                                                                <Label htmlFor="new-item-quantity">Quantity</Label>
-                                                                <Input
-                                                                    id="new-item-quantity"
-                                                                    type="number"
-                                                                    value={quantity}
-                                                                    onChange={(e) => setQuantity(e.target.value)}
-                                                                    placeholder="e.g., 2"
-                                                                    className="mt-2"
-                                                                    step="0.01"
-                                                                />
-                                                            </div>
-                                                            <div>
-                                                                <Label htmlFor="new-item-unit">Unit</Label>
-                                                                <Select value={unit} onValueChange={setUnit}>
-                                                                    <SelectTrigger id="new-item-unit" className="mt-2">
-                                                                        <SelectValue placeholder="Select unit" />
-                                                                    </SelectTrigger>
-                                                                    <SelectContent>
-                                                                        <SelectItem value="pcs">pcs</SelectItem>
-                                                                        <SelectItem value="g">g</SelectItem>
-                                                                        <SelectItem value="kg">kg</SelectItem>
-                                                                        <SelectItem value="ml">ml</SelectItem>
-                                                                        <SelectItem value="L">L</SelectItem>
-                                                                    </SelectContent>
-                                                                </Select>
-                                                            </div>
-                                                        </div>
+                                                        <QuantityUnitField
+                                                            quantity={quantity}
+                                                            unit={unit}
+                                                            onQuantityChange={setQuantity}
+                                                            onUnitChange={setUnit}
+                                                            quantityId="new-item-quantity"
+                                                            unitId="new-item-unit"
+                                                        />
                                                     )}
 
                                                     {/* Due date picker for TODO lists */}
                                                     {isItemsPage && currentListType === ListTypeEnum.TODO && (
-                                                        <div className="space-y-2">
-                                                            <Label>Due Date (Optional)</Label>
-                                                            <Popover>
-                                                                <PopoverTrigger asChild>
-                                                                    <Button
-                                                                        variant="outline"
-                                                                        data-empty={!dueDate}
-                                                                        className="data-[empty=true]:text-muted-foreground w-full justify-start text-left font-normal h-10"
-                                                                    >
-                                                                        <CalendarIcon className="mr-2 h-4 w-4" />
-                                                                        {dueDate ? (
-                                                                            format(dueDate, 'dd/MM/yyyy')
-                                                                        ) : (
-                                                                            <span>Pick a date</span>
-                                                                        )}
-                                                                    </Button>
-                                                                </PopoverTrigger>
-                                                                <PopoverContent
-                                                                    className="w-fit overflow-visible p-4 max-w-xs"
-                                                                    align="start"
-                                                                    side="top"
-                                                                    sideOffset={4}
-                                                                >
-                                                                    <div
-                                                                        style={
-                                                                            {
-                                                                                '--cell-size': '3.5rem',
-                                                                            } as React.CSSProperties
-                                                                        }
-                                                                    >
-                                                                        <Calendar
-                                                                            mode="single"
-                                                                            selected={dueDate}
-                                                                            onSelect={setDueDate}
-                                                                            captionLayout="dropdown"
-                                                                        />
-                                                                    </div>
-                                                                </PopoverContent>
-                                                            </Popover>
-                                                        </div>
+                                                        <DueDateField
+                                                            value={dueDate}
+                                                            onChange={setDueDate}
+                                                            captionLayout="dropdown"
+                                                        />
                                                     )}
 
                                                     {/* Fallback quantity/unit for items page when no list type is known */}
                                                     {isItemsPage && !currentListType && (
-                                                        <div className="grid grid-cols-2 gap-4">
-                                                            <div>
-                                                                <Label htmlFor="new-item-quantity">Quantity</Label>
-                                                                <Input
-                                                                    id="new-item-quantity"
-                                                                    type="number"
-                                                                    value={quantity}
-                                                                    onChange={(e) => setQuantity(e.target.value)}
-                                                                    placeholder="e.g., 2"
-                                                                    className="mt-2"
-                                                                    step="0.01"
-                                                                />
-                                                            </div>
-                                                            <div>
-                                                                <Label htmlFor="new-item-unit">Unit</Label>
-                                                                <Select value={unit} onValueChange={setUnit}>
-                                                                    <SelectTrigger id="new-item-unit" className="mt-2">
-                                                                        <SelectValue placeholder="Select unit" />
-                                                                    </SelectTrigger>
-                                                                    <SelectContent>
-                                                                        <SelectItem value="pcs">pcs</SelectItem>
-                                                                        <SelectItem value="g">g</SelectItem>
-                                                                        <SelectItem value="kg">kg</SelectItem>
-                                                                        <SelectItem value="ml">ml</SelectItem>
-                                                                        <SelectItem value="L">L</SelectItem>
-                                                                    </SelectContent>
-                                                                </Select>
-                                                            </div>
-                                                        </div>
+                                                        <QuantityUnitField
+                                                            quantity={quantity}
+                                                            unit={unit}
+                                                            onQuantityChange={setQuantity}
+                                                            onUnitChange={setUnit}
+                                                            quantityId="new-item-quantity"
+                                                            unitId="new-item-unit"
+                                                        />
                                                     )}
 
                                                     {/* Search functionality for lists page */}
