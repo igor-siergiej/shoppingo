@@ -8,15 +8,16 @@ import type { ListRepository } from '../ListRepository';
 import type { AuthClient } from './types';
 
 export class ListService {
-    private authorizationService: AuthorizationService;
+    private readonly authorizationService: AuthorizationService;
 
     constructor(
         private readonly repo: ListRepository,
         private readonly idGenerator: IdGenerator,
         private readonly auth?: AuthClient,
-        private readonly logger?: Logger
+        private readonly logger?: Logger,
+        authorizationService?: AuthorizationService
     ) {
-        this.authorizationService = new AuthorizationService();
+        this.authorizationService = authorizationService ?? new AuthorizationService();
     }
 
     async getList(title: string): Promise<List> {

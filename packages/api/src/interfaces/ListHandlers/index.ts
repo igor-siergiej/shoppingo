@@ -2,11 +2,13 @@ import type { Context } from 'koa';
 
 import { dependencyContainer } from '../../dependencies';
 import { DependencyToken } from '../../dependencies/types';
-import { AuthorizationService } from '../../domain/AuthorizationService';
+import type { AuthorizationService } from '../../domain/AuthorizationService';
 import type { ListService } from '../../domain/ListService';
 
 const getListService = (): ListService => dependencyContainer.resolve(DependencyToken.ListService);
 const getLogger = () => dependencyContainer.resolve(DependencyToken.Logger);
+const getAuthorizationService = (): AuthorizationService =>
+    dependencyContainer.resolve(DependencyToken.AuthorizationService);
 
 // Helper function to verify user has access to a list
 const verifyListAccess = async (
@@ -42,8 +44,7 @@ export const getList = async (ctx: Context) => {
         }
 
         const list = await getListService().getList(title);
-        const authService = new AuthorizationService();
-        const effectiveOwnerId = authService.getEffectiveOwnerId(list);
+        const effectiveOwnerId = getAuthorizationService().getEffectiveOwnerId(list);
 
         logger.info('API: List retrieved', {
             listTitle: title,
@@ -366,9 +367,8 @@ export const deleteList = async (ctx: Context) => {
 
         // Check ownership - only owner can delete list
         const list = await getListService().getList(title);
-        const authService = new AuthorizationService();
 
-        if (!authService.isListOwner(list, authenticatedUser.id)) {
+        if (!getAuthorizationService().isListOwner(list, authenticatedUser.id)) {
             logger.warn('Non-owner attempted to delete list', {
                 authenticatedUserId: authenticatedUser.id,
                 listTitle: title,

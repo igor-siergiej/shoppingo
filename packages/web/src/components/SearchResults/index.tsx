@@ -1,6 +1,7 @@
 import { Loader2, User } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 
+import useClickOutside from '../../hooks/useClickOutside';
 import { Button } from '../ui/button';
 import { ScrollArea } from '../ui/scroll-area';
 
@@ -23,22 +24,11 @@ interface SearchResultsProps {
 export const SearchResults = ({ results, isLoading, error, onSelect, onClose, query }: SearchResultsProps) => {
     const containerRef = useRef<HTMLDivElement>(null);
 
-    // Close results when clicking outside
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-                onClose();
-            }
-        };
-
-        document.addEventListener('mousedown', handleClickOutside);
-
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, [onClose]);
+    useClickOutside(containerRef, onClose);
 
     if (isLoading) {
         return (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded-md shadow-lg z-50">
+            <div ref={containerRef} className="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded-md shadow-lg z-50">
                 <div className="p-4 flex items-center justify-center text-muted-foreground">
                     <Loader2 className="h-4 w-4 animate-spin mr-2" />
                     Searching...
@@ -49,7 +39,7 @@ export const SearchResults = ({ results, isLoading, error, onSelect, onClose, qu
 
     if (error) {
         return (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded-md shadow-lg z-50">
+            <div ref={containerRef} className="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded-md shadow-lg z-50">
                 <div className="p-4 text-center text-destructive text-sm">{error}</div>
             </div>
         );
@@ -57,7 +47,7 @@ export const SearchResults = ({ results, isLoading, error, onSelect, onClose, qu
 
     if (query.trim().length > 0 && query.trim().length < 2) {
         return (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded-md shadow-lg z-50">
+            <div ref={containerRef} className="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded-md shadow-lg z-50">
                 <div className="p-4 text-center text-muted-foreground text-sm">
                     Please enter at least 2 characters to search
                 </div>
