@@ -1,6 +1,7 @@
 import sharp from 'sharp';
 
 import type { ImageGenerator } from '../../domain/ImageService/types';
+import { processImage } from '../imageProcessor';
 
 export class OpenAIImageGenerator implements ImageGenerator {
     constructor(
@@ -53,9 +54,6 @@ export class OpenAIImageGenerator implements ImageGenerator {
             }
             originalBuffer = Buffer.from(await imageResponse.arrayBuffer());
         } else {
-            console.log('responseData:', JSON.stringify(responseData));
-            console.log('responseData type:', typeof responseData);
-            console.log('responseData keys:', Object.keys(responseData || {}));
             throw Object.assign(new Error(`Invalid image generation response: ${JSON.stringify(data)}`), {
                 status: 502,
             });
@@ -66,7 +64,7 @@ export class OpenAIImageGenerator implements ImageGenerator {
         let finalContentType = 'image/webp';
 
         try {
-            processedBuffer = await this.processImage(originalBuffer);
+            processedBuffer = await processImage(originalBuffer);
         } catch {
             // Fallback: try to at least convert to WebP without resizing
             try {
@@ -82,22 +80,5 @@ export class OpenAIImageGenerator implements ImageGenerator {
             buffer: processedBuffer,
             contentType: finalContentType,
         };
-    }
-
-    private async processImage(inputBuffer: Buffer): Promise<Buffer> {
-        return await sharp(inputBuffer)
-            .resize(256, 256, {
-                fit: 'contain',
-                background: { r: 0, g: 0, b: 0, alpha: 0 },
-                withoutEnlargement: true,
-            })
-            .webp({
-                quality: 85,
-                effort: 4,
-                lossless: false,
-                smartSubsample: true,
-            })
-            .withMetadata({})
-            .toBuffer();
     }
 }

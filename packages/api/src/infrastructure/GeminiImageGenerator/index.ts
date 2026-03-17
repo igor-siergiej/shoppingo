@@ -1,7 +1,7 @@
 import { GoogleGenAI } from '@google/genai';
-import sharp from 'sharp';
 
 import type { ImageGenerator } from '../../domain/ImageService/types';
+import { processImage } from '../imageProcessor';
 
 export class GeminiImageGenerator implements ImageGenerator {
     constructor(
@@ -58,7 +58,7 @@ export class GeminiImageGenerator implements ImageGenerator {
         let finalContentType = 'image/webp';
 
         try {
-            processedBuffer = await this.processImage(originalBuffer);
+            processedBuffer = await processImage(originalBuffer);
         } catch {
             // Fallback: use original buffer with original content type
             processedBuffer = originalBuffer;
@@ -69,22 +69,5 @@ export class GeminiImageGenerator implements ImageGenerator {
             buffer: processedBuffer,
             contentType: finalContentType,
         };
-    }
-
-    private async processImage(inputBuffer: Buffer): Promise<Buffer> {
-        return await sharp(inputBuffer)
-            .resize(256, 256, {
-                fit: 'contain',
-                background: { r: 0, g: 0, b: 0, alpha: 0 }, // Transparent background
-                withoutEnlargement: true, // Don't upscale small images
-            })
-            .webp({
-                quality: 85, // Good balance between quality and file size
-                effort: 4, // Higher effort for better compression
-                lossless: false,
-                smartSubsample: true, // Better compression for photographic content
-            })
-            .withMetadata({})
-            .toBuffer();
     }
 }
