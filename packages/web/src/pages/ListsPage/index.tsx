@@ -1,7 +1,7 @@
 import { useUser } from '@igor-siergiej/web-utils';
 import type { ListType } from '@shoppingo/types';
 import { AlertTriangle, ListPlus, Users } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { useQuery } from 'react-query';
 
 import { Button } from '@/components/ui/button';
@@ -9,12 +9,11 @@ import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTi
 import { addList, getListsQuery } from '../../api';
 import ListsList from '../../components/ListsList';
 import { ListsSkeleton } from '../../components/LoadingSkeleton';
-import ToolBar, { type ToolBarRef } from '../../components/ToolBar';
+import ToolBar from '../../components/ToolBar';
 import { logger } from '../../utils/logger';
 
 const ListsPage = () => {
     const { user } = useUser();
-    const toolbarRef = useRef<ToolBarRef>(null);
     const { data, isLoading, isError, refetch } = useQuery({
         ...getListsQuery(user?.id || ''),
         enabled: !!user?.id,
@@ -53,9 +52,6 @@ const ListsPage = () => {
                             <EmptyTitle>No lists yet</EmptyTitle>
                             <EmptyDescription>Create your first list to get started</EmptyDescription>
                         </EmptyHeader>
-                        <EmptyContent>
-                            <Button onClick={() => toolbarRef.current?.openDrawer()}>Create List</Button>
-                        </EmptyContent>
                     </Empty>
                 )}
             </div>
@@ -82,22 +78,22 @@ const ListsPage = () => {
         </div>
     );
 
-    const handleAddList = async (listTitle: string, selectedUsers?: Array<string>, listType?: ListType) => {
+    const handleAddList = async (listTitle: string, listType: ListType, selectedUsers: string[]) => {
         if (!user) {
             logger.warn('Attempted to add list without user');
-
             return;
         }
 
-        logger.info('Creating list', { listTitle, sharedWith: selectedUsers?.length || 0, listType });
+        logger.info('Creating list', { listTitle, sharedWith: selectedUsers.length, listType });
 
         try {
             await addList(listTitle, user, selectedUsers, listType);
-            logger.info('List created successfully', { listTitle, sharedWith: selectedUsers?.length || 0, listType });
+            logger.info('List created successfully', { listTitle, sharedWith: selectedUsers.length, listType });
             await refetch();
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Unknown error';
             logger.error('Failed to create list', { listTitle, error: errorMessage });
+            throw error;
         }
     };
 
@@ -125,7 +121,7 @@ const ListsPage = () => {
             {isLoading && <ListsSkeleton />}
             {!isLoading && !isError && pageContent}
 
-            <ToolBar ref={toolbarRef} handleAdd={handleAddList} placeholder="Enter list name..." />
+            <ToolBar onAddList={handleAddList} placeholder="Enter list name..." />
         </>
     );
 };

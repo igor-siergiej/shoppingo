@@ -20,13 +20,12 @@ import { useConfirmation } from '@/hooks/useConfirmation';
 import { addItem, clearList, clearSelected, getListQuery } from '../../api';
 import ItemCheckBoxList from '../../components/ItemCheckBoxList';
 import { ItemsSkeleton } from '../../components/LoadingSkeleton';
-import ToolBar, { type ToolBarRef } from '../../components/ToolBar';
+import ToolBar from '../../components/ToolBar';
 import { logger } from '../../utils/logger';
 
 const ItemsPage = () => {
     const { listTitle } = useParams();
     const navigate = useNavigate();
-    const toolbarRef = useRef<ToolBarRef>(null);
     const queryClient = useQueryClient();
     const [currentListType, setCurrentListType] = useState<ListType>(ListTypeEnum.SHOPPING);
     const { confirm, isOpen, config: confirmConfig, handleConfirm, handleCancel } = useConfirmation();
@@ -189,9 +188,6 @@ const ItemsPage = () => {
                             <EmptyTitle>{config?.title}</EmptyTitle>
                             <EmptyDescription>{config?.description}</EmptyDescription>
                         </EmptyHeader>
-                        <EmptyContent>
-                            <Button onClick={() => toolbarRef.current?.openDrawer()}>{config?.buttonLabel}</Button>
-                        </EmptyContent>
                     </Empty>
                 ) : (
                     <ItemCheckBoxList items={items} listTitle={listTitle} listType={listType} />
@@ -249,8 +245,7 @@ const ItemsPage = () => {
             {!isLoading && !isError && data && pageContent}
 
             <ToolBar
-                ref={toolbarRef}
-                handleAdd={handleAddItem}
+                onAddItem={handleAddItem}
                 handleGoBack={handleGoBack}
                 handleClearSelected={handleClearSelected}
                 handleRemoveAll={handleClearList}

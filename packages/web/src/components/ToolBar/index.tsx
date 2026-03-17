@@ -3,62 +3,28 @@
 import { useAuth, useUser } from '@igor-siergiej/web-utils';
 import type { ListType } from '@shoppingo/types';
 import { ListType as ListTypeEnum } from '@shoppingo/types';
-import { format } from 'date-fns';
-import {
-    ArrowLeft,
-    Calendar as CalendarIcon,
-    CheckCheck,
-    Download,
-    LogOut,
-    Menu,
-    Moon,
-    Plus,
-    Search,
-    Sun,
-    Trash2,
-    User,
-    Users,
-} from 'lucide-react';
+import { ArrowLeft, CheckCheck, Menu, Trash2 } from 'lucide-react';
 import { AnimatePresence, MotionConfig, motion } from 'motion/react';
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import useMeasure from 'react-use-measure';
 
-import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import {
-    Drawer,
-    DrawerClose,
-    DrawerContent,
-    DrawerFooter,
-    DrawerHeader,
-    DrawerTitle,
-    DrawerTrigger,
-} from '@/components/ui/drawer';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { RippleButton } from '@/components/ui/ripple';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
 
-import { DueDateField } from '@/components/DueDateField';
-import { QuantityUnitField } from '@/components/QuantityUnitField';
-import { useTheme } from '@/contexts/ThemeContext';
-import { usePWA } from '../../hooks/usePWA';
-import { useSearch } from '../../hooks/useSearch';
+import { AddItemDrawer } from './AddItemDrawer';
+import { AddListDrawer } from './AddListDrawer';
+import { HamburgerMenu } from './HamburgerMenu';
 import { ManageUsersDrawer } from '../ManageUsersDrawer';
-import { SearchResults } from '../SearchResults';
 
 interface ToolBarProps {
-    // For lists page: (name, selectedUsers, listType)
-    // For items page: (name, quantity, unit, dueDate)
-    handleAdd: (name: string, quantityOrUsers?: number | Array<string>, unit?: string, dueDate?: Date) => Promise<void>;
+    onAddList?: (name: string, listType: ListType, users: string[]) => Promise<void>;
+    onAddItem?: (name: string, quantity?: number, unit?: string, dueDate?: Date) => Promise<void>;
     handleGoBack?: () => void;
     handleClearSelected?: () => void;
     handleRemoveAll?: () => void;
     placeholder?: string;
     currentListType?: ListType;
-    // For items page: current list data
     currentList?: {
         title: string;
         users: Array<{ id: string; username: string }>;
@@ -69,636 +35,247 @@ interface ToolBarProps {
     disableClearAll?: boolean;
 }
 
-export interface ToolBarRef {
-    openDrawer: () => void;
-}
+const ToolBar = ({
+    onAddList,
+    onAddItem,
+    handleGoBack,
+    handleClearSelected,
+    handleRemoveAll,
+    placeholder = 'Enter item name...',
+    currentListType,
+    currentList,
+    refetchList,
+    disableClearSelected = false,
+    disableClearAll = false,
+}: ToolBarProps) => {
+    const location = useLocation();
+    const navigate = useNavigate();
+    const { logout } = useAuth();
+    const { user } = useUser();
+    const userId = user?.id;
 
-const ToolBar = forwardRef<ToolBarRef, ToolBarProps>(
-    (
-        {
-            handleAdd,
-            handleGoBack,
-            handleClearSelected,
-            handleRemoveAll,
-            placeholder = 'Enter item name...',
-            currentListType,
-            currentList,
-            refetchList,
-            disableClearSelected = false,
-            disableClearAll = false,
-        },
-        ref
-    ) => {
-        const location = useLocation();
-        const navigate = useNavigate();
-        const { logout } = useAuth();
-        const { user } = useUser();
-        const userId = user?.id;
-        const { theme, toggleTheme } = useTheme();
+    const [isManageUsersOpen, setIsManageUsersOpen] = useState(false);
+    const [isAddItemDrawerOpen, setIsAddItemDrawerOpen] = useState(false);
+    const [isAddListDrawerOpen, setIsAddListDrawerOpen] = useState(false);
+    const menuCardRef = useRef<HTMLDivElement>(null);
 
-        const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-        const [isManageUsersOpen, setIsManageUsersOpen] = useState(false);
-        const [newName, setNewName] = useState('');
-        const [error, setError] = useState<string>('');
-        const [selectedUsers, setSelectedUsers] = useState<Array<string>>([]);
-        const [quantity, setQuantity] = useState('');
-        const [unit, setUnit] = useState('');
-        const [listType, setListType] = useState<ListType>(ListTypeEnum.SHOPPING);
-        const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
-        const inputRef = useRef<HTMLInputElement>(null);
-        const menuCardRef = useRef<HTMLDivElement>(null);
+    const isItemsPage = location.pathname.includes('/list/');
+    const isListsPage = location.pathname === '/';
 
-        const isItemsPage = location.pathname.includes('/list/');
-        const isListsPage = location.pathname === '/';
+    const [menuActive, setMenuActive] = useState<number | null>(null);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [contentRef, { height: contentHeight }] = useMeasure();
+    const [menuRef, { width: menuWidth }] = useMeasure();
+    const [maxWidth, setMaxWidth] = useState(0);
 
-        const { query, setQuery, results, isLoading, error: searchError, clearResults } = useSearch();
+    useEffect(() => {
+        if (!menuWidth || maxWidth > 0) return;
+        setMaxWidth(menuWidth);
+    }, [menuWidth, maxWidth]);
 
-        // Hamburger expandable menu state (reusing ToolBarOld transitions)
-        const [menuActive, setMenuActive] = useState<number | null>(null);
-        const [isMenuOpen, setIsMenuOpen] = useState(false);
-        const [contentRef, { height: contentHeight }] = useMeasure();
-        const [menuRef, { width: menuWidth }] = useMeasure();
-        const [maxWidth, setMaxWidth] = useState(0);
-
-        useEffect(() => {
-            if (!menuWidth || maxWidth > 0) return;
-            setMaxWidth(menuWidth);
-        }, [menuWidth, maxWidth]);
-
-        // PWA functionality
-        const { canInstall, isInstalled, installApp } = usePWA();
-
-        // Expose method to open drawer from parent component
-        useImperativeHandle(ref, () => ({
-            openDrawer: () => setIsDrawerOpen(true),
-        }));
-
-        // Close menu when clicking outside (works on mobile and desktop)
-        useEffect(() => {
-            const handleClickOutside = (event: MouseEvent | TouchEvent) => {
-                if (menuCardRef.current && !menuCardRef.current.contains(event.target as Node) && isMenuOpen) {
-                    setIsMenuOpen(false);
-                    setMenuActive(null);
-                }
-            };
-
-            document.addEventListener('mousedown', handleClickOutside);
-            document.addEventListener('touchstart', handleClickOutside);
-
-            return () => {
-                document.removeEventListener('mousedown', handleClickOutside);
-                document.removeEventListener('touchstart', handleClickOutside);
-            };
-        }, [isMenuOpen]);
-
-        useEffect(() => {
-            if (isDrawerOpen && inputRef.current) {
-                // Longer timeout for mobile devices to ensure drawer animation completes
-                const timeoutId = setTimeout(() => {
-                    inputRef.current?.focus();
-                    // Scroll the input into view on mobile
-                    if (inputRef.current) {
-                        inputRef.current.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'center',
-                            inline: 'nearest',
-                        });
-                    }
-                }, 250);
-
-                return () => clearTimeout(timeoutId);
-            }
-        }, [isDrawerOpen]);
-
-        const validateForm = () => {
-            return newName.length === 0;
-        };
-
-        const handleSubmit = async () => {
-            if (validateForm()) {
-                setError('Name cannot be blank.');
-
-                return;
-            }
-
-            try {
-                if (isListsPage) {
-                    // For lists: pass name, selectedUsers, and listType
-                    await handleAdd(newName.trim(), selectedUsers, listType);
-                } else {
-                    // Items page: pass quantity, unit, and dueDate
-                    const quantityValue = quantity.trim() ? parseFloat(quantity) : undefined;
-                    const unitValue = unit.trim() || undefined;
-                    await handleAdd(newName.trim(), quantityValue, unitValue, dueDate);
-                }
-
-                setNewName('');
-                setError('');
-                setSelectedUsers([]);
-                setQuantity('');
-                setUnit('');
-                setListType(ListTypeEnum.SHOPPING);
-                setDueDate(undefined);
-                setIsDrawerOpen(false);
-            } catch (err: any) {
-                // Provide user-friendly error messages
-                let errorMessage = err?.message || 'Failed to add item. Please try again.';
-
-                if (errorMessage.includes('Users not found:')) {
-                    // Extract usernames from error message and provide helpful feedback
-                    errorMessage = `${errorMessage}. Please check the spelling or make sure these users have registered.`;
-                }
-
-                setError(errorMessage);
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+            if (menuCardRef.current && !menuCardRef.current.contains(event.target as Node) && isMenuOpen) {
+                setIsMenuOpen(false);
+                setMenuActive(null);
             }
         };
 
-        const handleCancel = () => {
-            setNewName('');
-            setError('');
-            setSelectedUsers([]);
-            setQuantity('');
-            setUnit('');
-            setListType(ListTypeEnum.SHOPPING);
-            setDueDate(undefined);
-            setQuery('');
-            clearResults();
-            setIsDrawerOpen(false);
+        document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('touchstart', handleClickOutside);
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('touchstart', handleClickOutside);
         };
+    }, [isMenuOpen]);
 
-        const handleUserSelect = (username: string) => {
-            if (!selectedUsers.includes(username)) {
-                setSelectedUsers([...selectedUsers, username]);
-            }
+    const handleLogout = async () => {
+        await logout();
+        navigate('/login');
+    };
 
-            setQuery('');
-            clearResults();
-        };
+    const transition = {
+        type: 'spring' as const,
+        bounce: 0.1,
+        duration: 0.25,
+    };
 
-        const removeSelectedUser = (username: string) => {
-            setSelectedUsers(selectedUsers.filter((u) => u !== username));
-        };
+    return (
+        <>
+            <div className="fixed bottom-4 left-0 right-0 z-40 px-4">
+                <div className="mx-auto max-w-[400px]">
+                    <MotionConfig transition={transition}>
+                        {/* Menu Container - Layered Glass Effect */}
+                        {isMenuOpen && (
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="absolute bottom-0 left-0 right-0 pointer-events-none"
+                                style={{
+                                    background:
+                                        'linear-gradient(180deg, transparent 0%, rgba(15, 23, 42, 0.02) 100%)',
+                                }}
+                            />
+                        )}
 
-        const handleLogout = async () => {
-            await logout();
-            navigate('/login');
-        };
-
-        const transition = {
-            type: 'spring' as const,
-            bounce: 0.1,
-            duration: 0.25,
-        };
-
-        return (
-            <>
-                <div className="fixed bottom-4 left-0 right-0 z-40 px-4">
-                    <div className="mx-auto max-w-[400px]">
-                        <MotionConfig transition={transition}>
-                            {/* Menu Container - Layered Glass Effect */}
+                        <Card
+                            ref={menuCardRef}
+                            className="shadow-xl py-0 !gap-0 backdrop-blur-sm border border-slate-200/50 relative z-10"
+                        >
+                            {/* Menu Content with Staggered Animation */}
+                            <div className="overflow-hidden">
+                                <AnimatePresence initial={false} mode="sync">
+                                    {isMenuOpen ? (
+                                        <motion.div
+                                            key="content"
+                                            initial={{ height: 0, opacity: 0 }}
+                                            animate={{ height: contentHeight || 0, opacity: 1 }}
+                                            exit={{ height: 0, opacity: 0 }}
+                                            transition={{
+                                                height: { duration: 0.3 },
+                                                opacity: { duration: 0.2 },
+                                            }}
+                                            style={{ width: maxWidth }}
+                                        >
+                                            <div ref={contentRef} className="px-3 py-4">
+                                                {menuActive === 1 && (
+                                                    <HamburgerMenu
+                                                        currentList={currentList}
+                                                        userId={userId}
+                                                        onManageUsers={() => {
+                                                            setIsManageUsersOpen(true);
+                                                            setIsMenuOpen(false);
+                                                            setMenuActive(null);
+                                                        }}
+                                                        onClose={() => {
+                                                            setIsMenuOpen(false);
+                                                            setMenuActive(null);
+                                                        }}
+                                                        onLogout={() => {
+                                                            void handleLogout();
+                                                            setIsMenuOpen(false);
+                                                            setMenuActive(null);
+                                                        }}
+                                                    />
+                                                )}
+                                            </div>
+                                        </motion.div>
+                                    ) : null}
+                                </AnimatePresence>
+                            </div>
+                            {/* Visual Separator - Divider Line */}
                             {isMenuOpen && (
-                                <motion.div
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    className="absolute bottom-0 left-0 right-0 pointer-events-none"
-                                    style={{
-                                        background:
-                                            'linear-gradient(180deg, transparent 0%, rgba(15, 23, 42, 0.02) 100%)',
-                                    }}
-                                />
+                                <div className="h-0.5 bg-gradient-to-r from-transparent via-slate-300 to-transparent" />
                             )}
 
-                            <Card
-                                ref={menuCardRef}
-                                className="shadow-xl py-0 !gap-0 backdrop-blur-sm border border-slate-200/50 relative z-10"
-                            >
-                                {/* Menu Content with Staggered Animation */}
-                                <div className="overflow-hidden">
-                                    <AnimatePresence initial={false} mode="sync">
-                                        {isMenuOpen ? (
-                                            <motion.div
-                                                key="content"
-                                                initial={{ height: 0, opacity: 0 }}
-                                                animate={{ height: contentHeight || 0, opacity: 1 }}
-                                                exit={{ height: 0, opacity: 0 }}
-                                                transition={{ height: { duration: 0.3 }, opacity: { duration: 0.2 } }}
-                                                style={{ width: maxWidth }}
-                                            >
-                                                <div ref={contentRef} className="px-3 py-4">
-                                                    {menuActive === 1 && (
-                                                        <div className="flex flex-col gap-2.5">
-                                                            {/* Manage Users action (shows only on items page and user is owner) */}
-                                                            {currentList && currentList.ownerId === userId && (
-                                                                <motion.div
-                                                                    initial={{ opacity: 0, y: -8 }}
-                                                                    animate={{ opacity: 1, y: 0 }}
-                                                                    transition={{ delay: 0.05, duration: 0.2 }}
-                                                                >
-                                                                    <Button
-                                                                        variant="outline"
-                                                                        onClick={() => {
-                                                                            setIsManageUsersOpen(true);
-                                                                            setIsMenuOpen(false);
-                                                                            setMenuActive(null);
-                                                                        }}
-                                                                        className="w-full justify-center h-9 text-sm font-medium transition-all duration-200 hover:bg-slate-50 active:scale-95"
-                                                                    >
-                                                                        <Users className="h-4 w-4 mr-2" />
-                                                                        Manage Users
-                                                                    </Button>
-                                                                </motion.div>
-                                                            )}
-                                                            {/* Dark Mode Toggle */}
-                                                            <motion.div
-                                                                initial={{ opacity: 0, y: -8 }}
-                                                                animate={{ opacity: 1, y: 0 }}
-                                                                transition={{
-                                                                    delay:
-                                                                        currentList && currentList.ownerId === userId
-                                                                            ? 0.1
-                                                                            : 0.05,
-                                                                    duration: 0.2,
-                                                                }}
-                                                            >
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={toggleTheme}
-                                                                    className="flex items-center justify-between w-full px-4 py-2.5 rounded-lg transition-colors duration-200 hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-95"
-                                                                >
-                                                                    <div className="flex items-center gap-3">
-                                                                        {theme === 'dark' ? (
-                                                                            <Moon className="h-4 w-4 text-slate-600" />
-                                                                        ) : (
-                                                                            <Sun className="h-4 w-4 text-slate-600" />
-                                                                        )}
-                                                                        <span className="text-sm font-medium">
-                                                                            {theme === 'dark'
-                                                                                ? 'Dark Mode'
-                                                                                : 'Light Mode'}
-                                                                        </span>
-                                                                    </div>
-                                                                    <Switch
-                                                                        checked={theme === 'dark'}
-                                                                        onCheckedChange={toggleTheme}
-                                                                    />
-                                                                </button>
-                                                            </motion.div>
-                                                            {/* Install app action (shows only if available and not installed) */}
-                                                            {canInstall && !isInstalled && (
-                                                                <motion.div
-                                                                    initial={{ opacity: 0, y: -8 }}
-                                                                    animate={{ opacity: 1, y: 0 }}
-                                                                    transition={{ delay: 0.1, duration: 0.2 }}
-                                                                >
-                                                                    <Button
-                                                                        variant="outline"
-                                                                        onClick={async () => {
-                                                                            const success = await installApp();
-
-                                                                            if (success) {
-                                                                                setIsMenuOpen(false);
-                                                                                setMenuActive(null);
-                                                                            }
-                                                                        }}
-                                                                        className="w-full justify-center h-9 text-sm font-medium transition-all duration-200 hover:bg-slate-50 active:scale-95"
-                                                                    >
-                                                                        <Download className="h-4 w-4 mr-2" />
-                                                                        Install app
-                                                                    </Button>
-                                                                </motion.div>
-                                                            )}
-                                                            <motion.div
-                                                                initial={{ opacity: 0, y: -8 }}
-                                                                animate={{ opacity: 1, y: 0 }}
-                                                                transition={{ delay: 0.15, duration: 0.2 }}
-                                                            >
-                                                                <Button
-                                                                    variant="destructive"
-                                                                    onClick={() => {
-                                                                        void handleLogout();
-                                                                        setIsMenuOpen(false);
-                                                                        setMenuActive(null);
-                                                                    }}
-                                                                    className="w-full justify-center h-9 text-sm font-medium transition-all duration-200 hover:bg-red-600 active:scale-95"
-                                                                >
-                                                                    <LogOut className="h-4 w-4 mr-2" />
-                                                                    Log out
-                                                                </Button>
-                                                            </motion.div>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </motion.div>
-                                        ) : null}
-                                    </AnimatePresence>
-                                </div>
-                                {/* Visual Separator - Divider Line */}
-                                {isMenuOpen && (
-                                    <div className="h-0.5 bg-gradient-to-r from-transparent via-slate-300 to-transparent" />
-                                )}
-
-                                {/* App Bar - The persistent bottom navigation */}
-                                <CardContent className={`flex items-center justify-between py-2.5`} ref={menuRef}>
-                                    {(isItemsPage || location.pathname !== '/') && (
-                                        <RippleButton
-                                            size="icon"
-                                            variant="ghost"
-                                            className="h-12 w-12 rounded-full transition-colors"
-                                            rippleClassName="bg-gray-500/30"
-                                            title={isItemsPage && handleGoBack ? 'Go back' : 'Go home'}
-                                            onClick={() => {
-                                                if (isItemsPage && handleGoBack) {
-                                                    handleGoBack();
-                                                } else {
-                                                    navigate('/');
-                                                }
-                                            }}
-                                        >
-                                            <ArrowLeft className="size-5" />
-                                        </RippleButton>
-                                    )}
-
-                                    {/* Clear Selected Button - Separate button */}
-                                    {handleClearSelected && (
-                                        <RippleButton
-                                            size="icon"
-                                            variant="ghost"
-                                            className="h-12 w-12 rounded-full transition-colors"
-                                            rippleClassName="bg-gray-500/30"
-                                            title="Clear selected items"
-                                            onClick={handleClearSelected}
-                                            disabled={disableClearSelected}
-                                        >
-                                            <CheckCheck className="size-5" />
-                                        </RippleButton>
-                                    )}
-
-                                    <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
-                                        <DrawerTrigger asChild>
-                                            <RippleButton
-                                                size="icon"
-                                                className="h-12 w-12 rounded-full border-2 border-primary/20 hover:border-primary/40 transition-colors"
-                                            >
-                                                <Plus className="size-5" />
-                                            </RippleButton>
-                                        </DrawerTrigger>
-                                        <DrawerContent>
-                                            <div className="w-full sm:mx-auto sm:max-w-[400px]">
-                                                <DrawerHeader>
-                                                    <DrawerTitle>
-                                                        {isListsPage
-                                                            ? 'Add New List'
-                                                            : currentListType === ListTypeEnum.TODO
-                                                              ? 'Add New Task'
-                                                              : 'Add New Item'}
-                                                    </DrawerTitle>
-                                                </DrawerHeader>
-                                                <div className="p-4 pb-0 space-y-4">
-                                                    <div className="space-y-2">
-                                                        <Label htmlFor="new-item">
-                                                            {isListsPage
-                                                                ? 'List Name'
-                                                                : currentListType === ListTypeEnum.TODO
-                                                                  ? 'Task Name'
-                                                                  : 'Item Name'}
-                                                        </Label>
-                                                        <Input
-                                                            id="new-item"
-                                                            ref={inputRef}
-                                                            value={newName}
-                                                            autoComplete="off"
-                                                            autoFocus
-                                                            className={`${error ? 'border-destructive' : ''} h-12 text-base`}
-                                                            onChange={(event) => {
-                                                                setError('');
-                                                                setNewName(event.target.value);
-                                                            }}
-                                                            placeholder={placeholder}
-                                                            onKeyDown={(e) => {
-                                                                if (e.key === 'Enter') {
-                                                                    handleSubmit();
-                                                                } else if (e.key === 'Escape') {
-                                                                    handleCancel();
-                                                                }
-                                                            }}
-                                                        />
-                                                        {error && <p className="text-sm text-destructive">{error}</p>}
-                                                    </div>
-
-                                                    {/* List type selector for lists page */}
-                                                    {isListsPage && (
-                                                        <div className="space-y-2">
-                                                            <Label>List Type</Label>
-                                                            <div className="flex gap-4">
-                                                                <div className="flex items-center space-x-2">
-                                                                    <input
-                                                                        type="radio"
-                                                                        id="shopping"
-                                                                        name="listType"
-                                                                        checked={listType === ListTypeEnum.SHOPPING}
-                                                                        onChange={() =>
-                                                                            setListType(ListTypeEnum.SHOPPING)
-                                                                        }
-                                                                        className="cursor-pointer"
-                                                                    />
-                                                                    <Label
-                                                                        htmlFor="shopping"
-                                                                        className="cursor-pointer font-normal"
-                                                                    >
-                                                                        Shopping
-                                                                    </Label>
-                                                                </div>
-                                                                <div className="flex items-center space-x-2">
-                                                                    <input
-                                                                        type="radio"
-                                                                        id="todo"
-                                                                        name="listType"
-                                                                        checked={listType === ListTypeEnum.TODO}
-                                                                        onChange={() => setListType(ListTypeEnum.TODO)}
-                                                                        className="cursor-pointer"
-                                                                    />
-                                                                    <Label
-                                                                        htmlFor="todo"
-                                                                        className="cursor-pointer font-normal"
-                                                                    >
-                                                                        TODO
-                                                                    </Label>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    )}
-
-                                                    {/* Quantity and Unit fields for shopping lists */}
-                                                    {isItemsPage && currentListType === ListTypeEnum.SHOPPING && (
-                                                        <QuantityUnitField
-                                                            quantity={quantity}
-                                                            unit={unit}
-                                                            onQuantityChange={setQuantity}
-                                                            onUnitChange={setUnit}
-                                                            quantityId="new-item-quantity"
-                                                            unitId="new-item-unit"
-                                                        />
-                                                    )}
-
-                                                    {/* Due date picker for TODO lists */}
-                                                    {isItemsPage && currentListType === ListTypeEnum.TODO && (
-                                                        <DueDateField
-                                                            value={dueDate}
-                                                            onChange={setDueDate}
-                                                            captionLayout="dropdown"
-                                                        />
-                                                    )}
-
-                                                    {/* Fallback quantity/unit for items page when no list type is known */}
-                                                    {isItemsPage && !currentListType && (
-                                                        <QuantityUnitField
-                                                            quantity={quantity}
-                                                            unit={unit}
-                                                            onQuantityChange={setQuantity}
-                                                            onUnitChange={setUnit}
-                                                            quantityId="new-item-quantity"
-                                                            unitId="new-item-unit"
-                                                        />
-                                                    )}
-
-                                                    {/* Search functionality for lists page */}
-                                                    {isListsPage && (
-                                                        <div className="space-y-2">
-                                                            <Label htmlFor="search-users">
-                                                                Search Users to Share With
-                                                            </Label>
-                                                            <div className="relative">
-                                                                <div className="relative">
-                                                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                                                    <Input
-                                                                        id="search-users"
-                                                                        value={query}
-                                                                        onChange={(e) => setQuery(e.target.value)}
-                                                                        placeholder="Search users..."
-                                                                        className="pl-10"
-                                                                    />
-                                                                </div>
-                                                                <SearchResults
-                                                                    results={results}
-                                                                    isLoading={isLoading}
-                                                                    error={searchError}
-                                                                    onSelect={handleUserSelect}
-                                                                    onClose={clearResults}
-                                                                    query={query}
-                                                                />
-                                                            </div>
-
-                                                            {/* Selected users */}
-                                                            {selectedUsers.length > 0 && (
-                                                                <div className="space-y-2">
-                                                                    <Label className="text-sm text-muted-foreground">
-                                                                        Selected Users:
-                                                                    </Label>
-                                                                    <div className="flex flex-wrap gap-2">
-                                                                        {selectedUsers.map((username) => (
-                                                                            <div
-                                                                                key={username}
-                                                                                className="flex items-center gap-1 bg-secondary text-secondary-foreground px-2 py-1 rounded-md text-sm"
-                                                                            >
-                                                                                <User className="h-3 w-3" />
-                                                                                <span>{username}</span>
-                                                                                <Button
-                                                                                    variant="ghost"
-                                                                                    size="sm"
-                                                                                    className="h-4 w-4 p-0 hover:bg-secondary-foreground/20"
-                                                                                    onClick={() =>
-                                                                                        removeSelectedUser(username)
-                                                                                    }
-                                                                                >
-                                                                                    ×
-                                                                                </Button>
-                                                                            </div>
-                                                                        ))}
-                                                                    </div>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                <DrawerFooter>
-                                                    <Button onClick={handleSubmit}>
-                                                        {isListsPage ? 'Add List' : 'Add Item'}
-                                                    </Button>
-                                                    <DrawerClose asChild>
-                                                        <Button variant="outline" onClick={handleCancel}>
-                                                            Cancel
-                                                        </Button>
-                                                    </DrawerClose>
-                                                </DrawerFooter>
-                                            </div>
-                                        </DrawerContent>
-                                    </Drawer>
-
-                                    {/* Delete All Button - Separate button */}
-                                    {handleRemoveAll && (
-                                        <RippleButton
-                                            size="icon"
-                                            variant="ghost"
-                                            className="h-12 w-12 rounded-full text-destructive hover:text-destructive transition-colors"
-                                            rippleClassName="bg-red-500/30"
-                                            title="Delete all items"
-                                            onClick={handleRemoveAll}
-                                            disabled={disableClearAll}
-                                        >
-                                            <Trash2 className="size-5" />
-                                        </RippleButton>
-                                    )}
-
-                                    {/* Hamburger Menu - far right */}
+                            {/* App Bar - The persistent bottom navigation */}
+                            <CardContent className="flex items-center justify-between py-2.5" ref={menuRef}>
+                                {(isItemsPage || location.pathname !== '/') && (
                                     <RippleButton
                                         size="icon"
                                         variant="ghost"
                                         className="h-12 w-12 rounded-full transition-colors"
                                         rippleClassName="bg-gray-500/30"
-                                        title="More"
+                                        title={isItemsPage && handleGoBack ? 'Go back' : 'Go home'}
                                         onClick={() => {
-                                            if (!isMenuOpen) setIsMenuOpen(true);
-                                            if (menuActive === 1) {
-                                                setIsMenuOpen(false);
-                                                setMenuActive(null);
-
-                                                return;
+                                            if (isItemsPage && handleGoBack) {
+                                                handleGoBack();
+                                            } else {
+                                                navigate('/');
                                             }
-
-                                            setMenuActive(1);
                                         }}
                                     >
-                                        <Menu className="size-5" />
+                                        <ArrowLeft className="size-5" />
                                     </RippleButton>
-                                </CardContent>
-                            </Card>
-                        </MotionConfig>
-                    </div>
+                                )}
+
+                                {/* Clear Selected Button */}
+                                {handleClearSelected && (
+                                    <RippleButton
+                                        size="icon"
+                                        variant="ghost"
+                                        className="h-12 w-12 rounded-full transition-colors"
+                                        rippleClassName="bg-gray-500/30"
+                                        title="Clear selected items"
+                                        onClick={handleClearSelected}
+                                        disabled={disableClearSelected}
+                                    >
+                                        <CheckCheck className="size-5" />
+                                    </RippleButton>
+                                )}
+
+                                {/* Add Item/List Drawer */}
+                                {isItemsPage && onAddItem && (
+                                    <AddItemDrawer
+                                        open={isAddItemDrawerOpen}
+                                        onOpenChange={setIsAddItemDrawerOpen}
+                                        onAdd={onAddItem}
+                                        listType={currentListType}
+                                        placeholder={placeholder}
+                                    />
+                                )}
+
+                                {isListsPage && onAddList && (
+                                    <AddListDrawer
+                                        open={isAddListDrawerOpen}
+                                        onOpenChange={setIsAddListDrawerOpen}
+                                        onAdd={onAddList}
+                                        placeholder={placeholder}
+                                    />
+                                )}
+
+                                {/* Remove All Button */}
+                                {handleRemoveAll && (
+                                    <RippleButton
+                                        size="icon"
+                                        variant="ghost"
+                                        className="h-12 w-12 rounded-full transition-colors text-destructive hover:bg-destructive/10"
+                                        rippleClassName="bg-destructive/30"
+                                        title="Remove all items"
+                                        onClick={handleRemoveAll}
+                                        disabled={disableClearAll}
+                                    >
+                                        <Trash2 className="size-5" />
+                                    </RippleButton>
+                                )}
+
+                                {/* Menu Button */}
+                                <RippleButton
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-12 w-12 rounded-full transition-colors"
+                                    rippleClassName="bg-gray-500/30"
+                                    title="Menu"
+                                    onClick={() => {
+                                        setIsMenuOpen(!isMenuOpen);
+                                        if (!isMenuOpen) {
+                                            setMenuActive(1);
+                                        } else {
+                                            setMenuActive(null);
+                                        }
+                                    }}
+                                >
+                                    <Menu className="size-5" />
+                                </RippleButton>
+                            </CardContent>
+                        </Card>
+                    </MotionConfig>
                 </div>
+            </div>
 
-                {/* Manage Users Drawer */}
-                {currentList && user && (
-                    <ManageUsersDrawer
-                        open={isManageUsersOpen}
-                        onOpenChange={setIsManageUsersOpen}
-                        listTitle={currentList.title}
-                        currentUsers={currentList.users}
-                        ownerId={currentList.ownerId || currentList.users[0]?.id || ''}
-                        currentUserId={user.id}
-                        onUserAdded={() => {
-                            refetchList?.();
-                        }}
-                        onUserRemoved={() => {
-                            refetchList?.();
-                        }}
-                    />
-                )}
-            </>
-        );
-    }
-);
-
-ToolBar.displayName = 'ToolBar';
+            {/* ManageUsersDrawer and Drawer backdrop */}
+            {currentList && isItemsPage && (
+                <ManageUsersDrawer
+                    open={isManageUsersOpen}
+                    onOpenChange={setIsManageUsersOpen}
+                    currentList={currentList}
+                    refetchList={refetchList}
+                />
+            )}
+        </>
+    );
+};
 
 export default ToolBar;
