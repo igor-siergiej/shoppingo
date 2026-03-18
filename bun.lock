@@ -28,7 +28,7 @@
     },
     "packages/api": {
       "name": "@shoppingo/api",
-      "version": "1.21.1",
+      "version": "1.21.5",
       "dependencies": {
         "@google/genai": "^1.16.0",
         "@imapps/api-utils": "0.5.1",
@@ -55,14 +55,14 @@
     },
     "packages/types": {
       "name": "@shoppingo/types",
-      "version": "1.21.1",
+      "version": "1.21.5",
       "dependencies": {
         "mongodb": "^6.19.0",
       },
     },
     "packages/web": {
       "name": "@shoppingo/web",
-      "version": "1.21.1",
+      "version": "1.21.5",
       "dependencies": {
         "@hookform/resolvers": "^5.2.2",
         "@imapps/web-utils": "0.5.1",
@@ -124,6 +124,7 @@
         "vite-plugin-pwa": "^1.0.3",
         "vitest": "^3.2.4",
         "vitest-fetch-mock": "^0.4.5",
+        "workbox-window": "^7.3.0",
       },
     },
   },
