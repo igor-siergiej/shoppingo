@@ -18,7 +18,7 @@ RUN NODE_AUTH_TOKEN=${NODE_AUTH_TOKEN} bun install --frozen-lockfile
 
 RUN bun run --filter @shoppingo/api build
 
-FROM node:22-alpine AS runner
+FROM oven/bun:1-alpine AS runner
 
 WORKDIR /app
 
@@ -31,4 +31,4 @@ COPY --from=builder /app/node_modules/@img ./node_modules/@img
 
 EXPOSE 4001
 
-CMD ["node", "build/index.js"]
+CMD ["bun", "build/index.js"]
