@@ -1,5 +1,5 @@
 import type { Context, Next } from 'koa';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'bun:test';
 
 // vi.hoisted ensures mockConfigGet is available when vi.mock is hoisted
 const mockConfigGet = vi.hoisted(() => vi.fn());
