@@ -25,7 +25,9 @@ WORKDIR /app
 # Copy only the built application
 COPY --from=builder /app/packages/api/build ./build
 
-RUN npm install --omit=dev --include=optional sharp
+# Copy sharp and its native binaries from the builder (same Alpine base ensures musl compatibility)
+COPY --from=builder /app/node_modules/sharp ./node_modules/sharp
+COPY --from=builder /app/node_modules/@img ./node_modules/@img
 
 EXPOSE 4001
 
