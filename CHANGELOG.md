@@ -1,3 +1,10 @@
+## [1.21.8](https://github.com/igor-siergiej/shoppingo/compare/v1.21.7...v1.21.8) (2026-03-18)
+
+
+### Bug Fixes
+
+* update Dockerfile references from bun.lockb to bun.lock ([c44246f](https://github.com/igor-siergiej/shoppingo/commit/c44246fcd5747d8ca645b050a19a6c9a6e13ad5f))
+
 ## [1.21.7](https://github.com/igor-siergiej/shoppingo/compare/v1.21.6...v1.21.7) (2026-03-18)
 
 
