@@ -1,3 +1,13 @@
+## [1.21.2](https://github.com/igor-siergiej/shoppingo/compare/v1.21.1...v1.21.2) (2026-03-18)
+
+
+### Bug Fixes
+
+* biome linting issues ([ab4f0cc](https://github.com/igor-siergiej/shoppingo/commit/ab4f0ccbdd24dc5991e833521a8ef53b79a89f8a))
+* replace Yarn workspace versioning with Bun-compatible Node script ([63b4f55](https://github.com/igor-siergiej/shoppingo/commit/63b4f5558c6c3e5eaf8d3c76524ec8b75ac84c9c))
+* resolve all linting warnings ([067da54](https://github.com/igor-siergiej/shoppingo/commit/067da5475d8049d7d2ab72656ae7a792ab51f765))
+* update biome-config reference to [@imapps](https://github.com/imapps) namespace in root biome.json ([b98c62a](https://github.com/igor-siergiej/shoppingo/commit/b98c62a3a67d60b78d703b0d2a4d9b02f0a8b7c6))
+
 ## [1.21.1](https://github.com/igor-siergiej/shoppingo/compare/v1.21.0...v1.21.1) (2026-03-12)
 
 
