@@ -25,9 +25,8 @@ WORKDIR /app
 # Copy only the built application
 COPY --from=builder /app/packages/api/build ./build
 
-# Copy sharp and its native binaries from the builder (same Alpine base ensures musl compatibility)
-COPY --from=builder /app/node_modules/sharp ./node_modules/sharp
-COPY --from=builder /app/node_modules/@img ./node_modules/@img
+# Install sharp with native binaries for Alpine (musl) - sharp is not bundled by tsup
+RUN bun add sharp
 
 EXPOSE 4001
 
