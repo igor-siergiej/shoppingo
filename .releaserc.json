@@ -23,7 +23,7 @@
     [
       "@semantic-release/exec",
       {
-        "prepareCmd": "yarn workspaces foreach --all version ${nextRelease.version}"
+        "prepareCmd": "bun scripts/update-versions.js ${nextRelease.version}"
       }
     ],
     [
