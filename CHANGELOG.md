@@ -1,3 +1,10 @@
+## [1.21.4](https://github.com/igor-siergiej/shoppingo/compare/v1.21.3...v1.21.4) (2026-03-18)
+
+
+### Bug Fixes
+
+* resolve build-publish pipeline failures ([14e1a55](https://github.com/igor-siergiej/shoppingo/commit/14e1a5599c2d929d73b251d5ba599c96edf7ff85))
+
 ## [1.21.3](https://github.com/igor-siergiej/shoppingo/compare/v1.21.2...v1.21.3) (2026-03-18)
 
 

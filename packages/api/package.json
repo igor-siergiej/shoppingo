@@ -1,6 +1,6 @@
 {
   "name": "@shoppingo/api",
-  "version": "1.21.3",
+  "version": "1.21.4",
   "scripts": {
     "start": "bun --watch src/index.ts",
     "build": "tsup",
