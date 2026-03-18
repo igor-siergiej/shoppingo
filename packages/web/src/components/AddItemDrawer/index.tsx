@@ -1,5 +1,5 @@
 import { Check, Plus, X } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -20,6 +20,7 @@ const AddItemDrawer = ({ handleAdd, placeholder = 'Enter item name...' }: AddIte
     const [newName, setNewName] = useState('');
     const [error, setError] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
+    const itemNameId = useId();
 
     const validateForm = () => {
         return newName.length === 0;
@@ -78,9 +79,9 @@ const AddItemDrawer = ({ handleAdd, placeholder = 'Enter item name...' }: AddIte
                         </DrawerHeader>
                         <div className="p-4 pb-0">
                             <div className="space-y-2">
-                                <Label htmlFor="new-item">Item Name</Label>
+                                <Label htmlFor={itemNameId}>Item Name</Label>
                                 <Input
-                                    id="new-item"
+                                    id={itemNameId}
                                     ref={inputRef}
                                     value={newName}
                                     autoComplete="off"

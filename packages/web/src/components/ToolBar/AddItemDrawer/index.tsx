@@ -1,7 +1,7 @@
 import type { ListType } from '@shoppingo/types';
 import { ListType as ListTypeEnum } from '@shoppingo/types';
 import { Plus } from 'lucide-react';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { DueDateField } from '@/components/DueDateField';
 import { QuantityUnitField } from '@/components/QuantityUnitField';
 import { Button } from '@/components/ui/button';
@@ -27,6 +27,7 @@ export interface AddItemDrawerProps {
 }
 
 export const AddItemDrawer = ({ open, onOpenChange, onAdd, listType, placeholder }: AddItemDrawerProps) => {
+    const itemNameId = useId();
     const [newName, setNewName] = useState('');
     const [quantity, setQuantity] = useState('');
     const [unit, setUnit] = useState('');
@@ -94,7 +95,7 @@ export const AddItemDrawer = ({ open, onOpenChange, onAdd, listType, placeholder
                                 {listType === ListTypeEnum.TODO ? 'Task Name' : 'Item Name'}
                             </Label>
                             <Input
-                                id="new-item"
+                                id={itemNameId}
                                 value={newName}
                                 autoComplete="off"
                                 autoFocus

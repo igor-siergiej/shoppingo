@@ -1,4 +1,5 @@
 import type { Item, ListType } from '@shoppingo/types';
+import type { UseMutationOptions } from 'react-query';
 import { useMutation, useQueryClient } from 'react-query';
 import { deleteItem, updateItem, updateItemDueDate, updateItemName, updateItemQuantity } from '../api';
 
@@ -49,7 +50,7 @@ export function useItemMutations(listTitle: string, itemName: string) {
             listTitle,
             (isSelected: boolean) => updateItem(itemName, isSelected, listTitle),
             (items, isSelected) => items.map((i) => (i.name === itemName ? { ...i, isSelected } : i))
-        ) as any
+        ) as UseMutationOptions<unknown, unknown, boolean, OptimisticMutationContext>
     );
 
     const deleteMutation = useMutation(
@@ -58,7 +59,7 @@ export function useItemMutations(listTitle: string, itemName: string) {
             listTitle,
             () => deleteItem(itemName, listTitle),
             (items) => items.filter((i) => i.name !== itemName)
-        ) as any
+        ) as UseMutationOptions<unknown, unknown, undefined, OptimisticMutationContext>
     );
 
     const updateNameMutation = useMutation(
@@ -67,7 +68,7 @@ export function useItemMutations(listTitle: string, itemName: string) {
             listTitle,
             (newName: string) => updateItemName(listTitle, itemName, newName),
             (items, newName) => items.map((i) => (i.name === itemName ? { ...i, name: newName } : i))
-        ) as any
+        ) as UseMutationOptions<unknown, unknown, string, OptimisticMutationContext>
     );
 
     const updateQuantityMutation = useMutation(
@@ -86,7 +87,7 @@ export function useItemMutations(listTitle: string, itemName: string) {
                           }
                         : i
                 )
-        ) as any
+        ) as UseMutationOptions<unknown, unknown, { quantity?: number; unit?: string }, OptimisticMutationContext>
     );
 
     const updateDueDateMutation = useMutation(
@@ -103,7 +104,7 @@ export function useItemMutations(listTitle: string, itemName: string) {
                           }
                         : i
                 )
-        ) as any
+        ) as UseMutationOptions<unknown, unknown, Date | undefined, OptimisticMutationContext>
     );
 
     return {

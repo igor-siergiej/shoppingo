@@ -5,6 +5,11 @@ import { DependencyToken } from '../../dependencies/types';
 import type { AuthorizationService } from '../../domain/AuthorizationService';
 import type { ListService } from '../../domain/ListService';
 
+interface HttpError {
+    status?: number;
+    [key: string]: unknown;
+}
+
 const getListService = (): ListService => dependencyContainer.resolve(DependencyToken.ListService);
 const getLogger = () => dependencyContainer.resolve(DependencyToken.Logger);
 const getAuthorizationService = (): AuthorizationService =>
@@ -561,7 +566,7 @@ export const addUserToList = async (ctx: Context) => {
         ctx.body = list;
     } catch (error: unknown) {
         const err = error instanceof Error ? error : new Error(String(error));
-        const status = (error as any)?.status ?? 500;
+        const status = (error as HttpError)?.status ?? 500;
         const errorMessage = err.message || 'Internal Server Error';
 
         logger.error('API: Failed to add user to list', {
@@ -609,7 +614,7 @@ export const removeUserFromList = async (ctx: Context) => {
         ctx.body = list;
     } catch (error: unknown) {
         const err = error instanceof Error ? error : new Error(String(error));
-        const status = (error as any)?.status ?? 500;
+        const status = (error as HttpError)?.status ?? 500;
         const errorMessage = err.message || 'Internal Server Error';
 
         logger.error('API: Failed to remove user from list', {

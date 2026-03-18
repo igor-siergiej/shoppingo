@@ -5,6 +5,11 @@ import { dependencyContainer } from '../../dependencies';
 import { DependencyToken } from '../../dependencies/types';
 import type { ListService } from '../../domain/ListService';
 
+interface HttpError {
+    status?: number;
+    [key: string]: unknown;
+}
+
 const getListService = (): ListService => dependencyContainer.resolve(DependencyToken.ListService);
 
 /**
@@ -12,7 +17,7 @@ const getListService = (): ListService => dependencyContainer.resolve(Dependency
  */
 export const handleError = (ctx: Context, error: unknown, logger: Logger, context?: Record<string, unknown>): void => {
     const err = error instanceof Error ? error : new Error(String(error));
-    const status = (error as any)?.status ?? 500;
+    const status = (error as HttpError)?.status ?? 500;
     const message = err.message || 'Internal Server Error';
 
     logger.error('Handler error', { ...context, error: message, status });

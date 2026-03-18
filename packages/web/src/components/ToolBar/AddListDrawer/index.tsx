@@ -1,7 +1,7 @@
 import type { ListType } from '@shoppingo/types';
 import { ListType as ListTypeEnum } from '@shoppingo/types';
 import { Plus, Search, User } from 'lucide-react';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { SearchResults } from '@/components/SearchResults';
 import { Button } from '@/components/ui/button';
 import {
@@ -26,6 +26,10 @@ export interface AddListDrawerProps {
 }
 
 export const AddListDrawer = ({ open, onOpenChange, onAdd, placeholder }: AddListDrawerProps) => {
+    const listNameId = useId();
+    const shoppingListTypeId = useId();
+    const todoListTypeId = useId();
+    const searchUsersId = useId();
     const [newName, setNewName] = useState('');
     const [listType, setListType] = useState<ListType>(ListTypeEnum.SHOPPING);
     const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
@@ -96,9 +100,9 @@ export const AddListDrawer = ({ open, onOpenChange, onAdd, placeholder }: AddLis
                     </DrawerHeader>
                     <div className="p-4 pb-0 space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="new-list">List Name</Label>
+                            <Label htmlFor={listNameId}>List Name</Label>
                             <Input
-                                id="new-list"
+                                id={listNameId}
                                 value={newName}
                                 autoComplete="off"
                                 autoFocus
@@ -126,26 +130,26 @@ export const AddListDrawer = ({ open, onOpenChange, onAdd, placeholder }: AddLis
                                 <div className="flex items-center space-x-2">
                                     <input
                                         type="radio"
-                                        id="shopping"
+                                        id={shoppingListTypeId}
                                         name="listType"
                                         checked={listType === ListTypeEnum.SHOPPING}
                                         onChange={() => setListType(ListTypeEnum.SHOPPING)}
                                         className="cursor-pointer"
                                     />
-                                    <Label htmlFor="shopping" className="cursor-pointer font-normal">
+                                    <Label htmlFor={shoppingListTypeId} className="cursor-pointer font-normal">
                                         Shopping
                                     </Label>
                                 </div>
                                 <div className="flex items-center space-x-2">
                                     <input
                                         type="radio"
-                                        id="todo"
+                                        id={todoListTypeId}
                                         name="listType"
                                         checked={listType === ListTypeEnum.TODO}
                                         onChange={() => setListType(ListTypeEnum.TODO)}
                                         className="cursor-pointer"
                                     />
-                                    <Label htmlFor="todo" className="cursor-pointer font-normal">
+                                    <Label htmlFor={todoListTypeId} className="cursor-pointer font-normal">
                                         TODO
                                     </Label>
                                 </div>
@@ -154,12 +158,12 @@ export const AddListDrawer = ({ open, onOpenChange, onAdd, placeholder }: AddLis
 
                         {/* User search */}
                         <div className="space-y-2">
-                            <Label htmlFor="search-users">Search Users to Share With</Label>
+                            <Label htmlFor={searchUsersId}>Search Users to Share With</Label>
                             <div className="relative">
                                 <div className="relative">
                                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                     <Input
-                                        id="search-users"
+                                        id={searchUsersId}
                                         value={query}
                                         onChange={(e) => setQuery(e.target.value)}
                                         placeholder="Search users..."

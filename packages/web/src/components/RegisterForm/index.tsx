@@ -1,5 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth, useAuthConfig } from '@imapps/web-utils';
+import { useId } from 'react';
 import { useForm } from 'react-hook-form';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { z } from 'zod';
@@ -33,6 +34,9 @@ const registerSchema = z
 type RegisterFormData = z.infer<typeof registerSchema>;
 
 export function RegisterForm({ className, ...props }: React.ComponentProps<'div'>) {
+    const usernameId = useId();
+    const passwordId = useId();
+    const repeatPasswordId = useId();
     const navigate = useNavigate();
     const location = useLocation();
     const { login } = useAuth();
@@ -94,9 +98,9 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<'div'
                     <form onSubmit={handleSubmit(onSubmit)}>
                         <div className="flex flex-col gap-6">
                             <div className="grid gap-3">
-                                <Label htmlFor="username">Username</Label>
+                                <Label htmlFor={usernameId}>Username</Label>
                                 <Input
-                                    id="username"
+                                    id={usernameId}
                                     type="text"
                                     placeholder="Enter your username"
                                     {...register('username')}
@@ -105,9 +109,9 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<'div'
                                 {errors.username && <p className="text-sm text-red-600">{errors.username.message}</p>}
                             </div>
                             <div className="grid gap-3">
-                                <Label htmlFor="password">Password</Label>
+                                <Label htmlFor={passwordId}>Password</Label>
                                 <Input
-                                    id="password"
+                                    id={passwordId}
                                     type="password"
                                     placeholder="Enter your password"
                                     {...register('password')}
@@ -116,9 +120,9 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<'div'
                                 {errors.password && <p className="text-sm text-red-600">{errors.password.message}</p>}
                             </div>
                             <div className="grid gap-3">
-                                <Label htmlFor="repeatPassword">Repeat Password</Label>
+                                <Label htmlFor={repeatPasswordId}>Repeat Password</Label>
                                 <Input
-                                    id="repeatPassword"
+                                    id={repeatPasswordId}
                                     type="password"
                                     placeholder="Repeat your password"
                                     {...register('repeatPassword')}
