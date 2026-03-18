@@ -760,4 +760,237 @@ describe('ListService', () => {
             });
         });
     });
+
+    describe('Adding a user to a list', () => {
+        describe('When the list does not exist', () => {
+            it('should throw a 404 error', async () => {
+                await expect(listService.addUserToList('Non-existent', 'newuser', mockUser.id)).rejects.toMatchObject({
+                    message: 'List not found',
+                    status: 404,
+                });
+            });
+        });
+
+        describe('When the requesting user is not the owner', () => {
+            it('should throw a 403 error', async () => {
+                const mockList: List = {
+                    id: 'list-1',
+                    title: 'Test List',
+                    dateAdded: new Date('2023-01-01'),
+                    items: [],
+                    users: [mockUser],
+                    ownerId: mockUser.id,
+                };
+
+                await mockRepository.insert(mockList);
+
+                await expect(listService.addUserToList('Test List', 'newuser', 'non-owner-id')).rejects.toMatchObject({
+                    message: 'Only the list owner can manage users',
+                    status: 403,
+                });
+            });
+        });
+
+        describe('When no auth service is configured', () => {
+            it('should throw a 502 error', async () => {
+                const serviceWithoutAuth = new ListService(mockRepository, mockIdGenerator);
+                const mockList: List = {
+                    id: 'list-1',
+                    title: 'Test List',
+                    dateAdded: new Date('2023-01-01'),
+                    items: [],
+                    users: [mockUser],
+                    ownerId: mockUser.id,
+                };
+
+                await mockRepository.insert(mockList);
+
+                await expect(
+                    serviceWithoutAuth.addUserToList('Test List', 'newuser', mockUser.id)
+                ).rejects.toMatchObject({ message: 'Auth service not configured', status: 502 });
+            });
+        });
+
+        describe('When the user is not found in the auth service', () => {
+            it('should throw a 400 error', async () => {
+                const emptyAuthClient = {
+                    async getUsersByUsernames(): Promise<Array<User>> {
+                        return [];
+                    },
+                };
+                const serviceWithEmptyAuth = new ListService(mockRepository, mockIdGenerator, emptyAuthClient);
+                const mockList: List = {
+                    id: 'list-1',
+                    title: 'Test List',
+                    dateAdded: new Date('2023-01-01'),
+                    items: [],
+                    users: [mockUser],
+                    ownerId: mockUser.id,
+                };
+
+                await mockRepository.insert(mockList);
+
+                await expect(
+                    serviceWithEmptyAuth.addUserToList('Test List', 'ghost', mockUser.id)
+                ).rejects.toMatchObject({ status: 400 });
+            });
+        });
+
+        describe('When the user is already in the list', () => {
+            it('should throw a 400 error', async () => {
+                const existingUser: User = { id: 'user-alice', username: 'alice' };
+                const authClient = {
+                    async getUsersByUsernames(): Promise<Array<User>> {
+                        return [existingUser];
+                    },
+                };
+                const serviceWithAuth = new ListService(mockRepository, mockIdGenerator, authClient);
+                const mockList: List = {
+                    id: 'list-1',
+                    title: 'Test List',
+                    dateAdded: new Date('2023-01-01'),
+                    items: [],
+                    users: [mockUser, existingUser],
+                    ownerId: mockUser.id,
+                };
+
+                await mockRepository.insert(mockList);
+
+                await expect(serviceWithAuth.addUserToList('Test List', 'alice', mockUser.id)).rejects.toMatchObject({
+                    message: 'User is already in this list',
+                    status: 400,
+                });
+            });
+        });
+
+        describe('When everything is valid', () => {
+            it('should add the user and return the updated list', async () => {
+                const mockList: List = {
+                    id: 'list-1',
+                    title: 'Test List',
+                    dateAdded: new Date('2023-01-01'),
+                    items: [],
+                    users: [mockUser],
+                    ownerId: mockUser.id,
+                };
+
+                await mockRepository.insert(mockList);
+
+                const result = await listService.addUserToList('Test List', 'user2', mockUser.id);
+
+                expect(result.users).toHaveLength(2);
+                expect(result.users[1].username).toBe('user2');
+            });
+        });
+    });
+
+    describe('Removing a user from a list', () => {
+        describe('When the list does not exist', () => {
+            it('should throw a 404 error', async () => {
+                await expect(
+                    listService.removeUserFromList('Non-existent', 'user-2', mockUser.id)
+                ).rejects.toMatchObject({ message: 'List not found', status: 404 });
+            });
+        });
+
+        describe('When the requesting user is not the owner', () => {
+            it('should throw a 403 error', async () => {
+                const otherUser: User = { id: 'user-2', username: 'user2' };
+                const mockList: List = {
+                    id: 'list-1',
+                    title: 'Test List',
+                    dateAdded: new Date('2023-01-01'),
+                    items: [],
+                    users: [mockUser, otherUser],
+                    ownerId: mockUser.id,
+                };
+
+                await mockRepository.insert(mockList);
+
+                await expect(
+                    listService.removeUserFromList('Test List', mockUser.id, otherUser.id)
+                ).rejects.toMatchObject({ message: 'Only the list owner can manage users', status: 403 });
+            });
+        });
+
+        describe('When trying to remove the owner', () => {
+            it('should throw a 400 error', async () => {
+                const otherUser: User = { id: 'user-2', username: 'user2' };
+                const mockList: List = {
+                    id: 'list-1',
+                    title: 'Test List',
+                    dateAdded: new Date('2023-01-01'),
+                    items: [],
+                    users: [mockUser, otherUser],
+                    ownerId: mockUser.id,
+                };
+
+                await mockRepository.insert(mockList);
+
+                await expect(
+                    listService.removeUserFromList('Test List', mockUser.id, mockUser.id)
+                ).rejects.toMatchObject({ message: 'Cannot remove the list owner', status: 400 });
+            });
+        });
+
+        describe('When the list has only one user', () => {
+            it('should throw a 400 error', async () => {
+                const mockList: List = {
+                    id: 'list-1',
+                    title: 'Test List',
+                    dateAdded: new Date('2023-01-01'),
+                    items: [],
+                    users: [mockUser],
+                    ownerId: mockUser.id,
+                };
+
+                await mockRepository.insert(mockList);
+
+                await expect(listService.removeUserFromList('Test List', 'someone', mockUser.id)).rejects.toMatchObject(
+                    { message: 'Cannot remove the last user from the list', status: 400 }
+                );
+            });
+        });
+
+        describe('When the user to remove is not in the list', () => {
+            it('should throw a 400 error', async () => {
+                const otherUser: User = { id: 'user-2', username: 'user2' };
+                const mockList: List = {
+                    id: 'list-1',
+                    title: 'Test List',
+                    dateAdded: new Date('2023-01-01'),
+                    items: [],
+                    users: [mockUser, otherUser],
+                    ownerId: mockUser.id,
+                };
+
+                await mockRepository.insert(mockList);
+
+                await expect(
+                    listService.removeUserFromList('Test List', 'user-not-in-list', mockUser.id)
+                ).rejects.toMatchObject({ message: 'User is not in this list', status: 400 });
+            });
+        });
+
+        describe('When everything is valid', () => {
+            it('should remove the user and return the updated list', async () => {
+                const otherUser: User = { id: 'user-2', username: 'user2' };
+                const mockList: List = {
+                    id: 'list-1',
+                    title: 'Test List',
+                    dateAdded: new Date('2023-01-01'),
+                    items: [],
+                    users: [mockUser, otherUser],
+                    ownerId: mockUser.id,
+                };
+
+                await mockRepository.insert(mockList);
+
+                const result = await listService.removeUserFromList('Test List', otherUser.id, mockUser.id);
+
+                expect(result.users).toHaveLength(1);
+                expect(result.users[0].id).toBe(mockUser.id);
+            });
+        });
+    });
 });
