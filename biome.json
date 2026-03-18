@@ -1,5 +1,5 @@
 {
-  "extends": ["@igor-siergiej/biome-config/base"],
+  "extends": ["@imapps/biome-config/base"],
   "linter": {
     "rules": {
       "a11y": {
