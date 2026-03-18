@@ -1,24 +1,81 @@
+import { beforeEach, describe, expect, it } from 'bun:test';
 import type { User } from '@shoppingo/types';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import '../../test-setup';
 import { HttpAuthClient } from './index';
 
-vi.mock('../../config', () => ({
-    config: {
-        get: vi.fn().mockReturnValue('http://auth-service.com'),
-    },
-}));
+class MockConfig {
+    configValues: Record<string, any> = {
+        authUrl: 'http://auth-service.com',
+    };
 
-const mockFetch = vi.fn();
+    get(key: string) {
+        return this.configValues[key];
+    }
 
-global.fetch = mockFetch;
+    set(key: string, value: any) {
+        this.configValues[key] = value;
+    }
+
+    reset() {
+        this.configValues = {
+            authUrl: 'http://auth-service.com',
+        };
+    }
+}
+
+class MockFetch {
+    calls: Array<Array<any>> = [];
+    response: any = {
+        ok: true,
+        json: async () => ({ success: true, users: [] }),
+        text: async () => '',
+    };
+
+    rejectedError: Error | null = null;
+
+    async fn(...args: any[]) {
+        this.calls.push(args);
+        if (this.rejectedError) {
+            throw this.rejectedError;
+        }
+        return this.response;
+    }
+
+    mockResolvedValue(value: any) {
+        this.response = value;
+        this.rejectedError = null;
+    }
+
+    mockRejectedValue(error: Error) {
+        this.rejectedError = error;
+    }
+
+    reset() {
+        this.calls = [];
+        this.response = {
+            ok: true,
+            json: async () => ({ success: true, users: [] }),
+            text: async () => '',
+        };
+        this.rejectedError = null;
+    }
+}
+
+const mockConfig = new MockConfig();
+const mockFetch = new MockFetch();
+
+// Mock global fetch
+const _originalFetch = global.fetch;
+global.fetch = mockFetch.fn.bind(mockFetch) as any;
 
 describe('HttpAuthClient', () => {
     let authClient: HttpAuthClient;
 
     beforeEach(() => {
-        vi.clearAllMocks();
-        authClient = new HttpAuthClient();
+        mockConfig.reset();
+        mockFetch.reset();
+        authClient = new HttpAuthClient(mockConfig as any);
     });
 
     describe('getUsersByUsernames', () => {
@@ -30,7 +87,7 @@ describe('HttpAuthClient', () => {
 
             mockFetch.mockResolvedValue({
                 ok: true,
-                json: vi.fn().mockResolvedValue({
+                json: async () => ({
                     success: true,
                     users: mockUsers,
                 }),
@@ -38,7 +95,8 @@ describe('HttpAuthClient', () => {
 
             const result = await authClient.getUsersByUsernames(['testuser1', 'testuser2']);
 
-            expect(mockFetch).toHaveBeenCalledWith('http://auth-service.com/users', {
+            expect(mockFetch.calls[0][0]).toBe('http://auth-service.com/users');
+            expect(mockFetch.calls[0][1]).toEqual({
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -51,7 +109,7 @@ describe('HttpAuthClient', () => {
         it('should throw error when no users found', async () => {
             mockFetch.mockResolvedValue({
                 ok: true,
-                json: vi.fn().mockResolvedValue({
+                json: async () => ({
                     success: true,
                     users: [],
                 }),
@@ -62,7 +120,8 @@ describe('HttpAuthClient', () => {
                 status: 400,
             });
 
-            expect(mockFetch).toHaveBeenCalledWith('http://auth-service.com/users', {
+            expect(mockFetch.calls[0][0]).toBe('http://auth-service.com/users');
+            expect(mockFetch.calls[0][1]).toEqual({
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -76,7 +135,7 @@ describe('HttpAuthClient', () => {
                 ok: false,
                 status: 500,
                 statusText: 'Internal Server Error',
-                text: vi.fn().mockResolvedValue('Internal Server Error'),
+                text: async () => 'Internal Server Error',
             });
 
             await expect(authClient.getUsersByUsernames(['testuser'])).rejects.toMatchObject({
@@ -94,19 +153,21 @@ describe('HttpAuthClient', () => {
         it('should handle malformed JSON response', async () => {
             mockFetch.mockResolvedValue({
                 ok: true,
-                json: vi.fn().mockRejectedValue(new Error('Invalid JSON')),
+                json: async () => {
+                    throw new Error('Invalid JSON');
+                },
             });
 
             await expect(authClient.getUsersByUsernames(['testuser'])).rejects.toThrow('Invalid JSON');
         });
 
         it('should work without logger', async () => {
-            const clientWithoutLogger = new HttpAuthClient();
+            const clientWithoutLogger = new HttpAuthClient(mockConfig as any);
             const mockUsers: Array<User> = [{ id: 'user-1', username: 'testuser' }];
 
             mockFetch.mockResolvedValue({
                 ok: true,
-                json: vi.fn().mockResolvedValue({
+                json: async () => ({
                     success: true,
                     users: mockUsers,
                 }),

@@ -1,83 +1,127 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'bun:test';
 import { processImage } from './imageProcessor';
 
-const mockSharpInstance = {
-    resize: vi.fn(),
-    webp: vi.fn(),
-    withMetadata: vi.fn(),
-    toBuffer: vi.fn(),
-};
+class MockSharpInstance {
+    calls: Record<string, Array<Array<unknown>>> = {
+        resize: [],
+        webp: [],
+        withMetadata: [],
+        toBuffer: [],
+    };
 
-// Each method returns `this` so the chain works
-mockSharpInstance.resize.mockReturnValue(mockSharpInstance);
-mockSharpInstance.webp.mockReturnValue(mockSharpInstance);
-mockSharpInstance.withMetadata.mockReturnValue(mockSharpInstance);
+    toBufferValue: any = Buffer.from('processed-output');
 
-vi.mock('sharp', () => ({
-    default: vi.fn().mockImplementation(() => mockSharpInstance),
-}));
+    resize(...args: unknown[]) {
+        this.calls.resize.push(args);
+        return this;
+    }
 
+    webp(...args: unknown[]) {
+        this.calls.webp.push(args);
+        return this;
+    }
+
+    withMetadata(...args: unknown[]) {
+        this.calls.withMetadata.push(args);
+        return this;
+    }
+
+    async toBuffer() {
+        this.calls.toBuffer.push([]);
+        return this.toBufferValue;
+    }
+
+    reset() {
+        this.calls = {
+            resize: [],
+            webp: [],
+            withMetadata: [],
+            toBuffer: [],
+        };
+        this.toBufferValue = Buffer.from('processed-output');
+    }
+
+    mockResolvedValue(value: any) {
+        this.toBufferValue = value;
+    }
+}
+
+const mockSharpInstance = new MockSharpInstance();
+
+// Mock the sharp module import - we use a module.require replacement for testing
+// Since Bun doesn't support vi.mock() directly, we test the function behavior instead
 describe('imageProcessor', () => {
     beforeEach(() => {
-        vi.clearAllMocks();
-        mockSharpInstance.resize.mockReturnValue(mockSharpInstance);
-        mockSharpInstance.webp.mockReturnValue(mockSharpInstance);
-        mockSharpInstance.withMetadata.mockReturnValue(mockSharpInstance);
-        mockSharpInstance.toBuffer.mockResolvedValue(Buffer.from('processed-output'));
+        mockSharpInstance.reset();
+        mockSharpInstance.toBufferValue = Buffer.from('processed-output');
     });
 
     describe('processImage', () => {
         it('returns a Buffer', async () => {
-            const result = await processImage(Buffer.from('input'));
+            const mockSharp = () => mockSharpInstance;
+            const result = await processImage(Buffer.from('input'), mockSharp as any);
             expect(Buffer.isBuffer(result)).toBe(true);
         });
 
         it('returns the value from toBuffer', async () => {
             const expected = Buffer.from('expected-output');
-            mockSharpInstance.toBuffer.mockResolvedValue(expected);
+            mockSharpInstance.mockResolvedValue(expected);
 
-            const result = await processImage(Buffer.from('input'));
+            const mockSharp = () => mockSharpInstance;
+            const result = await processImage(Buffer.from('input'), mockSharp as any);
             expect(result).toEqual(expected);
         });
 
         it('calls resize with 256x256 and correct options', async () => {
-            await processImage(Buffer.from('input'));
+            const mockSharp = () => mockSharpInstance;
+            await processImage(Buffer.from('input'), mockSharp as any);
 
-            expect(mockSharpInstance.resize).toHaveBeenCalledWith(256, 256, {
-                fit: 'contain',
-                background: { r: 0, g: 0, b: 0, alpha: 0 },
-                withoutEnlargement: true,
-            });
+            expect(mockSharpInstance.calls.resize[0]).toEqual([
+                256,
+                256,
+                {
+                    fit: 'contain',
+                    background: { r: 0, g: 0, b: 0, alpha: 0 },
+                    withoutEnlargement: true,
+                },
+            ]);
         });
 
         it('calls webp with quality 85', async () => {
-            await processImage(Buffer.from('input'));
+            const mockSharp = () => mockSharpInstance;
+            await processImage(Buffer.from('input'), mockSharp as any);
 
-            expect(mockSharpInstance.webp).toHaveBeenCalledWith(expect.objectContaining({ quality: 85 }));
+            const webpCall = mockSharpInstance.calls.webp[0][0] as Record<string, any>;
+            expect(webpCall.quality).toBe(85);
         });
 
         it('calls webp with smartSubsample enabled', async () => {
-            await processImage(Buffer.from('input'));
+            const mockSharp = () => mockSharpInstance;
+            await processImage(Buffer.from('input'), mockSharp as any);
 
-            expect(mockSharpInstance.webp).toHaveBeenCalledWith(expect.objectContaining({ smartSubsample: true }));
+            const webpCall = mockSharpInstance.calls.webp[0][0] as Record<string, any>;
+            expect(webpCall.smartSubsample).toBe(true);
         });
 
         it('calls withMetadata', async () => {
-            await processImage(Buffer.from('input'));
-            expect(mockSharpInstance.withMetadata).toHaveBeenCalled();
+            const mockSharp = () => mockSharpInstance;
+            await processImage(Buffer.from('input'), mockSharp as any);
+            expect(mockSharpInstance.calls.withMetadata.length).toBeGreaterThan(0);
         });
 
         it('calls toBuffer to finalise output', async () => {
-            await processImage(Buffer.from('input'));
-            expect(mockSharpInstance.toBuffer).toHaveBeenCalled();
+            const mockSharp = () => mockSharpInstance;
+            await processImage(Buffer.from('input'), mockSharp as any);
+            expect(mockSharpInstance.calls.toBuffer.length).toBeGreaterThan(0);
         });
 
         it('processes multiple buffers independently', async () => {
+            const mockSharp = () => mockSharpInstance;
             const buf1 = Buffer.from('image1');
             const buf2 = Buffer.from('image2');
 
-            const out1 = await processImage(buf1);
-            const out2 = await processImage(buf2);
+            const out1 = await processImage(buf1, mockSharp as any);
+            const out2 = await processImage(buf2, mockSharp as any);
 
             expect(Buffer.isBuffer(out1)).toBe(true);
             expect(Buffer.isBuffer(out2)).toBe(true);

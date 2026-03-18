@@ -1,5 +1,5 @@
+import { beforeEach, describe, expect, it } from 'bun:test';
 import type { List } from '@shoppingo/types';
-import { beforeEach, describe, expect, it } from 'vitest';
 import { AuthorizationService } from './index';
 
 describe('AuthorizationService', () => {

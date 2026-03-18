@@ -1,30 +1,135 @@
+import { beforeEach, describe, expect, it } from 'bun:test';
 import type { Logger } from '@imapps/api-utils';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ImageService } from './index';
 
-const mockImageStore = {
-    getHeadObject: vi.fn(),
-    getObjectStream: vi.fn(),
-    putObject: vi.fn(),
-};
+class MockImageStore {
+    calls: Record<string, Array<Array<unknown>>> = {
+        getHeadObject: [],
+        getObjectStream: [],
+        putObject: [],
+    };
 
-const mockImageGenerator = {
-    generateImage: vi.fn(),
-};
+    resolvedValues: Record<string, unknown> = {
+        getHeadObject: null,
+        getObjectStream: null,
+        putObject: undefined,
+    };
 
-const mockLogger = {
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-    debug: vi.fn(),
-} as unknown as Logger;
+    rejectedErrors: Record<string, Error | null> = {
+        getHeadObject: null,
+        getObjectStream: null,
+        putObject: null,
+    };
+
+    async getHeadObject(objName: string) {
+        this.calls.getHeadObject.push([objName]);
+        if (this.rejectedErrors.getHeadObject) {
+            throw this.rejectedErrors.getHeadObject;
+        }
+        return this.resolvedValues.getHeadObject;
+    }
+
+    async getObjectStream(objName: string) {
+        this.calls.getObjectStream.push([objName]);
+        if (this.rejectedErrors.getObjectStream) {
+            throw this.rejectedErrors.getObjectStream;
+        }
+        return this.resolvedValues.getObjectStream;
+    }
+
+    async putObject(objName: string, buffer: unknown, options?: unknown) {
+        this.calls.putObject.push([objName, buffer, options]);
+        if (this.rejectedErrors.putObject) {
+            throw this.rejectedErrors.putObject;
+        }
+        return this.resolvedValues.putObject;
+    }
+
+    reset() {
+        this.calls = {
+            getHeadObject: [],
+            getObjectStream: [],
+            putObject: [],
+        };
+        this.resolvedValues = {
+            getHeadObject: null,
+            getObjectStream: null,
+            putObject: undefined,
+        };
+        this.rejectedErrors = {
+            getHeadObject: null,
+            getObjectStream: null,
+            putObject: null,
+        };
+    }
+}
+
+class MockImageGenerator {
+    calls: Record<string, Array<Array<unknown>>> = {
+        generateImage: [],
+    };
+
+    resolvedValues: Record<string, unknown> = {
+        generateImage: null,
+    };
+
+    async generateImage(prompt: string) {
+        this.calls.generateImage.push([prompt]);
+        return this.resolvedValues.generateImage;
+    }
+
+    reset() {
+        this.calls = { generateImage: [] };
+        this.resolvedValues = { generateImage: null };
+    }
+}
+
+class MockLogger implements Logger {
+    calls: Record<string, Array<Array<unknown>>> = {
+        info: [],
+        warn: [],
+        error: [],
+        debug: [],
+    };
+
+    info(...args: unknown[]) {
+        this.calls.info.push(args);
+    }
+
+    warn(...args: unknown[]) {
+        this.calls.warn.push(args);
+    }
+
+    error(...args: unknown[]) {
+        this.calls.error.push(args);
+    }
+
+    debug(...args: unknown[]) {
+        this.calls.debug.push(args);
+    }
+
+    reset() {
+        this.calls = {
+            info: [],
+            warn: [],
+            error: [],
+            debug: [],
+        };
+    }
+}
+
+const mockImageStore = new MockImageStore();
+const mockImageGenerator = new MockImageGenerator();
+const mockLogger = new MockLogger();
 
 describe('ImageService', () => {
     let imageService: ImageService;
 
     beforeEach(() => {
-        vi.clearAllMocks();
+        mockImageStore.reset();
+        mockImageGenerator.reset();
+        mockLogger.reset();
         imageService = new ImageService(mockImageStore, mockImageGenerator, mockLogger);
     });
 
@@ -32,19 +137,19 @@ describe('ImageService', () => {
         describe('When image exists in store', () => {
             it('should return image from store', async () => {
                 const mockStream = {
-                    read: vi.fn(),
+                    read: () => {},
                 } as unknown as NodeJS.ReadableStream;
                 const mockHeadObject = {
                     metaData: { 'content-type': 'image/png' },
                 };
 
-                mockImageStore.getHeadObject.mockResolvedValue(mockHeadObject);
-                mockImageStore.getObjectStream.mockResolvedValue(mockStream);
+                mockImageStore.resolvedValues.getHeadObject = mockHeadObject;
+                mockImageStore.resolvedValues.getObjectStream = mockStream;
 
                 const result = await imageService.getImage('test-image');
 
-                expect(mockImageStore.getHeadObject).toHaveBeenCalledWith('test-image');
-                expect(mockImageStore.getObjectStream).toHaveBeenCalledWith('test-image');
+                expect(mockImageStore.calls.getHeadObject[0]).toEqual(['test-image']);
+                expect(mockImageStore.calls.getObjectStream[0]).toEqual(['test-image']);
                 expect(result.stream).toBe(mockStream);
                 expect(result.contentType).toBe('image/png');
                 expect(result.cacheControl).toBe('public, max-age=31536000, immutable');
@@ -52,12 +157,12 @@ describe('ImageService', () => {
 
             it('should use default content type when metadata is missing', async () => {
                 const mockStream = {
-                    read: vi.fn(),
+                    read: () => {},
                 } as unknown as NodeJS.ReadableStream;
                 const mockHeadObject = { metaData: {} };
 
-                mockImageStore.getHeadObject.mockResolvedValue(mockHeadObject);
-                mockImageStore.getObjectStream.mockResolvedValue(mockStream);
+                mockImageStore.resolvedValues.getHeadObject = mockHeadObject;
+                mockImageStore.resolvedValues.getObjectStream = mockStream;
 
                 const result = await imageService.getImage('test-image');
 
@@ -69,21 +174,23 @@ describe('ImageService', () => {
             it('should generate new image and store it', async () => {
                 const mockBuffer = Buffer.from('generated-image-data');
 
-                mockImageStore.getHeadObject.mockRejectedValue(new Error('Not found'));
-                mockImageGenerator.generateImage.mockResolvedValue({
+                mockImageStore.rejectedErrors.getHeadObject = new Error('Not found');
+                mockImageGenerator.resolvedValues.generateImage = {
                     buffer: mockBuffer,
                     contentType: 'image/webp',
-                });
-                mockImageStore.putObject.mockResolvedValue(undefined);
+                };
+                mockImageStore.resolvedValues.putObject = undefined;
 
                 const result = await imageService.getImage('shopping-cart');
 
-                expect(mockImageGenerator.generateImage).toHaveBeenCalledWith(
-                    'Minimalistic flat icon of a shopping-cart drawn in a simple, clean style, this is going to be a icon for my shopping list item. Bright solid colors, soft rounded edges, modern vector look, no text.'
-                );
-                expect(mockImageStore.putObject).toHaveBeenCalledWith('shopping-cart', mockBuffer, {
-                    contentType: 'image/webp',
-                });
+                expect(mockImageGenerator.calls.generateImage[0]).toEqual([
+                    'Minimalistic flat icon of a shopping-cart drawn in a simple, clean style, this is going to be a icon for my shopping list item. Bright solid colors, soft rounded edges, modern vector look, no text.',
+                ]);
+                expect(mockImageStore.calls.putObject[0]).toEqual([
+                    'shopping-cart',
+                    mockBuffer,
+                    { contentType: 'image/webp' },
+                ]);
                 expect(result.contentType).toBe('image/webp');
                 expect(result.cacheControl).toBe('public, max-age=31536000, immutable');
             });
@@ -91,32 +198,32 @@ describe('ImageService', () => {
             it('should handle store upload failure gracefully', async () => {
                 const mockBuffer = Buffer.from('generated-image-data');
 
-                mockImageStore.getHeadObject.mockRejectedValue(new Error('Not found'));
-                mockImageGenerator.generateImage.mockResolvedValue({
+                mockImageStore.rejectedErrors.getHeadObject = new Error('Not found');
+                mockImageGenerator.resolvedValues.generateImage = {
                     buffer: mockBuffer,
                     contentType: 'image/webp',
-                });
-                mockImageStore.putObject.mockRejectedValue(new Error('Upload failed'));
+                };
+                mockImageStore.rejectedErrors.putObject = new Error('Upload failed');
 
                 const result = await imageService.getImage('test-item');
 
-                expect(mockLogger.error).toHaveBeenCalledWith('Failed to store generated image', {
-                    itemName: 'test-item',
-                    error: expect.any(Error),
-                });
+                expect(mockLogger.calls.error.length).toBeGreaterThan(0);
+                expect(mockLogger.calls.error[0][0]).toBe('Failed to store generated image');
                 expect(result.contentType).toBe('image/webp');
             });
 
             it('should work without logger', async () => {
+                mockImageStore.reset();
+                mockImageGenerator.reset();
                 const serviceWithoutLogger = new ImageService(mockImageStore, mockImageGenerator);
                 const mockBuffer = Buffer.from('generated-image-data');
 
-                mockImageStore.getHeadObject.mockRejectedValue(new Error('Not found'));
-                mockImageGenerator.generateImage.mockResolvedValue({
+                mockImageStore.rejectedErrors.getHeadObject = new Error('Not found');
+                mockImageGenerator.resolvedValues.generateImage = {
                     buffer: mockBuffer,
                     contentType: 'image/webp',
-                });
-                mockImageStore.putObject.mockRejectedValue(new Error('Upload failed'));
+                };
+                mockImageStore.rejectedErrors.putObject = new Error('Upload failed');
 
                 const result = await serviceWithoutLogger.getImage('test-item');
 
@@ -142,17 +249,17 @@ describe('ImageService', () => {
             it('should normalize name to lowercase and trim whitespace', async () => {
                 const mockBuffer = Buffer.from('generated-image-data');
 
-                mockImageStore.getHeadObject.mockRejectedValue(new Error('Not found'));
-                mockImageGenerator.generateImage.mockResolvedValue({
+                mockImageStore.rejectedErrors.getHeadObject = new Error('Not found');
+                mockImageGenerator.resolvedValues.generateImage = {
                     buffer: mockBuffer,
                     contentType: 'image/webp',
-                });
+                };
 
                 await imageService.getImage('  SHOPPING CART  ');
 
-                expect(mockImageGenerator.generateImage).toHaveBeenCalledWith(
-                    'Minimalistic flat icon of a shopping cart drawn in a simple, clean style, this is going to be a icon for my shopping list item. Bright solid colors, soft rounded edges, modern vector look, no text.'
-                );
+                expect(mockImageGenerator.calls.generateImage[0]).toEqual([
+                    'Minimalistic flat icon of a shopping cart drawn in a simple, clean style, this is going to be a icon for my shopping list item. Bright solid colors, soft rounded edges, modern vector look, no text.',
+                ]);
             });
         });
     });

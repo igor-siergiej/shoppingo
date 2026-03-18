@@ -1,21 +1,78 @@
+import { beforeEach, describe, expect, it } from 'bun:test';
 import type { ObjectStoreConnection } from '@imapps/api-utils';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { BucketStore } from './index';
 
-const mockObjectStore = {
-    getHeadObject: vi.fn(),
-    getObjectStream: vi.fn(),
-    putObject: vi.fn(),
-};
+class MockObjectStore {
+    calls: Record<string, Array<Array<unknown>>> = {
+        getHeadObject: [],
+        getObjectStream: [],
+        putObject: [],
+    };
 
+    resolvedValues: Record<string, unknown> = {
+        getHeadObject: null,
+        getObjectStream: null,
+        putObject: undefined,
+    };
+
+    rejectedErrors: Record<string, Error | null> = {
+        getHeadObject: null,
+        getObjectStream: null,
+        putObject: null,
+    };
+
+    async getHeadObject(objName: string) {
+        this.calls.getHeadObject.push([objName]);
+        if (this.rejectedErrors.getHeadObject) {
+            throw this.rejectedErrors.getHeadObject;
+        }
+        return this.resolvedValues.getHeadObject;
+    }
+
+    getObjectStream(objName: string) {
+        this.calls.getObjectStream.push([objName]);
+        if (this.rejectedErrors.getObjectStream) {
+            throw this.rejectedErrors.getObjectStream;
+        }
+        return this.resolvedValues.getObjectStream;
+    }
+
+    async putObject(objName: string, buffer: unknown, options?: unknown) {
+        this.calls.putObject.push([objName, buffer, options]);
+        if (this.rejectedErrors.putObject) {
+            throw this.rejectedErrors.putObject;
+        }
+        return this.resolvedValues.putObject;
+    }
+
+    reset() {
+        this.calls = {
+            getHeadObject: [],
+            getObjectStream: [],
+            putObject: [],
+        };
+        this.resolvedValues = {
+            getHeadObject: null,
+            getObjectStream: null,
+            putObject: undefined,
+        };
+        this.rejectedErrors = {
+            getHeadObject: null,
+            getObjectStream: null,
+            putObject: null,
+        };
+    }
+}
+
+const mockObjectStore = new MockObjectStore();
 const mockConnection = mockObjectStore as unknown as ObjectStoreConnection;
 
 describe('BucketStore', () => {
     let bucketStore: BucketStore;
 
     beforeEach(() => {
-        vi.clearAllMocks();
+        mockObjectStore.reset();
         bucketStore = new BucketStore(mockConnection);
     });
 
@@ -28,26 +85,28 @@ describe('BucketStore', () => {
                     },
                 };
 
-                mockObjectStore.getHeadObject.mockResolvedValue(mockStat);
+                mockObjectStore.resolvedValues.getHeadObject = mockStat;
 
                 const result = await bucketStore.getHeadObject('test-image.png');
 
-                expect(mockObjectStore.getHeadObject).toHaveBeenCalledWith('test-image.png');
+                expect(mockObjectStore.calls.getHeadObject[0]).toEqual(['test-image.png']);
                 expect(result).toEqual(mockStat);
             });
         });
 
         describe('When an object does not exist', () => {
             it('should throw the error', async () => {
-                mockObjectStore.getHeadObject.mockRejectedValue({ code: 'NotFound' });
+                mockObjectStore.rejectedErrors.getHeadObject = { code: 'NotFound' } as any;
 
-                await expect(bucketStore.getHeadObject('non-existent.png')).rejects.toEqual({ code: 'NotFound' });
+                await expect(bucketStore.getHeadObject('non-existent.png')).rejects.toEqual({
+                    code: 'NotFound',
+                });
             });
         });
 
         describe('When an error occurs', () => {
             it('should throw the error', async () => {
-                mockObjectStore.getHeadObject.mockRejectedValue(new Error('Access denied'));
+                mockObjectStore.rejectedErrors.getHeadObject = new Error('Access denied');
 
                 await expect(bucketStore.getHeadObject('test-image.png')).rejects.toThrow('Access denied');
             });
@@ -58,15 +117,15 @@ describe('BucketStore', () => {
         describe('When getting an object stream', () => {
             it('should return a readable stream', async () => {
                 const mockStream = {
-                    pipe: vi.fn(),
-                    on: vi.fn(),
+                    pipe: () => {},
+                    on: () => {},
                 };
 
-                mockObjectStore.getObjectStream.mockReturnValue(mockStream);
+                mockObjectStore.resolvedValues.getObjectStream = mockStream;
 
                 const result = await bucketStore.getObjectStream('test-image.png');
 
-                expect(mockObjectStore.getObjectStream).toHaveBeenCalledWith('test-image.png');
+                expect(mockObjectStore.calls.getObjectStream[0]).toEqual(['test-image.png']);
                 expect(result).toBe(mockStream);
             });
         });
@@ -78,11 +137,11 @@ describe('BucketStore', () => {
                 const mockBuffer = Buffer.from('test-data');
                 const options = { contentType: 'image/png' };
 
-                mockObjectStore.putObject.mockResolvedValue(undefined);
+                mockObjectStore.resolvedValues.putObject = undefined;
 
                 await bucketStore.putObject('test-image.png', mockBuffer, options);
 
-                expect(mockObjectStore.putObject).toHaveBeenCalledWith('test-image.png', mockBuffer, options);
+                expect(mockObjectStore.calls.putObject[0]).toEqual(['test-image.png', mockBuffer, options]);
             });
         });
 
@@ -90,11 +149,11 @@ describe('BucketStore', () => {
             it('should upload the object successfully', async () => {
                 const mockBuffer = Buffer.from('test-data');
 
-                mockObjectStore.putObject.mockResolvedValue(undefined);
+                mockObjectStore.resolvedValues.putObject = undefined;
 
                 await bucketStore.putObject('test-image.png', mockBuffer);
 
-                expect(mockObjectStore.putObject).toHaveBeenCalledWith('test-image.png', mockBuffer, undefined);
+                expect(mockObjectStore.calls.putObject[0]).toEqual(['test-image.png', mockBuffer, undefined]);
             });
         });
 
@@ -102,7 +161,7 @@ describe('BucketStore', () => {
             it('should throw the error', async () => {
                 const mockBuffer = Buffer.from('test-data');
 
-                mockObjectStore.putObject.mockRejectedValue(new Error('Upload failed'));
+                mockObjectStore.rejectedErrors.putObject = new Error('Upload failed');
 
                 await expect(bucketStore.putObject('test-image.png', mockBuffer)).rejects.toThrow('Upload failed');
             });
@@ -110,14 +169,15 @@ describe('BucketStore', () => {
 
         describe('When working without logger', () => {
             it('should work without logger', async () => {
+                mockObjectStore.reset();
                 const storeWithoutLogger = new BucketStore(mockConnection);
                 const mockBuffer = Buffer.from('test-data');
 
-                mockObjectStore.putObject.mockResolvedValue(undefined);
+                mockObjectStore.resolvedValues.putObject = undefined;
 
                 await storeWithoutLogger.putObject('test-image.png', mockBuffer);
 
-                expect(mockObjectStore.putObject).toHaveBeenCalledWith('test-image.png', mockBuffer, undefined);
+                expect(mockObjectStore.calls.putObject[0]).toEqual(['test-image.png', mockBuffer, undefined]);
             });
         });
     });

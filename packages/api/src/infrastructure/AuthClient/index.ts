@@ -3,9 +3,15 @@ import type { User } from '@shoppingo/types';
 import { config } from '../../config';
 import type { AuthClient } from '../../domain/ListService';
 
+interface ConfigLike {
+    get(key: string): any;
+}
+
 export class HttpAuthClient implements AuthClient {
+    constructor(private configService: ConfigLike = config) {}
+
     async getUsersByUsernames(usernames: Array<string>): Promise<Array<User>> {
-        const authUrl = config.get('authUrl');
+        const authUrl = this.configService.get('authUrl');
 
         if (!authUrl) {
             throw Object.assign(new Error('Auth service not configured'), {

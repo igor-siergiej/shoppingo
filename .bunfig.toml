@@ -1,3 +1,6 @@
 [install.scopes]
 # TODO: remove once @imapps packages are published to public npm
 "imapps" = { url = "https://npm.pkg.github.com/", token = "$NODE_AUTH_TOKEN" }
+
+[test]
+preload = ["packages/api/src/test-setup.ts"]
