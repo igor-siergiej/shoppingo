@@ -226,4 +226,33 @@ describe('authenticate middleware', () => {
             );
         });
     });
+
+    describe('When Origin header is present but has no protocol (no "://")', () => {
+        it('should forward the origin as-is without splitting', async () => {
+            const ctx = createMockContext({
+                headers: { authorization: 'Bearer token' },
+                request: {
+                    headers: { origin: 'localhost:4000' },
+                    ip: '127.0.0.1',
+                } as any,
+            });
+            const mockFetch = vi.fn().mockResolvedValue({
+                ok: true,
+                json: vi.fn().mockResolvedValue({
+                    success: true,
+                    payload: { id: 'u1', username: 'bob' },
+                }),
+            });
+            global.fetch = mockFetch;
+
+            await authenticate(ctx, mockNext);
+
+            expect(mockFetch).toHaveBeenCalledWith(
+                expect.any(String),
+                expect.objectContaining({
+                    headers: expect.objectContaining({ Origin: 'localhost:4000' }),
+                })
+            );
+        });
+    });
 });

@@ -1,7 +1,7 @@
 import type { Context } from 'koa';
-
 import { dependencyContainer } from '../../dependencies';
 import { DependencyToken } from '../../dependencies/types';
+import { IpRateLimiter } from '../../infrastructure/rateLimit';
 
 interface FrontendLog {
     level: 'debug' | 'info' | 'warn' | 'error';
@@ -14,13 +14,11 @@ interface FrontendLog {
 
 const getLogger = () => dependencyContainer.resolve(DependencyToken.Logger);
 
-// Rate limiting per IP: max 100 logs per minute
-const logCounts = new Map<string, number>();
-const RATE_LIMIT = 100;
+const rateLimiter = new IpRateLimiter(100);
 const RATE_LIMIT_WINDOW = 60000; // 1 minute
 
 setInterval(() => {
-    logCounts.clear();
+    rateLimiter.reset();
 }, RATE_LIMIT_WINDOW);
 
 export const receiveLogs = async (ctx: Context) => {
@@ -28,18 +26,12 @@ export const receiveLogs = async (ctx: Context) => {
     const clientIp = ctx.ip || ctx.request.ip || 'unknown';
 
     // Rate limiting
-    const currentCount = logCounts.get(clientIp) || 0;
-    if (currentCount >= RATE_LIMIT) {
-        logger.warn('Frontend logs rate limit exceeded', {
-            clientIp,
-            count: currentCount,
-        });
+    if (!rateLimiter.isAllowed(clientIp)) {
+        logger.warn('Frontend logs rate limit exceeded', { clientIp });
         ctx.status = 429;
         ctx.body = { error: 'Rate limit exceeded' };
         return;
     }
-
-    logCounts.set(clientIp, currentCount + 1);
 
     const log = ctx.request.body as FrontendLog;
 

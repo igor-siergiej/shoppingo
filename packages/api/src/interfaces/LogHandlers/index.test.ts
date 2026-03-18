@@ -9,6 +9,15 @@ vi.mock('../../dependencies', () => ({
     dependencyContainer: mockDependencyContainer,
 }));
 
+// Mock IpRateLimiter so tests control rate limit behaviour
+const mockIsAllowed = vi.hoisted(() => vi.fn().mockReturnValue(true));
+vi.mock('../../infrastructure/rateLimit', () => ({
+    IpRateLimiter: vi.fn().mockImplementation(() => ({
+        isAllowed: mockIsAllowed,
+        reset: vi.fn(),
+    })),
+}));
+
 const mockLogger = {
     info: vi.fn(),
     error: vi.fn(),
@@ -56,6 +65,7 @@ describe('LogHandlers', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         mockDependencyContainer.resolve.mockReturnValue(mockLogger);
+        mockIsAllowed.mockReturnValue(true);
     });
 
     describe('receiveLogs', () => {
@@ -81,6 +91,7 @@ describe('LogHandlers', () => {
                 for (const level of ['debug', 'info', 'warn', 'error'] as const) {
                     vi.clearAllMocks();
                     mockDependencyContainer.resolve.mockReturnValue(mockLogger);
+                    mockIsAllowed.mockReturnValue(true);
 
                     const ctx = createMockContext({
                         request: {
@@ -132,6 +143,42 @@ describe('LogHandlers', () => {
                 expect(mockLogger.info).toHaveBeenCalledWith(
                     'msg',
                     expect.objectContaining({ userId: 'u1', userAgent: 'Mozilla', url: '/some/page' })
+                );
+            });
+        });
+
+        describe('When the rate limit is exceeded', () => {
+            it('should return 429', async () => {
+                mockIsAllowed.mockReturnValue(false);
+
+                const ctx = createMockContext({
+                    request: {
+                        ip: '127.0.0.1',
+                        body: { level: 'info', message: 'test' },
+                    } as Context['request'],
+                });
+
+                await receiveLogs(ctx);
+
+                expect(ctx.response.status).toBe(429);
+                expect(ctx.response.body).toEqual({ error: 'Rate limit exceeded' });
+            });
+
+            it('should log a warning when rate limit is exceeded', async () => {
+                mockIsAllowed.mockReturnValue(false);
+
+                const ctx = createMockContext({
+                    request: {
+                        ip: '10.0.0.1',
+                        body: { level: 'info', message: 'test' },
+                    } as Context['request'],
+                });
+
+                await receiveLogs(ctx);
+
+                expect(mockLogger.warn).toHaveBeenCalledWith(
+                    'Frontend logs rate limit exceeded',
+                    expect.objectContaining({ clientIp: expect.any(String) })
                 );
             });
         });

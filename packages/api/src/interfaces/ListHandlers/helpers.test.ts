@@ -102,6 +102,22 @@ describe('ListHandlers helpers', () => {
             expect(ctx.response.status).toBe(500);
         });
 
+        it('handles null error (covers optional chain null path)', () => {
+            const ctx = createMockContext();
+
+            handleError(ctx, null, mockLogger);
+
+            expect(ctx.response.status).toBe(500);
+        });
+
+        it('falls back to Internal Server Error when error message is empty', () => {
+            const ctx = createMockContext();
+
+            handleError(ctx, new Error(''), mockLogger);
+
+            expect(ctx.response.body).toEqual({ error: 'Internal Server Error' });
+        });
+
         it('calls logger.error with the error message', () => {
             const ctx = createMockContext();
             const error = new Error('Something failed');
@@ -178,6 +194,24 @@ describe('ListHandlers helpers', () => {
                 expect(result).toBe(false);
                 expect(ctx.response.status).toBe(403);
                 expect(ctx.response.body).toEqual({ error: 'Forbidden' });
+            });
+        });
+
+        describe('When the list has no users array (covers optional chain null path)', () => {
+            it('returns false and sets status 403', async () => {
+                mockListService.getList.mockResolvedValue({
+                    id: 'list-1',
+                    title: 'Test List',
+                    dateAdded: new Date(),
+                    items: [],
+                    users: undefined,
+                });
+
+                const ctx = createMockContext();
+                const result = await requireListAccess('Test List', authenticatedUser, ctx, mockLogger);
+
+                expect(result).toBe(false);
+                expect(ctx.response.status).toBe(403);
             });
         });
     });
