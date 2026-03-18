@@ -1,3 +1,10 @@
+## [1.21.6](https://github.com/igor-siergiej/shoppingo/compare/v1.21.5...v1.21.6) (2026-03-18)
+
+
+### Bug Fixes
+
+* add workbox-window as explicit dependency for vite-plugin-pwa ([8dbfedc](https://github.com/igor-siergiej/shoppingo/commit/8dbfedc7834ff47581f9af9a79cb8dab5f574d6c))
+
 ## [1.21.5](https://github.com/igor-siergiej/shoppingo/compare/v1.21.4...v1.21.5) (2026-03-18)
 
 
