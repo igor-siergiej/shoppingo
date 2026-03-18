@@ -1,12 +1,12 @@
+import { beforeEach, describe, expect, it, vi } from 'bun:test';
 import type { Item, List } from '@shoppingo/types';
 import type { Context } from 'koa';
-import { beforeEach, describe, expect, it, vi } from 'bun:test';
 
 import * as listHandlers from './index';
 
-const mockDependencyContainer = vi.hoisted(() => ({
+const mockDependencyContainer = {
     resolve: vi.fn(),
-}));
+};
 
 vi.mock('../../dependencies', () => ({
     dependencyContainer: mockDependencyContainer,

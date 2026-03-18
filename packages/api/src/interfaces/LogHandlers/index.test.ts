@@ -1,22 +1,18 @@
-import type { Context } from 'koa';
 import { beforeEach, describe, expect, it, vi } from 'bun:test';
+import type { Context } from 'koa';
 
-const mockDependencyContainer = vi.hoisted(() => ({
+import { IpRateLimiter } from '../../infrastructure/rateLimit';
+
+const mockDependencyContainer = {
     resolve: vi.fn(),
-}));
+};
 
 vi.mock('../../dependencies', () => ({
     dependencyContainer: mockDependencyContainer,
 }));
 
-// Mock IpRateLimiter so tests control rate limit behaviour
-const mockIsAllowed = vi.hoisted(() => vi.fn().mockReturnValue(true));
-vi.mock('../../infrastructure/rateLimit', () => ({
-    IpRateLimiter: vi.fn().mockImplementation(() => ({
-        isAllowed: mockIsAllowed,
-        reset: vi.fn(),
-    })),
-}));
+// Spy on IpRateLimiter prototype so the instance created at module load time is intercepted
+const mockIsAllowed = vi.spyOn(IpRateLimiter.prototype, 'isAllowed');
 
 const mockLogger = {
     info: vi.fn(),

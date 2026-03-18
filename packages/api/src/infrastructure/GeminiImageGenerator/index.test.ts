@@ -4,25 +4,18 @@ import { GeminiImageGenerator } from './index';
 
 const mockGenerateContent = vi.fn();
 
-const mockGoogleAI = {
-    models: {
-        generateContent: mockGenerateContent,
-    },
-};
-
 vi.mock('@google/genai', () => ({
-    GoogleGenAI: vi.fn().mockImplementation(() => mockGoogleAI),
+    GoogleGenAI: vi.fn().mockImplementation(() => ({
+        models: {
+            generateContent: mockGenerateContent,
+        },
+    })),
 }));
 
-const mockSharpInstance = {
-    resize: vi.fn().mockReturnThis(),
-    webp: vi.fn().mockReturnThis(),
-    withMetadata: vi.fn().mockReturnThis(),
-    toBuffer: vi.fn(),
-};
+const mockProcessImage = vi.fn();
 
-vi.mock('sharp', () => ({
-    default: vi.fn().mockImplementation(() => mockSharpInstance),
+vi.mock('../imageProcessor', () => ({
+    processImage: mockProcessImage,
 }));
 
 describe('GeminiImageGenerator', () => {
@@ -54,7 +47,7 @@ describe('GeminiImageGenerator', () => {
                 };
 
                 mockGenerateContent.mockResolvedValue(mockResponse);
-                mockSharpInstance.toBuffer.mockResolvedValue(Buffer.from('processed-image'));
+                mockProcessImage.mockResolvedValue(Buffer.from('processed-image'));
 
                 const result = await generator.generateImage('test prompt');
 
@@ -62,10 +55,7 @@ describe('GeminiImageGenerator', () => {
                     model: 'imagen-3.0-fast-001',
                     contents: 'test prompt',
                 });
-                expect(mockSharpInstance.resize).toHaveBeenCalled();
-                expect(mockSharpInstance.webp).toHaveBeenCalled();
-                expect(mockSharpInstance.withMetadata).toHaveBeenCalled();
-                expect(mockSharpInstance.toBuffer).toHaveBeenCalled();
+                expect(mockProcessImage).toHaveBeenCalledWith(Buffer.from('base64-encoded-image'));
                 expect(result.buffer).toEqual(Buffer.from('processed-image'));
                 expect(result.contentType).toBe('image/webp');
             });
@@ -169,7 +159,7 @@ describe('GeminiImageGenerator', () => {
                 };
 
                 mockGenerateContent.mockResolvedValue(mockResponse);
-                mockSharpInstance.toBuffer.mockRejectedValue(new Error('Sharp processing error'));
+                mockProcessImage.mockRejectedValue(new Error('Sharp processing error'));
 
                 const result = await generator.generateImage('test prompt');
 
@@ -199,7 +189,7 @@ describe('GeminiImageGenerator', () => {
                 };
 
                 mockGenerateContent.mockResolvedValue(mockResponse);
-                mockSharpInstance.toBuffer.mockResolvedValue(Buffer.from('processed-image'));
+                mockProcessImage.mockResolvedValue(Buffer.from('processed-image'));
 
                 const result = await generatorWithoutLogger.generateImage('test prompt');
 
