@@ -1,7 +1,7 @@
 'use client';
 
 import { Crown, Loader2, Plus, Users, X } from 'lucide-react';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useId, useMemo, useState } from 'react';
 import { useMutation } from 'react-query';
 import { toast } from 'sonner';
 import { addUserToList, removeUserFromList } from '@/api';
@@ -41,6 +41,7 @@ export const ManageUsersDrawer = ({
     onUserAdded,
     onUserRemoved,
 }: ManageUsersDrawerProps) => {
+    const searchUsersId = useId();
     const [confirmRemoveUserId, setConfirmRemoveUserId] = useState<string | null>(null);
 
     const {
@@ -225,7 +226,7 @@ export const ManageUsersDrawer = ({
 
                                 <div className="relative">
                                     <Input
-                                        id="search-users"
+                                        id={searchUsersId}
                                         placeholder="Search for users..."
                                         value={searchInput}
                                         onChange={(e) => setSearchInput(e.target.value)}

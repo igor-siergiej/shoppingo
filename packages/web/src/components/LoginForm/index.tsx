@@ -1,5 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth, useAuthConfig } from '@imapps/web-utils';
+import { useId } from 'react';
 import { useForm } from 'react-hook-form';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { z } from 'zod';
@@ -27,6 +28,8 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>;
 
 export const LoginForm: React.FC = () => {
+    const usernameId = useId();
+    const passwordId = useId();
     const navigate = useNavigate();
     const location = useLocation();
     const { login } = useAuth();
@@ -92,9 +95,9 @@ export const LoginForm: React.FC = () => {
                     <form onSubmit={handleSubmit(onSubmit)}>
                         <div className="flex flex-col gap-6">
                             <div className="grid gap-3">
-                                <Label htmlFor="username">Username</Label>
+                                <Label htmlFor={usernameId}>Username</Label>
                                 <Input
-                                    id="username"
+                                    id={usernameId}
                                     type="text"
                                     placeholder="Enter your username"
                                     {...register('username')}
@@ -104,10 +107,10 @@ export const LoginForm: React.FC = () => {
                             </div>
                             <div className="grid gap-3">
                                 <div className="flex items-center">
-                                    <Label htmlFor="password">Password</Label>
+                                    <Label htmlFor={passwordId}>Password</Label>
                                 </div>
                                 <Input
-                                    id="password"
+                                    id={passwordId}
                                     type="password"
                                     placeholder="Enter your password"
                                     {...register('password')}

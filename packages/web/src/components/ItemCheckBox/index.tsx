@@ -3,7 +3,7 @@ import { ListType as ListTypeEnum } from '@shoppingo/types';
 import { differenceInHours, format } from 'date-fns';
 import { AlertCircle, AlertTriangle, Check, Edit2, ImageOff, Loader2, Trash2 } from 'lucide-react';
 import { motion } from 'motion/react';
-import { type MouseEvent, useRef, useState } from 'react';
+import { type MouseEvent, useId, useRef, useState } from 'react';
 import { DueDateField } from '@/components/DueDateField';
 import { QuantityUnitField } from '@/components/QuantityUnitField';
 import { Button } from '@/components/ui/button';
@@ -23,6 +23,7 @@ export interface ItemCheckBoxProps {
 }
 
 const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
+    const editItemNameId = useId();
     const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false);
     const [drawerEditValue, setDrawerEditValue] = useState('');
     const [drawerQuantityValue, setDrawerQuantityValue] = useState('');
@@ -361,9 +362,9 @@ const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
                             <DrawerTitle>Edit Item</DrawerTitle>
                         </DrawerHeader>
                         <div>
-                            <Label htmlFor="edit-item-name">Item Name</Label>
+                            <Label htmlFor={editItemNameId}>Item Name</Label>
                             <Input
-                                id="edit-item-name"
+                                id={editItemNameId}
                                 ref={drawerInputRef}
                                 value={drawerEditValue}
                                 onChange={(e) => setDrawerEditValue(e.target.value)}

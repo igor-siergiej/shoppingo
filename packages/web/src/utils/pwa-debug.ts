@@ -8,7 +8,7 @@ export const PWADebugUtils = {
             hasServiceWorker: 'serviceWorker' in navigator,
             registrations: 0,
             caches: [] as Array<string>,
-            controller: null as any,
+            controller: null as ServiceWorkerRegistration | null,
             state: 'unknown',
         };
 
@@ -68,5 +68,5 @@ export const PWADebugUtils = {
 
 // Make available globally in development
 if (typeof window !== 'undefined') {
-    (window as any).PWADebug = PWADebugUtils;
+    (window as Window & { PWADebug: typeof PWADebugUtils }).PWADebug = PWADebugUtils;
 }
