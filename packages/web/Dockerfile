@@ -5,7 +5,7 @@ ENV APP_VERSION=$APP_VERSION
 
 WORKDIR /app
 
-COPY package.json bun.lockb .bunfig.toml ./
+COPY package.json bun.lock .bunfig.toml ./
 
 COPY packages/types/package.json packages/types/package.json
 COPY packages/api/package.json packages/api/package.json
