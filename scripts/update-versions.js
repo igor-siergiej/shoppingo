@@ -1,8 +1,8 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 
 /**
  * Update version in all workspace package.json files
- * Usage: node scripts/update-versions.js <version>
+ * Usage: bun scripts/update-versions.js <version>
  */
 
 import fs from "fs";

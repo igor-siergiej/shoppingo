@@ -23,7 +23,7 @@
     [
       "@semantic-release/exec",
       {
-        "prepareCmd": "node scripts/update-versions.js ${nextRelease.version}"
+        "prepareCmd": "bun scripts/update-versions.js ${nextRelease.version}"
       }
     ],
     [
