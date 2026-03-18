@@ -1,5 +1,5 @@
 import type { Context } from 'koa';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'bun:test';
 
 const mockDependencyContainer = vi.hoisted(() => ({
     resolve: vi.fn(),
