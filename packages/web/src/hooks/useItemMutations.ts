@@ -1,12 +1,6 @@
 import type { Item, ListType } from '@shoppingo/types';
 import { useMutation, useQueryClient } from 'react-query';
-import {
-    deleteItem,
-    updateItem,
-    updateItemDueDate,
-    updateItemName,
-    updateItemQuantity,
-} from '../api';
+import { deleteItem, updateItem, updateItemDueDate, updateItemName, updateItemQuantity } from '../api';
 
 interface OptimisticMutationContext {
     previousData: { listType: ListType; items: Item[] } | undefined;
@@ -54,8 +48,7 @@ export function useItemMutations(listTitle: string, itemName: string) {
             queryClient,
             listTitle,
             (isSelected: boolean) => updateItem(itemName, isSelected, listTitle),
-            (items, isSelected) =>
-                items.map((i) => (i.name === itemName ? { ...i, isSelected } : i))
+            (items, isSelected) => items.map((i) => (i.name === itemName ? { ...i, isSelected } : i))
         ) as any
     );
 
@@ -73,8 +66,7 @@ export function useItemMutations(listTitle: string, itemName: string) {
             queryClient,
             listTitle,
             (newName: string) => updateItemName(listTitle, itemName, newName),
-            (items, newName) =>
-                items.map((i) => (i.name === itemName ? { ...i, name: newName } : i))
+            (items, newName) => items.map((i) => (i.name === itemName ? { ...i, name: newName } : i))
         ) as any
     );
 

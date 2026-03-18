@@ -1,7 +1,7 @@
 import type { Item, ListType } from '@shoppingo/types';
 import { ListType as ListTypeEnum } from '@shoppingo/types';
 import { AlertTriangle, ListTodo, ShoppingCart } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
@@ -15,7 +15,7 @@ import {
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
-import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
 import { useConfirmation } from '@/hooks/useConfirmation';
 import { addItem, clearList, clearSelected, getListQuery } from '../../api';
 import ItemCheckBoxList from '../../components/ItemCheckBoxList';

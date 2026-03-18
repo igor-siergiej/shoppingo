@@ -1,4 +1,4 @@
-import { AnimationControls, MotionValue, useAnimation, useMotionValue } from 'motion/react';
+import { type AnimationControls, type MotionValue, useAnimation, useMotionValue } from 'motion/react';
 import { useState } from 'react';
 
 export interface PanInfo {

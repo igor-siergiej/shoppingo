@@ -1,25 +1,17 @@
 import type { Item, ListType } from '@shoppingo/types';
 import { ListType as ListTypeEnum } from '@shoppingo/types';
 import { differenceInHours, format } from 'date-fns';
-import {
-    AlertCircle,
-    AlertTriangle,
-    Check,
-    Edit2,
-    ImageOff,
-    Loader2,
-    Trash2,
-} from 'lucide-react';
+import { AlertCircle, AlertTriangle, Check, Edit2, ImageOff, Loader2, Trash2 } from 'lucide-react';
 import { motion } from 'motion/react';
-import { type MouseEvent, useEffect, useRef, useState } from 'react';
+import { type MouseEvent, useRef, useState } from 'react';
+import { DueDateField } from '@/components/DueDateField';
+import { QuantityUnitField } from '@/components/QuantityUnitField';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
-import { DueDateField } from '@/components/DueDateField';
-import { QuantityUnitField } from '@/components/QuantityUnitField';
 import { useItemImage } from '../../hooks/useItemImage';
 import { useItemMutations } from '../../hooks/useItemMutations';
 import { useSwipeGesture } from '../../hooks/useSwipeGesture';

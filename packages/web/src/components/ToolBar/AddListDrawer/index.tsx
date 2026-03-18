@@ -1,7 +1,8 @@
 import type { ListType } from '@shoppingo/types';
 import { ListType as ListTypeEnum } from '@shoppingo/types';
-import { Search, User } from 'lucide-react';
+import { Plus, Search, User } from 'lucide-react';
 import { useState } from 'react';
+import { SearchResults } from '@/components/SearchResults';
 import { Button } from '@/components/ui/button';
 import {
     Drawer,
@@ -15,8 +16,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RippleButton } from '@/components/ui/ripple';
-import { Plus } from 'lucide-react';
-import { SearchResults } from '@/components/SearchResults';
 import { useSearch } from '../../../hooks/useSearch';
 
 export interface AddListDrawerProps {

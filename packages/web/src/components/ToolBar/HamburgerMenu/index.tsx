@@ -13,13 +13,7 @@ export interface HamburgerMenuProps {
     onLogout: () => void;
 }
 
-export const HamburgerMenu = ({
-    currentList,
-    userId,
-    onManageUsers,
-    onClose,
-    onLogout,
-}: HamburgerMenuProps) => {
+export const HamburgerMenu = ({ currentList, userId, onManageUsers, onClose, onLogout }: HamburgerMenuProps) => {
     const { theme, toggleTheme } = useTheme();
     const { canInstall, isInstalled, installApp } = usePWA();
 
@@ -70,9 +64,7 @@ export const HamburgerMenu = ({
                         ) : (
                             <Sun className="h-4 w-4 text-slate-600" />
                         )}
-                        <span className="text-sm font-medium">
-                            {theme === 'dark' ? 'Dark Mode' : 'Light Mode'}
-                        </span>
+                        <span className="text-sm font-medium">{theme === 'dark' ? 'Dark Mode' : 'Light Mode'}</span>
                     </div>
                     <Switch checked={theme === 'dark'} onCheckedChange={toggleTheme} />
                 </button>

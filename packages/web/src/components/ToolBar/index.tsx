@@ -2,7 +2,6 @@
 
 import { useAuth, useUser } from '@imapps/web-utils';
 import type { ListType } from '@shoppingo/types';
-import { ListType as ListTypeEnum } from '@shoppingo/types';
 import { ArrowLeft, CheckCheck, Menu, Trash2 } from 'lucide-react';
 import { AnimatePresence, MotionConfig, motion } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
@@ -11,11 +10,10 @@ import useMeasure from 'react-use-measure';
 
 import { Card, CardContent } from '@/components/ui/card';
 import { RippleButton } from '@/components/ui/ripple';
-
+import { ManageUsersDrawer } from '../ManageUsersDrawer';
 import { AddItemDrawer } from './AddItemDrawer';
 import { AddListDrawer } from './AddListDrawer';
 import { HamburgerMenu } from './HamburgerMenu';
-import { ManageUsersDrawer } from '../ManageUsersDrawer';
 
 interface ToolBarProps {
     onAddList?: (name: string, listType: ListType, users: string[]) => Promise<void>;
@@ -114,8 +112,7 @@ const ToolBar = ({
                                 exit={{ opacity: 0 }}
                                 className="absolute bottom-0 left-0 right-0 pointer-events-none"
                                 style={{
-                                    background:
-                                        'linear-gradient(180deg, transparent 0%, rgba(15, 23, 42, 0.02) 100%)',
+                                    background: 'linear-gradient(180deg, transparent 0%, rgba(15, 23, 42, 0.02) 100%)',
                                 }}
                             />
                         )}

@@ -28,7 +28,10 @@ export const SearchResults = ({ results, isLoading, error, onSelect, onClose, qu
 
     if (isLoading) {
         return (
-            <div ref={containerRef} className="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded-md shadow-lg z-50">
+            <div
+                ref={containerRef}
+                className="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded-md shadow-lg z-50"
+            >
                 <div className="p-4 flex items-center justify-center text-muted-foreground">
                     <Loader2 className="h-4 w-4 animate-spin mr-2" />
                     Searching...
@@ -39,7 +42,10 @@ export const SearchResults = ({ results, isLoading, error, onSelect, onClose, qu
 
     if (error) {
         return (
-            <div ref={containerRef} className="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded-md shadow-lg z-50">
+            <div
+                ref={containerRef}
+                className="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded-md shadow-lg z-50"
+            >
                 <div className="p-4 text-center text-destructive text-sm">{error}</div>
             </div>
         );
@@ -47,7 +53,10 @@ export const SearchResults = ({ results, isLoading, error, onSelect, onClose, qu
 
     if (query.trim().length > 0 && query.trim().length < 2) {
         return (
-            <div ref={containerRef} className="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded-md shadow-lg z-50">
+            <div
+                ref={containerRef}
+                className="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded-md shadow-lg z-50"
+            >
                 <div className="p-4 text-center text-muted-foreground text-sm">
                     Please enter at least 2 characters to search
                 </div>

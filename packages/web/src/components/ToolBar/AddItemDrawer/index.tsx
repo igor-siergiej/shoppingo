@@ -1,6 +1,9 @@
 import type { ListType } from '@shoppingo/types';
 import { ListType as ListTypeEnum } from '@shoppingo/types';
+import { Plus } from 'lucide-react';
 import { useState } from 'react';
+import { DueDateField } from '@/components/DueDateField';
+import { QuantityUnitField } from '@/components/QuantityUnitField';
 import { Button } from '@/components/ui/button';
 import {
     Drawer,
@@ -14,9 +17,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RippleButton } from '@/components/ui/ripple';
-import { Plus } from 'lucide-react';
-import { DueDateField } from '@/components/DueDateField';
-import { QuantityUnitField } from '@/components/QuantityUnitField';
 
 export interface AddItemDrawerProps {
     open: boolean;
@@ -71,10 +71,7 @@ export const AddItemDrawer = ({ open, onOpenChange, onAdd, listType, placeholder
         onOpenChange(false);
     };
 
-    const title =
-        listType === ListTypeEnum.TODO
-            ? 'Add New Task'
-            : 'Add New Item';
+    const title = listType === ListTypeEnum.TODO ? 'Add New Task' : 'Add New Item';
 
     return (
         <Drawer open={open} onOpenChange={onOpenChange}>

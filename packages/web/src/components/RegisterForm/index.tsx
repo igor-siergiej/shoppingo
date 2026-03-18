@@ -102,9 +102,7 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<'div'
                                     {...register('username')}
                                     aria-invalid={errors.username ? 'true' : 'false'}
                                 />
-                                {errors.username && (
-                                    <p className="text-sm text-red-600">{errors.username.message}</p>
-                                )}
+                                {errors.username && <p className="text-sm text-red-600">{errors.username.message}</p>}
                             </div>
                             <div className="grid gap-3">
                                 <Label htmlFor="password">Password</Label>
@@ -115,9 +113,7 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<'div'
                                     {...register('password')}
                                     aria-invalid={errors.password ? 'true' : 'false'}
                                 />
-                                {errors.password && (
-                                    <p className="text-sm text-red-600">{errors.password.message}</p>
-                                )}
+                                {errors.password && <p className="text-sm text-red-600">{errors.password.message}</p>}
                             </div>
                             <div className="grid gap-3">
                                 <Label htmlFor="repeatPassword">Repeat Password</Label>
