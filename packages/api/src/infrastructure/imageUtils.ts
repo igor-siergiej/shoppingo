@@ -1,7 +1,8 @@
 import sharp from 'sharp';
 
-export async function processImageBuffer(inputBuffer: Buffer): Promise<Buffer> {
-    return await sharp(inputBuffer)
+export async function processImageBuffer(inputBuffer: Buffer, sharpFactory?: typeof sharp): Promise<Buffer> {
+    const sharpToUse = sharpFactory || sharp;
+    return await sharpToUse(inputBuffer)
         .resize(256, 256, {
             fit: 'contain',
             background: { r: 0, g: 0, b: 0, alpha: 0 },
