@@ -24,7 +24,7 @@ vi.mock('../imageProcessor', () => ({
 
 import { processImage } from '../imageProcessor';
 
-const mockProcessImage = vi.mocked(processImage);
+const mockProcessImage = processImage as unknown as ReturnType<typeof vi.fn>;
 
 describe('OpenAIImageGenerator', () => {
     let generator: OpenAIImageGenerator;

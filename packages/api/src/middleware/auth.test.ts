@@ -1,13 +1,11 @@
-import type { Context, Next } from 'koa';
 import { beforeEach, describe, expect, it, vi } from 'bun:test';
+import type { Context, Next } from 'koa';
 
-// vi.hoisted ensures mockConfigGet is available when vi.mock is hoisted
-const mockConfigGet = vi.hoisted(() => vi.fn());
-vi.mock('../config', () => ({
-    config: { get: mockConfigGet },
-}));
-
+import '../test-setup';
+import { config } from '../config';
 import { authenticate } from './auth';
+
+const mockConfigGet = vi.spyOn(config as { get: (...args: unknown[]) => unknown }, 'get');
 
 const createMockContext = (overrides: Partial<Context> = {}): Context => {
     const ctx = {
