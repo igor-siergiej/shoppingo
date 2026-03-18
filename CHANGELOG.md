@@ -1,3 +1,10 @@
+## [1.21.5](https://github.com/igor-siergiej/shoppingo/compare/v1.21.4...v1.21.5) (2026-03-18)
+
+
+### Bug Fixes
+
+* update GitHub Actions to Node.js 24 compatible versions ([f211820](https://github.com/igor-siergiej/shoppingo/commit/f2118203ec613bdefe8c582b1442ba7404ebf56e))
+
 ## [1.21.4](https://github.com/igor-siergiej/shoppingo/compare/v1.21.3...v1.21.4) (2026-03-18)
 
 
