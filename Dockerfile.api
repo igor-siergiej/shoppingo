@@ -18,6 +18,11 @@ RUN NODE_AUTH_TOKEN=${NODE_AUTH_TOKEN} bun install --frozen-lockfile
 
 RUN bun run --filter @shoppingo/api build
 
+# Consolidate sharp to root node_modules regardless of where Bun hoisted it
+RUN mkdir -p /app/node_modules && \
+    [ -d /app/packages/api/node_modules/sharp ] && cp -r /app/packages/api/node_modules/sharp /app/node_modules/ || true && \
+    [ -d /app/packages/api/node_modules/@img ] && cp -r /app/packages/api/node_modules/@img /app/node_modules/ || true
+
 FROM oven/bun:1-alpine AS runner
 
 WORKDIR /app
@@ -25,8 +30,9 @@ WORKDIR /app
 # Copy only the built application
 COPY --from=builder /app/packages/api/build ./build
 
-# Install sharp with native binaries for Alpine (musl) - sharp is not bundled by tsup
-RUN bun add sharp
+# Copy sharp and its native binaries from the builder (same Alpine base ensures musl compatibility)
+COPY --from=builder /app/node_modules/sharp ./node_modules/sharp
+COPY --from=builder /app/node_modules/@img ./node_modules/@img
 
 EXPOSE 4001
 
