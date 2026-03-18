@@ -26,6 +26,8 @@ const mockListService = {
     clearList: vi.fn(),
     addItem: vi.fn(),
     updateItemQuantity: vi.fn(),
+    addUserToList: vi.fn(),
+    removeUserFromList: vi.fn(),
 };
 
 const mockLogger = {
@@ -33,6 +35,12 @@ const mockLogger = {
     error: vi.fn(),
     warn: vi.fn(),
     debug: vi.fn(),
+};
+
+const mockAuthorizationService = {
+    isListOwner: vi.fn().mockReturnValue(true),
+    canManageUsers: vi.fn().mockReturnValue(true),
+    getEffectiveOwnerId: vi.fn().mockReturnValue('test-user-1'),
 };
 
 const createMockContext = (overrides: Partial<Context> = {}): Context => {
@@ -74,6 +82,7 @@ describe('ListHandlers', () => {
         mockDependencyContainer.resolve.mockImplementation((token: string) => {
             if (token === 'ListService') return mockListService;
             if (token === 'Logger') return mockLogger;
+            if (token === 'AuthorizationService') return mockAuthorizationService;
             return null;
         });
 
@@ -582,6 +591,138 @@ describe('ListHandlers', () => {
 
             expect(ctx.response.status).toBe(500);
             expect(ctx.body).toEqual({ error: 'List not found' });
+        });
+    });
+
+    describe('addUserToList', () => {
+        it('should add user successfully', async () => {
+            const mockList: List = {
+                id: 'list-1',
+                title: 'Test List',
+                dateAdded: new Date(),
+                items: [],
+                users: [
+                    { id: 'test-user-1', username: 'testuser' },
+                    { id: 'user-2', username: 'newuser' },
+                ],
+            };
+            const ctx = createMockContext({
+                params: { title: 'Test List' },
+                request: { body: { username: 'newuser' } } as Context['request'],
+            });
+
+            mockListService.addUserToList.mockResolvedValue(mockList);
+
+            await listHandlers.addUserToList(ctx);
+
+            expect(mockListService.addUserToList).toHaveBeenCalledWith('Test List', 'newuser', 'test-user-1');
+            expect(ctx.response.status).toBe(200);
+            expect(ctx.body).toEqual(mockList);
+        });
+
+        it('should reject empty username', async () => {
+            const ctx = createMockContext({
+                params: { title: 'Test List' },
+                request: { body: { username: '' } } as Context['request'],
+            });
+
+            await listHandlers.addUserToList(ctx);
+
+            expect(ctx.response.status).toBe(400);
+            expect(ctx.body).toEqual({ error: 'Username is required' });
+        });
+
+        it('should return 403 when user has no list access', async () => {
+            const ctx = createMockContext({
+                params: { title: 'Test List' },
+                request: { body: { username: 'newuser' } } as Context['request'],
+            });
+
+            mockListService.getList.mockResolvedValue({
+                id: 'list-1',
+                title: 'Test List',
+                dateAdded: new Date(),
+                items: [],
+                users: [{ id: 'other-user', username: 'other' }],
+            });
+
+            await listHandlers.addUserToList(ctx);
+
+            expect(ctx.response.status).toBe(403);
+            expect(ctx.body).toEqual({ error: 'Forbidden' });
+        });
+
+        it('should handle service errors', async () => {
+            const ctx = createMockContext({
+                params: { title: 'Test List' },
+                request: { body: { username: 'newuser' } } as Context['request'],
+            });
+
+            mockListService.addUserToList.mockRejectedValue(
+                Object.assign(new Error('Only the list owner can manage users'), { status: 403 })
+            );
+
+            await listHandlers.addUserToList(ctx);
+
+            expect(ctx.response.status).toBe(403);
+            expect(ctx.body).toEqual({ error: 'Only the list owner can manage users' });
+        });
+    });
+
+    describe('removeUserFromList', () => {
+        it('should remove user successfully', async () => {
+            const mockList: List = {
+                id: 'list-1',
+                title: 'Test List',
+                dateAdded: new Date(),
+                items: [],
+                users: [{ id: 'test-user-1', username: 'testuser' }],
+            };
+            const ctx = createMockContext({
+                params: { title: 'Test List', userId: 'user-2' },
+            });
+
+            mockListService.removeUserFromList.mockResolvedValue(mockList);
+
+            await listHandlers.removeUserFromList(ctx);
+
+            expect(mockListService.removeUserFromList).toHaveBeenCalledWith('Test List', 'user-2', 'test-user-1');
+            expect(ctx.response.status).toBe(200);
+            expect(ctx.body).toEqual(mockList);
+        });
+
+        it('should return 403 when user has no list access', async () => {
+            const ctx = createMockContext({
+                params: { title: 'Test List', userId: 'user-2' },
+            });
+
+            mockListService.getList.mockResolvedValue({
+                id: 'list-1',
+                title: 'Test List',
+                dateAdded: new Date(),
+                items: [],
+                users: [{ id: 'other-user', username: 'other' }],
+            });
+
+            await listHandlers.removeUserFromList(ctx);
+
+            expect(ctx.response.status).toBe(403);
+            expect(ctx.body).toEqual({ error: 'Forbidden' });
+        });
+
+        it('should handle service errors', async () => {
+            const ctx = createMockContext({
+                params: { title: 'Test List', userId: 'user-2' },
+            });
+
+            mockListService.removeUserFromList.mockRejectedValue(
+                Object.assign(new Error('Cannot remove the list owner'), { status: 400 })
+            );
+
+            await listHandlers.removeUserFromList(ctx);
+
+            expect(ctx.response.status).toBe(400);
+            expect(ctx.body).toEqual({ error: 'Cannot remove the list owner' });
         });
     });
 });

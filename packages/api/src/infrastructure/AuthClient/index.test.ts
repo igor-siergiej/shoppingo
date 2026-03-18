@@ -80,7 +80,7 @@ describe('HttpAuthClient', () => {
             });
 
             await expect(authClient.getUsersByUsernames(['testuser'])).rejects.toMatchObject({
-                message: 'Auth service error: 500',
+                message: 'Auth service error: 500 - Internal Server Error',
                 status: 502,
             });
         });
