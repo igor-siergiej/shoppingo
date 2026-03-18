@@ -1,3 +1,13 @@
+## [1.21.9](https://github.com/igor-siergiej/shoppingo/compare/v1.21.8...v1.21.9) (2026-03-18)
+
+
+### Bug Fixes
+
+* **docker:** consolidate sharp to root node_modules before copy to runner ([d405914](https://github.com/igor-siergiej/shoppingo/commit/d405914ae1c7443f9163de3a98406b4f26987af0))
+* **docker:** copy sharp from packages/api/node_modules instead of consolidating ([6a6a89f](https://github.com/igor-siergiej/shoppingo/commit/6a6a89f118477213a80b141c445bcf30e0da2d35))
+* **docker:** install sharp directly in runner stage ([4340048](https://github.com/igor-siergiej/shoppingo/commit/434004850292e4c26129e1ac086c64446ea45cbe))
+* **tests:** fix linting errors and bun:test compatibility issues ([efd066f](https://github.com/igor-siergiej/shoppingo/commit/efd066f2a933e5fb79ef1f7d241d12dafc536b56))
+
 ## [1.21.8](https://github.com/igor-siergiej/shoppingo/compare/v1.21.7...v1.21.8) (2026-03-18)
 
 
