@@ -1,29 +1,106 @@
+import { beforeEach, describe, expect, it } from 'bun:test';
 import type { MongoDbConnection } from '@imapps/api-utils';
 import type { Item, List } from '@shoppingo/types';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { MongoListRepository } from './index';
 
-const mockCollection = {
-    findOne: vi.fn(),
-    find: vi.fn(),
-    insertOne: vi.fn(),
-    deleteOne: vi.fn(),
-    replaceOne: vi.fn(),
-    updateOne: vi.fn(),
-    findOneAndReplace: vi.fn(),
-    findOneAndUpdate: vi.fn(),
-};
+class MockCollection {
+    calls: Record<string, Array<Array<unknown>>> = {
+        findOne: [],
+        find: [],
+        insertOne: [],
+        deleteOne: [],
+        replaceOne: [],
+        updateOne: [],
+        findOneAndReplace: [],
+        findOneAndUpdate: [],
+    };
 
+    resolvedValues: Record<string, unknown> = {
+        findOne: null,
+        find: { toArray: async () => [] },
+        insertOne: { insertedId: null },
+        deleteOne: { deletedCount: 0 },
+        replaceOne: { modifiedCount: 0 },
+        updateOne: { modifiedCount: 0 },
+        findOneAndReplace: { modifiedCount: 0 },
+        findOneAndUpdate: { modifiedCount: 0 },
+    };
+
+    async findOne(query: unknown) {
+        this.calls.findOne.push([query]);
+        return this.resolvedValues.findOne;
+    }
+
+    find(query: unknown) {
+        this.calls.find.push([query]);
+        return this.resolvedValues.find;
+    }
+
+    async insertOne(doc: unknown) {
+        this.calls.insertOne.push([doc]);
+        return this.resolvedValues.insertOne;
+    }
+
+    async deleteOne(query: unknown) {
+        this.calls.deleteOne.push([query]);
+        return this.resolvedValues.deleteOne;
+    }
+
+    async replaceOne(query: unknown, replacement: unknown) {
+        this.calls.replaceOne.push([query, replacement]);
+        return this.resolvedValues.replaceOne;
+    }
+
+    async updateOne(query: unknown, update: unknown) {
+        this.calls.updateOne.push([query, update]);
+        return this.resolvedValues.updateOne;
+    }
+
+    async findOneAndReplace(query: unknown, replacement: unknown) {
+        this.calls.findOneAndReplace.push([query, replacement]);
+        return this.resolvedValues.findOneAndReplace;
+    }
+
+    async findOneAndUpdate(query: unknown, update: unknown) {
+        this.calls.findOneAndUpdate.push([query, update]);
+        return this.resolvedValues.findOneAndUpdate;
+    }
+
+    reset() {
+        this.calls = {
+            findOne: [],
+            find: [],
+            insertOne: [],
+            deleteOne: [],
+            replaceOne: [],
+            updateOne: [],
+            findOneAndReplace: [],
+            findOneAndUpdate: [],
+        };
+        this.resolvedValues = {
+            findOne: null,
+            find: { toArray: async () => [] },
+            insertOne: { insertedId: null },
+            deleteOne: { deletedCount: 0 },
+            replaceOne: { modifiedCount: 0 },
+            updateOne: { modifiedCount: 0 },
+            findOneAndReplace: { modifiedCount: 0 },
+            findOneAndUpdate: { modifiedCount: 0 },
+        };
+    }
+}
+
+const mockCollection = new MockCollection();
 const mockConnection = {
-    getCollection: vi.fn().mockReturnValue(mockCollection),
+    getCollection: () => mockCollection,
 } as unknown as MongoDbConnection<{ list: List }>;
 
 describe('MongoListRepository', () => {
     let repository: MongoListRepository;
 
     beforeEach(() => {
-        vi.clearAllMocks();
+        mockCollection.reset();
         repository = new MongoListRepository(mockConnection);
     });
 
@@ -38,20 +115,18 @@ describe('MongoListRepository', () => {
                     users: [{ id: 'user-1', username: 'testuser' }],
                 };
 
-                mockCollection.findOne.mockResolvedValue(mockList);
+                mockCollection.resolvedValues.findOne = mockList;
 
                 const result = await repository.getByTitle('Test List');
 
-                expect(mockCollection.findOne).toHaveBeenCalledWith({
-                    title: 'Test List',
-                });
+                expect(mockCollection.calls.findOne[0]).toEqual([{ title: 'Test List' }]);
                 expect(result).toEqual(mockList);
             });
         });
 
         describe('When no list with the given title exists', () => {
             it('should return null', async () => {
-                mockCollection.findOne.mockResolvedValue(null);
+                mockCollection.resolvedValues.findOne = null;
 
                 const result = await repository.getByTitle('Non-existent List');
 
@@ -73,16 +148,14 @@ describe('MongoListRepository', () => {
                     },
                 ];
                 const mockCursor = {
-                    toArray: vi.fn().mockResolvedValue(mockLists),
+                    toArray: async () => mockLists,
                 };
 
-                mockCollection.find.mockReturnValue(mockCursor);
+                mockCollection.resolvedValues.find = mockCursor;
 
                 const result = await repository.findByUserId('user-1');
 
-                expect(mockCollection.find).toHaveBeenCalledWith({
-                    'users.id': 'user-1',
-                });
+                expect(mockCollection.calls.find[0]).toEqual([{ 'users.id': 'user-1' }]);
                 expect(result).toEqual(mockLists);
             });
         });
@@ -90,10 +163,10 @@ describe('MongoListRepository', () => {
         describe('When a user has no lists', () => {
             it('should return an empty array', async () => {
                 const mockCursor = {
-                    toArray: vi.fn().mockResolvedValue([]),
+                    toArray: async () => [],
                 };
 
-                mockCollection.find.mockReturnValue(mockCursor);
+                mockCollection.resolvedValues.find = mockCursor;
 
                 const result = await repository.findByUserId('non-existent-user');
 
@@ -113,11 +186,11 @@ describe('MongoListRepository', () => {
                     users: [{ id: 'user-1', username: 'testuser' }],
                 };
 
-                mockCollection.insertOne.mockResolvedValue({ insertedId: 'list-1' });
+                mockCollection.resolvedValues.insertOne = { insertedId: 'list-1' };
 
                 await repository.insert(mockList);
 
-                expect(mockCollection.insertOne).toHaveBeenCalledWith(mockList);
+                expect(mockCollection.calls.insertOne[0]).toEqual([mockList]);
             });
         });
     });
@@ -125,13 +198,11 @@ describe('MongoListRepository', () => {
     describe('Deleting lists by title', () => {
         describe('When deleting a list by title', () => {
             it('should remove the list from the database', async () => {
-                mockCollection.deleteOne.mockResolvedValue({ deletedCount: 1 });
+                mockCollection.resolvedValues.deleteOne = { deletedCount: 1 };
 
                 await repository.deleteByTitle('Test List');
 
-                expect(mockCollection.deleteOne).toHaveBeenCalledWith({
-                    title: 'Test List',
-                });
+                expect(mockCollection.calls.deleteOne[0]).toEqual([{ title: 'Test List' }]);
             });
         });
     });
@@ -147,13 +218,11 @@ describe('MongoListRepository', () => {
                     users: [{ id: 'user-1', username: 'testuser' }],
                 };
 
-                mockCollection.findOneAndReplace.mockResolvedValue({
-                    modifiedCount: 1,
-                });
+                mockCollection.resolvedValues.findOneAndReplace = { modifiedCount: 1 };
 
                 await repository.replaceByTitle('Test List', mockList);
 
-                expect(mockCollection.findOneAndReplace).toHaveBeenCalledWith({ title: 'Test List' }, mockList);
+                expect(mockCollection.calls.findOneAndReplace[0]).toEqual([{ title: 'Test List' }, mockList]);
             });
         });
     });
@@ -168,14 +237,14 @@ describe('MongoListRepository', () => {
                     isSelected: false,
                 };
 
-                mockCollection.findOneAndUpdate.mockResolvedValue({ modifiedCount: 1 });
+                mockCollection.resolvedValues.findOneAndUpdate = { modifiedCount: 1 };
 
                 await repository.pushItem('Test List', mockItem);
 
-                expect(mockCollection.findOneAndUpdate).toHaveBeenCalledWith(
+                expect(mockCollection.calls.findOneAndUpdate[0]).toEqual([
                     { title: 'Test List' },
-                    { $push: { items: mockItem } }
-                );
+                    { $push: { items: mockItem } },
+                ]);
             });
         });
     });

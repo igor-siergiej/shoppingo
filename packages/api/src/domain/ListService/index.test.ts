@@ -1,5 +1,5 @@
+import { beforeEach, describe, expect, it } from 'bun:test';
 import type { Item, List, User } from '@shoppingo/types';
-import { beforeEach, describe, expect, it } from 'vitest';
 
 import type { IdGenerator } from '../IdGenerator';
 import type { ListRepository } from '../ListRepository';
