@@ -1,3 +1,11 @@
+## [1.21.7](https://github.com/igor-siergiej/shoppingo/compare/v1.21.6...v1.21.7) (2026-03-18)
+
+
+### Bug Fixes
+
+* copy sharp native binaries from builder stage in Dockerfile ([5baeac6](https://github.com/igor-siergiej/shoppingo/commit/5baeac67117edf1a491d96ace5b376954db3fa0d))
+* use bun in runner stage instead of node/npm ([72c0ac0](https://github.com/igor-siergiej/shoppingo/commit/72c0ac088c286f8d3c1fe86c9cae6cf2675bb627))
+
 ## [1.21.6](https://github.com/igor-siergiej/shoppingo/compare/v1.21.5...v1.21.6) (2026-03-18)
 
 
