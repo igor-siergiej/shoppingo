@@ -19,7 +19,12 @@ import { ToolBarAppBar } from './ToolBarAppBar';
 interface ToolBarProps {
     onAddList?: (name: string, listType: ListType, users: string[]) => Promise<void>;
     onAddItem?: (name: string, quantity?: number, unit?: string, dueDate?: Date) => Promise<void>;
-    onAddRecipe?: (name: string) => Promise<void>;
+    onAddRecipe?: (
+        title: string,
+        ingredients: Array<{ name: string; quantity?: number; unit?: string }>,
+        imageKey?: string,
+        selectedUsers?: string[]
+    ) => Promise<void>;
     handleGoBack?: () => void;
     handleClearSelected?: () => void;
     handleRemoveAll?: () => void;
