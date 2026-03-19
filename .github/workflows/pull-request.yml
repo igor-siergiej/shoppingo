@@ -20,9 +20,23 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.GH_TOKEN }}
       - run: bun run lint
 
-  test:
+  semgrep:
     runs-on: ubuntu-latest
     needs: lint
+    permissions:
+      contents: read
+    env:
+      SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+    container:
+      image: semgrep/semgrep
+    if: (github.actor != 'dependabot[bot]')
+    steps:
+      - uses: actions/checkout@v4
+      - run: semgrep ci
+
+  test:
+    runs-on: ubuntu-latest
+    needs: semgrep
     permissions:
       contents: read
       packages: read
