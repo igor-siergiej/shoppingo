@@ -119,6 +119,22 @@ describe('AuthorizationService', () => {
 
             expect(authService.canManageUsers(list, userId)).toBe(true);
         });
+
+        it('returns false for backward compatible non-first user when no ownerId', () => {
+            const list: List = {
+                id: 'list-1',
+                title: 'Test',
+                dateAdded: new Date(),
+                items: [],
+                users: [
+                    { id: 'user-1', username: 'user1' },
+                    { id: 'user-2', username: 'user2' },
+                ],
+                listType: 'shopping',
+            };
+
+            expect(authService.canManageUsers(list, 'user-2')).toBe(false);
+        });
     });
 
     describe('getEffectiveOwnerId', () => {

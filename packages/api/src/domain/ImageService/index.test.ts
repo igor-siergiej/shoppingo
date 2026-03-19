@@ -262,5 +262,74 @@ describe('ImageService', () => {
                 ]);
             });
         });
+
+        describe('Stream read callback', () => {
+            it('should return readable stream that contains the buffer data', async () => {
+                const mockBuffer = Buffer.from('test-image-data-content');
+
+                mockImageStore.rejectedErrors.getHeadObject = new Error('Not found');
+                mockImageGenerator.resolvedValues.generateImage = {
+                    buffer: mockBuffer,
+                    contentType: 'image/webp',
+                };
+
+                const result = await imageService.getImage('test-image');
+                const stream = result.stream;
+
+                // Consume the stream and collect chunks
+                const chunks: Buffer[] = [];
+
+                return new Promise((resolve, reject) => {
+                    stream.on('data', (chunk: Buffer) => {
+                        chunks.push(chunk);
+                    });
+
+                    stream.on('end', () => {
+                        const fullData = Buffer.concat(chunks);
+                        expect(fullData).toEqual(mockBuffer);
+                        resolve(undefined);
+                    });
+
+                    stream.on('error', reject);
+
+                    // Trigger the read() callback by reading from the stream
+                    stream.read();
+                });
+            });
+
+            it('should stream cached image data properly', async () => {
+                const mockBuffer = Buffer.from('cached-image-data-content');
+                const mockStream = {
+                    on: function (event: string, callback: Function) {
+                        if (event === 'data') {
+                            // Simulate stream emitting data
+                            setTimeout(() => {
+                                callback(mockBuffer);
+                            }, 0);
+                        } else if (event === 'end') {
+                            setTimeout(() => {
+                                callback();
+                            }, 10);
+                        }
+                        return this;
+                    },
+                    read: () => {},
+                } as unknown as NodeJS.ReadableStream;
+
+                const mockHeadObject = {
+                    metaData: { 'content-type': 'image/png' },
+                };
+
+                mockImageStore.resolvedValues.getHeadObject = mockHeadObject;
+                mockImageStore.resolvedValues.getObjectStream = mockStream;
+
+                const result = await imageService.getImage('cached-test-image');
+                const stream = result.stream;
+
+                // Verify stream is returned
+                expect(stream).toBe(mockStream);
+                expect(result.contentType).toBe('image/png');
+            });
+        });
     });
 });
