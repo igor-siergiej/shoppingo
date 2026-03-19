@@ -1,4 +1,5 @@
 import { GlobalRegistrator } from '@happy-dom/global-registrator';
+
 try {
     GlobalRegistrator.register();
 } catch {
@@ -6,8 +7,8 @@ try {
 }
 
 import '@testing-library/jest-dom';
-import { render, cleanup } from '@testing-library/react';
-import { describe, it, expect, afterEach } from 'bun:test';
+import { afterEach, describe, expect, it } from 'bun:test';
+import { cleanup, render } from '@testing-library/react';
 import { ToolBarButton } from './index';
 
 describe('ToolBarButton', () => {
@@ -17,9 +18,7 @@ describe('ToolBarButton', () => {
 
     it('renders button with icon', () => {
         const TestIcon = () => <span>icon</span>;
-        const { getByRole } = render(
-            <ToolBarButton icon={TestIcon} title="Test" onClick={() => {}} />
-        );
+        const { getByRole } = render(<ToolBarButton icon={TestIcon} title="Test" onClick={() => {}} />);
 
         expect(getByRole('button')).toBeInTheDocument();
         expect(getByRole('button')).toHaveAttribute('title', 'Test');
@@ -29,7 +28,13 @@ describe('ToolBarButton', () => {
         let called = false;
         const TestIcon = () => <span>icon</span>;
         const { getByRole } = render(
-            <ToolBarButton icon={TestIcon} title="Test" onClick={() => { called = true; }} />
+            <ToolBarButton
+                icon={TestIcon}
+                title="Test"
+                onClick={() => {
+                    called = true;
+                }}
+            />
         );
 
         const button = getByRole('button');
@@ -39,9 +44,7 @@ describe('ToolBarButton', () => {
 
     it('disables button when disabled prop is true', () => {
         const TestIcon = () => <span>icon</span>;
-        const { getByRole } = render(
-            <ToolBarButton icon={TestIcon} title="Test" onClick={() => {}} disabled={true} />
-        );
+        const { getByRole } = render(<ToolBarButton icon={TestIcon} title="Test" onClick={() => {}} disabled={true} />);
 
         expect(getByRole('button')).toBeDisabled();
     });
@@ -58,9 +61,7 @@ describe('ToolBarButton', () => {
 
     it('renders with proper styling classes', () => {
         const TestIcon = () => <span>icon</span>;
-        const { container } = render(
-            <ToolBarButton icon={TestIcon} title="Test" onClick={() => {}} />
-        );
+        const { container } = render(<ToolBarButton icon={TestIcon} title="Test" onClick={() => {}} />);
 
         const button = container.querySelector('button');
         expect(button).toHaveClass('h-12', 'w-12', 'rounded-full');

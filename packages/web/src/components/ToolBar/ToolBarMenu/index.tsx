@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'motion/react';
-import React from 'react';
+import type React from 'react';
 
 interface ToolBarMenuProps {
     isOpen: boolean;
@@ -8,7 +8,7 @@ interface ToolBarMenuProps {
     maxWidth?: number;
 }
 
-const transition = {
+const _transition = {
     type: 'spring' as const,
     bounce: 0.1,
     duration: 0.25,

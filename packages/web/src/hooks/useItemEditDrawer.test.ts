@@ -1,12 +1,13 @@
 import { GlobalRegistrator } from '@happy-dom/global-registrator';
+
 try {
     GlobalRegistrator.register();
 } catch {
     // Already registered
 }
 
-import { renderHook, act } from '@testing-library/react';
-import { describe, it, expect, beforeEach } from 'bun:test';
+import { describe, expect, it } from 'bun:test';
+import { act, renderHook } from '@testing-library/react';
 import { useItemEditDrawer } from './useItemEditDrawer';
 
 describe('useItemEditDrawer', () => {

@@ -1,12 +1,19 @@
 import type { Item, ListType } from '@shoppingo/types';
 import { ListType as ListTypeEnum } from '@shoppingo/types';
-import { motion } from 'motion/react';
-import { type MouseEvent, useRef, useState } from 'react';
 import { Edit2, Loader2, Trash2 } from 'lucide-react';
+import { motion } from 'motion/react';
+import { type MouseEvent, useId, useRef, useState } from 'react';
 import { DueDateField } from '../../components/DueDateField';
 import { QuantityUnitField } from '../../components/QuantityUnitField';
 import { Button } from '../../components/ui/button';
-import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from '../../components/ui/drawer';
+import {
+    Drawer,
+    DrawerClose,
+    DrawerContent,
+    DrawerFooter,
+    DrawerHeader,
+    DrawerTitle,
+} from '../../components/ui/drawer';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { useItemEditDrawer } from '../../hooks/useItemEditDrawer';
@@ -73,6 +80,9 @@ const ItemCheckBoxActionButtons = ({
 const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
     const [isDeleting, setIsDeleting] = useState(false);
     const drawerInputRef = useRef<HTMLInputElement>(null);
+    const itemNameId = useId();
+    const itemQuantityId = useId();
+    const itemUnitId = useId();
 
     const { imageBlobUrl, hasLoadedImage, hasImageError, onImageLoad, onImageError } = useItemImage(item.name);
     const { x, controls, swipeState, handleDragEnd, closeSwipe } = useSwipeGesture();
@@ -113,7 +123,8 @@ const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
         const newQuantity = values.quantity.trim() ? parseFloat(values.quantity) : undefined;
         const newUnit = values.unit.trim() || undefined;
         const hasQuantityChange = newQuantity !== item.quantity || newUnit !== item.unit;
-        const hasDueDateChange = values.dueDate?.toDateString() !== (item.dueDate instanceof Date ? item.dueDate.toDateString() : undefined);
+        const hasDueDateChange =
+            values.dueDate?.toDateString() !== (item.dueDate instanceof Date ? item.dueDate.toDateString() : undefined);
 
         if (hasNameChange) updateNameMutation.mutate(values.name.trim());
         if (hasQuantityChange) updateQuantityMutation.mutate({ quantity: newQuantity, unit: newUnit });
@@ -133,9 +144,18 @@ const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
                         ? { opacity: 0, scale: 0.9, height: 0, marginBottom: 0 }
                         : { opacity: 1, scale: item.isSelected ? 0.97 : 1, height: 'auto' }
                 }
-                transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1], layout: { duration: 0.4, ease: [0.4, 0, 0.2, 1] } }}
+                transition={{
+                    duration: 0.35,
+                    ease: [0.4, 0, 0.2, 1],
+                    layout: { duration: 0.4, ease: [0.4, 0, 0.2, 1] },
+                }}
             >
-                <ItemCheckBoxActionButtons isDeleting={isDeleting} deleteMutation={deleteMutation} onDelete={handleDeleteItem} onEdit={handleEditStart} />
+                <ItemCheckBoxActionButtons
+                    isDeleting={isDeleting}
+                    deleteMutation={deleteMutation}
+                    onDelete={handleDeleteItem}
+                    onEdit={handleEditStart}
+                />
 
                 <motion.div
                     drag={!deleteMutation.isLoading ? 'x' : false}
@@ -179,9 +199,9 @@ const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
                         </DrawerHeader>
                         <div className="p-4 space-y-4">
                             <div>
-                                <Label htmlFor="edit-item-name">Item Name</Label>
+                                <Label htmlFor={itemNameId}>Item Name</Label>
                                 <Input
-                                    id="edit-item-name"
+                                    id={itemNameId}
                                     ref={drawerInputRef}
                                     value={drawerState.values.name}
                                     onChange={(e) => drawerState.updateName(e.target.value)}
@@ -196,8 +216,8 @@ const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
                                     unit={drawerState.values.unit}
                                     onQuantityChange={drawerState.updateQuantity}
                                     onUnitChange={drawerState.updateUnit}
-                                    quantityId="edit-item-quantity"
-                                    unitId="edit-item-unit"
+                                    quantityId={itemQuantityId}
+                                    unitId={itemUnitId}
                                 />
                             )}
 

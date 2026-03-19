@@ -36,7 +36,9 @@ export const ItemCheckBoxCard = ({
     return (
         <Card
             className={`transition-all rounded-lg duration-200 py-0.5 px-1 cursor-pointer ${
-                isSelected ? 'bg-primary/10 border-primary/20 shadow-md' : 'bg-background hover:bg-accent/50 border-border'
+                isSelected
+                    ? 'bg-primary/10 border-primary/20 shadow-md'
+                    : 'bg-background hover:bg-accent/50 border-border'
             } ${isLoading ? 'pointer-events-none' : ''}`}
             onClick={onToggle}
             role="button"
@@ -56,7 +58,9 @@ export const ItemCheckBoxCard = ({
                             <>
                                 <div
                                     className={`h-6 w-6 rounded border-2 flex items-center justify-center transition-all ${
-                                        isSelected ? 'bg-primary border-primary' : 'border-muted-foreground hover:border-primary'
+                                        isSelected
+                                            ? 'bg-primary border-primary'
+                                            : 'border-muted-foreground hover:border-primary'
                                     }`}
                                 >
                                     {isSelected && <Check className="h-4 w-4 text-white" />}
@@ -84,7 +88,9 @@ export const ItemCheckBoxCard = ({
                                     />
                                 )}
 
-                                {!hasLoadedImage && !hasImageError && <Skeleton className="absolute inset-0 h-12 w-12 rounded-full border" />}
+                                {!hasLoadedImage && !hasImageError && (
+                                    <Skeleton className="absolute inset-0 h-12 w-12 rounded-full border" />
+                                )}
 
                                 {isLoading && (
                                     <motion.div
@@ -106,7 +112,9 @@ export const ItemCheckBoxCard = ({
                         )}
                     </div>
 
-                    <Label className={`flex-1 cursor-pointer text-base transition-all duration-300 ${isSelected ? 'text-muted-foreground' : 'text-foreground'}`}>
+                    <Label
+                        className={`flex-1 cursor-pointer text-base transition-all duration-300 ${isSelected ? 'text-muted-foreground' : 'text-foreground'}`}
+                    >
                         <span className="relative inline-block">
                             {item.name}
                             {isSelected && (

@@ -16,15 +16,11 @@ export const LoginForm: React.FC = () => {
                 <CardContent>
                     <form onSubmit={handleSubmit(onSubmit)}>
                         <div className="flex flex-col gap-6">
-                            <LoginFormFields
-                                register={register}
-                                errors={errors}
-                                isSubmitting={isSubmitting}
-                            />
+                            <LoginFormFields register={register} errors={errors} isSubmitting={isSubmitting} />
 
                             {errors.root && (
                                 <div className="text-sm text-red-600 bg-red-50 p-3 rounded-md">
-                                    {(errors.root as any).message}
+                                    {errors.root.message}
                                 </div>
                             )}
 

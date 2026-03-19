@@ -1,4 +1,5 @@
 import { GlobalRegistrator } from '@happy-dom/global-registrator';
+
 try {
     GlobalRegistrator.register();
 } catch {
@@ -6,8 +7,8 @@ try {
 }
 
 import '@testing-library/jest-dom';
-import { render, cleanup } from '@testing-library/react';
-import { describe, it, expect, afterEach } from 'bun:test';
+import { afterEach, describe, expect, it } from 'bun:test';
+import { cleanup, render } from '@testing-library/react';
 import { useForm } from 'react-hook-form';
 import { LoginFormFields } from './index';
 
@@ -17,17 +18,14 @@ describe('LoginFormFields', () => {
     });
 
     const TestWrapper = () => {
-        const { register, formState: { errors } } = useForm({
+        const {
+            register,
+            formState: { errors },
+        } = useForm({
             defaultValues: { username: '', password: '' },
         });
 
-        return (
-            <LoginFormFields
-                register={register}
-                errors={errors}
-                isSubmitting={false}
-            />
-        );
+        return <LoginFormFields register={register} errors={errors} isSubmitting={false} />;
     };
 
     it('renders username and password input fields', () => {
@@ -63,17 +61,14 @@ describe('LoginFormFields', () => {
         const { container } = render(
             <div>
                 {(() => {
-                    const { register, formState: { errors } } = useForm({
+                    const {
+                        register,
+                        formState: { errors },
+                    } = useForm({
                         defaultValues: { username: '', password: '' },
                     });
 
-                    return (
-                        <LoginFormFields
-                            register={register}
-                            errors={errors}
-                            isSubmitting={true}
-                        />
-                    );
+                    return <LoginFormFields register={register} errors={errors} isSubmitting={true} />;
                 })()}
             </div>
         );

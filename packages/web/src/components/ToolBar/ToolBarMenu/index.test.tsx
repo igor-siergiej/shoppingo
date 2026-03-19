@@ -1,4 +1,5 @@
 import { GlobalRegistrator } from '@happy-dom/global-registrator';
+
 try {
     GlobalRegistrator.register();
 } catch {
@@ -6,8 +7,8 @@ try {
 }
 
 import '@testing-library/jest-dom';
-import { render, cleanup } from '@testing-library/react';
-import { describe, it, expect, afterEach } from 'bun:test';
+import { afterEach, describe, expect, it } from 'bun:test';
+import { cleanup, render } from '@testing-library/react';
 import { ToolBarMenu } from './index';
 
 describe('ToolBarMenu', () => {

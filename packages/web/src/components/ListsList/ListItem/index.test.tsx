@@ -72,7 +72,9 @@ describe('ListItem', () => {
         render(<ListItem list={mockListResponse} isOwner={true} isEditing={false} editValue="" {...mockCallbacks} />);
 
         const titleButton = screen.getByText('Test List').closest('button');
-        await user.click(titleButton!);
+        if (titleButton) {
+            await user.click(titleButton);
+        }
 
         expect(mockCallbacks.onNavigate).toHaveBeenCalledOnce();
     });

@@ -16,15 +16,11 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<'div'
                 <CardContent>
                     <form onSubmit={handleSubmit(onSubmit)}>
                         <div className="flex flex-col gap-6">
-                            <RegisterFormFields
-                                register={register}
-                                errors={errors}
-                                isSubmitting={isSubmitting}
-                            />
+                            <RegisterFormFields register={register} errors={errors} isSubmitting={isSubmitting} />
 
                             {errors.root && (
                                 <div className="text-sm text-red-600 bg-red-50 p-3 rounded-md">
-                                    {(errors.root as any).message}
+                                    {errors.root.message}
                                 </div>
                             )}
 

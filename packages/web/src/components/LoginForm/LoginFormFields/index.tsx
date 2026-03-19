@@ -1,5 +1,5 @@
 import { useId } from 'react';
-import { UseFormRegister, FieldValues, FieldPath, FieldError } from 'react-hook-form';
+import type { FieldError, FieldPath, FieldValues, UseFormRegister } from 'react-hook-form';
 import { Input } from '../../ui/input';
 import { Label } from '../../ui/label';
 
@@ -9,11 +9,7 @@ interface LoginFormFieldsProps<T extends FieldValues> {
     isSubmitting: boolean;
 }
 
-export const LoginFormFields = <T extends FieldValues>({
-    register,
-    errors,
-    isSubmitting,
-}: LoginFormFieldsProps<T>) => {
+export const LoginFormFields = <T extends FieldValues>({ register, errors, isSubmitting }: LoginFormFieldsProps<T>) => {
     const usernameId = useId();
     const passwordId = useId();
 
@@ -25,11 +21,12 @@ export const LoginFormFields = <T extends FieldValues>({
                     id={usernameId}
                     type="text"
                     placeholder="Enter your username"
-                    {...register('username' as any)}
+                    // biome-ignore lint/suspicious/noExplicitAny: react-hook-form generic type constraint
+                    {...(register('username') as any)}
                     aria-invalid={errors.username ? 'true' : 'false'}
                     disabled={isSubmitting}
                 />
-                {errors.username && <p className="text-sm text-red-600">{(errors.username as any).message}</p>}
+                {errors.username && <p className="text-sm text-red-600">{errors.username.message}</p>}
             </div>
 
             <div className="grid gap-3">
@@ -40,11 +37,12 @@ export const LoginFormFields = <T extends FieldValues>({
                     id={passwordId}
                     type="password"
                     placeholder="Enter your password"
-                    {...register('password' as any)}
+                    // biome-ignore lint/suspicious/noExplicitAny: react-hook-form generic type constraint
+                    {...(register('password') as any)}
                     aria-invalid={errors.password ? 'true' : 'false'}
                     disabled={isSubmitting}
                 />
-                {errors.password && <p className="text-sm text-red-600">{(errors.password as any).message}</p>}
+                {errors.password && <p className="text-sm text-red-600">{errors.password.message}</p>}
             </div>
         </div>
     );

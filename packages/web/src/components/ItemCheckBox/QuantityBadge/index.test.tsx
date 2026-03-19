@@ -1,4 +1,5 @@
 import { GlobalRegistrator } from '@happy-dom/global-registrator';
+
 try {
     GlobalRegistrator.register();
 } catch {
@@ -6,8 +7,8 @@ try {
 }
 
 import '@testing-library/jest-dom';
+import { describe, expect, it } from 'bun:test';
 import { render } from '@testing-library/react';
-import { describe, it, expect } from 'bun:test';
 import { QuantityBadge } from './index';
 
 describe('QuantityBadge', () => {

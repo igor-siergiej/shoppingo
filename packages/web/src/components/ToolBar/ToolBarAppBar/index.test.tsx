@@ -1,4 +1,5 @@
 import { GlobalRegistrator } from '@happy-dom/global-registrator';
+
 try {
     GlobalRegistrator.register();
 } catch {
@@ -6,8 +7,8 @@ try {
 }
 
 import '@testing-library/jest-dom';
-import { render, cleanup } from '@testing-library/react';
-import { describe, it, expect, afterEach } from 'bun:test';
+import { afterEach, describe, expect, it } from 'bun:test';
+import { cleanup, render } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 
 // Test just the component logic without rendering actual drawers
@@ -17,11 +18,7 @@ describe('ToolBarAppBar', () => {
     });
 
     const renderWithRouter = (component: React.ReactElement) => {
-        return render(
-            <BrowserRouter>
-                {component}
-            </BrowserRouter>
-        );
+        return render(<BrowserRouter>{component}</BrowserRouter>);
     };
 
     it('should export ToolBarAppBar', async () => {
@@ -33,107 +30,77 @@ describe('ToolBarAppBar', () => {
     it('shows back button on items page', async () => {
         const { ToolBarAppBar } = await import('./index');
         const { container } = renderWithRouter(
-            <ToolBarAppBar
-                isItemsPage={true}
-                isListsPage={false}
-                onMenuClick={() => {}}
-            />
+            <ToolBarAppBar isItemsPage={true} isListsPage={false} onMenuClick={() => {}} />
         );
 
         const buttons = container.querySelectorAll('button');
-        const backButton = Array.from(buttons).find(btn => btn.title.includes('back'));
+        const backButton = Array.from(buttons).find((btn) => btn.title.includes('back'));
         expect(backButton).toBeDefined();
     });
 
     it('shows back button with "Go home" title on non-lists page', async () => {
         const { ToolBarAppBar } = await import('./index');
         const { container } = renderWithRouter(
-            <ToolBarAppBar
-                isItemsPage={false}
-                isListsPage={false}
-                onMenuClick={() => {}}
-            />
+            <ToolBarAppBar isItemsPage={false} isListsPage={false} onMenuClick={() => {}} />
         );
 
         const buttons = container.querySelectorAll('button');
-        const backButton = Array.from(buttons).find(btn => btn.title === 'Go home');
+        const backButton = Array.from(buttons).find((btn) => btn.title === 'Go home');
         expect(backButton).toBeDefined();
     });
 
     it('hides back button on lists page', async () => {
         const { ToolBarAppBar } = await import('./index');
         const { container } = renderWithRouter(
-            <ToolBarAppBar
-                isItemsPage={false}
-                isListsPage={true}
-                onMenuClick={() => {}}
-            />
+            <ToolBarAppBar isItemsPage={false} isListsPage={true} onMenuClick={() => {}} />
         );
 
         const buttons = container.querySelectorAll('button');
-        const backButton = Array.from(buttons).find(btn => btn.title.includes('back'));
+        const backButton = Array.from(buttons).find((btn) => btn.title.includes('back'));
         expect(backButton).toBeUndefined();
     });
 
     it('shows clear selected button when handler provided', async () => {
         const { ToolBarAppBar } = await import('./index');
         const { container } = renderWithRouter(
-            <ToolBarAppBar
-                isItemsPage={true}
-                isListsPage={false}
-                onClearSelected={() => {}}
-                onMenuClick={() => {}}
-            />
+            <ToolBarAppBar isItemsPage={true} isListsPage={false} onClearSelected={() => {}} onMenuClick={() => {}} />
         );
 
         const buttons = container.querySelectorAll('button');
-        const clearButton = Array.from(buttons).find(btn => btn.title === 'Clear selected items');
+        const clearButton = Array.from(buttons).find((btn) => btn.title === 'Clear selected items');
         expect(clearButton).toBeDefined();
     });
 
     it('hides clear selected button when handler not provided', async () => {
         const { ToolBarAppBar } = await import('./index');
         const { container } = renderWithRouter(
-            <ToolBarAppBar
-                isItemsPage={true}
-                isListsPage={false}
-                onMenuClick={() => {}}
-            />
+            <ToolBarAppBar isItemsPage={true} isListsPage={false} onMenuClick={() => {}} />
         );
 
         const buttons = container.querySelectorAll('button');
-        const clearButton = Array.from(buttons).find(btn => btn.title === 'Clear selected items');
+        const clearButton = Array.from(buttons).find((btn) => btn.title === 'Clear selected items');
         expect(clearButton).toBeUndefined();
     });
 
     it('shows remove all button when handler provided', async () => {
         const { ToolBarAppBar } = await import('./index');
         const { container } = renderWithRouter(
-            <ToolBarAppBar
-                isItemsPage={true}
-                isListsPage={false}
-                onRemoveAll={() => {}}
-                onMenuClick={() => {}}
-            />
+            <ToolBarAppBar isItemsPage={true} isListsPage={false} onRemoveAll={() => {}} onMenuClick={() => {}} />
         );
 
         const buttons = container.querySelectorAll('button');
-        const removeButton = Array.from(buttons).find(btn => btn.title === 'Remove all items');
+        const removeButton = Array.from(buttons).find((btn) => btn.title === 'Remove all items');
         expect(removeButton).toBeDefined();
     });
 
     it('always renders menu button', async () => {
         const { ToolBarAppBar } = await import('./index');
         const { container } = renderWithRouter(
-            <ToolBarAppBar
-                isItemsPage={false}
-                isListsPage={true}
-                onMenuClick={() => {}}
-            />
+            <ToolBarAppBar isItemsPage={false} isListsPage={true} onMenuClick={() => {}} />
         );
 
         const buttons = container.querySelectorAll('button');
-        const menuButton = Array.from(buttons).find(btn => btn.title === 'Menu');
+        const menuButton = Array.from(buttons).find((btn) => btn.title === 'Menu');
         expect(menuButton).toBeDefined();
     });
 
@@ -150,7 +117,9 @@ describe('ToolBarAppBar', () => {
         );
 
         const buttons = container.querySelectorAll('button');
-        const clearButton = Array.from(buttons).find(btn => btn.title === 'Clear selected items') as HTMLButtonElement;
+        const clearButton = Array.from(buttons).find(
+            (btn) => btn.title === 'Clear selected items'
+        ) as HTMLButtonElement;
         expect(clearButton?.disabled).toBe(true);
     });
 
@@ -167,7 +136,7 @@ describe('ToolBarAppBar', () => {
         );
 
         const buttons = container.querySelectorAll('button');
-        const removeButton = Array.from(buttons).find(btn => btn.title === 'Remove all items') as HTMLButtonElement;
+        const removeButton = Array.from(buttons).find((btn) => btn.title === 'Remove all items') as HTMLButtonElement;
         expect(removeButton?.disabled).toBe(true);
     });
 });

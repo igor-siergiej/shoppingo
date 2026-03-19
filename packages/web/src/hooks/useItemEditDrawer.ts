@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import type { Item } from '@shoppingo/types';
 
 interface EditValues {
     name: string;

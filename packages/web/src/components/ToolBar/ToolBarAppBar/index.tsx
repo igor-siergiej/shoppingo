@@ -1,6 +1,5 @@
-import type { ListType } from '@shoppingo/types';
 import { ArrowLeft, CheckCheck, Menu, Trash2 } from 'lucide-react';
-import { forwardRef, ReactNode } from 'react';
+import { forwardRef, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ToolBarButton } from '../ToolBarButton';
 
@@ -18,18 +17,21 @@ interface ToolBarAppBarProps {
 }
 
 export const ToolBarAppBar = forwardRef<HTMLDivElement, ToolBarAppBarProps>(
-    ({
-        isItemsPage,
-        isListsPage,
-        onGoBack,
-        onClearSelected,
-        onRemoveAll,
-        onMenuClick,
-        disableClearSelected = false,
-        disableClearAll = false,
-        itemDrawer,
-        listDrawer,
-    }, ref) => {
+    (
+        {
+            isItemsPage,
+            isListsPage,
+            onGoBack,
+            onClearSelected,
+            onRemoveAll,
+            onMenuClick,
+            disableClearSelected = false,
+            disableClearAll = false,
+            itemDrawer,
+            listDrawer,
+        },
+        ref
+    ) => {
         const navigate = useNavigate();
 
         const handleGoBack = () => {
@@ -43,10 +45,7 @@ export const ToolBarAppBar = forwardRef<HTMLDivElement, ToolBarAppBarProps>(
         const showBackButton = isItemsPage || !isListsPage;
 
         return (
-            <div
-                ref={ref}
-                className="flex items-center justify-between py-2.5 px-3"
-            >
+            <div ref={ref} className="flex items-center justify-between py-2.5 px-3">
                 {showBackButton && (
                     <ToolBarButton
                         icon={ArrowLeft}
@@ -78,11 +77,7 @@ export const ToolBarAppBar = forwardRef<HTMLDivElement, ToolBarAppBarProps>(
                     />
                 )}
 
-                <ToolBarButton
-                    icon={Menu}
-                    title="Menu"
-                    onClick={onMenuClick}
-                />
+                <ToolBarButton icon={Menu} title="Menu" onClick={onMenuClick} />
             </div>
         );
     }
