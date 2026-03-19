@@ -29,6 +29,12 @@ const RecipesPage = () => {
         }
     }, [user?.id, user?.username, data?.length]);
 
+    useEffect(() => {
+        if (isError) {
+            logger.error('Failed to load recipes', { userId: user?.id });
+        }
+    }, [isError, user?.id]);
+
     if (!user?.id) {
         logger.warn('Recipes page accessed without user');
         return <div>User not available</div>;
