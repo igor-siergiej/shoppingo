@@ -3,4 +3,9 @@
 "imapps" = { url = "https://npm.pkg.github.com/", token = "$NODE_AUTH_TOKEN" }
 
 [test]
+root = "packages/web"
 preload = ["packages/api/src/test-setup.ts", "packages/web/happydom.ts", "packages/web/testing-library.ts"]
+
+[test.loader]
+"*.tsx" = "tsx"
+"*.ts" = "tsx"
