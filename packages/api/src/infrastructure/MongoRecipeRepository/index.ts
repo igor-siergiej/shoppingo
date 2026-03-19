@@ -32,10 +32,18 @@ export class MongoRecipeRepository implements RecipeRepository {
     }
 
     async addUser(recipeId: string, user: User): Promise<void> {
-        await this.collection().findOneAndUpdate({ id: recipeId }, { $push: { users: user } }, { returnDocument: 'after' });
+        await this.collection().findOneAndUpdate(
+            { id: recipeId },
+            { $push: { users: user } },
+            { returnDocument: 'after' }
+        );
     }
 
     async removeUser(recipeId: string, userId: string): Promise<void> {
-        await this.collection().findOneAndUpdate({ id: recipeId }, { $pull: { users: { id: userId } } }, { returnDocument: 'after' });
+        await this.collection().findOneAndUpdate(
+            { id: recipeId },
+            { $pull: { users: { id: userId } } },
+            { returnDocument: 'after' }
+        );
     }
 }
