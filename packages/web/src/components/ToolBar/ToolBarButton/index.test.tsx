@@ -1,7 +1,6 @@
-
-import '@testing-library/jest-dom';
 import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, render } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import { ToolBarButton } from './index';
 
 describe('ToolBarButton', () => {

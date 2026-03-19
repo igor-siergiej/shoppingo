@@ -1,6 +1,6 @@
-import '@testing-library/jest-dom';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { cleanup, render } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import { DueDateBadge } from './index';
 
 describe('DueDateBadge', () => {

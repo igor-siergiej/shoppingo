@@ -95,7 +95,10 @@ export function fn<T extends (...args: unknown[]) => unknown = () => void>(impl?
 /**
  * Helper to check if a mock function was called with specific arguments
  */
-export function toHaveBeenCalledWith(mockFn: MockFunction<(...args: unknown[]) => unknown>, ...expectedArgs: unknown[]) {
+export function toHaveBeenCalledWith(
+    mockFn: MockFunction<(...args: unknown[]) => unknown>,
+    ...expectedArgs: unknown[]
+) {
     const calls = mockFn.mock.calls;
     const found = calls.some((call) => {
         if (call.length !== expectedArgs.length) return false;

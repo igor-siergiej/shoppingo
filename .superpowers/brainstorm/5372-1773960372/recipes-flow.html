@@ -1,0 +1,121 @@
+<h2>Recipes Feature — Page Flow</h2>
+<p class="subtitle">Showing the key screens and interactions</p>
+
+<div class="mockup">
+  <div class="mockup-header">Recipes List Page</div>
+  <div class="mockup-body" style="padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+      <div style="border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
+        <div style="height: 140px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
+        <div style="padding: 12px;">
+          <strong>Pasta Carbonara</strong>
+          <p style="font-size: 12px; color: #666; margin: 4px 0;">5 ingredients</p>
+        </div>
+      </div>
+      <div style="border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
+        <div style="height: 140px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);"></div>
+        <div style="padding: 12px;">
+          <strong>Caesar Salad</strong>
+          <p style="font-size: 12px; color: #666; margin: 4px 0;">4 ingredients</p>
+        </div>
+      </div>
+    </div>
+    <p style="text-align: center; color: #999; font-size: 14px;">+ Add Recipe button in ToolBar</p>
+  </div>
+</div>
+
+<div class="mockup">
+  <div class="mockup-header">Recipe Detail View (Read Mode)</div>
+  <div class="mockup-body" style="padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+    <div style="height: 200px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px;"></div>
+    <div>
+      <h3 style="margin: 0;">Pasta Carbonara</h3>
+      <p style="font-size: 12px; color: #666; margin: 4px 0;">By @john_doe</p>
+    </div>
+    <div style="border: 1px solid #eee; border-radius: 6px; padding: 12px;">
+      <strong style="font-size: 13px;">Ingredients</strong>
+      <ul style="margin: 8px 0 0 0; padding-left: 16px; font-size: 13px;">
+        <li>400g Spaghetti</li>
+        <li>200g Pancetta, diced</li>
+        <li>4 Egg yolks</li>
+        <li>100g Parmesan, grated</li>
+      </ul>
+    </div>
+    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+      <button class="mock-button" style="flex: 1;">Add to Shopping List</button>
+      <button class="mock-button" style="background: #f5f5f5; color: #333; flex: 1;">Edit</button>
+      <button class="mock-button" style="background: #f5f5f5; color: #333; flex: 1;">Delete</button>
+    </div>
+    <button class="mock-button" style="background: #f5f5f5; color: #333; width: 100%;">Manage Users</button>
+  </div>
+</div>
+
+<div class="mockup">
+  <div class="mockup-header">Add to Shopping List Dialog</div>
+  <div class="mockup-body" style="padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+    <strong style="font-size: 13px;">Select ingredients to add:</strong>
+    <div style="border: 1px solid #eee; border-radius: 6px; padding: 8px; max-height: 180px; overflow-y: auto;">
+      <label style="display: flex; gap: 8px; padding: 8px; font-size: 13px; cursor: pointer;">
+        <input type="checkbox" checked> 400g Spaghetti
+      </label>
+      <label style="display: flex; gap: 8px; padding: 8px; font-size: 13px; cursor: pointer;">
+        <input type="checkbox" checked> 200g Pancetta
+      </label>
+      <label style="display: flex; gap: 8px; padding: 8px; font-size: 13px; cursor: pointer;">
+        <input type="checkbox"> 4 Egg yolks
+      </label>
+      <label style="display: flex; gap: 8px; padding: 8px; font-size: 13px; cursor: pointer;">
+        <input type="checkbox" checked> 100g Parmesan
+      </label>
+    </div>
+    <div style="margin-top: 8px;">
+      <label style="display: block; font-size: 12px; margin-bottom: 6px;"><strong>Add to list:</strong></label>
+      <select class="mock-input" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;">
+        <option>Weekly Groceries</option>
+        <option>Dinner Tonight</option>
+        <option>+ Create new list</option>
+      </select>
+    </div>
+    <div style="display: flex; gap: 8px;">
+      <button class="mock-button" style="flex: 1;">Add Selected</button>
+      <button class="mock-button" style="background: #f5f5f5; color: #333; flex: 1;">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="mockup">
+  <div class="mockup-header">Add/Edit Recipe Form (in Drawer)</div>
+  <div class="mockup-body" style="padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+    <div>
+      <strong style="font-size: 13px;">Cover Image</strong>
+      <div style="margin-top: 6px; display: flex; gap: 8px;">
+        <button class="mock-button" style="flex: 1; padding: 8px; font-size: 12px;">📸 Upload</button>
+        <button class="mock-button" style="flex: 1; padding: 8px; font-size: 12px;">🤖 Generate</button>
+      </div>
+    </div>
+    <div>
+      <label style="display: block; font-size: 12px; margin-bottom: 4px;"><strong>Recipe Name</strong></label>
+      <input class="mock-input" placeholder="e.g., Pasta Carbonara" style="width: 100%; padding: 8px;">
+    </div>
+    <div>
+      <strong style="font-size: 13px; display: block; margin-bottom: 6px;">Ingredients</strong>
+      <div style="border: 1px solid #eee; border-radius: 6px; padding: 8px; max-height: 140px; overflow-y: auto;">
+        <div style="display: grid; grid-template-columns: 1fr 80px 60px; gap: 6px; margin-bottom: 6px; font-size: 12px;">
+          <input class="mock-input" placeholder="Ingredient" style="padding: 6px;">
+          <input class="mock-input" placeholder="Qty" style="padding: 6px;">
+          <input class="mock-input" placeholder="Unit" style="padding: 6px;">
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 80px 60px; gap: 6px; font-size: 12px;">
+          <input class="mock-input" placeholder="Ingredient" style="padding: 6px;">
+          <input class="mock-input" placeholder="Qty" style="padding: 6px;">
+          <input class="mock-input" placeholder="Unit" style="padding: 6px;">
+        </div>
+      </div>
+      <button class="mock-button" style="width: 100%; margin-top: 6px; padding: 6px; font-size: 12px;">+ Add Ingredient</button>
+    </div>
+    <div style="display: flex; gap: 8px;">
+      <button class="mock-button" style="flex: 1;">Save Recipe</button>
+      <button class="mock-button" style="background: #f5f5f5; color: #333; flex: 1;">Cancel</button>
+    </div>
+  </div>
+</div>
