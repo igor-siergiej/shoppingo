@@ -1,7 +1,7 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import '@testing-library/jest-dom';
 import { cleanup, render } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
-import '@testing-library/jest-dom';
+import { afterEach, describe, expect, it } from 'vitest';
 
 // Test just the component logic without rendering actual drawers
 describe('ToolBarAppBar', () => {

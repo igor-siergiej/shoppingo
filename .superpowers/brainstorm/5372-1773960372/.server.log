@@ -1,3 +1,5 @@
 {"type":"server-started","port":59750,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:59750","screen_dir":"/home/igors/imapps/shoppingo/.superpowers/brainstorm/5372-1773960372"}
 {"type":"screen-added","file":"/home/igors/imapps/shoppingo/.superpowers/brainstorm/5372-1773960372/recipes-flow.html"}
 {"type":"screen-added","file":"/home/igors/imapps/shoppingo/.superpowers/brainstorm/5372-1773960372/recipes-mobile-first.html"}
+{"type":"screen-added","file":"/home/igors/imapps/shoppingo/.superpowers/brainstorm/5372-1773960372/recipes-with-layout.html"}
+{"type":"screen-added","file":"/home/igors/imapps/shoppingo/.superpowers/brainstorm/5372-1773960372/recipes-detail-and-form.html"}
