@@ -64,8 +64,8 @@ const refreshAndRetry = async (
         logger.info('Token refreshed successfully, retrying request');
         return await executeRequest(pathname, method, body, newToken, queryParams);
     } else {
-        logger.warn('Token refresh failed, redirecting to login');
-        window.location.href = '/login';
+        logger.warn('Token refresh failed, session expired');
+        window.dispatchEvent(new CustomEvent('auth:session-expired'));
         throw new Error('Session expired. Please log in again.');
     }
 };

@@ -9,7 +9,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import AppInitializer from './components/AppInitializer';
 import ConfigLoader from './components/ConfigLoader';
 import ErrorBoundary from './components/ErrorBoundary';
-import LoadingSpinner from './components/LoadingSpinner';
+import LoadingPage from './components/LoadingPage';
 import { RootLayout } from './components/RootLayout';
 import RouterErrorHandler from './components/RouterErrorHandler';
 import { getAuthConfig } from './config/auth';
@@ -52,7 +52,7 @@ const router = createBrowserRouter([
         path: '/login',
         element: (
             <RootLayout showLayout={false}>
-                <Suspense fallback={<LoadingSpinner message="Loading login..." />}>
+                <Suspense fallback={<LoadingPage />}>
                     <LoginPage />
                 </Suspense>
             </RootLayout>
@@ -63,7 +63,7 @@ const router = createBrowserRouter([
         path: '/register',
         element: (
             <RootLayout showLayout={false}>
-                <Suspense fallback={<LoadingSpinner message="Loading registration..." />}>
+                <Suspense fallback={<LoadingPage />}>
                     <RegisterPage />
                 </Suspense>
             </RootLayout>
@@ -84,7 +84,7 @@ const router = createBrowserRouter([
             {
                 index: true,
                 element: (
-                    <Suspense fallback={<LoadingSpinner message="Loading lists..." />}>
+                    <Suspense fallback={<LoadingPage />}>
                         <ListPage />
                     </Suspense>
                 ),
@@ -92,7 +92,7 @@ const router = createBrowserRouter([
             {
                 path: 'list/:listTitle',
                 element: (
-                    <Suspense fallback={<LoadingSpinner message="Loading items..." />}>
+                    <Suspense fallback={<LoadingPage />}>
                         <ItemsPage />
                     </Suspense>
                 ),

@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 
 import { loadConfig } from '../../utils/config';
 import ErrorPage from '../ErrorPage';
-import LoadingSpinner from '../LoadingSpinner';
+import LoadingPage from '../LoadingPage';
 
 interface ConfigLoaderProps {
     children: React.ReactNode;
@@ -30,7 +30,7 @@ const ConfigLoader: React.FC<ConfigLoaderProps> = ({ children }) => {
     }, []);
 
     if (isLoading) {
-        return <LoadingSpinner message="Loading configuration..." />;
+        return <LoadingPage />;
     }
 
     if (error) {
