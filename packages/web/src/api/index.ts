@@ -1,4 +1,4 @@
-import type { Item, ListResponse, ListType, User } from '@shoppingo/types';
+import type { Item, ListResponse, ListType, Recipe, User } from '@shoppingo/types';
 
 import { makeRequest } from './makeRequest';
 import { MethodType } from './types';
@@ -196,6 +196,44 @@ export const removeUserFromList = async (listTitle: string, userId: string): Pro
         method: MethodType.DELETE,
         operationString: 'remove user from list',
     });
+};
+
+export const getRecipesQuery = (userId: string) => ({
+    queryKey: ['recipes', userId],
+    queryFn: async () => await getRecipes(userId),
+});
+
+export const getRecipes = async (userId: string): Promise<Array<Recipe>> => {
+    return await makeRequest({
+        pathname: `/api/recipes/user/${userId}`,
+        method: MethodType.GET,
+        operationString: 'get recipes',
+    });
+};
+
+export const addRecipe = async (
+    title: string,
+    user: User,
+    selectedUsers?: Array<string>,
+    ingredients?: Array<{ name: string; quantity?: number; unit?: string }>
+): Promise<unknown> => {
+    const dateAdded = generateTimestamp(new Date());
+    const requestBody = {
+        title,
+        dateAdded,
+        user,
+        selectedUsers: selectedUsers || [],
+        ...(ingredients !== undefined && { ingredients }),
+    };
+
+    const result = await makeRequest({
+        pathname: '/api/recipes',
+        method: MethodType.PUT,
+        operationString: 'add recipe',
+        body: JSON.stringify(requestBody),
+    });
+
+    return result;
 };
 
 const generateTimestamp = (now: Date): string => {

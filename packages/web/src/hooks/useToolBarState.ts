@@ -4,6 +4,7 @@ export const useToolBarState = () => {
     const [isManageUsersOpen, setIsManageUsersOpen] = useState(false);
     const [isAddItemDrawerOpen, setIsAddItemDrawerOpen] = useState(false);
     const [isAddListDrawerOpen, setIsAddListDrawerOpen] = useState(false);
+    const [isAddRecipeDrawerOpen, setIsAddRecipeDrawerOpen] = useState(false);
     const menuCardRef = useRef<HTMLDivElement>(null);
 
     const [menuActive, setMenuActive] = useState<number | null>(null);
@@ -33,6 +34,8 @@ export const useToolBarState = () => {
         setIsAddItemDrawerOpen,
         isAddListDrawerOpen,
         setIsAddListDrawerOpen,
+        isAddRecipeDrawerOpen,
+        setIsAddRecipeDrawerOpen,
         menuCardRef,
         menuActive,
         setMenuActive,

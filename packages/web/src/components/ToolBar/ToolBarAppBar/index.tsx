@@ -6,6 +6,7 @@ import { ToolBarButton } from '../ToolBarButton';
 interface ToolBarAppBarProps {
     isItemsPage: boolean;
     isListsPage: boolean;
+    isRecipesPage?: boolean;
     onGoBack?: () => void;
     onClearSelected?: () => void;
     onRemoveAll?: () => void;
@@ -14,6 +15,7 @@ interface ToolBarAppBarProps {
     disableClearAll?: boolean;
     itemDrawer?: ReactNode;
     listDrawer?: ReactNode;
+    recipeDrawer?: ReactNode;
 }
 
 export const ToolBarAppBar = forwardRef<HTMLDivElement, ToolBarAppBarProps>(
@@ -21,6 +23,7 @@ export const ToolBarAppBar = forwardRef<HTMLDivElement, ToolBarAppBarProps>(
         {
             isItemsPage,
             isListsPage,
+            isRecipesPage,
             onGoBack,
             onClearSelected,
             onRemoveAll,
@@ -29,6 +32,7 @@ export const ToolBarAppBar = forwardRef<HTMLDivElement, ToolBarAppBarProps>(
             disableClearAll = false,
             itemDrawer,
             listDrawer,
+            recipeDrawer,
         },
         ref
     ) => {
@@ -42,7 +46,7 @@ export const ToolBarAppBar = forwardRef<HTMLDivElement, ToolBarAppBarProps>(
             }
         };
 
-        const showBackButton = isItemsPage || !isListsPage;
+        const showBackButton = isItemsPage || (!isListsPage && !isRecipesPage);
 
         return (
             <div ref={ref} className="flex items-center justify-between py-2.5 px-3">
@@ -66,6 +70,8 @@ export const ToolBarAppBar = forwardRef<HTMLDivElement, ToolBarAppBarProps>(
                 {isItemsPage && itemDrawer}
 
                 {isListsPage && listDrawer}
+
+                {isRecipesPage && recipeDrawer}
 
                 {onRemoveAll && (
                     <ToolBarButton
