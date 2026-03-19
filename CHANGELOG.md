@@ -1,3 +1,18 @@
+# [1.22.0](https://github.com/igor-siergiej/shoppingo/compare/v1.21.9...v1.22.0) (2026-03-19)
+
+
+### Bug Fixes
+
+* add security-events:write permission for SARIF upload ([#26](https://github.com/igor-siergiej/shoppingo/issues/26)) ([b09e7b0](https://github.com/igor-siergiej/shoppingo/commit/b09e7b083016f4464e2423a64366efa60665a2f5))
+* **ci:** add security-events:write permission to semgrep job in main pipeline ([#28](https://github.com/igor-siergiej/shoppingo/issues/28)) ([6fb1f12](https://github.com/igor-siergiej/shoppingo/commit/6fb1f12eca648201a23e291d09f9fcb9f04f9b37))
+* **docker:** resolve sharp native bindings issue by running TypeScript directly with bun ([#20](https://github.com/igor-siergiej/shoppingo/issues/20)) ([67294d7](https://github.com/igor-siergiej/shoppingo/commit/67294d74174ea285a65b08dca1c04042fcb0fcff))
+
+
+### Features
+
+* **ci:** add automatic Dokploy deployment webhook trigger ([#27](https://github.com/igor-siergiej/shoppingo/issues/27)) ([f08875f](https://github.com/igor-siergiej/shoppingo/commit/f08875f5fd30eacd0ed0560e6750ed16467c3351))
+* **ci:** add pull request workflow with coverage and semgrep checks ([#22](https://github.com/igor-siergiej/shoppingo/issues/22)) ([64a68a7](https://github.com/igor-siergiej/shoppingo/commit/64a68a7d7a0ad71debadc97284301691d0384c58))
+
 ## [1.21.9](https://github.com/igor-siergiej/shoppingo/compare/v1.21.8...v1.21.9) (2026-03-18)
 
 
