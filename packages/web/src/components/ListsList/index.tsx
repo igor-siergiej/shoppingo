@@ -1,7 +1,7 @@
 import type { ListResponse } from '@shoppingo/types';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
+import { deleteList, updateListName } from '../../api';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -11,10 +11,8 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { useConfirmation } from '@/hooks/useConfirmation';
-
-import { deleteList, updateListName } from '../../api';
+} from '../../components/ui/alert-dialog';
+import { useConfirmation } from '../../hooks/useConfirmation';
 import { ListItem } from './ListItem';
 import type { ListsListProps } from './types';
 

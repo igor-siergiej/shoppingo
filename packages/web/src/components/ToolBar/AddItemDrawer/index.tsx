@@ -2,9 +2,9 @@ import type { ListType } from '@shoppingo/types';
 import { ListType as ListTypeEnum } from '@shoppingo/types';
 import { Plus } from 'lucide-react';
 import { useId, useState } from 'react';
-import { DueDateField } from '@/components/DueDateField';
-import { QuantityUnitField } from '@/components/QuantityUnitField';
-import { Button } from '@/components/ui/button';
+import { DueDateField } from '../../../components/DueDateField';
+import { QuantityUnitField } from '../../../components/QuantityUnitField';
+import { Button } from '../../../components/ui/button';
 import {
     Drawer,
     DrawerClose,
@@ -13,10 +13,10 @@ import {
     DrawerHeader,
     DrawerTitle,
     DrawerTrigger,
-} from '@/components/ui/drawer';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { RippleButton } from '@/components/ui/ripple';
+} from '../../../components/ui/drawer';
+import { Input } from '../../../components/ui/input';
+import { Label } from '../../../components/ui/label';
+import { RippleButton } from '../../../components/ui/ripple';
 
 export interface AddItemDrawerProps {
     open: boolean;

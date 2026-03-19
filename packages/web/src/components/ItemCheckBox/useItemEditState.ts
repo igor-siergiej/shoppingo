@@ -1,8 +1,8 @@
 import type { Item, ListType } from '@shoppingo/types';
 import { ListType as ListTypeEnum } from '@shoppingo/types';
 import { type MouseEvent, useState } from 'react';
-import { useItemMutations } from '@/hooks/useItemMutations';
-import { useSwipeGesture } from '@/hooks/useSwipeGesture';
+import { useItemMutations } from '../../hooks/useItemMutations';
+import { useSwipeGesture } from '../../hooks/useSwipeGesture';
 
 export const useItemEditState = (item: Item, listTitle: string) => {
     const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false);

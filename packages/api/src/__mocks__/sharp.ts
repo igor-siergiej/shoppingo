@@ -14,7 +14,7 @@ export class MockSharpInstance {
         toFile: [],
     };
 
-    toBufferValue: any = Buffer.from('mock-processed-image');
+    toBufferValue: Buffer = Buffer.from('mock-processed-image');
 
     resize(...args: unknown[]) {
         this.calls.resize.push(args);
@@ -77,6 +77,6 @@ export function createMockSharp() {
 }
 
 // Default export that returns a Sharp-like interface
-export default function sharp(_input: any) {
+export default function sharp(_input: unknown) {
     return new MockSharpInstance();
 }

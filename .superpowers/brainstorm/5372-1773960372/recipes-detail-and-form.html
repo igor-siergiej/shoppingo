@@ -1,0 +1,129 @@
+<h2>Recipes — Detail View & Add Form</h2>
+<p class="subtitle">Recipe details and add/edit form within the app layout</p>
+
+<div style="background: #f9fafb; min-height: 100vh; display: flex; flex-direction: column; position: relative; font-family: Montserrat, sans-serif;">
+  <!-- Header -->
+  <header style="background: #4a9d6f; color: white; height: 64px; display: flex; align-items: center; justify-content: space-between; position: fixed; top: 0; left: 0; right: 0; z-index: 50; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 0 16px;">
+    <button style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;">←</button>
+    <h1 style="font-size: 18px; font-weight: 700; margin: 0;">Recipe Details</h1>
+    <div style="width: 20px;"></div>
+  </header>
+
+  <!-- Content Area -->
+  <div style="position: fixed; top: 64px; bottom: 120px; left: 0; right: 0; display: flex; justify-content: center; padding: 0; overflow: hidden;">
+    <div style="width: 100%; max-width: 500px; overflow-y: auto; display: flex; flex-direction: column;">
+      <!-- Recipe Image -->
+      <div style="height: 200px; background: linear-gradient(135deg, #4a9d6f 0%, #2e7d5e 100%); width: 100%;"></div>
+
+      <!-- Recipe Content -->
+      <div style="padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+        <div>
+          <h2 style="margin: 0 0 4px 0; font-size: 18px; font-weight: 600; color: #1f2937;">Pasta Carbonara</h2>
+          <p style="font-size: 12px; color: #6b7280; margin: 0;">By @john_doe</p>
+        </div>
+
+        <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; background: white;">
+          <strong style="font-size: 13px; color: #1f2937; display: block; margin-bottom: 8px;">Ingredients</strong>
+          <ul style="margin: 0; padding-left: 16px; font-size: 13px; color: #374151; list-style-type: none;">
+            <li style="padding: 4px 0;">400g Spaghetti</li>
+            <li style="padding: 4px 0;">200g Pancetta, diced</li>
+            <li style="padding: 4px 0;">4 Egg yolks</li>
+            <li style="padding: 4px 0;">100g Parmesan, grated</li>
+          </ul>
+        </div>
+
+        <button style="background: #4a9d6f; color: white; border: none; border-radius: 8px; padding: 10px; font-size: 14px; font-weight: 500; cursor: pointer; width: 100%;">Add to Shopping List</button>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <button style="background: white; color: #4a9d6f; border: 1px solid #4a9d6f; border-radius: 8px; padding: 10px; font-size: 13px; font-weight: 500; cursor: pointer;">Edit</button>
+          <button style="background: white; color: #dc2626; border: 1px solid #dc2626; border-radius: 8px; padding: 10px; font-size: 13px; font-weight: 500; cursor: pointer;">Delete</button>
+        </div>
+
+        <button style="background: white; color: #333; border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px; font-size: 13px; cursor: pointer; width: 100%;">Manage Users</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom ToolBar -->
+  <div style="position: fixed; bottom: 0; left: 0; right: 0; height: 120px; display: flex; justify-content: center; align-items: flex-start; padding: 12px 16px 16px; pointer-events: none;">
+    <div style="width: 100%; max-width: 500px; display: flex; justify-content: center; pointer-events: auto; position: relative;">
+      <div style="width: 100%; background: white; border-radius: 12px; padding: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 1px solid #e5e7eb; display: flex; justify-content: space-around;">
+        <button style="background: none; border: none; cursor: pointer; padding: 8px; color: #6b7280; font-size: 20px; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 8px;">☰</button>
+        <div style="width: 1px; background: #e5e7eb;"></div>
+        <button style="background: none; border: none; cursor: pointer; padding: 8px; color: #6b7280; font-size: 20px; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 8px;">···</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr style="margin: 32px 0; border: none; border-top: 1px solid #e5e7eb;">
+
+<h3>Add/Edit Recipe Form (Bottom Sheet Drawer)</h3>
+
+<div style="background: #f9fafb; min-height: 100vh; display: flex; flex-direction: column; position: relative; font-family: Montserrat, sans-serif;">
+  <!-- Header -->
+  <header style="background: #4a9d6f; color: white; height: 64px; display: flex; align-items: center; justify-content: center; position: fixed; top: 0; left: 0; right: 0; z-index: 50; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+    <h1 style="font-size: 24px; font-weight: 700; margin: 0;">Shoppingo</h1>
+  </header>
+
+  <!-- Drawer Overlay -->
+  <div style="position: fixed; top: 64px; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.3); z-index: 40;"></div>
+
+  <!-- Bottom Sheet Drawer -->
+  <div style="position: fixed; bottom: 0; left: 0; right: 0; background: white; border-radius: 16px 16px 0 0; max-height: 85vh; z-index: 50; overflow-y: auto; box-shadow: 0 -4px 12px rgba(0,0,0,0.15);">
+    <!-- Drawer Header -->
+    <div style="padding: 16px; border-bottom: 1px solid #e5e7eb; position: sticky; top: 0; background: white; border-radius: 16px 16px 0 0;">
+      <h2 style="margin: 0; font-size: 16px; font-weight: 600; color: #1f2937; text-align: center;">Add New Recipe</h2>
+      <button style="position: absolute; top: 16px; right: 16px; background: none; border: none; cursor: pointer; color: #6b7280; font-size: 20px;">×</button>
+    </div>
+
+    <!-- Drawer Content -->
+    <div style="padding: 16px; display: flex; flex-direction: column; gap: 12px; max-width: 500px; margin: 0 auto;">
+      <!-- Cover Image Section -->
+      <div>
+        <label style="display: block; font-size: 12px; margin-bottom: 8px; font-weight: 500; color: #374151;"><strong>Cover Image</strong></label>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <button style="background: white; color: #333; border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px;">📱 Upload</button>
+          <button style="background: white; color: #333; border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px;">✨ Generate</button>
+        </div>
+      </div>
+
+      <!-- Recipe Name -->
+      <div>
+        <label style="display: block; font-size: 12px; margin-bottom: 6px; font-weight: 500; color: #374151;"><strong>Recipe Name</strong></label>
+        <input type="text" placeholder="e.g., Pasta Carbonara" style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 13px; box-sizing: border-box; color: #1f2937;">
+      </div>
+
+      <!-- Ingredients Section -->
+      <div>
+        <label style="display: block; font-size: 12px; margin-bottom: 8px; font-weight: 500; color: #374151;"><strong>Ingredients</strong></label>
+        <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 0; background: white;">
+          <!-- Ingredient Row 1 -->
+          <div style="padding: 8px; border-bottom: 1px solid #e5e7eb;">
+            <div style="display: grid; grid-template-columns: 1fr 70px 60px; gap: 6px;">
+              <input type="text" placeholder="Ingredient" style="padding: 8px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 12px; box-sizing: border-box; color: #1f2937;">
+              <input type="number" placeholder="Qty" style="padding: 8px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 12px; box-sizing: border-box; color: #1f2937;">
+              <input type="text" placeholder="Unit" style="padding: 8px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 12px; box-sizing: border-box; color: #1f2937;">
+            </div>
+          </div>
+          <!-- Ingredient Row 2 -->
+          <div style="padding: 8px;">
+            <div style="display: grid; grid-template-columns: 1fr 70px 60px; gap: 6px;">
+              <input type="text" placeholder="Ingredient" style="padding: 8px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 12px; box-sizing: border-box; color: #1f2937;">
+              <input type="number" placeholder="Qty" style="padding: 8px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 12px; box-sizing: border-box; color: #1f2937;">
+              <input type="text" placeholder="Unit" style="padding: 8px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 12px; box-sizing: border-box; color: #1f2937;">
+            </div>
+          </div>
+        </div>
+        <button style="width: 100%; margin-top: 8px; background: white; color: #4a9d6f; border: 1px solid #4a9d6f; border-radius: 8px; padding: 8px; font-size: 12px; font-weight: 500; cursor: pointer;">+ Add Ingredient</button>
+      </div>
+
+      <!-- Form Buttons -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px;">
+        <button style="background: #4a9d6f; color: white; border: none; border-radius: 8px; padding: 10px; font-size: 13px; font-weight: 500; cursor: pointer;">Save Recipe</button>
+        <button style="background: white; color: #333; border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px; font-size: 13px; cursor: pointer;">Cancel</button>
+      </div>
+      <div style="height: 16px;"></div>
+    </div>
+  </div>
+</div>

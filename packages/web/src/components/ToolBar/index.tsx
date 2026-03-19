@@ -2,19 +2,18 @@
 
 import { useAuth, useUser } from '@imapps/web-utils';
 import type { ListType } from '@shoppingo/types';
-import { ArrowLeft, CheckCheck, Menu, Trash2 } from 'lucide-react';
 import { AnimatePresence, MotionConfig, motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import useMeasure from 'react-use-measure';
 
-import { Card, CardContent } from '@/components/ui/card';
-import { RippleButton } from '@/components/ui/ripple';
-import { useToolBarState } from '@/hooks/useToolBarState';
+import { Card } from '../../components/ui/card';
+import { useToolBarState } from '../../hooks/useToolBarState';
 import { ManageUsersDrawer } from '../ManageUsersDrawer';
 import { AddItemDrawer } from './AddItemDrawer';
 import { AddListDrawer } from './AddListDrawer';
 import { HamburgerMenu } from './HamburgerMenu';
+import { ToolBarAppBar } from './ToolBarAppBar';
 
 interface ToolBarProps {
     onAddList?: (name: string, listType: ListType, users: string[]) => Promise<void>;
@@ -159,95 +158,45 @@ const ToolBar = ({
                             )}
 
                             {/* App Bar - The persistent bottom navigation */}
-                            <CardContent className="flex items-center justify-between py-2.5" ref={menuRef}>
-                                {(isItemsPage || location.pathname !== '/') && (
-                                    <RippleButton
-                                        size="icon"
-                                        variant="ghost"
-                                        className="h-12 w-12 rounded-full transition-colors"
-                                        rippleClassName="bg-gray-500/30"
-                                        title={isItemsPage && handleGoBack ? 'Go back' : 'Go home'}
-                                        onClick={() => {
-                                            if (isItemsPage && handleGoBack) {
-                                                handleGoBack();
-                                            } else {
-                                                navigate('/');
-                                            }
-                                        }}
-                                    >
-                                        <ArrowLeft className="size-5" />
-                                    </RippleButton>
-                                )}
-
-                                {/* Clear Selected Button */}
-                                {handleClearSelected && (
-                                    <RippleButton
-                                        size="icon"
-                                        variant="ghost"
-                                        className="h-12 w-12 rounded-full transition-colors"
-                                        rippleClassName="bg-gray-500/30"
-                                        title="Clear selected items"
-                                        onClick={handleClearSelected}
-                                        disabled={disableClearSelected}
-                                    >
-                                        <CheckCheck className="size-5" />
-                                    </RippleButton>
-                                )}
-
-                                {/* Add Item/List Drawer */}
-                                {isItemsPage && onAddItem && (
-                                    <AddItemDrawer
-                                        open={isAddItemDrawerOpen}
-                                        onOpenChange={setIsAddItemDrawerOpen}
-                                        onAdd={onAddItem}
-                                        listType={currentListType}
-                                        placeholder={placeholder}
-                                    />
-                                )}
-
-                                {isListsPage && onAddList && (
-                                    <AddListDrawer
-                                        open={isAddListDrawerOpen}
-                                        onOpenChange={setIsAddListDrawerOpen}
-                                        onAdd={onAddList}
-                                        placeholder={placeholder}
-                                    />
-                                )}
-
-                                {/* Remove All Button */}
-                                {handleRemoveAll && (
-                                    <RippleButton
-                                        size="icon"
-                                        variant="ghost"
-                                        className="h-12 w-12 rounded-full transition-colors text-destructive hover:bg-destructive/10"
-                                        rippleClassName="bg-destructive/30"
-                                        title="Remove all items"
-                                        onClick={handleRemoveAll}
-                                        disabled={disableClearAll}
-                                    >
-                                        <Trash2 className="size-5" />
-                                    </RippleButton>
-                                )}
-
-                                {/* Menu Button */}
-                                <RippleButton
-                                    size="icon"
-                                    variant="ghost"
-                                    className="h-12 w-12 rounded-full transition-colors"
-                                    rippleClassName="bg-gray-500/30"
-                                    title="Menu"
-                                    onClick={() => {
-                                        setIsMenuOpen(!isMenuOpen);
-                                        if (!isMenuOpen) {
-                                            setMenuActive(1);
-                                        } else {
-                                            setMenuActive(null);
-                                        }
-                                    }}
-                                >
-                                    <Menu className="size-5" />
-                                </RippleButton>
-                            </CardContent>
+                            <ToolBarAppBar
+                                ref={menuRef}
+                                isItemsPage={isItemsPage}
+                                isListsPage={isListsPage}
+                                onGoBack={handleGoBack}
+                                onClearSelected={handleClearSelected}
+                                onRemoveAll={handleRemoveAll}
+                                onMenuClick={() => {
+                                    setIsMenuOpen(!isMenuOpen);
+                                    if (!isMenuOpen) {
+                                        setMenuActive(1);
+                                    } else {
+                                        setMenuActive(null);
+                                    }
+                                }}
+                                disableClearSelected={disableClearSelected}
+                                disableClearAll={disableClearAll}
+                                itemDrawer={
+                                    isItemsPage && onAddItem ? (
+                                        <AddItemDrawer
+                                            open={isAddItemDrawerOpen}
+                                            onOpenChange={setIsAddItemDrawerOpen}
+                                            onAdd={onAddItem}
+                                            listType={currentListType}
+                                            placeholder={placeholder}
+                                        />
+                                    ) : undefined
+                                }
+                                listDrawer={
+                                    isListsPage && onAddList ? (
+                                        <AddListDrawer
+                                            open={isAddListDrawerOpen}
+                                            onOpenChange={setIsAddListDrawerOpen}
+                                            onAdd={onAddList}
+                                            placeholder={placeholder}
+                                        />
+                                    ) : undefined
+                                }
+                            />
                         </Card>
                     </MotionConfig>
                 </div>

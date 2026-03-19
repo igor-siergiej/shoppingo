@@ -3,11 +3,11 @@
  * Provides mock function capabilities similar to Vitest
  */
 
-export interface MockFunction<T extends (...args: any[]) => any> {
+export interface MockFunction<T extends (...args: unknown[]) => unknown> {
     (...args: Parameters<T>): ReturnType<T>;
     mock: {
         calls: Array<Parameters<T>>;
-        results: Array<{ value?: any; error?: Error }>;
+        results: Array<{ value?: unknown; error?: Error }>;
         lastCall?: Parameters<T>;
     };
     mockResolvedValue(value: Awaited<ReturnType<T>>): MockFunction<T>;
@@ -17,15 +17,15 @@ export interface MockFunction<T extends (...args: any[]) => any> {
     mockClear(): void;
 }
 
-export function createMockFn<T extends (...args: any[]) => any>(impl?: T): MockFunction<T> {
+export function createMockFn<T extends (...args: unknown[]) => unknown>(impl?: T): MockFunction<T> {
     let implementation = impl;
-    let resolvedValue: any;
+    let resolvedValue: unknown;
     let rejectedError: Error | null = null;
-    let returnValue: any;
+    let returnValue: unknown;
 
     const mockData = {
         calls: [] as Array<Parameters<T>>,
-        results: [] as Array<{ value?: any; error?: Error }>,
+        results: [] as Array<{ value?: unknown; error?: Error }>,
     };
 
     const fn = ((...args: Parameters<T>) => {
@@ -54,7 +54,7 @@ export function createMockFn<T extends (...args: any[]) => any>(impl?: T): MockF
         }
     }) as MockFunction<T>;
 
-    fn.mock = mockData as any;
+    fn.mock = mockData as typeof mockData & { lastCall?: Parameters<T> };
     fn.mock.lastCall = undefined;
 
     fn.mockResolvedValue = (value: Awaited<ReturnType<T>>) => {
@@ -88,14 +88,17 @@ export function createMockFn<T extends (...args: any[]) => any>(impl?: T): MockF
     return fn;
 }
 
-export function fn<T extends (...args: any[]) => any = () => void>(impl?: T): MockFunction<T> {
+export function fn<T extends (...args: unknown[]) => unknown = () => void>(impl?: T): MockFunction<T> {
     return createMockFn(impl);
 }
 
 /**
  * Helper to check if a mock function was called with specific arguments
  */
-export function toHaveBeenCalledWith(mockFn: MockFunction<any>, ...expectedArgs: any[]) {
+export function toHaveBeenCalledWith(
+    mockFn: MockFunction<(...args: unknown[]) => unknown>,
+    ...expectedArgs: unknown[]
+) {
     const calls = mockFn.mock.calls;
     const found = calls.some((call) => {
         if (call.length !== expectedArgs.length) return false;
@@ -107,7 +110,7 @@ export function toHaveBeenCalledWith(mockFn: MockFunction<any>, ...expectedArgs:
     return found;
 }
 
-function deepEqual(a: any, b: any): boolean {
+function deepEqual(a: unknown, b: unknown): boolean {
     if (a === b) return true;
     if (a == null || b == null) return false;
     if (typeof a !== 'object' || typeof b !== 'object') return false;

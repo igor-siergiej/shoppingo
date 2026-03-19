@@ -3,6 +3,10 @@ import { ListType as ListTypeEnum } from '@shoppingo/types';
 import { useEffect, useState } from 'react';
 import { useQuery } from 'react-query';
 import { useNavigate, useParams } from 'react-router-dom';
+import { getListQuery } from '../../api';
+import ItemCheckBoxList from '../../components/ItemCheckBoxList';
+import { ItemsSkeleton } from '../../components/LoadingSkeleton';
+import ToolBar from '../../components/ToolBar';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -12,13 +16,9 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { useConfirmation } from '@/hooks/useConfirmation';
-import { useItemPageMutations } from '@/hooks/useItemPageMutations';
-import { getListQuery } from '../../api';
-import ItemCheckBoxList from '../../components/ItemCheckBoxList';
-import { ItemsSkeleton } from '../../components/LoadingSkeleton';
-import ToolBar from '../../components/ToolBar';
+} from '../../components/ui/alert-dialog';
+import { useConfirmation } from '../../hooks/useConfirmation';
+import { useItemPageMutations } from '../../hooks/useItemPageMutations';
 import { logger } from '../../utils/logger';
 import { EmptyState } from './EmptyState';
 import { ErrorState } from './ErrorState';
