@@ -1,9 +1,8 @@
+import type { Ingredient } from '@shoppingo/types';
 import type { Context } from 'koa';
-
 import { dependencyContainer } from '../../dependencies';
 import { DependencyToken } from '../../dependencies/types';
 import type { RecipeService } from '../../domain/RecipeService';
-import type { Ingredient } from '@shoppingo/types';
 
 interface HttpError {
     status?: number;
@@ -16,7 +15,7 @@ const getLogger = () => dependencyContainer.resolve(DependencyToken.Logger);
 // Helper to extract authenticated user from context
 const getAuthenticatedUser = (ctx: Context): { id: string; username: string } | null => {
     const user = ctx.state.user as { id: string; username: string } | undefined;
-    return user && user.id ? user : null;
+    return user?.id ? user : null;
 };
 
 // Helper to verify user has access to a recipe
@@ -150,7 +149,12 @@ export const createRecipe = async (ctx: Context): Promise<void> => {
     }
 
     try {
-        const recipe = await getRecipeService().createRecipe(title, ingredients, authenticatedUser.id, authenticatedUser);
+        const recipe = await getRecipeService().createRecipe(
+            title,
+            ingredients,
+            authenticatedUser.id,
+            authenticatedUser
+        );
 
         logger.info('API: Recipe created', {
             userId: authenticatedUser.id,
