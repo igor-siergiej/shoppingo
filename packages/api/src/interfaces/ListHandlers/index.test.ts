@@ -26,6 +26,7 @@ const mockListService = {
     clearList: vi.fn(),
     addItem: vi.fn(),
     updateItemQuantity: vi.fn(),
+    updateItemDueDate: vi.fn(),
     addUserToList: vi.fn(),
     removeUserFromList: vi.fn(),
 };
@@ -723,6 +724,311 @@ describe('ListHandlers', () => {
 
             expect(ctx.response.status).toBe(400);
             expect(ctx.body).toEqual({ error: 'Cannot remove the list owner' });
+        });
+    });
+
+    describe('Missing Coverage - 403 Unauthorized Access', () => {
+        it('getList should return 403 when user not in list', async () => {
+            const ctx = createMockContext({ params: { title: 'Test List' } });
+
+            mockListService.getList.mockResolvedValue({
+                id: 'list-1',
+                title: 'Test List',
+                dateAdded: new Date(),
+                items: [],
+                users: [{ id: 'other-user', username: 'other' }],
+            });
+
+            await listHandlers.getList(ctx);
+
+            expect(ctx.response.status).toBe(403);
+            expect(ctx.body).toEqual({ error: 'Forbidden' });
+        });
+
+        it('addItem should return 403 when user not in list', async () => {
+            const ctx = createMockContext({
+                params: { title: 'Test List' },
+                request: {
+                    body: {
+                        itemName: 'New Item',
+                        dateAdded: new Date().toISOString(),
+                    },
+                } as Context['request'],
+            });
+
+            mockListService.getList.mockResolvedValue({
+                id: 'list-1',
+                title: 'Test List',
+                dateAdded: new Date(),
+                items: [],
+                users: [{ id: 'other-user', username: 'other' }],
+            });
+
+            await listHandlers.addItem(ctx);
+
+            expect(ctx.response.status).toBe(403);
+            expect(ctx.body).toEqual({ error: 'Forbidden' });
+        });
+
+        it('updateItem should return 403 when user not in list', async () => {
+            const ctx = createMockContext({
+                params: { title: 'Test List', itemName: 'Item' },
+                request: {
+                    body: { newItemName: 'Updated Item' },
+                } as Context['request'],
+            });
+
+            mockListService.getList.mockResolvedValue({
+                id: 'list-1',
+                title: 'Test List',
+                dateAdded: new Date(),
+                items: [],
+                users: [{ id: 'other-user', username: 'other' }],
+            });
+
+            await listHandlers.updateItem(ctx);
+
+            expect(ctx.response.status).toBe(403);
+            expect(ctx.body).toEqual({ error: 'Forbidden' });
+        });
+
+        it('deleteItem should return 403 when user not in list', async () => {
+            const ctx = createMockContext({
+                params: { title: 'Test List', itemName: 'Item' },
+            });
+
+            mockListService.getList.mockResolvedValue({
+                id: 'list-1',
+                title: 'Test List',
+                dateAdded: new Date(),
+                items: [],
+                users: [{ id: 'other-user', username: 'other' }],
+            });
+
+            await listHandlers.deleteItem(ctx);
+
+            expect(ctx.response.status).toBe(403);
+            expect(ctx.body).toEqual({ error: 'Forbidden' });
+        });
+
+        it('deleteList should return 403 when user not in list', async () => {
+            const ctx = createMockContext({
+                params: { title: 'Test List' },
+            });
+
+            mockListService.getList.mockResolvedValue({
+                id: 'list-1',
+                title: 'Test List',
+                dateAdded: new Date(),
+                items: [],
+                users: [{ id: 'other-user', username: 'other' }],
+            });
+
+            await listHandlers.deleteList(ctx);
+
+            expect(ctx.response.status).toBe(403);
+            expect(ctx.body).toEqual({ error: 'Forbidden' });
+        });
+
+        it('deleteList should return 403 when user not owner', async () => {
+            const ctx = createMockContext({
+                params: { title: 'Test List' },
+            });
+
+            mockListService.getList.mockResolvedValue({
+                id: 'list-1',
+                title: 'Test List',
+                dateAdded: new Date(),
+                items: [],
+                users: [{ id: 'test-user-1', username: 'testuser' }],
+                ownerId: 'other-owner',
+            });
+
+            mockAuthorizationService.isListOwner.mockReturnValue(false);
+
+            await listHandlers.deleteList(ctx);
+
+            expect(ctx.response.status).toBe(403);
+            expect(ctx.body).toEqual({ error: 'Only the list owner can delete this list' });
+        });
+
+        it('updateList should return 403 when user not in list', async () => {
+            const ctx = createMockContext({
+                params: { title: 'Old List' },
+                request: {
+                    body: { newTitle: 'New List' },
+                } as Context['request'],
+            });
+
+            mockListService.getList.mockResolvedValue({
+                id: 'list-1',
+                title: 'Old List',
+                dateAdded: new Date(),
+                items: [],
+                users: [{ id: 'other-user', username: 'other' }],
+            });
+
+            await listHandlers.updateList(ctx);
+
+            expect(ctx.response.status).toBe(403);
+            expect(ctx.body).toEqual({ error: 'Forbidden' });
+        });
+
+        it('clearList should return 403 when user not in list', async () => {
+            const ctx = createMockContext({
+                params: { title: 'Test List' },
+            });
+
+            mockListService.getList.mockResolvedValue({
+                id: 'list-1',
+                title: 'Test List',
+                dateAdded: new Date(),
+                items: [],
+                users: [{ id: 'other-user', username: 'other' }],
+            });
+
+            await listHandlers.clearList(ctx);
+
+            expect(ctx.response.status).toBe(403);
+            expect(ctx.body).toEqual({ error: 'Forbidden' });
+        });
+
+        it('deleteSelected should return 403 when user not in list', async () => {
+            const ctx = createMockContext({
+                params: { title: 'Test List' },
+            });
+
+            mockListService.getList.mockResolvedValue({
+                id: 'list-1',
+                title: 'Test List',
+                dateAdded: new Date(),
+                items: [],
+                users: [{ id: 'other-user', username: 'other' }],
+            });
+
+            await listHandlers.deleteSelected(ctx);
+
+            expect(ctx.response.status).toBe(403);
+            expect(ctx.body).toEqual({ error: 'Forbidden' });
+        });
+    });
+
+    describe('Missing Coverage - verifyListAccess catch block', () => {
+        it('should return 403 when getList throws error in verifyListAccess', async () => {
+            const ctx = createMockContext({ params: { title: 'Test List' } });
+
+            mockListService.getList.mockRejectedValue(new Error('Database error'));
+
+            await listHandlers.getList(ctx);
+
+            expect(ctx.response.status).toBe(403);
+            expect(ctx.body).toEqual({ error: 'Forbidden' });
+        });
+    });
+
+    describe('Missing Coverage - updateItem branches', () => {
+        it('should update item selection successfully', async () => {
+            const ctx = createMockContext({
+                params: { title: 'Test List', itemName: 'Item' },
+                request: {
+                    body: { isSelected: true },
+                } as Context['request'],
+            });
+
+            mockListService.setItemSelected.mockResolvedValue({
+                message: 'Item selection updated',
+            });
+
+            await listHandlers.updateItem(ctx);
+
+            expect(mockListService.setItemSelected).toHaveBeenCalledWith('Test List', 'Item', true);
+            expect(ctx.response.status).toBe(200);
+            expect(ctx.body).toEqual({ message: 'Item selection updated' });
+        });
+
+        it('should update item quantity successfully', async () => {
+            const ctx = createMockContext({
+                params: { title: 'Test List', itemName: 'Item' },
+                request: {
+                    body: { quantity: 5, unit: 'kg' },
+                } as Context['request'],
+            });
+
+            mockListService.updateItemQuantity.mockResolvedValue({
+                message: 'Item quantity updated',
+            });
+
+            await listHandlers.updateItem(ctx);
+
+            expect(mockListService.updateItemQuantity).toHaveBeenCalledWith('Test List', 'Item', 5, 'kg');
+            expect(ctx.response.status).toBe(200);
+            expect(ctx.body).toEqual({ message: 'Item quantity updated' });
+        });
+
+        it('should update item due date successfully', async () => {
+            const dueDate = new Date('2025-12-31');
+            const ctx = createMockContext({
+                params: { title: 'Test List', itemName: 'Item' },
+                request: {
+                    body: { dueDate },
+                } as Context['request'],
+            });
+
+            mockListService.updateItemDueDate.mockResolvedValue({
+                message: 'Item due date updated',
+            });
+
+            await listHandlers.updateItem(ctx);
+
+            expect(mockListService.updateItemDueDate).toHaveBeenCalledWith('Test List', 'Item', dueDate);
+            expect(ctx.response.status).toBe(200);
+            expect(ctx.body).toEqual({ message: 'Item due date updated' });
+        });
+
+        it('should return 400 when no valid update fields provided', async () => {
+            const ctx = createMockContext({
+                params: { title: 'Test List', itemName: 'Item' },
+                request: {
+                    body: {},
+                } as Context['request'],
+            });
+
+            await listHandlers.updateItem(ctx);
+
+            expect(ctx.response.status).toBe(400);
+            expect(ctx.body.error).toBeDefined();
+        });
+
+        it('should handle error in setItemSelected', async () => {
+            const ctx = createMockContext({
+                params: { title: 'Test List', itemName: 'Item' },
+                request: {
+                    body: { isSelected: true },
+                } as Context['request'],
+            });
+
+            mockListService.setItemSelected.mockRejectedValue(new Error('Update failed'));
+
+            await listHandlers.updateItem(ctx);
+
+            expect(ctx.response.status).toBe(500);
+            expect(ctx.body).toEqual({ error: 'Update failed' });
+        });
+
+        it('should handle error in updateItemQuantity', async () => {
+            const ctx = createMockContext({
+                params: { title: 'Test List', itemName: 'Item' },
+                request: {
+                    body: { quantity: 5 },
+                } as Context['request'],
+            });
+
+            mockListService.updateItemQuantity.mockRejectedValue(new Error('Quantity update failed'));
+
+            await listHandlers.updateItem(ctx);
+
+            expect(ctx.response.status).toBe(500);
+            expect(ctx.body).toEqual({ error: 'Quantity update failed' });
         });
     });
 });

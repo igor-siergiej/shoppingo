@@ -226,5 +226,62 @@ describe('LogHandlers', () => {
                 expect(ctx.response.body).toEqual({ error: 'Invalid log level' });
             });
         });
+
+        describe('When logger throws an error', () => {
+            it('should return 500 when logger.info throws', async () => {
+                mockLogger.info.mockImplementation(() => {
+                    throw new Error('Logger failed');
+                });
+
+                const ctx = createMockContext({
+                    request: {
+                        ip: '127.0.0.1',
+                        body: { level: 'info', message: 'test' },
+                    } as Context['request'],
+                });
+
+                await receiveLogs(ctx);
+
+                expect(ctx.response.status).toBe(500);
+                expect(ctx.response.body).toEqual({ error: 'Failed to process log' });
+                expect(mockLogger.error).toHaveBeenCalledWith('Failed to process frontend log', expect.any(Object));
+            });
+
+            it('should return 500 when logger.debug throws', async () => {
+                mockLogger.debug.mockImplementation(() => {
+                    throw new Error('Logger failed');
+                });
+
+                const ctx = createMockContext({
+                    request: {
+                        ip: '127.0.0.1',
+                        body: { level: 'debug', message: 'test' },
+                    } as Context['request'],
+                });
+
+                await receiveLogs(ctx);
+
+                expect(ctx.response.status).toBe(500);
+                expect(ctx.response.body).toEqual({ error: 'Failed to process log' });
+            });
+
+            it('should return 500 when logger.warn throws', async () => {
+                mockLogger.warn.mockImplementation(() => {
+                    throw new Error('Logger failed');
+                });
+
+                const ctx = createMockContext({
+                    request: {
+                        ip: '127.0.0.1',
+                        body: { level: 'warn', message: 'test' },
+                    } as Context['request'],
+                });
+
+                await receiveLogs(ctx);
+
+                expect(ctx.response.status).toBe(500);
+                expect(ctx.response.body).toEqual({ error: 'Failed to process log' });
+            });
+        });
     });
 });

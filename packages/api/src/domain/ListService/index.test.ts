@@ -993,4 +993,93 @@ describe('ListService', () => {
             });
         });
     });
+
+    describe('updateItemDueDate', () => {
+        describe('When list does not exist', () => {
+            it('should throw a 404 error', async () => {
+                await expect(
+                    listService.updateItemDueDate('Nonexistent List', 'Item', new Date('2025-12-31'))
+                ).rejects.toMatchObject({ message: 'List not found', status: 404 });
+            });
+        });
+
+        describe('When list is not a TODO type', () => {
+            it('should throw a 400 error', async () => {
+                const mockList: List = {
+                    id: 'list-1',
+                    title: 'Shopping List',
+                    dateAdded: new Date('2023-01-01'),
+                    items: [{ id: 'item-1', name: 'Item 1', dateAdded: new Date(), isSelected: false }],
+                    users: [mockUser],
+                    listType: 'shopping',
+                };
+
+                await mockRepository.insert(mockList);
+
+                await expect(
+                    listService.updateItemDueDate('Shopping List', 'Item 1', new Date('2025-12-31'))
+                ).rejects.toMatchObject({ message: 'Due dates only available for TODO lists', status: 400 });
+            });
+        });
+
+        describe('When everything is valid', () => {
+            it('should update item due date and return success message', async () => {
+                const dueDate = new Date('2025-12-31');
+                const mockList: List = {
+                    id: 'list-1',
+                    title: 'TODO List',
+                    dateAdded: new Date('2023-01-01'),
+                    items: [
+                        {
+                            id: 'item-1',
+                            name: 'Task 1',
+                            dateAdded: new Date(),
+                            isSelected: false,
+                        },
+                    ],
+                    users: [mockUser],
+                    listType: 'todo',
+                };
+
+                await mockRepository.insert(mockList);
+
+                const result = await listService.updateItemDueDate('TODO List', 'Task 1', dueDate);
+
+                expect(result.message).toBe('Due date updated successfully');
+
+                const updatedList = await mockRepository.getByTitle('TODO List');
+                const updatedItem = updatedList?.items.find((i) => i.name === 'Task 1');
+                expect(updatedItem?.dueDate).toEqual(dueDate);
+            });
+
+            it('should clear due date when dueDate is undefined', async () => {
+                const mockList: List = {
+                    id: 'list-1',
+                    title: 'TODO List',
+                    dateAdded: new Date('2023-01-01'),
+                    items: [
+                        {
+                            id: 'item-1',
+                            name: 'Task 1',
+                            dateAdded: new Date(),
+                            isSelected: false,
+                            dueDate: new Date('2025-12-31'),
+                        },
+                    ],
+                    users: [mockUser],
+                    listType: 'todo',
+                };
+
+                await mockRepository.insert(mockList);
+
+                const result = await listService.updateItemDueDate('TODO List', 'Task 1', undefined);
+
+                expect(result.message).toBe('Due date updated successfully');
+
+                const updatedList = await mockRepository.getByTitle('TODO List');
+                const updatedItem = updatedList?.items.find((i) => i.name === 'Task 1');
+                expect(updatedItem?.dueDate).toBeUndefined();
+            });
+        });
+    });
 });
