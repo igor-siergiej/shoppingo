@@ -30,6 +30,49 @@ const verifyListAccess = async (
     }
 };
 
+// Helper to resolve which service method to call based on request body
+const resolveItemOperation = (body: {
+    isSelected?: boolean;
+    newItemName?: string;
+    quantity?: number;
+    unit?: string;
+    dueDate?: Date;
+}): {
+    type: 'name' | 'selection' | 'quantity' | 'dueDate';
+    execute: (service: ReturnType<typeof getListService>, title: string, itemName: string) => Promise<unknown>;
+} | null => {
+    if (body.newItemName !== undefined) {
+        return {
+            type: 'name',
+            execute: (service, title, itemName) => service.updateItemName(title, itemName, body.newItemName),
+        };
+    }
+
+    if (typeof body.isSelected === 'boolean') {
+        return {
+            type: 'selection',
+            execute: (service, title, itemName) => service.setItemSelected(title, itemName, body.isSelected),
+        };
+    }
+
+    if (body.quantity !== undefined || body.unit !== undefined) {
+        return {
+            type: 'quantity',
+            execute: (service, title, itemName) =>
+                service.updateItemQuantity(title, itemName, body.quantity, body.unit),
+        };
+    }
+
+    if (body.dueDate !== undefined) {
+        return {
+            type: 'dueDate',
+            execute: (service, title, itemName) => service.updateItemDueDate(title, itemName, body.dueDate),
+        };
+    }
+
+    return null;
+};
+
 export const getList = async (ctx: Context) => {
     const { title } = ctx.params as { title: string };
     const logger = getLogger();
@@ -219,7 +262,7 @@ export const addItem = async (ctx: Context) => {
 
 export const updateItem = async (ctx: Context) => {
     const { title, itemName } = ctx.params as { title: string; itemName: string };
-    const { isSelected, newItemName, quantity, unit, dueDate } = ctx.request.body as {
+    const requestBody = ctx.request.body as {
         isSelected?: boolean;
         newItemName?: string;
         quantity?: number;
@@ -243,67 +286,41 @@ export const updateItem = async (ctx: Context) => {
             return;
         }
 
-        if (newItemName !== undefined) {
-            // Validate newItemName
-            if (typeof newItemName !== 'string' || newItemName.trim() === '') {
+        // Validate newItemName if provided
+        if (requestBody.newItemName !== undefined) {
+            if (typeof requestBody.newItemName !== 'string' || requestBody.newItemName.trim() === '') {
                 ctx.status = 400;
                 ctx.body = { error: 'New item name must be a non-empty string' };
                 return;
             }
-            ctx.body = await getListService().updateItemName(title, itemName, newItemName);
-            logger.info('API: Item name updated', {
-                listTitle: title,
-                oldItemName: itemName,
-                newItemName,
-            });
-        } else if (typeof isSelected === 'boolean') {
-            ctx.body = await getListService().setItemSelected(title, itemName, isSelected);
-            logger.info('API: Item selection updated', {
-                listTitle: title,
-                itemName,
-                isSelected,
-            });
-        } else if (quantity !== undefined || unit !== undefined) {
-            ctx.body = await getListService().updateItemQuantity(title, itemName, quantity, unit);
-            logger.info('API: Item quantity updated', {
-                listTitle: title,
-                itemName,
-                quantity,
-                unit,
-            });
-        } else if (dueDate !== undefined) {
-            ctx.body = await getListService().updateItemDueDate(title, itemName, dueDate);
-            logger.info('API: Item due date updated', {
-                listTitle: title,
-                itemName,
-                dueDate,
-            });
-        } else {
+        }
+
+        const operation = resolveItemOperation(requestBody);
+        if (!operation) {
             ctx.status = 400;
             ctx.body = {
                 error: 'Either isSelected (boolean), newItemName (string), quantity/unit, or dueDate must be provided',
             };
-
             logger.warn('API: Invalid item update request', {
                 listTitle: title,
                 itemName,
-                providedFields: { isSelected, newItemName, quantity, unit, dueDate },
+                providedFields: requestBody,
             });
             return;
         }
+
+        ctx.body = await operation.execute(getListService(), title, itemName);
+        logger.info(`API: Item ${operation.type} updated`, {
+            listTitle: title,
+            itemName,
+            ...requestBody,
+        });
     } catch (error: unknown) {
         const err = error as { status?: number; message?: string };
 
         logger.error('API: Failed to update item', {
             listTitle: title,
             itemName,
-            updateType: newItemName
-                ? 'name'
-                : isSelected !== undefined
-                  ? 'selection'
-                  : dueDate !== undefined
-                    ? 'dueDate'
-                    : 'quantity',
             error: err.message,
         });
         ctx.status = err.status ?? 500;

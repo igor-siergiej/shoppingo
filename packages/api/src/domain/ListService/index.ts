@@ -20,6 +20,67 @@ export class ListService {
         this.authorizationService = authorizationService ?? new AuthorizationService();
     }
 
+    private async resolveSharedUsers(title: string, owner: User, usernames?: Array<string>): Promise<Array<User>> {
+        if (!usernames || usernames.length === 0) {
+            return [owner];
+        }
+
+        if (!this.auth) {
+            throw Object.assign(new Error('Auth service not configured'), { status: 502 });
+        }
+
+        try {
+            const fetched = await this.auth.getUsersByUsernames(usernames);
+
+            if (!fetched || fetched.length === 0) {
+                throw Object.assign(new Error('No users found for the provided usernames'), { status: 400 });
+            }
+
+            this.logger?.info('List shared with users', {
+                listTitle: title,
+                owner: owner.username,
+                sharedWithCount: fetched.length,
+                sharedWith: fetched.map((u) => u.username),
+            });
+
+            return [owner, ...fetched];
+        } catch (error) {
+            const errorWithStatus = error as {
+                status?: number;
+                usersNotFound?: boolean;
+                authServiceError?: boolean;
+            };
+
+            if (errorWithStatus.usersNotFound) {
+                this.logger?.warn('Attempted to share list with non-existent users', {
+                    listTitle: title,
+                    owner: owner.username,
+                    selectedUsernames: usernames,
+                    message: (error as Error).message,
+                });
+                throw error;
+            } else if (errorWithStatus.authServiceError) {
+                this.logger?.error('Auth service unavailable when sharing list', {
+                    listTitle: title,
+                    owner: owner.username,
+                    selectedUsernames: usernames,
+                    message: (error as Error).message,
+                });
+                throw Object.assign(new Error('Auth service unavailable. Please try again later.'), {
+                    status: 502,
+                });
+            } else {
+                this.logger?.error('Failed to share list with users', {
+                    listTitle: title,
+                    owner: owner.username,
+                    selectedUsernames: usernames,
+                    error,
+                });
+                throw Object.assign(new Error('Failed to share list. Please try again.'), { status: 500 });
+            }
+        }
+    }
+
     async getList(title: string): Promise<List> {
         const list = await this.repo.getByTitle(title);
 
@@ -74,70 +135,8 @@ export class ListService {
         selectedUsernames?: Array<string>,
         listType: ListType = ListTypeEnum.SHOPPING
     ) {
-        let users: Array<User> = [owner];
-
         try {
-            if (selectedUsernames && selectedUsernames.length > 0) {
-                if (!this.auth) {
-                    throw Object.assign(new Error('Auth service not configured'), {
-                        status: 502,
-                    });
-                }
-
-                try {
-                    const fetched = await this.auth.getUsersByUsernames(selectedUsernames);
-
-                    if (!fetched || fetched.length === 0) {
-                        throw Object.assign(new Error('No users found for the provided usernames'), { status: 400 });
-                    }
-
-                    users = [owner, ...fetched];
-                    this.logger?.info('List shared with users', {
-                        listTitle: title,
-                        owner: owner.username,
-                        sharedWithCount: fetched.length,
-                        sharedWith: fetched.map((u) => u.username),
-                    });
-                } catch (error) {
-                    const errorWithStatus = error as {
-                        status?: number;
-                        usersNotFound?: boolean;
-                        authServiceError?: boolean;
-                    };
-
-                    // Re-throw with proper status code
-                    if (errorWithStatus.usersNotFound) {
-                        // Users don't exist - client error
-                        this.logger?.warn('Attempted to share list with non-existent users', {
-                            listTitle: title,
-                            owner: owner.username,
-                            selectedUsernames,
-                            message: (error as Error).message,
-                        });
-                        throw error;
-                    } else if (errorWithStatus.authServiceError) {
-                        // Auth service is down/erroring - server error
-                        this.logger?.error('Auth service unavailable when sharing list', {
-                            listTitle: title,
-                            owner: owner.username,
-                            selectedUsernames,
-                            message: (error as Error).message,
-                        });
-                        throw Object.assign(new Error('Auth service unavailable. Please try again later.'), {
-                            status: 502,
-                        });
-                    } else {
-                        // Unknown error
-                        this.logger?.error('Failed to share list with users', {
-                            listTitle: title,
-                            owner: owner.username,
-                            selectedUsernames,
-                            error,
-                        });
-                        throw Object.assign(new Error('Failed to share list. Please try again.'), { status: 500 });
-                    }
-                }
-            }
+            const users = await this.resolveSharedUsers(title, owner, selectedUsernames);
 
             const list: List = {
                 id: this.idGenerator.generate(),
