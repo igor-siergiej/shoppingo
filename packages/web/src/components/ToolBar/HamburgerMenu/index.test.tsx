@@ -158,6 +158,6 @@ describe('HamburgerMenu', () => {
         );
 
         const logoutButton = screen.getByText('Log out').closest('button');
-        expect(logoutButton).toHaveClass('destructive');
+        expect(logoutButton).toHaveClass('bg-destructive', 'text-white');
     });
 });
