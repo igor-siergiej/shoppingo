@@ -18,17 +18,22 @@ RUN NODE_AUTH_TOKEN=${NODE_AUTH_TOKEN} bun install --frozen-lockfile
 
 RUN bun run --filter @shoppingo/api build
 
-FROM oven/bun:1-alpine AS runner
+FROM oven/bun:1-debian AS runner
 
 WORKDIR /app
 
-# Copy only the built application
-COPY --from=builder /app/packages/api/build ./build
+# Copy package files for installation
+COPY package.json bun.lock ./
+COPY packages/api/package.json packages/api/package.json
+COPY packages/types/package.json packages/types/package.json
 
-# Copy sharp and its native binaries from the builder (same Alpine base ensures musl compatibility)
-COPY --from=builder /app/packages/api/node_modules/sharp ./node_modules/sharp
-COPY --from=builder /app/packages/api/node_modules/@img ./node_modules/@img
+# Install dependencies in Debian (bun handles optional deps and builds native bindings)
+RUN bun install
+
+# Copy source code
+COPY --from=builder /app/packages/api/src ./packages/api/src
+COPY --from=builder /app/packages/types/src ./packages/types/src
 
 EXPOSE 4001
 
-CMD ["bun", "build/index.js"]
+CMD ["bun", "packages/api/src/index.ts"]
