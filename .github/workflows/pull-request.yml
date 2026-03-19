@@ -35,8 +35,8 @@ jobs:
             p/security-audit
             p/typescript
             p/owasp-top-ten
-      - uses: github/codeql-action/upload-sarif@v3
-        if: always()
+      - uses: github/codeql-action/upload-sarif@v4
+        if: always() && hashFiles('semgrep.sarif') != ''
         with:
           sarif_file: semgrep.sarif
 
