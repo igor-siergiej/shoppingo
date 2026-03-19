@@ -9,14 +9,14 @@ export class RecipeService {
   ) {}
 
   async createRecipe(
-    name: string,
+    title: string,
     ingredients: Ingredient[],
     ownerId: string,
     owner: User,
   ): Promise<Recipe> {
     const recipe: Recipe = {
       id: this.idGenerator.generate(),
-      name,
+      title,
       ingredients: ingredients.map(ing => ({
         ...ing,
         id: this.idGenerator.generate(),
@@ -44,7 +44,7 @@ export class RecipeService {
 
   async updateRecipe(
     recipeId: string,
-    name: string,
+    title: string,
     ingredients: Ingredient[],
     ownerId: string,
   ): Promise<Recipe> {
@@ -54,7 +54,7 @@ export class RecipeService {
       Object.assign(error, { status: 403 });
       throw error;
     }
-    recipe.name = name;
+    recipe.title = title;
     recipe.ingredients = ingredients.map(ing => ({
       ...ing,
       id: ing.id || this.idGenerator.generate(),
