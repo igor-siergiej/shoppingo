@@ -4,12 +4,13 @@ import { useAuth, useUser } from '@imapps/web-utils';
 import type { ListType } from '@shoppingo/types';
 import { ArrowLeft, CheckCheck, Menu, Trash2 } from 'lucide-react';
 import { AnimatePresence, MotionConfig, motion } from 'motion/react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import useMeasure from 'react-use-measure';
 
 import { Card, CardContent } from '@/components/ui/card';
 import { RippleButton } from '@/components/ui/ripple';
+import { useToolBarState } from '@/hooks/useToolBarState';
 import { ManageUsersDrawer } from '../ManageUsersDrawer';
 import { AddItemDrawer } from './AddItemDrawer';
 import { AddListDrawer } from './AddListDrawer';
@@ -52,16 +53,23 @@ const ToolBar = ({
     const { user } = useUser();
     const userId = user?.id;
 
-    const [isManageUsersOpen, setIsManageUsersOpen] = useState(false);
-    const [isAddItemDrawerOpen, setIsAddItemDrawerOpen] = useState(false);
-    const [isAddListDrawerOpen, setIsAddListDrawerOpen] = useState(false);
-    const menuCardRef = useRef<HTMLDivElement>(null);
+    const {
+        isManageUsersOpen,
+        setIsManageUsersOpen,
+        isAddItemDrawerOpen,
+        setIsAddItemDrawerOpen,
+        isAddListDrawerOpen,
+        setIsAddListDrawerOpen,
+        menuCardRef,
+        menuActive,
+        setMenuActive,
+        isMenuOpen,
+        setIsMenuOpen,
+    } = useToolBarState();
 
     const isItemsPage = location.pathname.includes('/list/');
     const isListsPage = location.pathname === '/';
 
-    const [menuActive, setMenuActive] = useState<number | null>(null);
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [contentRef, { height: contentHeight }] = useMeasure();
     const [menuRef, { width: menuWidth }] = useMeasure();
     const [maxWidth, setMaxWidth] = useState(0);
@@ -70,23 +78,6 @@ const ToolBar = ({
         if (!menuWidth || maxWidth > 0) return;
         setMaxWidth(menuWidth);
     }, [menuWidth, maxWidth]);
-
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent | TouchEvent) => {
-            if (menuCardRef.current && !menuCardRef.current.contains(event.target as Node) && isMenuOpen) {
-                setIsMenuOpen(false);
-                setMenuActive(null);
-            }
-        };
-
-        document.addEventListener('mousedown', handleClickOutside);
-        document.addEventListener('touchstart', handleClickOutside);
-
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-            document.removeEventListener('touchstart', handleClickOutside);
-        };
-    }, [isMenuOpen]);
 
     const handleLogout = async () => {
         await logout();

@@ -1,6 +1,6 @@
 import type { ListType } from '@shoppingo/types';
 import { ListType as ListTypeEnum } from '@shoppingo/types';
-import { Plus, Search, User } from 'lucide-react';
+import { Plus, Search } from 'lucide-react';
 import { useId, useState } from 'react';
 import { SearchResults } from '@/components/SearchResults';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RippleButton } from '@/components/ui/ripple';
 import { useSearch } from '../../../hooks/useSearch';
+import { SelectedUsersList } from './SelectedUsersList';
 
 export interface AddListDrawerProps {
     open: boolean;
@@ -180,31 +181,7 @@ export const AddListDrawer = ({ open, onOpenChange, onAdd, placeholder }: AddLis
                                 />
                             </div>
 
-                            {/* Selected users */}
-                            {selectedUsers.length > 0 && (
-                                <div className="space-y-2">
-                                    <Label className="text-sm text-muted-foreground">Selected Users:</Label>
-                                    <div className="flex flex-wrap gap-2">
-                                        {selectedUsers.map((username) => (
-                                            <div
-                                                key={username}
-                                                className="flex items-center gap-1 bg-secondary text-secondary-foreground px-2 py-1 rounded-md text-sm"
-                                            >
-                                                <User className="h-3 w-3" />
-                                                <span>{username}</span>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    className="h-4 w-4 p-0 hover:bg-secondary-foreground/20"
-                                                    onClick={() => removeSelectedUser(username)}
-                                                >
-                                                    ×
-                                                </Button>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
+                            <SelectedUsersList selectedUsers={selectedUsers} onRemoveUser={removeSelectedUser} />
                         </div>
                     </div>
                     <DrawerFooter>
