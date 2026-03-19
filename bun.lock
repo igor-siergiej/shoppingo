@@ -26,7 +26,7 @@
     },
     "packages/api": {
       "name": "@shoppingo/api",
-      "version": "1.21.8",
+      "version": "1.21.9",
       "dependencies": {
         "@google/genai": "^1.16.0",
         "@imapps/api-utils": "0.5.1",
@@ -45,19 +45,18 @@
         "@types/koa-router": "^7.4.8",
         "@types/koa__cors": "^5.0.0",
         "@types/sharp": "^0.32.0",
-        "tsup": "^8.5.0",
       },
     },
     "packages/types": {
       "name": "@shoppingo/types",
-      "version": "1.21.8",
+      "version": "1.21.9",
       "dependencies": {
         "mongodb": "^6.19.0",
       },
     },
     "packages/web": {
       "name": "@shoppingo/web",
-      "version": "1.21.8",
+      "version": "1.21.9",
       "dependencies": {
         "@hookform/resolvers": "^5.2.2",
         "@imapps/web-utils": "0.5.1",

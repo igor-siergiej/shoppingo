@@ -1,8 +1,7 @@
-import type { Item, ListType } from '@shoppingo/types';
+import type { ListType } from '@shoppingo/types';
 import { ListType as ListTypeEnum } from '@shoppingo/types';
-import { AlertTriangle, ListTodo, ShoppingCart } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { useQuery } from 'react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
     AlertDialog,
@@ -14,19 +13,19 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Button } from '@/components/ui/button';
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
 import { useConfirmation } from '@/hooks/useConfirmation';
-import { addItem, clearList, clearSelected, getListQuery } from '../../api';
+import { useItemPageMutations } from '@/hooks/useItemPageMutations';
+import { getListQuery } from '../../api';
 import ItemCheckBoxList from '../../components/ItemCheckBoxList';
 import { ItemsSkeleton } from '../../components/LoadingSkeleton';
 import ToolBar from '../../components/ToolBar';
 import { logger } from '../../utils/logger';
+import { EmptyState } from './EmptyState';
+import { ErrorState } from './ErrorState';
 
 const ItemsPage = () => {
     const { listTitle } = useParams();
     const navigate = useNavigate();
-    const queryClient = useQueryClient();
     const [currentListType, setCurrentListType] = useState<ListType>(ListTypeEnum.SHOPPING);
     const { confirm, isOpen, config: confirmConfig, handleConfirm, handleCancel } = useConfirmation();
 
@@ -34,12 +33,13 @@ const ItemsPage = () => {
         ...getListQuery(listTitle),
     });
 
-    // Extract listType and items from API response
     const listType = data?.listType || ListTypeEnum.SHOPPING;
     const items = data?.items || [];
     const users = data?.users || [];
     const ownerId = data?.ownerId;
     const selectedItemsCount = items.filter((item) => item.isSelected).length;
+
+    const { addItemMutation, clearSelectedMutation, clearListMutation } = useItemPageMutations(listTitle);
 
     useEffect(() => {
         setCurrentListType(listType);
@@ -51,150 +51,11 @@ const ItemsPage = () => {
         }
     }, [listTitle, items.length, listType]);
 
-    const addItemMutation = useMutation({
-        mutationFn: ({
-            itemName,
-            quantity,
-            unit,
-            dueDate,
-        }: {
-            itemName: string;
-            quantity?: number;
-            unit?: string;
-            dueDate?: Date;
-        }) => addItem(itemName, listTitle, quantity, unit, dueDate),
-        onSuccess: (_, variables) => {
-            logger.info('Item added', {
-                listTitle,
-                itemName: variables.itemName,
-                quantity: variables.quantity,
-                unit: variables.unit,
-                dueDate: variables.dueDate,
-            });
-            // Refetch after successful add
-            void queryClient.invalidateQueries([listTitle]);
-        },
-        onError: (error, variables) => {
-            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-            logger.error('Failed to add item', { listTitle, itemName: variables.itemName, error: errorMessage });
-        },
-    });
-
-    // Mutation for clearing selected items
-    const clearSelectedMutation = useMutation({
-        mutationFn: () => clearSelected(listTitle),
-        onMutate: async () => {
-            await queryClient.cancelQueries([listTitle]);
-            const previousData = queryClient.getQueryData<{ listType: ListType; items: Item[] }>([listTitle]);
-            const selectedCount = previousData?.items?.filter((i) => i.isSelected).length || 0;
-
-            logger.info('Clearing selected items', { listTitle, count: selectedCount });
-
-            // Optimistically remove selected items
-            queryClient.setQueryData<{ listType: ListType; items: Item[] }>([listTitle], (old) =>
-                old ? { ...old, items: old.items.filter((i) => !i.isSelected) } : old
-            );
-
-            return { previousData };
-        },
-        onError: (_err, _variables, context) => {
-            logger.warn('Failed to clear selected items', { listTitle });
-            if (context?.previousData) {
-                queryClient.setQueryData([listTitle], context.previousData);
-            }
-        },
-        onSettled: () => {
-            void queryClient.invalidateQueries([listTitle]);
-        },
-    });
-
-    // Mutation for clearing all items
-    const clearListMutation = useMutation({
-        mutationFn: () => clearList(listTitle),
-        onMutate: async () => {
-            await queryClient.cancelQueries([listTitle]);
-            const previousData = queryClient.getQueryData<{ listType: ListType; items: Item[] }>([listTitle]);
-            const itemCount = previousData?.items?.length || 0;
-
-            logger.info('Clearing all items', { listTitle, count: itemCount });
-
-            // Optimistically clear all items
-            queryClient.setQueryData<{ listType: ListType; items: Item[] }>([listTitle], (old) =>
-                old ? { ...old, items: [] } : old
-            );
-
-            return { previousData };
-        },
-        onError: (_err, _variables, context) => {
-            logger.warn('Failed to clear all items', { listTitle });
-            if (context?.previousData) {
-                queryClient.setQueryData([listTitle], context.previousData);
-            }
-        },
-        onSettled: () => {
-            void queryClient.invalidateQueries([listTitle]);
-        },
-    });
-
-    // Early return after all hooks are defined
     if (!listTitle) {
         return <div>Need a valid list title</div>;
     }
 
-    const errorPageContent = (
-        <div className="flex flex-col items-center justify-center py-10 text-center">
-            <div className="flex items-center gap-3 text-destructive mb-3">
-                <AlertTriangle className="h-6 w-6" />
-                <span className="font-semibold">Unable to load items</span>
-            </div>
-            <p className="text-muted-foreground mb-4 max-w-sm">Please check your connection and try again.</p>
-            <Button
-                variant="default"
-                onClick={() => {
-                    void refetch();
-                }}
-            >
-                Retry
-            </Button>
-        </div>
-    );
-
     const isEmpty = items.length === 0;
-
-    const emptyStateConfig = {
-        [ListTypeEnum.SHOPPING]: {
-            icon: ShoppingCart,
-            title: 'No items yet',
-            description: 'Start adding items to your shopping list',
-            buttonLabel: 'Add Item',
-        },
-        [ListTypeEnum.TODO]: {
-            icon: ListTodo,
-            title: 'No tasks yet',
-            description: 'Start adding tasks to your to-do list',
-            buttonLabel: 'Add Task',
-        },
-    };
-
-    const config = emptyStateConfig[currentListType];
-
-    const pageContent = (
-        <div className="flex flex-col">
-            {data ? (
-                isEmpty ? (
-                    <Empty className="flex-none justify-start p-4">
-                        <EmptyHeader>
-                            <EmptyMedia variant="icon">{config && <config.icon />}</EmptyMedia>
-                            <EmptyTitle>{config?.title}</EmptyTitle>
-                            <EmptyDescription>{config?.description}</EmptyDescription>
-                        </EmptyHeader>
-                    </Empty>
-                ) : (
-                    <ItemCheckBoxList items={items} listTitle={listTitle} listType={listType} />
-                )
-            ) : null}
-        </div>
-    );
 
     const handleClearList = () => {
         if (items.length === 0) return;
@@ -241,8 +102,16 @@ const ItemsPage = () => {
     return (
         <>
             {isLoading && <ItemsSkeleton />}
-            {isError && errorPageContent}
-            {!isLoading && !isError && data && pageContent}
+            {isError && <ErrorState onRetry={() => void refetch()} />}
+            {!isLoading && !isError && data && (
+                <div className="flex flex-col">
+                    {isEmpty ? (
+                        <EmptyState listType={currentListType} />
+                    ) : (
+                        <ItemCheckBoxList items={items} listTitle={listTitle} listType={listType} />
+                    )}
+                </div>
+            )}
 
             <ToolBar
                 onAddItem={handleAddItem}
