@@ -1,16 +1,23 @@
 import { GlobalRegistrator } from '@happy-dom/global-registrator';
-GlobalRegistrator.register();
+try {
+    GlobalRegistrator.register();
+} catch {
+    // Already registered
+}
 
 import '@testing-library/jest-dom';
-import { render } from '@testing-library/react';
-import { describe, it, expect, beforeEach } from 'bun:test';
+import { render, cleanup } from '@testing-library/react';
+import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
 import { DueDateBadge } from './index';
 
 describe('DueDateBadge', () => {
     beforeEach(() => {
-        // Mock current time to 2026-03-19 12:00:00 for consistent testing
         const mockNow = new Date('2026-03-19T12:00:00');
         global.Date.now = () => mockNow.getTime();
+    });
+
+    afterEach(() => {
+        cleanup();
     });
 
     it('renders null when dueDate is undefined', () => {

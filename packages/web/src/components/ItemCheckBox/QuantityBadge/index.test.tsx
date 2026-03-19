@@ -1,5 +1,9 @@
 import { GlobalRegistrator } from '@happy-dom/global-registrator';
-GlobalRegistrator.register();
+try {
+    GlobalRegistrator.register();
+} catch {
+    // Already registered
+}
 
 import '@testing-library/jest-dom';
 import { render } from '@testing-library/react';
