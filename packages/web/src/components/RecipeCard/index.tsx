@@ -43,7 +43,7 @@ export const RecipeCard = ({ recipe, onClick }: RecipeCardProps) => {
                 URL.revokeObjectURL(imageUrl);
             }
         };
-    }, [recipe.coverImageKey, imageUrl]);
+    }, [recipe.coverImageKey]);
 
     const ingredientCount = recipe.ingredients?.length ?? 0;
     const ingredientLabel = ingredientCount === 1 ? 'ingredient' : 'ingredients';
@@ -56,6 +56,7 @@ export const RecipeCard = ({ recipe, onClick }: RecipeCardProps) => {
             tabIndex={0}
             onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
                     onClick();
                 }
             }}
