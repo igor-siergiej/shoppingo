@@ -3,7 +3,7 @@ import { AlertTriangle, BookOpen, ChefHat } from 'lucide-react';
 import { useEffect } from 'react';
 import { useQuery } from 'react-query';
 import { useNavigate } from 'react-router-dom';
-import { getRecipesQuery } from '../../api';
+import { addRecipe, getRecipesQuery } from '../../api';
 import { ListsSkeleton } from '../../components/LoadingSkeleton';
 import { RecipesList } from '../../components/RecipesList';
 import ToolBar from '../../components/ToolBar';
@@ -51,21 +51,26 @@ const RecipesPage = () => {
         navigate(`/recipes/${recipeId}`);
     };
 
-    const handleAddRecipe = async (recipeName: string) => {
+    const handleAddRecipe = async (
+        title: string,
+        ingredients: Array<{ name: string; quantity?: number; unit?: string }>,
+        imageKey?: string,
+        selectedUsers?: string[]
+    ) => {
         if (!user) {
             logger.warn('Attempted to add recipe without user');
             return;
         }
 
-        logger.info('Creating recipe', { recipeName });
+        logger.info('Creating recipe', { title, ingredientCount: ingredients.length, sharedWith: selectedUsers?.length || 0 });
 
         try {
-            // TODO: Implement with AddRecipeDrawer and actual mutation
-            logger.info('Recipe created successfully', { recipeName });
+            await addRecipe(title, user, selectedUsers || [], ingredients);
+            logger.info('Recipe created successfully', { title, ingredientCount: ingredients.length });
             await refetch();
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-            logger.error('Failed to create recipe', { recipeName, error: errorMessage });
+            logger.error('Failed to create recipe', { title, error: errorMessage });
             throw error;
         }
     };
