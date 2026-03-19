@@ -20,29 +20,9 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.GH_TOKEN }}
       - run: bun run lint
 
-  semgrep:
-    runs-on: ubuntu-latest
-    needs: lint
-    permissions:
-      contents: read
-    if: (github.actor != 'dependabot[bot]')
-    steps:
-      - uses: actions/checkout@v4
-      - uses: returntocorp/semgrep-action@v1
-        with:
-          generateSarif: true
-          config: >-
-            p/security-audit
-            p/typescript
-            p/owasp-top-ten
-      - uses: github/codeql-action/upload-sarif@v4
-        if: always() && hashFiles('semgrep.sarif') != ''
-        with:
-          sarif_file: semgrep.sarif
-
   test:
     runs-on: ubuntu-latest
-    needs: semgrep
+    needs: lint
     permissions:
       contents: read
       packages: read
@@ -66,3 +46,23 @@ jobs:
             exit 1
           fi
           echo "✅ Coverage ${COVERAGE}% meets 90% threshold"
+
+  semgrep:
+    runs-on: ubuntu-latest
+    needs: test
+    permissions:
+      contents: read
+    if: (github.actor != 'dependabot[bot]')
+    steps:
+      - uses: actions/checkout@v4
+      - uses: returntocorp/semgrep-action@v1
+        with:
+          generateSarif: true
+          config: >-
+            p/security-audit
+            p/typescript
+            p/owasp-top-ten
+      - uses: github/codeql-action/upload-sarif@v4
+        if: always() && hashFiles('semgrep.sarif') != ''
+        with:
+          sarif_file: semgrep.sarif
