@@ -4,9 +4,7 @@ import RouterErrorHandler from './index';
 
 // Mock ErrorPage to avoid rendering it
 vi.mock('../ErrorPage', () => ({
-    default: ({ error }: { error: Error }) => (
-        <div data-testid="error-page">Error: {error.message}</div>
-    ),
+    default: ({ error }: { error: Error }) => <div data-testid="error-page">Error: {error.message}</div>,
 }));
 
 // Mock useRouteError
@@ -64,9 +62,7 @@ describe('RouterErrorHandler', () => {
 
         const { getByText } = render(<RouterErrorHandler />);
 
-        expect(
-            getByText(/An unknown routing error occurred/)
-        ).toBeInTheDocument();
+        expect(getByText(/An unknown routing error occurred/)).toBeInTheDocument();
     });
 
     it('handles null/undefined errors with default message', () => {
@@ -74,8 +70,6 @@ describe('RouterErrorHandler', () => {
 
         const { getByText } = render(<RouterErrorHandler />);
 
-        expect(
-            getByText(/An unknown routing error occurred/)
-        ).toBeInTheDocument();
+        expect(getByText(/An unknown routing error occurred/)).toBeInTheDocument();
     });
 });

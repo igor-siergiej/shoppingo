@@ -9,8 +9,11 @@ afterEach(() => {
 
 // Mock PointerEvent - jsdom doesn't have it
 if (typeof window !== 'undefined' && !window.PointerEvent) {
-    (window as any).PointerEvent = class PointerEvent extends Event {
-        constructor(type: string, public options: any = {}) {
+    (window as unknown as { PointerEvent: typeof Event }).PointerEvent = class PointerEvent extends Event {
+        constructor(
+            type: string,
+            public options: Record<string, unknown> = {}
+        ) {
             super(type);
         }
     };

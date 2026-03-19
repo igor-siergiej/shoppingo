@@ -20,9 +20,7 @@ describe('ItemCheckBoxList', () => {
     ];
 
     it('renders all items', () => {
-        render(
-            <ItemCheckBoxList items={mockItems} listTitle="Shopping" listType="shopping" />
-        );
+        render(<ItemCheckBoxList items={mockItems} listTitle="Shopping" listType="shopping" />);
 
         expect(screen.getByText(/Item 1/)).toBeInTheDocument();
         expect(screen.getByText(/Item 2/)).toBeInTheDocument();
@@ -30,9 +28,7 @@ describe('ItemCheckBoxList', () => {
     });
 
     it('sorts selected items first', () => {
-        const { container } = render(
-            <ItemCheckBoxList items={mockItems} listTitle="Shopping" listType="shopping" />
-        );
+        const { container } = render(<ItemCheckBoxList items={mockItems} listTitle="Shopping" listType="shopping" />);
 
         const items = container.querySelectorAll('[data-testid^="checkbox-"]');
         expect(items[0]).toHaveTextContent('Item 2');
@@ -41,17 +37,13 @@ describe('ItemCheckBoxList', () => {
     });
 
     it('passes listTitle and listType to ItemCheckBox', () => {
-        render(
-            <ItemCheckBoxList items={mockItems} listTitle="Groceries" listType="grocery" />
-        );
+        render(<ItemCheckBoxList items={mockItems} listTitle="Groceries" listType="grocery" />);
 
         expect(screen.getAllByText(/Groceries.*grocery/)).toHaveLength(3);
     });
 
     it('handles empty items array', () => {
-        const { container } = render(
-            <ItemCheckBoxList items={[]} listTitle="Shopping" listType="shopping" />
-        );
+        const { container } = render(<ItemCheckBoxList items={[]} listTitle="Shopping" listType="shopping" />);
 
         expect(container.querySelectorAll('[data-testid^="checkbox-"]')).toHaveLength(0);
     });
