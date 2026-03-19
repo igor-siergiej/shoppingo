@@ -300,7 +300,7 @@ describe('ImageService', () => {
             it('should stream cached image data properly', async () => {
                 const mockBuffer = Buffer.from('cached-image-data-content');
                 const mockStream = {
-                    on: function (event: string, callback: Function) {
+                    on: function (event: string, callback: (data?: Buffer) => void) {
                         if (event === 'data') {
                             // Simulate stream emitting data
                             setTimeout(() => {

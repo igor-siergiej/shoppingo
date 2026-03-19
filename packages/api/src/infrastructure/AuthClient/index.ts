@@ -4,7 +4,7 @@ import { config } from '../../config';
 import type { AuthClient } from '../../domain/ListService';
 
 interface ConfigLike {
-    get(key: string): any;
+    get(key: string): unknown;
 }
 
 export class HttpAuthClient implements AuthClient {
