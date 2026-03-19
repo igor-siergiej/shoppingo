@@ -21,6 +21,7 @@
     "@biomejs/biome": "2.2.5",
     "@commitlint/cli": "^20.1.0",
     "@commitlint/config-conventional": "^20.0.0",
+    "@happy-dom/global-registrator": "^20.8.4",
     "@imapps/biome-config": "0.5.1",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/commit-analyzer": "^13.0.0",
