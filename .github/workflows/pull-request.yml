@@ -1,0 +1,75 @@
+name: PR Checks
+
+on:
+  pull_request:
+    branches: '*'
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@v6
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GH_TOKEN }}
+      - run: bun run lint
+
+  test:
+    runs-on: ubuntu-latest
+    needs: lint
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@v6
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GH_TOKEN }}
+      - run: bun run tsc --noEmit
+      - run: bun run --filter @shoppingo/api test --coverage
+      - name: Check coverage threshold (90%)
+        run: |
+          # Extract coverage percentage from coverage report
+          COVERAGE=$(cat packages/api/coverage/coverage-summary.json | grep -o '"lines"[^}]*}' | grep -o '[0-9.]*' | head -1)
+          echo "Code coverage: ${COVERAGE}%"
+          if (( $(echo "$COVERAGE < 90" | bc -l) )); then
+            echo "❌ Coverage ${COVERAGE}% is below 90% threshold"
+            exit 1
+          fi
+          echo "✅ Coverage ${COVERAGE}% meets 90% threshold"
+      - name: Upload coverage to SonarQube
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: packages/api/coverage/
+
+  sonarqube:
+    runs-on: ubuntu-latest
+    needs: test
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Run SonarQube scan
+        uses: SonarSource/sonarqube-scan-action@master
+        env:
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      - name: SonarQube Quality Gate
+        uses: SonarSource/sonarqube-quality-gate-action@master
+        timeout-minutes: 5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
