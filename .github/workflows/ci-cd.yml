@@ -120,6 +120,7 @@ jobs:
         run: |
           curl -X POST \
             -H "Content-Type: application/json" \
-            -H "X-Deploy-Secret: ${{ secrets.DEPLOY_SECRET }}" \
+            -H "CF-Access-Client-Id: ${{ secrets.CF_ACCESS_CLIENT_ID }}" \
+            -H "CF-Access-Client-Secret: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}" \
             "${{ secrets.DOKPLOY_WEBHOOK_URL }}" \
             -d '{"event":"deployment","timestamp":"'$(date -u +'%Y-%m-%dT%H:%M:%SZ')'","ref":"${{ github.ref }}"}'
