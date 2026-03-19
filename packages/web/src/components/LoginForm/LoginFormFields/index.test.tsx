@@ -1,13 +1,5 @@
-import { GlobalRegistrator } from '@happy-dom/global-registrator';
-
-try {
-    GlobalRegistrator.register();
-} catch {
-    // Already registered
-}
-
 import '@testing-library/jest-dom';
-import { afterEach, describe, expect, it } from 'bun:test';
+import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, render } from '@testing-library/react';
 import { useForm } from 'react-hook-form';
 import { LoginFormFields } from './index';

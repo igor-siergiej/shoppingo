@@ -1,13 +1,5 @@
-import { GlobalRegistrator } from '@happy-dom/global-registrator';
-
-try {
-    GlobalRegistrator.register();
-} catch {
-    // Already registered
-}
-
 import '@testing-library/jest-dom';
-import { describe, expect, it } from 'bun:test';
+import { describe, expect, it } from 'vitest';
 import { render } from '@testing-library/react';
 import { QuantityBadge } from './index';
 
