@@ -25,15 +25,19 @@ jobs:
     needs: lint
     permissions:
       contents: read
+    container:
+      image: semgrep/semgrep
     steps:
       - uses: actions/checkout@v4
-      - uses: returntocorp/semgrep-action@v1
-        with:
-          generateSarif: true
-          config: >-
-            p/security-audit
-            p/typescript
-            p/owasp-top-ten
+      - name: Run Semgrep on entire repository
+        run: |
+          semgrep scan \
+            --config p/security-audit \
+            --config p/typescript \
+            --config p/owasp-top-ten \
+            --sarif \
+            --output semgrep.sarif \
+            .
       - uses: github/codeql-action/upload-sarif@v4
         if: always() && hashFiles('semgrep.sarif') != ''
         with:
