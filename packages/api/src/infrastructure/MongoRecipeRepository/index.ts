@@ -24,7 +24,7 @@ export class MongoRecipeRepository implements RecipeRepository {
     }
 
     async update(recipeId: string, recipe: Recipe): Promise<void> {
-        await this.collection().findOneAndReplace({ id: recipeId }, recipe);
+        await this.collection().findOneAndReplace({ id: recipeId }, recipe, { returnDocument: 'after' });
     }
 
     async deleteById(recipeId: string): Promise<void> {
@@ -32,10 +32,10 @@ export class MongoRecipeRepository implements RecipeRepository {
     }
 
     async addUser(recipeId: string, user: User): Promise<void> {
-        await this.collection().findOneAndUpdate({ id: recipeId }, { $push: { users: user } });
+        await this.collection().findOneAndUpdate({ id: recipeId }, { $push: { users: user } }, { returnDocument: 'after' });
     }
 
     async removeUser(recipeId: string, userId: string): Promise<void> {
-        await this.collection().findOneAndUpdate({ id: recipeId }, { $pull: { users: { id: userId } } });
+        await this.collection().findOneAndUpdate({ id: recipeId }, { $pull: { users: { id: userId } } }, { returnDocument: 'after' });
     }
 }
