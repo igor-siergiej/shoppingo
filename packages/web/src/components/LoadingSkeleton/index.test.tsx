@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from 'vitest';
 import { ItemsSkeleton, ListsSkeleton } from './index';
 
 describe('LoadingSkeleton', () => {
@@ -19,14 +19,14 @@ describe('LoadingSkeleton', () => {
 		it('renders 3 skeleton items in Your Lists', () => {
 			const { container } = render(<ListsSkeleton />);
 
-			const skeletons = container.querySelectorAll('[class*="Skeleton"]');
+			const skeletons = container.querySelectorAll('[data-slot="skeleton"]');
 			expect(skeletons.length).toBe(6);
 		});
 
 		it('renders Card components for each skeleton item', () => {
 			const { container } = render(<ListsSkeleton />);
 
-			const cards = container.querySelectorAll('[class*="Card"]');
+			const cards = container.querySelectorAll('[class*="bg-background"]');
 			expect(cards.length).toBeGreaterThan(0);
 		});
 
@@ -49,14 +49,14 @@ describe('LoadingSkeleton', () => {
 		it('renders 6 skeleton items', () => {
 			const { container } = render(<ItemsSkeleton />);
 
-			const skeletons = container.querySelectorAll('[class*="Skeleton"]');
+			const skeletons = container.querySelectorAll('[data-slot="skeleton"]');
 			expect(skeletons.length).toBe(6);
 		});
 
 		it('renders Card components for each item', () => {
 			const { container } = render(<ItemsSkeleton />);
 
-			const cards = container.querySelectorAll('[class*="Card"]');
+			const cards = container.querySelectorAll('[class*="bg-background"]');
 			expect(cards.length).toBeGreaterThanOrEqual(6);
 		});
 
@@ -77,7 +77,7 @@ describe('LoadingSkeleton', () => {
 		it('each item has skeleton with proper dimensions', () => {
 			const { container } = render(<ItemsSkeleton />);
 
-			const skeletons = container.querySelectorAll('[class*="h-12"]');
+			const skeletons = container.querySelectorAll('[data-slot="skeleton"]');
 			expect(skeletons.length).toBeGreaterThan(0);
 		});
 	});

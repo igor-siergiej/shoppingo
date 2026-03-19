@@ -148,7 +148,7 @@ describe('ItemThumbnail', () => {
 				/>
 			);
 
-			const skeleton = container.querySelector('[class*="Skeleton"]');
+			const skeleton = container.querySelector('[data-slot="skeleton"]');
 			expect(skeleton).toBeInTheDocument();
 		});
 
@@ -167,7 +167,9 @@ describe('ItemThumbnail', () => {
 				/>
 			);
 
-			const errorIcon = container.querySelector('svg[class*="text-muted-foreground"]');
+			const errorContainer = container.querySelector('div[class*="rounded-full"]');
+			expect(errorContainer).toBeInTheDocument();
+			const errorIcon = errorContainer?.querySelector('svg');
 			expect(errorIcon).toBeInTheDocument();
 		});
 
