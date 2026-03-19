@@ -16,7 +16,7 @@ describe('UserListItem', () => {
     };
 
     beforeEach(() => {
-        Object.values(mockCallbacks).forEach((fn) => fn.mockClear());
+        Object.values(mockCallbacks).forEach((fn) => void fn.mockClear());
     });
 
     it('displays username', () => {

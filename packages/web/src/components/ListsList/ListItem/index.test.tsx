@@ -26,7 +26,7 @@ describe('ListItem', () => {
     };
 
     beforeEach(() => {
-        Object.values(mockCallbacks).forEach((fn) => fn.mockClear());
+        Object.values(mockCallbacks).forEach((fn) => void fn.mockClear());
     });
 
     it('displays list title in display mode', () => {
