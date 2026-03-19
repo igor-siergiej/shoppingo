@@ -7,6 +7,7 @@ import type { ImageService } from '../domain/ImageService';
 import type { ImageGenerator, ImageStore } from '../domain/ImageService/types';
 import type { ListRepository } from '../domain/ListRepository';
 import type { ListService } from '../domain/ListService';
+import type { RecipeService } from '../domain/RecipeService';
 import type { AuthClient } from '../domain/ListService/types';
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
@@ -21,6 +22,7 @@ export enum DependencyToken {
     IdGenerator = 'IdGenerator',
     ListRepository = 'ListRepository',
     ListService = 'ListService',
+    RecipeService = 'RecipeService',
     AuthClient = 'AuthClient',
     AuthorizationService = 'AuthorizationService',
     ImageStore = 'ImageStore',
@@ -36,6 +38,7 @@ export type Dependencies = {
     [DependencyToken.IdGenerator]: IdGenerator;
     [DependencyToken.ListRepository]: ListRepository;
     [DependencyToken.ListService]: ListService;
+    [DependencyToken.RecipeService]: RecipeService;
     [DependencyToken.AuthClient]: AuthClient;
     [DependencyToken.AuthorizationService]: AuthorizationService;
     [DependencyToken.ImageStore]: ImageStore;
