@@ -7,8 +7,8 @@ import type { ImageService } from '../domain/ImageService';
 import type { ImageGenerator, ImageStore } from '../domain/ImageService/types';
 import type { ListRepository } from '../domain/ListRepository';
 import type { ListService } from '../domain/ListService';
-import type { RecipeService } from '../domain/RecipeService';
 import type { AuthClient } from '../domain/ListService/types';
+import type { RecipeService } from '../domain/RecipeService';
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 export type Collections = {

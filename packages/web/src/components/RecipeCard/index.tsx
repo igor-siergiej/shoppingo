@@ -43,7 +43,7 @@ export const RecipeCard = ({ recipe, onClick }: RecipeCardProps) => {
                 URL.revokeObjectURL(imageUrl);
             }
         };
-    }, [recipe.coverImageKey]);
+    }, [recipe.coverImageKey, imageUrl]);
 
     const ingredientCount = recipe.ingredients?.length ?? 0;
     const ingredientLabel = ingredientCount === 1 ? 'ingredient' : 'ingredients';
@@ -63,7 +63,11 @@ export const RecipeCard = ({ recipe, onClick }: RecipeCardProps) => {
         >
             <div className="relative h-40 w-full overflow-hidden bg-muted">
                 {imageUrl && !hasImageError && (
-                    <img src={imageUrl} alt={recipe.title} className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105" />
+                    <img
+                        src={imageUrl}
+                        alt={recipe.title}
+                        className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
+                    />
                 )}
 
                 {isLoadingImage && !imageUrl && (
@@ -91,7 +95,9 @@ export const RecipeCard = ({ recipe, onClick }: RecipeCardProps) => {
 
             <CardContent className="flex-1 p-3 flex flex-col justify-between">
                 <div>
-                    <h3 className="font-semibold text-base line-clamp-2 text-foreground mb-2 group-hover:text-primary transition-colors">{recipe.title}</h3>
+                    <h3 className="font-semibold text-base line-clamp-2 text-foreground mb-2 group-hover:text-primary transition-colors">
+                        {recipe.title}
+                    </h3>
                 </div>
                 <div className="inline-block">
                     <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-primary/10 text-primary rounded">
