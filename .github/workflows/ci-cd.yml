@@ -25,6 +25,7 @@ jobs:
     needs: lint
     permissions:
       contents: read
+      security-events: write
     container:
       image: semgrep/semgrep
     steps:
