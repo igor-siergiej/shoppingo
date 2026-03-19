@@ -60,6 +60,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.GH_TOKEN }}
       - run: bun run tsc --noEmit
       - run: bun run --filter @shoppingo/api test
+      - run: bun run --filter @shoppingo/web test
 
   build-publish:
     runs-on: ubuntu-latest
