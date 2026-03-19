@@ -1,15 +1,23 @@
 import { differenceInHours, format } from 'date-fns';
 import { AlertCircle, AlertTriangle } from 'lucide-react';
 
+const normaliseDueDate = (d: Date | string | undefined): Date | undefined => {
+    if (d instanceof Date) return d;
+    if (typeof d === 'string') return new Date(d);
+    return undefined;
+};
+
 interface DueDateBadgeProps {
-    dueDate?: Date | string;
+    dueDate: Date | string | undefined | null;
 }
 
 export const DueDateBadge = ({ dueDate }: DueDateBadgeProps) => {
     if (!dueDate) return null;
 
-    const parsedDate = dueDate instanceof Date ? dueDate : new Date(dueDate);
-    const hoursUntilDue = differenceInHours(parsedDate, new Date());
+    const date = normaliseDueDate(dueDate);
+    if (!date) return null;
+
+    const hoursUntilDue = differenceInHours(date, new Date());
     const isAlertRed = hoursUntilDue < 24;
     const isWarningYellow = hoursUntilDue < 72 && !isAlertRed;
 
@@ -25,7 +33,7 @@ export const DueDateBadge = ({ dueDate }: DueDateBadgeProps) => {
         >
             {isAlertRed && <AlertCircle className="h-4 w-4" />}
             {isWarningYellow && <AlertTriangle className="h-4 w-4" />}
-            <span className="text-sm font-semibold whitespace-nowrap">{format(parsedDate, 'dd/MM/yyyy')}</span>
+            <span className="text-sm font-semibold whitespace-nowrap">{format(date, 'dd/MM/yyyy')}</span>
         </div>
     );
 };
