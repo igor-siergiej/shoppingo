@@ -2,7 +2,7 @@ import type { Item, ListType } from '@shoppingo/types';
 import { ListType as ListTypeEnum } from '@shoppingo/types';
 import { Check, ImageOff, Loader2 } from 'lucide-react';
 import { motion } from 'motion/react';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton } from '../../../components/ui/skeleton';
 
 interface ItemThumbnailProps {
     item: Item;

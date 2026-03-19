@@ -12,9 +12,9 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { useConfirmation } from '@/hooks/useConfirmation';
-import { useItemPageMutations } from '@/hooks/useItemPageMutations';
+} from '../../components/ui/alert-dialog';
+import { useConfirmation } from '../../hooks/useConfirmation';
+import { useItemPageMutations } from '../../hooks/useItemPageMutations';
 import { getListQuery } from '../../api';
 import ItemCheckBoxList from '../../components/ItemCheckBoxList';
 import { ItemsSkeleton } from '../../components/LoadingSkeleton';

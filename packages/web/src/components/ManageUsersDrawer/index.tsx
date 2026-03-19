@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { Button } from '../../components/ui/button';
 import {
     Drawer,
     DrawerClose,
@@ -10,8 +10,8 @@ import {
     DrawerFooter,
     DrawerHeader,
     DrawerTitle,
-} from '@/components/ui/drawer';
-import { useManageUsers } from '@/hooks/useManageUsers';
+} from '../../components/ui/drawer';
+import { useManageUsers } from '../../hooks/useManageUsers';
 import { ManageUsersMembersList } from './ManageUsersMembersList';
 import { ManageUsersSearchSection } from './ManageUsersSearchSection';
 

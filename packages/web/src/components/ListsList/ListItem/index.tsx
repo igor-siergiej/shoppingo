@@ -1,9 +1,9 @@
 import type { ListResponse } from '@shoppingo/types';
 import { ListType as ListTypeEnum } from '@shoppingo/types';
 import { Check, Edit2, ListTodo, ShoppingCart, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import { Button } from '../../../components/ui/button';
+import { Card, CardContent } from '../../../components/ui/card';
+import { Input } from '../../../components/ui/input';
 
 interface ListItemProps {
     list: ListResponse;

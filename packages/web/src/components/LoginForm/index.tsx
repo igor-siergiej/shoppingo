@@ -1,6 +1,6 @@
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useLoginForm } from '@/hooks/useLoginForm';
+import { Button } from '../../components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
+import { useLoginForm } from '../../hooks/useLoginForm';
 import { LoginFormFields } from './LoginFormFields';
 
 export const LoginForm: React.FC = () => {

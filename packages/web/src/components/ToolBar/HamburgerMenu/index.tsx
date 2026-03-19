@@ -1,8 +1,8 @@
 import { Download, LogOut, Moon, Sun, Users } from 'lucide-react';
 import { motion } from 'motion/react';
-import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
-import { useTheme } from '@/contexts/ThemeContext';
+import { Button } from '../../../components/ui/button';
+import { Switch } from '../../../components/ui/switch';
+import { useTheme } from '../../../contexts/ThemeContext';
 import { usePWA } from '../../../hooks/usePWA';
 
 export interface HamburgerMenuProps {

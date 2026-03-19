@@ -11,8 +11,8 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { useConfirmation } from '@/hooks/useConfirmation';
+} from '../../components/ui/alert-dialog';
+import { useConfirmation } from '../../hooks/useConfirmation';
 
 import { deleteList, updateListName } from '../../api';
 import { ListItem } from './ListItem';

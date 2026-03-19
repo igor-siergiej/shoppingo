@@ -4,8 +4,8 @@ import { AlertTriangle, ListPlus, Users } from 'lucide-react';
 import { useEffect } from 'react';
 import { useQuery } from 'react-query';
 
-import { Button } from '@/components/ui/button';
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
+import { Button } from '../../components/ui/button';
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '../../components/ui/empty';
 import { addList, getListsQuery } from '../../api';
 import ListsList from '../../components/ListsList';
 import { ListsSkeleton } from '../../components/LoadingSkeleton';

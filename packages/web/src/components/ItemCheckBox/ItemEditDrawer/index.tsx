@@ -1,12 +1,12 @@
 import type { ListType } from '@shoppingo/types';
 import { ListType as ListTypeEnum } from '@shoppingo/types';
 import { useEffect, useId, useRef } from 'react';
-import { DueDateField } from '@/components/DueDateField';
-import { QuantityUnitField } from '@/components/QuantityUnitField';
-import { Button } from '@/components/ui/button';
-import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { DueDateField } from '../../../components/DueDateField';
+import { QuantityUnitField } from '../../../components/QuantityUnitField';
+import { Button } from '../../../components/ui/button';
+import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from '../../../components/ui/drawer';
+import { Input } from '../../../components/ui/input';
+import { Label } from '../../../components/ui/label';
 
 interface ItemEditDrawerProps {
     open: boolean;

@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { HamburgerMenu } from './index';
 
 // Mock the useTheme hook
-vi.mock('@/contexts/ThemeContext', () => ({
+vi.mock('../../../contexts/ThemeContext', () => ({
     useTheme: () => ({
         theme: 'light',
         toggleTheme: vi.fn(),

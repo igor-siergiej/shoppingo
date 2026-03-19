@@ -7,8 +7,8 @@ import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import useMeasure from 'react-use-measure';
 
-import { Card } from '@/components/ui/card';
-import { useToolBarState } from '@/hooks/useToolBarState';
+import { Card } from '../../components/ui/card';
+import { useToolBarState } from '../../hooks/useToolBarState';
 import { ManageUsersDrawer } from '../ManageUsersDrawer';
 import { AddItemDrawer } from './AddItemDrawer';
 import { AddListDrawer } from './AddListDrawer';

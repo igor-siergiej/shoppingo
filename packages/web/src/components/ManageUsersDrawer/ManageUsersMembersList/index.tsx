@@ -1,5 +1,5 @@
 import { Users } from 'lucide-react';
-import { Label } from '@/components/ui/label';
+import { Label } from '../../../components/ui/label';
 import { UserListItem } from '../UserListItem';
 
 interface ManageUsersMembersListProps {
