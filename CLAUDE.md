@@ -43,8 +43,9 @@ Run these from the root directory:
 - `bun run tsc --noEmit` - Type-check without emitting (run from root or per package)
 
 ### Testing
-- `bun run --filter @shoppingo/api test` - Run API tests (Vitest, 90% coverage threshold)
-- Note: the web package currently has no test files
+- `bun run --filter @shoppingo/api test` - Run API tests (Bun native test runner `bun:test`, 90% coverage threshold)
+- `bun run --filter @shoppingo/web test` - Run web component tests (Vitest with React Testing Library)
+- **IMPORTANT**: API tests use `bun:test`, web tests use Vitest. Import test utilities from the correct package.
 
 ## Environment Setup
 The project requires:
