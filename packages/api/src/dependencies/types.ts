@@ -7,9 +7,10 @@ import type { ImageService } from '../domain/ImageService';
 import type { ImageGenerator, ImageStore } from '../domain/ImageService/types';
 import type { ListRepository } from '../domain/ListRepository';
 import type { ListService } from '../domain/ListService';
-import type { RecipeService } from '../domain/RecipeService';
 import type { AuthClient } from '../domain/ListService/types';
 import type { RecipeRepository } from '../domain/RecipeRepository';
+import type { RecipeService } from '../domain/RecipeService';
+import type { RecipeHandlers } from '../interfaces/RecipeHandlers';
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 export type Collections = {
@@ -31,6 +32,7 @@ export enum DependencyToken {
     ImageGenerator = 'ImageGenerator',
     ImageService = 'ImageService',
     RecipeRepository = 'RecipeRepository',
+    RecipeHandlers = 'RecipeHandlers',
 }
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
@@ -48,6 +50,7 @@ export type Dependencies = {
     [DependencyToken.ImageGenerator]: ImageGenerator;
     [DependencyToken.ImageService]: ImageService;
     [DependencyToken.RecipeRepository]: RecipeRepository;
+    [DependencyToken.RecipeHandlers]: RecipeHandlers;
 };
 
 export enum CollectionNames {
