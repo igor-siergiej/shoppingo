@@ -37,3 +37,30 @@ export interface User {
     id: string;
     username: string;
 }
+
+export interface Ingredient {
+    id: string;
+    name: string;
+    quantity?: number;
+    unit?: string;
+}
+
+export interface Recipe {
+    id: string;
+    name: string;
+    ingredients: Array<Ingredient>;
+    coverImageKey?: string;
+    ownerId?: string;
+    users: Array<User>;
+    dateAdded: Date;
+}
+
+export interface RecipeResponse {
+    id: string;
+    name: string;
+    ingredients: Array<Ingredient>;
+    coverImageKey?: string;
+    ownerId?: string;
+    users: Array<{ username: string }>;
+    dateAdded: Date;
+}
