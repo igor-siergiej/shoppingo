@@ -24,7 +24,9 @@ vi.mock('../../hooks/useManageUsers', () => ({
 vi.mock('./ManageUsersMembersList', () => ({
     ManageUsersMembersList: ({ onRemoveClick }: any) => (
         <div data-testid="members-list">
-            <button onClick={() => onRemoveClick('user-1')}>Remove User</button>
+            <button type="button" onClick={() => onRemoveClick('user-1')}>
+                Remove User
+            </button>
         </div>
     ),
 }));
@@ -32,7 +34,9 @@ vi.mock('./ManageUsersMembersList', () => ({
 vi.mock('./ManageUsersSearchSection', () => ({
     ManageUsersSearchSection: ({ onAddUser }: any) => (
         <div data-testid="search-section">
-            <button onClick={() => onAddUser('newuser')}>Add User</button>
+            <button type="button" onClick={() => onAddUser('newuser')}>
+                Add User
+            </button>
         </div>
     ),
 }));

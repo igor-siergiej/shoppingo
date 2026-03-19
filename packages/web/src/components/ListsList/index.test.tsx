@@ -35,8 +35,12 @@ vi.mock('../../hooks/useConfirmation', () => ({
 vi.mock('./ListItem', () => ({
     ListItem: ({ list, onDelete, onNavigate }: any) => (
         <div data-testid={`list-item-${list.title}`}>
-            <button onClick={onNavigate}>Open {list.title}</button>
-            <button onClick={onDelete}>Delete</button>
+            <button type="button" onClick={onNavigate}>
+                Open {list.title}
+            </button>
+            <button type="button" onClick={onDelete}>
+                Delete
+            </button>
         </div>
     ),
 }));

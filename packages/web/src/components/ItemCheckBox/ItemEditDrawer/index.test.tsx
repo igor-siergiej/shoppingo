@@ -20,18 +20,8 @@ vi.mock('../../../components/DueDateField', () => ({
 vi.mock('../../../components/QuantityUnitField', () => ({
     QuantityUnitField: ({ quantity, unit }: any) => (
         <div>
-            <input
-                type="number"
-                data-testid="quantity-field"
-                defaultValue={quantity}
-                placeholder="Quantity"
-            />
-            <input
-                type="text"
-                data-testid="unit-field"
-                defaultValue={unit}
-                placeholder="Unit"
-            />
+            <input type="number" data-testid="quantity-field" defaultValue={quantity} placeholder="Quantity" />
+            <input type="text" data-testid="unit-field" defaultValue={unit} placeholder="Unit" />
         </div>
     ),
 }));

@@ -48,64 +48,33 @@ describe('ManageUsersSearchSection', () => {
     });
 
     it('shows available users when search input is not empty', () => {
-        render(
-            <ManageUsersSearchSection
-                {...defaultProps}
-                searchInput="a"
-                availableUsers={mockAvailableUsers}
-            />
-        );
+        render(<ManageUsersSearchSection {...defaultProps} searchInput="a" availableUsers={mockAvailableUsers} />);
 
         expect(screen.getByText('alice')).toBeInTheDocument();
         expect(screen.getByText('bob')).toBeInTheDocument();
     });
 
     it('hides available users when search input is empty', () => {
-        render(
-            <ManageUsersSearchSection
-                {...defaultProps}
-                searchInput=""
-                availableUsers={mockAvailableUsers}
-            />
-        );
+        render(<ManageUsersSearchSection {...defaultProps} searchInput="" availableUsers={mockAvailableUsers} />);
 
         expect(screen.queryByText('alice')).not.toBeInTheDocument();
     });
 
     it('shows no users found message when available users is empty', () => {
-        render(
-            <ManageUsersSearchSection
-                {...defaultProps}
-                searchInput="xyz"
-                availableUsers={[]}
-            />
-        );
+        render(<ManageUsersSearchSection {...defaultProps} searchInput="xyz" availableUsers={[]} />);
 
         expect(screen.getByText('No users found or already added')).toBeInTheDocument();
     });
 
     it('shows searching message when isSearching is true and no users found', () => {
-        render(
-            <ManageUsersSearchSection
-                {...defaultProps}
-                searchInput="xyz"
-                availableUsers={[]}
-                isSearching={true}
-            />
-        );
+        render(<ManageUsersSearchSection {...defaultProps} searchInput="xyz" availableUsers={[]} isSearching={true} />);
 
         expect(screen.getByText('Searching...')).toBeInTheDocument();
     });
 
     it('calls onAddUser when user button is clicked', async () => {
         const user = userEvent.setup();
-        render(
-            <ManageUsersSearchSection
-                {...defaultProps}
-                searchInput="a"
-                availableUsers={mockAvailableUsers}
-            />
-        );
+        render(<ManageUsersSearchSection {...defaultProps} searchInput="a" availableUsers={mockAvailableUsers} />);
 
         const addButton = screen.getByRole('button', { name: /alice/i });
         await user.click(addButton);

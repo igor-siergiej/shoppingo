@@ -28,9 +28,7 @@ describe('ErrorPage', () => {
         render(<ErrorPage />);
 
         expect(
-            screen.getByText(
-                /An unexpected error occurred. Please try refreshing the page or contact support/
-            )
+            screen.getByText(/An unexpected error occurred. Please try refreshing the page or contact support/)
         ).toBeInTheDocument();
     });
 

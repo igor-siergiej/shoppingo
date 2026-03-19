@@ -38,7 +38,9 @@ vi.mock('./HamburgerMenu', () => ({
 vi.mock('./ToolBarAppBar', () => ({
     ToolBarAppBar: ({ onMenuClick, itemDrawer, listDrawer }: any) => (
         <div data-testid="toolbar-appbar">
-            <button onClick={onMenuClick}>Menu</button>
+            <button type="button" onClick={onMenuClick}>
+                Menu
+            </button>
             {itemDrawer}
             {listDrawer}
         </div>

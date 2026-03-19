@@ -10,7 +10,11 @@ vi.mock('../DueDateBadge', () => ({
 }));
 
 vi.mock('../QuantityBadge', () => ({
-    QuantityBadge: ({ quantity, unit }: any) => <div data-testid="quantity-badge">{quantity} {unit}</div>,
+    QuantityBadge: ({ quantity, unit }: any) => (
+        <div data-testid="quantity-badge">
+            {quantity} {unit}
+        </div>
+    ),
 }));
 
 describe('ItemCheckBoxCard', () => {

@@ -1,4 +1,4 @@
-import type { Item, ListType } from '@shoppingo/types';
+import type { Item } from '@shoppingo/types';
 import { ListType as ListTypeEnum } from '@shoppingo/types';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -30,13 +30,12 @@ vi.mock('../../hooks/useItemEditDrawer', () => ({
 
 vi.mock('./ItemCheckBoxCard', () => ({
     ItemCheckBoxCard: ({ item, onToggle, isSelected }: any) => (
-        <div data-testid="item-card" onClick={onToggle}>
+        <button data-testid="item-card" onClick={onToggle} type="button">
             <input type="checkbox" checked={isSelected} readOnly />
             <span>{item.name}</span>
-        </div>
+        </button>
     ),
 }));
-
 
 vi.mock('../../components/DueDateField', () => ({
     DueDateField: ({ value, onChange }: any) => (
@@ -120,7 +119,6 @@ describe('ItemCheckBox', () => {
         expect(screen.getByText('Milk')).toBeInTheDocument();
     });
 
-
     it('toggles item selection when clicked', async () => {
         const user = userEvent.setup();
         const toggleMock = vi.fn();
@@ -136,7 +134,6 @@ describe('ItemCheckBox', () => {
 
         expect(toggleMock).toHaveBeenCalled();
     });
-
 
     it('renders QuantityUnitField for shopping list type', () => {
         mockUseItemEditDrawer.mockReturnValue({

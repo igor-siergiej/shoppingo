@@ -10,7 +10,9 @@ vi.mock('../UserListItem', () => ({
     UserListItem: ({ user, onRemoveClick }: any) => (
         <div data-testid={`user-item-${user.id}`}>
             <span>{user.username}</span>
-            <button onClick={onRemoveClick}>Remove</button>
+            <button type="button" onClick={onRemoveClick}>
+                Remove
+            </button>
         </div>
     ),
 }));
