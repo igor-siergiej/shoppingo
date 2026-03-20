@@ -93,6 +93,29 @@ export const addItem = async (
     return result;
 };
 
+export const addItemsBulk = async (
+    listTitle: string,
+    items: Array<{ itemName: string; quantity?: number; unit?: string }>
+): Promise<{ added: number; skipped: number }> => {
+    const dateAdded = generateTimestamp(new Date());
+
+    const result = await makeRequest({
+        pathname: `/api/lists/${encodeURIComponent(listTitle)}/items/bulk`,
+        method: MethodType.PUT,
+        operationString: 'add items in bulk',
+        body: JSON.stringify({
+            items: items.map((item) => ({
+                itemName: item.itemName,
+                dateAdded,
+                ...(item.quantity !== undefined && { quantity: item.quantity }),
+                ...(item.unit !== undefined && { unit: item.unit }),
+            })),
+        }),
+    });
+
+    return result;
+};
+
 export const updateItem = async (itemName: string, isSelected: boolean, listTitle: string) => {
     return await makeRequest({
         pathname: `/api/lists/${encodeURIComponent(listTitle)}/items/${encodeURIComponent(itemName)}`,

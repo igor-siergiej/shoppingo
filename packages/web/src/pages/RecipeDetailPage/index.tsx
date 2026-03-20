@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import { useQuery } from 'react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { deleteRecipe, getRecipeQuery, updateRecipe } from '../../api';
+import { addItemsBulk, deleteRecipe, getListsQuery, getRecipeQuery, updateRecipe } from '../../api';
 import ToolBar from '../../components/ToolBar';
 import {
     AlertDialog,
@@ -26,6 +26,7 @@ import { useConfirmation } from '../../hooks/useConfirmation';
 import { logger } from '../../utils/logger';
 import { CoverImageSection } from './CoverImageSection';
 import { ErrorState } from './ErrorState';
+import { IngredientSelectSection } from './IngredientSelectSection';
 import { IngredientsSection } from './IngredientsSection';
 
 const RecipeDetailPage = () => {
@@ -36,6 +37,7 @@ const RecipeDetailPage = () => {
 
     const [isEditingTitle, setIsEditingTitle] = useState(false);
     const [editedTitle, setEditedTitle] = useState('');
+    const [isSelectMode, setIsSelectMode] = useState(false);
 
     const {
         data: recipe,
@@ -43,6 +45,10 @@ const RecipeDetailPage = () => {
         isError,
         refetch,
     } = useQuery(recipeId ? getRecipeQuery(recipeId) : { queryKey: [], queryFn: async () => null });
+
+    const { data: lists = [] } = useQuery(
+        user?.id ? getListsQuery(user.id) : { queryKey: [], queryFn: async () => [] }
+    );
 
     const isOwner = recipe && user && recipe.ownerId === user.id;
 
@@ -182,6 +188,48 @@ const RecipeDetailPage = () => {
         });
     };
 
+    const handleConfirmAddToList = async (listTitle: string, ingredientIds: string[]) => {
+        if (!recipe) return;
+
+        try {
+            const selectedIngredients = recipe.ingredients.filter((ing) => ingredientIds.includes(ing.id));
+
+            const result = await addItemsBulk(
+                listTitle,
+                selectedIngredients.map((ing) => ({
+                    itemName: ing.name,
+                    quantity: ing.quantity,
+                    unit: ing.unit,
+                }))
+            );
+
+            toast.success(`${result.added} items added, ${result.skipped} skipped`, {
+                style: {
+                    backgroundColor: '#10b981',
+                    color: '#ffffff',
+                    border: 'none',
+                },
+            });
+
+            setIsSelectMode(false);
+            logger.info('Ingredients added to list', {
+                recipeId,
+                listTitle,
+                added: result.added,
+                skipped: result.skipped,
+            });
+        } catch (error) {
+            const err = error as { message?: string };
+            toast.error(err.message || 'Failed to add ingredients to list', {
+                style: {
+                    backgroundColor: '#ef4444',
+                    color: '#ffffff',
+                    border: 'none',
+                },
+            });
+        }
+    };
+
     return (
         <div className="flex flex-col h-full">
             {isLoading && (
@@ -239,19 +287,34 @@ const RecipeDetailPage = () => {
 
                     <div className="flex-1 overflow-y-auto">
                         <div className="p-4 space-y-6">
-                            <CoverImageSection recipe={recipe} isOwner={isOwner} />
+                            {isSelectMode ? (
+                                <IngredientSelectSection
+                                    recipe={recipe}
+                                    lists={lists}
+                                    onCancel={() => setIsSelectMode(false)}
+                                    onConfirm={handleConfirmAddToList}
+                                />
+                            ) : (
+                                <>
+                                    <CoverImageSection recipe={recipe} isOwner={isOwner} />
 
-                            <IngredientsSection
-                                recipe={recipe}
-                                isOwner={isOwner}
-                                onUpdateIngredients={handleUpdateIngredients}
-                            />
+                                    <IngredientsSection
+                                        recipe={recipe}
+                                        isOwner={isOwner}
+                                        onUpdateIngredients={handleUpdateIngredients}
+                                    />
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>
             )}
 
-            <ToolBar onAddIngredient={isOwner ? handleAddIngredient : undefined} handleGoBack={handleGoBack} />
+            <ToolBar
+                onAddIngredient={isOwner ? handleAddIngredient : undefined}
+                handleGoBack={handleGoBack}
+                onToggleSelectMode={() => setIsSelectMode((v) => !v)}
+            />
 
             <AlertDialog open={isOpen} onOpenChange={(open) => !open && handleCancel()}>
                 <AlertDialogContent>
