@@ -1,5 +1,5 @@
 import type { Logger, MongoDbConnection, ObjectStoreConnection } from '@imapps/api-utils';
-import type { List } from '@shoppingo/types';
+import type { List, Recipe } from '@shoppingo/types';
 
 import type { AuthorizationService } from '../domain/AuthorizationService';
 import type { IdGenerator } from '../domain/IdGenerator';
@@ -8,11 +8,14 @@ import type { ImageGenerator, ImageStore } from '../domain/ImageService/types';
 import type { ListRepository } from '../domain/ListRepository';
 import type { ListService } from '../domain/ListService';
 import type { AuthClient } from '../domain/ListService/types';
+import type { RecipeRepository } from '../domain/RecipeRepository';
 import type { RecipeService } from '../domain/RecipeService';
+import type { RecipeHandlers } from '../interfaces/RecipeHandlers';
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 export type Collections = {
     [CollectionNames.List]: List;
+    [CollectionNames.Recipe]: Recipe;
 };
 
 export enum DependencyToken {
@@ -28,6 +31,8 @@ export enum DependencyToken {
     ImageStore = 'ImageStore',
     ImageGenerator = 'ImageGenerator',
     ImageService = 'ImageService',
+    RecipeRepository = 'RecipeRepository',
+    RecipeHandlers = 'RecipeHandlers',
 }
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
@@ -44,8 +49,11 @@ export type Dependencies = {
     [DependencyToken.ImageStore]: ImageStore;
     [DependencyToken.ImageGenerator]: ImageGenerator;
     [DependencyToken.ImageService]: ImageService;
+    [DependencyToken.RecipeRepository]: RecipeRepository;
+    [DependencyToken.RecipeHandlers]: RecipeHandlers;
 };
 
 export enum CollectionNames {
     List = 'list',
+    Recipe = 'recipe',
 }

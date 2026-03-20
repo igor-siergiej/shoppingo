@@ -1,4 +1,4 @@
-import type { Item, ListResponse, ListType, User } from '@shoppingo/types';
+import type { Item, ListResponse, ListType, Recipe, User } from '@shoppingo/types';
 
 import { makeRequest } from './makeRequest';
 import { MethodType } from './types';
@@ -195,6 +195,118 @@ export const removeUserFromList = async (listTitle: string, userId: string): Pro
         pathname: `/api/lists/${encodeURIComponent(listTitle)}/users/${encodeURIComponent(userId)}`,
         method: MethodType.DELETE,
         operationString: 'remove user from list',
+    });
+};
+
+export const getRecipesQuery = (userId: string) => ({
+    queryKey: ['recipes', userId],
+    queryFn: async () => await getRecipes(userId),
+});
+
+export const getRecipes = async (userId: string): Promise<Array<Recipe>> => {
+    return await makeRequest({
+        pathname: '/api/recipes',
+        method: MethodType.GET,
+        operationString: 'get recipes',
+    });
+};
+
+export const getRecipeQuery = (recipeId: string) => ({
+    queryKey: ['recipe', recipeId],
+    queryFn: async () => await getRecipe(recipeId),
+});
+
+export const getRecipe = async (recipeId: string): Promise<Recipe> => {
+    return await makeRequest({
+        pathname: `/api/recipes/${encodeURIComponent(recipeId)}`,
+        method: MethodType.GET,
+        operationString: 'get recipe',
+    });
+};
+
+export const addRecipe = async (
+    title: string,
+    user: User,
+    selectedUsers?: Array<string>,
+    ingredients?: Array<{ name: string; quantity?: number; unit?: string }>
+): Promise<unknown> => {
+    const dateAdded = generateTimestamp(new Date());
+    const requestBody = {
+        title,
+        dateAdded,
+        user,
+        selectedUsers: selectedUsers || [],
+        ...(ingredients !== undefined && { ingredients }),
+    };
+
+    const result = await makeRequest({
+        pathname: '/api/recipes',
+        method: MethodType.PUT,
+        operationString: 'add recipe',
+        body: JSON.stringify(requestBody),
+    });
+
+    return result;
+};
+
+export const updateRecipe = async (
+    recipeId: string,
+    title: string,
+    ingredients: Array<{ name: string; quantity?: number; unit?: string }>,
+    coverImageKey?: string
+): Promise<Recipe> => {
+    return await makeRequest({
+        pathname: `/api/recipes/${encodeURIComponent(recipeId)}`,
+        method: MethodType.PUT,
+        operationString: 'update recipe',
+        body: JSON.stringify({
+            title,
+            ingredients,
+            ...(coverImageKey !== undefined && { coverImageKey }),
+        }),
+    });
+};
+
+export const deleteRecipe = async (recipeId: string): Promise<void> => {
+    return await makeRequest({
+        pathname: `/api/recipes/${encodeURIComponent(recipeId)}`,
+        method: MethodType.DELETE,
+        operationString: 'delete recipe',
+    });
+};
+
+export const addUserToRecipe = async (recipeId: string, username: string): Promise<Recipe> => {
+    return await makeRequest({
+        pathname: `/api/recipes/${encodeURIComponent(recipeId)}/users`,
+        method: MethodType.POST,
+        operationString: 'add user to recipe',
+        body: JSON.stringify({ username }),
+    });
+};
+
+export const removeUserFromRecipe = async (recipeId: string, userId: string): Promise<Recipe> => {
+    return await makeRequest({
+        pathname: `/api/recipes/${encodeURIComponent(recipeId)}/users/${encodeURIComponent(userId)}`,
+        method: MethodType.DELETE,
+        operationString: 'remove user from recipe',
+    });
+};
+
+export const setCoverImageKey = async (recipeId: string, coverImageKey: string): Promise<Recipe> => {
+    return await makeRequest({
+        pathname: `/api/recipes/${encodeURIComponent(recipeId)}/image`,
+        method: MethodType.PUT,
+        operationString: 'set recipe cover image',
+        body: JSON.stringify({ imageKey: coverImageKey }),
+    });
+};
+
+export const deleteCoverImageKey = async (recipeId: string): Promise<Recipe> => {
+    return await makeRequest({
+        pathname: `/api/recipes/${encodeURIComponent(recipeId)}/image`,
+        method: MethodType.PUT,
+        operationString: 'delete recipe cover image',
+        body: JSON.stringify({ imageKey: undefined }),
     });
 };
 

@@ -2,6 +2,7 @@ import Router from 'koa-router';
 import { getImage } from '../interfaces/ImageHandlers';
 import * as listHandlers from '../interfaces/ListHandlers';
 import { receiveLogs } from '../interfaces/LogHandlers';
+import * as recipeHandlers from '../interfaces/RecipeHandlers';
 import { authenticate } from '../middleware/auth';
 
 const router = new Router();
@@ -32,5 +33,17 @@ router.delete('/api/lists/:title/clearSelected', authenticate, listHandlers.dele
 router.post('/api/lists/:title/users', authenticate, listHandlers.addUserToList);
 router.delete('/api/lists/:title/users/:userId', authenticate, listHandlers.removeUserFromList);
 router.get('/api/image/:name', authenticate, getImage);
+
+// Recipes
+router.get('/api/recipes', authenticate, (ctx) => recipeHandlers.getRecipes(ctx));
+router.post('/api/recipes', authenticate, (ctx) => recipeHandlers.createRecipe(ctx));
+router.get('/api/recipes/:recipeId', authenticate, (ctx) => recipeHandlers.getRecipe(ctx));
+router.put('/api/recipes/:recipeId', authenticate, (ctx) => recipeHandlers.updateRecipe(ctx));
+router.delete('/api/recipes/:recipeId', authenticate, (ctx) => recipeHandlers.deleteRecipe(ctx));
+router.post('/api/recipes/:recipeId/users', authenticate, (ctx) => recipeHandlers.addUserToRecipe(ctx));
+router.delete('/api/recipes/:recipeId/users/:targetUserId', authenticate, (ctx) =>
+    recipeHandlers.removeUserFromRecipe(ctx)
+);
+router.put('/api/recipes/:recipeId/image', authenticate, (ctx) => recipeHandlers.setCoverImageKey(ctx));
 
 export default router;
