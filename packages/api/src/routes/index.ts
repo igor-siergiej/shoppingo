@@ -36,7 +36,7 @@ router.get('/api/image/:name', authenticate, getImage);
 
 // Recipes
 router.get('/api/recipes', authenticate, (ctx) => recipeHandlers.getRecipes(ctx));
-router.post('/api/recipes', authenticate, (ctx) => recipeHandlers.createRecipe(ctx));
+router.put('/api/recipes', authenticate, (ctx) => recipeHandlers.createRecipe(ctx));
 router.get('/api/recipes/:recipeId', authenticate, (ctx) => recipeHandlers.getRecipe(ctx));
 router.put('/api/recipes/:recipeId', authenticate, (ctx) => recipeHandlers.updateRecipe(ctx));
 router.delete('/api/recipes/:recipeId', authenticate, (ctx) => recipeHandlers.deleteRecipe(ctx));
