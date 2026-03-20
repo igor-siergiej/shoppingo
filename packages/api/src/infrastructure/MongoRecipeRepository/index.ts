@@ -25,8 +25,12 @@ export class MongoRecipeRepository implements RecipeRepository {
     }
 
     async update(recipeId: string, recipe: Recipe): Promise<Recipe> {
-        const result = await this.collection().findOneAndReplace({ id: recipeId }, recipe, { returnDocument: 'after' });
-        return result.value as Recipe;
+        await this.collection().findOneAndReplace({ id: recipeId }, recipe);
+        const updated = await this.getById(recipeId);
+        if (!updated) {
+            throw new Error('Recipe not found');
+        }
+        return updated;
     }
 
     async deleteById(recipeId: string): Promise<void> {
@@ -34,20 +38,26 @@ export class MongoRecipeRepository implements RecipeRepository {
     }
 
     async addUser(recipeId: string, user: User): Promise<Recipe> {
-        const result = await this.collection().findOneAndUpdate(
+        await this.collection().findOneAndUpdate(
             { id: recipeId },
-            { $push: { users: user } },
-            { returnDocument: 'after' }
+            { $push: { users: user } }
         );
-        return result.value as Recipe;
+        const updated = await this.getById(recipeId);
+        if (!updated) {
+            throw new Error('Recipe not found');
+        }
+        return updated;
     }
 
     async removeUser(recipeId: string, userId: string): Promise<Recipe> {
-        const result = await this.collection().findOneAndUpdate(
+        await this.collection().findOneAndUpdate(
             { id: recipeId },
-            { $pull: { users: { id: userId } } },
-            { returnDocument: 'after' }
+            { $pull: { users: { id: userId } } }
         );
-        return result.value as Recipe;
+        const updated = await this.getById(recipeId);
+        if (!updated) {
+            throw new Error('Recipe not found');
+        }
+        return updated;
     }
 }

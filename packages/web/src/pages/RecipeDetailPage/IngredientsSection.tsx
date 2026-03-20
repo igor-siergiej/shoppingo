@@ -1,5 +1,5 @@
 import type { Ingredient, Recipe } from '@shoppingo/types';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import IngredientItem from '../../components/IngredientItem';
 
 interface IngredientsSectionProps {
@@ -11,10 +11,20 @@ interface IngredientsSectionProps {
 export const IngredientsSection = ({ recipe, isOwner = false, onUpdateIngredients }: IngredientsSectionProps) => {
     const [ingredients, setIngredients] = useState<Ingredient[]>(recipe.ingredients);
 
+    useEffect(() => {
+        setIngredients(recipe.ingredients);
+    }, [recipe.ingredients]);
+
     const handleDeleteIngredient = async (id: string) => {
         const updated = ingredients.filter((ing) => ing.id !== id);
         setIngredients(updated);
-        await onUpdateIngredients(updated);
+        try {
+            await onUpdateIngredients(updated);
+        } catch (error) {
+            // Restore the original ingredients on error
+            setIngredients(ingredients);
+            throw error;
+        }
     };
 
     const handleEditIngredient = async (id: string, updated: Ingredient) => {

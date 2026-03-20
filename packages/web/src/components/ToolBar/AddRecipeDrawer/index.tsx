@@ -1,8 +1,6 @@
-import { ChefHat, Plus } from 'lucide-react';
-import { useCallback, useId, useMemo, useState } from 'react';
+import { ChefHat, Plus, Image as ImageIcon, Sparkles, X } from 'lucide-react';
+import { useCallback, useId, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import IngredientItem from '../../../components/IngredientItem';
-import { QuantityUnitField } from '../../../components/QuantityUnitField';
 import { SearchResults } from '../../../components/SearchResults';
 import { useSearch } from '../../../hooks/useSearch';
 import { Badge } from '../../ui/badge';
@@ -36,50 +34,17 @@ export interface AddRecipeDrawerProps {
 
 export const AddRecipeDrawer = ({ open, onOpenChange, onAdd }: AddRecipeDrawerProps) => {
     const recipeNameId = useId();
-    const ingredientNameId = useId();
     const userSearchId = useId();
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const { query, setQuery, results, isLoading: isSearchLoading, clearResults } = useSearch();
 
     const [title, setTitle] = useState('');
-    const [ingredients, setIngredients] = useState<Ingredient[]>([]);
     const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
-    const [newIngredientName, setNewIngredientName] = useState('');
-    const [newIngredientQuantity, setNewIngredientQuantity] = useState('');
-    const [newIngredientUnit, setNewIngredientUnit] = useState('');
     const [showUserSearch, setShowUserSearch] = useState(false);
+    const [imageUrl, setImageUrl] = useState<string | null>(null);
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-
-    const handleAddIngredient = useCallback(() => {
-        const name = newIngredientName.trim();
-        if (!name) {
-            setError('Ingredient name is required');
-            return;
-        }
-
-        const quantity = newIngredientQuantity.trim() ? parseFloat(newIngredientQuantity) : undefined;
-        const unit = newIngredientUnit.trim() || undefined;
-
-        setIngredients((prev) => [
-            ...prev,
-            {
-                id: crypto.randomUUID(),
-                name,
-                quantity,
-                unit,
-            },
-        ]);
-
-        setNewIngredientName('');
-        setNewIngredientQuantity('');
-        setNewIngredientUnit('');
-        setError('');
-    }, [newIngredientName, newIngredientQuantity, newIngredientUnit]);
-
-    const handleRemoveIngredient = useCallback((id: string) => {
-        setIngredients((prev) => prev.filter((ing) => ing.id !== id));
-    }, []);
 
     const handleAddUser = useCallback(
         (username: string) => {
@@ -96,13 +61,20 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd }: AddRecipeDrawerPr
         setSelectedUsers((prev) => prev.filter((u) => u !== username));
     }, []);
 
-    const canSubmit = useMemo(() => {
-        return title.trim().length > 0 && ingredients.length > 0;
-    }, [title, ingredients]);
+    const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                setImageUrl(event.target?.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
 
     const handleSubmit = async () => {
-        if (!canSubmit) {
-            setError('Recipe title and at least one ingredient are required');
+        if (!title.trim()) {
+            setError('Recipe title is required');
             return;
         }
 
@@ -110,15 +82,8 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd }: AddRecipeDrawerPr
         setError('');
 
         try {
-            const trimmedIngredients = ingredients.map((ing) => ({
-                name: ing.name,
-                quantity: ing.quantity,
-                unit: ing.unit,
-            }));
+            await onAdd(title, [], title, selectedUsers);
 
-            await onAdd(title, trimmedIngredients, title, selectedUsers);
-
-            toast.success('Recipe created successfully!');
             handleCancel();
 
             // Trigger automatic image generation (fire-and-forget)
@@ -140,15 +105,13 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd }: AddRecipeDrawerPr
 
     const handleCancel = () => {
         setTitle('');
-        setIngredients([]);
         setSelectedUsers([]);
-        setNewIngredientName('');
-        setNewIngredientQuantity('');
-        setNewIngredientUnit('');
         setShowUserSearch(false);
+        setImageUrl(null);
         setError('');
         setQuery('');
         clearResults();
+        if (fileInputRef.current) fileInputRef.current.value = '';
         onOpenChange(false);
     };
 
@@ -189,48 +152,92 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd }: AddRecipeDrawerPr
                             />
                         </div>
 
-                        <div className="space-y-3 border-t pt-4">
-                            <Label className="text-sm font-semibold">Ingredients</Label>
+                        <div className="space-y-3">
+                            <button
+                                type="button"
+                                onClick={() => fileInputRef.current?.click()}
+                                disabled={isLoading}
+                                className="relative w-full h-40 rounded-lg border-2 border-dashed border-muted-foreground/50 flex items-center justify-center bg-muted/30 overflow-hidden hover:bg-muted/50 transition-colors cursor-pointer disabled:cursor-not-allowed"
+                            >
+                                {imageUrl ? (
+                                    <>
+                                        <img
+                                            src={imageUrl}
+                                            alt="Recipe preview"
+                                            className="w-full h-full object-cover"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setImageUrl(null);
+                                                if (fileInputRef.current) fileInputRef.current.value = '';
+                                            }}
+                                            className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1.5 hover:bg-black/80 transition-colors"
+                                            aria-label="Clear image"
+                                        >
+                                            <X className="h-4 w-4" />
+                                        </button>
+                                    </>
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center gap-2">
+                                        <ImageIcon className="h-8 w-8 text-muted-foreground/50" />
+                                        <p className="text-sm text-muted-foreground">Click to upload image</p>
+                                    </div>
+                                )}
+                            </button>
 
-                            <div className="space-y-2">
-                                {ingredients.map((ing) => (
-                                    <IngredientItem
-                                        key={ing.id}
-                                        ingredient={ing}
-                                        onDelete={handleRemoveIngredient}
-                                        onEdit={(id, updated) => {
-                                            const newIngredients = ingredients.map((i) => (i.id === id ? updated : i));
-                                            setIngredients(newIngredients);
-                                        }}
-                                        isOwner={true}
-                                    />
-                                ))}
-                            </div>
-
-                            <div className="space-y-3 bg-secondary p-3 rounded-md">
-                                <Input
-                                    id={ingredientNameId}
-                                    placeholder="Ingredient name"
-                                    value={newIngredientName}
-                                    onChange={(e) => setNewIngredientName(e.target.value)}
+                            <div className="flex gap-2">
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleImageSelect}
                                     disabled={isLoading}
-                                    className="h-9 text-sm border border-foreground/30"
-                                />
-                                <QuantityUnitField
-                                    quantity={newIngredientQuantity}
-                                    unit={newIngredientUnit}
-                                    onQuantityChange={setNewIngredientQuantity}
-                                    onUnitChange={setNewIngredientUnit}
-                                    quantityId="ingredient-quantity"
-                                    unitId="ingredient-unit"
+                                    className="hidden"
+                                    id="image-upload"
                                 />
                                 <Button
-                                    onClick={handleAddIngredient}
-                                    disabled={isLoading || !newIngredientName.trim()}
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => fileInputRef.current?.click()}
+                                    disabled={isLoading}
+                                    className="flex-1"
                                     size="sm"
-                                    className="w-full"
                                 >
-                                    Add Ingredient
+                                    <ImageIcon className="h-4 w-4 mr-1" />
+                                    Upload
+                                </Button>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    disabled={isLoading || !title.trim()}
+                                    className="flex-1"
+                                    size="sm"
+                                    onClick={async () => {
+                                        if (!title.trim()) return;
+                                        setIsLoading(true);
+                                        try {
+                                            const response = await fetch('/api/images/generate', {
+                                                method: 'POST',
+                                                headers: { 'Content-Type': 'application/json' },
+                                                body: JSON.stringify({ description: title }),
+                                            });
+                                            if (response.ok) {
+                                                const data = await response.json();
+                                                if (data.imageUrl) {
+                                                    setImageUrl(data.imageUrl);
+                                                }
+                                            }
+                                        } catch (err) {
+                                            console.error('Failed to generate image:', err);
+                                        } finally {
+                                            setIsLoading(false);
+                                        }
+                                    }}
+                                >
+                                    <Sparkles className="h-4 w-4 mr-1" />
+                                    AI Generate
                                 </Button>
                             </div>
                         </div>
@@ -288,7 +295,7 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd }: AddRecipeDrawerPr
                 </div>
 
                 <DrawerFooter>
-                    <Button onClick={() => void handleSubmit()} disabled={isLoading || !canSubmit}>
+                    <Button onClick={() => void handleSubmit()} disabled={isLoading || !title.trim()}>
                         {isLoading ? 'Creating...' : 'Create Recipe'}
                     </Button>
                     <DrawerClose asChild>

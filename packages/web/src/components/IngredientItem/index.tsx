@@ -1,10 +1,13 @@
 import type { Ingredient } from '@shoppingo/types';
-import { Edit2, Loader2, Trash2 } from 'lucide-react';
+import { Edit2, ImageOff, Loader2, Trash2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { type MouseEvent, useId, useRef, useState } from 'react';
+import { toast } from 'sonner';
 import { QuantityBadge } from '../../components/ItemCheckBox/QuantityBadge';
 import { QuantityUnitField } from '../../components/QuantityUnitField';
+import { Skeleton } from '../../components/ui/skeleton';
 import { Button } from '../../components/ui/button';
+import { useItemImage } from '../../hooks/useItemImage';
 import {
     Drawer,
     DrawerClose,
@@ -74,6 +77,7 @@ const IngredientItem = ({ ingredient, onDelete, onEdit, isOwner = true }: Ingred
     const ingredientQuantityId = useId();
     const ingredientUnitId = useId();
 
+    const { imageBlobUrl, hasLoadedImage, hasImageError, onImageLoad, onImageError } = useItemImage(ingredient.name);
     const { x, controls, swipeState, handleDragEnd, closeSwipe } = useSwipeGesture();
 
     const [editedName, setEditedName] = useState(ingredient.name);
@@ -84,7 +88,27 @@ const IngredientItem = ({ ingredient, onDelete, onEdit, isOwner = true }: Ingred
         e?.stopPropagation();
         setIsDeleting(true);
         setIsLoading(true);
-        onDelete(ingredient.id);
+        try {
+            await onDelete(ingredient.id);
+            toast.success('Ingredient deleted', {
+                style: {
+                    backgroundColor: '#10b981',
+                    color: '#ffffff',
+                    border: 'none',
+                },
+            });
+        } catch (error) {
+            const err = error as { message?: string };
+            toast.error(err.message || 'Failed to delete ingredient', {
+                style: {
+                    backgroundColor: '#ef4444',
+                    color: '#ffffff',
+                    border: 'none',
+                },
+            });
+            setIsDeleting(false);
+            setIsLoading(false);
+        }
     };
 
     const handleEditClick = (e?: MouseEvent) => {
@@ -121,7 +145,28 @@ const IngredientItem = ({ ingredient, onDelete, onEdit, isOwner = true }: Ingred
 
     if (!isOwner) {
         return (
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/20 border border-border">
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/20 border border-border min-h-[60px]">
+                <div className="relative h-12 w-12 shrink-0 flex items-center justify-center">
+                    {imageBlobUrl && (
+                        <img
+                            src={imageBlobUrl}
+                            alt={ingredient.name}
+                            className={`h-12 w-12 rounded-full object-cover border ${hasLoadedImage && !hasImageError ? 'opacity-100' : 'opacity-0'}`}
+                            onLoad={onImageLoad}
+                            onError={onImageError}
+                        />
+                    )}
+
+                    {!hasLoadedImage && !hasImageError && (
+                        <Skeleton className="absolute inset-0 h-12 w-12 rounded-full border" />
+                    )}
+
+                    {hasImageError && (
+                        <div className="absolute inset-0 h-12 w-12 rounded-full border flex items-center justify-center bg-muted/20 text-muted-foreground">
+                            <ImageOff className="h-5 w-5" />
+                        </div>
+                    )}
+                </div>
                 <p className="font-medium flex-1">{ingredient.name}</p>
                 <QuantityBadge quantity={ingredient.quantity} unit={ingredient.unit} />
             </div>
@@ -166,7 +211,28 @@ const IngredientItem = ({ ingredient, onDelete, onEdit, isOwner = true }: Ingred
                         if (swipeState !== 'closed') closeSwipe();
                     }}
                 >
-                    <div className="flex items-center gap-3 p-3 rounded-lg border border-border">
+                    <div className="flex items-center gap-3 p-3 rounded-lg border border-border min-h-[60px]">
+                        <div className="relative h-12 w-12 shrink-0 flex items-center justify-center">
+                            {imageBlobUrl && (
+                                <img
+                                    src={imageBlobUrl}
+                                    alt={ingredient.name}
+                                    className={`h-12 w-12 rounded-full object-cover border ${hasLoadedImage && !hasImageError ? 'opacity-100' : 'opacity-0'}`}
+                                    onLoad={onImageLoad}
+                                    onError={onImageError}
+                                />
+                            )}
+
+                            {!hasLoadedImage && !hasImageError && (
+                                <Skeleton className="absolute inset-0 h-12 w-12 rounded-full border" />
+                            )}
+
+                            {hasImageError && (
+                                <div className="absolute inset-0 h-12 w-12 rounded-full border flex items-center justify-center bg-muted/20 text-muted-foreground">
+                                    <ImageOff className="h-5 w-5" />
+                                </div>
+                            )}
+                        </div>
                         <p className="font-medium flex-1">{ingredient.name}</p>
                         <QuantityBadge quantity={ingredient.quantity} unit={ingredient.unit} />
                     </div>

@@ -81,13 +81,6 @@ const RecipeDetailPage = () => {
         try {
             await updateRecipe(recipeId, recipe.title, updated);
             await refetch();
-            toast.success('Ingredient added', {
-                style: {
-                    backgroundColor: '#10b981',
-                    color: '#ffffff',
-                    border: 'none',
-                },
-            });
         } catch (error) {
             const err = error as { message?: string };
             toast.error(err.message || 'Failed to add ingredient', {
@@ -190,7 +183,7 @@ const RecipeDetailPage = () => {
     };
 
     return (
-        <div className="flex flex-col h-full pb-28">
+        <div className="flex flex-col h-full">
             {isLoading && (
                 <div className="flex-1 p-4">
                     <Skeleton className="h-8 w-32 mb-4" />
@@ -246,7 +239,7 @@ const RecipeDetailPage = () => {
 
                     <div className="flex-1 overflow-y-auto">
                         <div className="p-4 space-y-6">
-                            <CoverImageSection recipe={recipe} />
+                            <CoverImageSection recipe={recipe} isOwner={isOwner} />
 
                             <IngredientsSection
                                 recipe={recipe}

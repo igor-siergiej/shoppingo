@@ -52,7 +52,15 @@ export const AddIngredientDrawer = ({ open, onOpenChange, onAdd }: AddIngredient
             setUnit('');
             onOpenChange(false);
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to add ingredient');
+            const errorMsg = err instanceof Error ? err.message : 'Failed to add ingredient';
+            setError(errorMsg);
+            toast.error(errorMsg, {
+                style: {
+                    backgroundColor: '#ef4444',
+                    color: '#ffffff',
+                    border: 'none',
+                },
+            });
         } finally {
             setIsLoading(false);
         }
