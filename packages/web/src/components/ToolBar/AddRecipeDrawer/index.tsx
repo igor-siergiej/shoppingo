@@ -1,4 +1,4 @@
-import { ChefHat, ImagePlus, Plus, Zap } from 'lucide-react';
+import { ChefHat, Plus } from 'lucide-react';
 import { useCallback, useId, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import IngredientItem from '../../../components/IngredientItem';
@@ -44,9 +44,6 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd }: AddRecipeDrawerPr
     const [title, setTitle] = useState('');
     const [ingredients, setIngredients] = useState<Ingredient[]>([]);
     const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
-    const [imageMode, setImageMode] = useState<'upload' | 'generate'>('generate');
-    const [imagePreview, setImagePreview] = useState<string>('');
-    const [imageKey, setImageKey] = useState<string>('');
     const [newIngredientName, setNewIngredientName] = useState('');
     const [newIngredientQuantity, setNewIngredientQuantity] = useState('');
     const [newIngredientUnit, setNewIngredientUnit] = useState('');
@@ -119,12 +116,19 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd }: AddRecipeDrawerPr
                 unit: ing.unit,
             }));
 
-            const imageValue = imageKey || (imageMode === 'generate' ? title : undefined);
-
-            await onAdd(title, trimmedIngredients, imageValue, selectedUsers);
+            await onAdd(title, trimmedIngredients, title, selectedUsers);
 
             toast.success('Recipe created successfully!');
             handleCancel();
+
+            // Trigger automatic image generation (fire-and-forget)
+            void fetch(`/api/images/generate`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ description: title }),
+            }).catch(() => {
+                /* ignore errors, do not block recipe creation */
+            });
         } catch (err) {
             const message = err instanceof Error ? err.message : 'Failed to create recipe';
             toast.error(message, { style: { backgroundColor: '#ef4444', color: '#ffffff' } });
@@ -138,9 +142,6 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd }: AddRecipeDrawerPr
         setTitle('');
         setIngredients([]);
         setSelectedUsers([]);
-        setImageMode('generate');
-        setImagePreview('');
-        setImageKey('');
         setNewIngredientName('');
         setNewIngredientQuantity('');
         setNewIngredientUnit('');
@@ -149,19 +150,6 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd }: AddRecipeDrawerPr
         setQuery('');
         clearResults();
         onOpenChange(false);
-    };
-
-    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                const src = event.target?.result as string;
-                setImagePreview(src);
-                setImageKey(file.name);
-            };
-            reader.readAsDataURL(file);
-        }
     };
 
     return (
@@ -199,50 +187,6 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd }: AddRecipeDrawerPr
                                 autoFocus
                                 className="h-10 border border-foreground/30"
                             />
-                        </div>
-
-                        <div className="space-y-2 border-t pt-4">
-                            <Label className="text-sm font-semibold">Image</Label>
-                            <div className="flex gap-2 mb-3">
-                                <Button
-                                    variant={imageMode === 'upload' ? 'default' : 'outline'}
-                                    onClick={() => setImageMode('upload')}
-                                    size="sm"
-                                    className="flex-1 gap-2"
-                                >
-                                    <ImagePlus className="h-4 w-4" />
-                                    Upload
-                                </Button>
-                                <Button
-                                    variant={imageMode === 'generate' ? 'default' : 'outline'}
-                                    onClick={() => setImageMode('generate')}
-                                    size="sm"
-                                    className="flex-1 gap-2"
-                                    disabled={!title.trim()}
-                                >
-                                    <Zap className="h-4 w-4" />
-                                    Generate
-                                </Button>
-                            </div>
-
-                            {imageMode === 'upload' && (
-                                <div className="space-y-2">
-                                    <Input
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={handleImageUpload}
-                                        disabled={isLoading}
-                                        className="h-9"
-                                    />
-                                    {imagePreview && (
-                                        <img
-                                            src={imagePreview}
-                                            alt="preview"
-                                            className="w-full h-32 object-cover rounded-md"
-                                        />
-                                    )}
-                                </div>
-                            )}
                         </div>
 
                         <div className="space-y-3 border-t pt-4">

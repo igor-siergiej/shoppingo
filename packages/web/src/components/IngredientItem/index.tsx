@@ -2,6 +2,7 @@ import type { Ingredient } from '@shoppingo/types';
 import { Edit2, Loader2, Trash2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { type MouseEvent, useId, useRef, useState } from 'react';
+import { QuantityBadge } from '../../components/ItemCheckBox/QuantityBadge';
 import { QuantityUnitField } from '../../components/QuantityUnitField';
 import { Button } from '../../components/ui/button';
 import {
@@ -120,13 +121,9 @@ const IngredientItem = ({ ingredient, onDelete, onEdit, isOwner = true }: Ingred
 
     if (!isOwner) {
         return (
-            <div className="p-3 rounded-lg bg-muted/20 border border-border">
-                <p className="font-medium">{ingredient.name}</p>
-                {(ingredient.quantity || ingredient.unit) && (
-                    <p className="text-sm text-muted-foreground">
-                        {ingredient.quantity} {ingredient.unit}
-                    </p>
-                )}
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/20 border border-border">
+                <p className="font-medium flex-1">{ingredient.name}</p>
+                <QuantityBadge quantity={ingredient.quantity} unit={ingredient.unit} />
             </div>
         );
     }
@@ -169,13 +166,9 @@ const IngredientItem = ({ ingredient, onDelete, onEdit, isOwner = true }: Ingred
                         if (swipeState !== 'closed') closeSwipe();
                     }}
                 >
-                    <div className="p-3 rounded-lg border border-border">
-                        <p className="font-medium">{ingredient.name}</p>
-                        {(ingredient.quantity || ingredient.unit) && (
-                            <p className="text-sm text-muted-foreground">
-                                {ingredient.quantity} {ingredient.unit}
-                            </p>
-                        )}
+                    <div className="flex items-center gap-3 p-3 rounded-lg border border-border">
+                        <p className="font-medium flex-1">{ingredient.name}</p>
+                        <QuantityBadge quantity={ingredient.quantity} unit={ingredient.unit} />
                     </div>
                 </motion.div>
             </motion.div>
