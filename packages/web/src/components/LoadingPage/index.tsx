@@ -27,7 +27,6 @@ const LoadingPage: React.FC<LoadingPageProps> = ({ timeoutReached }) => (
         transition={{ duration: 0.3 }}
     >
         <div className="loader" />
-        <p className="text-muted-foreground">Loading Shoppingo...</p>
         {timeoutReached && <TimeoutHint />}
     </motion.div>
 );

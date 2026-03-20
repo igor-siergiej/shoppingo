@@ -203,7 +203,7 @@ export const getRecipesQuery = (userId: string) => ({
     queryFn: async () => await getRecipes(userId),
 });
 
-export const getRecipes = async (userId: string): Promise<Array<Recipe>> => {
+export const getRecipes = async (_userId: string): Promise<Array<Recipe>> => {
     return await makeRequest({
         pathname: '/api/recipes',
         method: MethodType.GET,

@@ -1,8 +1,9 @@
-import { getAuthConfig, tryRefreshToken, useAuth } from '@imapps/web-utils';
+import { tryRefreshToken, useAuth } from '@imapps/web-utils';
 import { AnimatePresence, motion } from 'motion/react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getAuthConfig } from '../../config/auth';
 import LoadingPage from '../LoadingPage';
 
 interface AppInitializerProps {

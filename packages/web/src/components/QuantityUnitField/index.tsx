@@ -29,14 +29,14 @@ export const QuantityUnitField = ({
                     value={quantity}
                     onChange={(e) => onQuantityChange(e.target.value)}
                     placeholder="e.g., 2"
-                    className="mt-2"
+                    className="mt-2 border border-foreground/30"
                     step="0.01"
                 />
             </div>
             <div>
                 <Label htmlFor={unitId}>Unit</Label>
                 <Select value={unit} onValueChange={onUnitChange}>
-                    <SelectTrigger id={unitId} className="mt-2">
+                    <SelectTrigger id={unitId} className="mt-2 border border-foreground/30">
                         <SelectValue placeholder="Select unit" />
                     </SelectTrigger>
                     <SelectContent>

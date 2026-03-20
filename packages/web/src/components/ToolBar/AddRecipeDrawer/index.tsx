@@ -45,7 +45,6 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd }: AddRecipeDrawerPr
     const [imageMode, setImageMode] = useState<'upload' | 'generate'>('generate');
     const [imagePreview, setImagePreview] = useState<string>('');
     const [imageKey, setImageKey] = useState<string>('');
-    const [imageDescription, setImageDescription] = useState('');
     const [newIngredientName, setNewIngredientName] = useState('');
     const [newIngredientQuantity, setNewIngredientQuantity] = useState('');
     const [newIngredientUnit, setNewIngredientUnit] = useState('');
@@ -118,8 +117,7 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd }: AddRecipeDrawerPr
                 unit: ing.unit,
             }));
 
-            const imageValue =
-                imageKey || (imageDescription.trim() ? imageDescription : imageMode === 'generate' ? title : undefined);
+            const imageValue = imageKey || (imageMode === 'generate' ? title : undefined);
 
             await onAdd(title, trimmedIngredients, imageValue, selectedUsers);
 
@@ -141,7 +139,6 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd }: AddRecipeDrawerPr
         setImageMode('generate');
         setImagePreview('');
         setImageKey('');
-        setImageDescription('');
         setNewIngredientName('');
         setNewIngredientQuantity('');
         setNewIngredientUnit('');
@@ -219,13 +216,14 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd }: AddRecipeDrawerPr
                                     onClick={() => setImageMode('generate')}
                                     size="sm"
                                     className="flex-1 gap-2"
+                                    disabled={!title.trim()}
                                 >
                                     <Zap className="h-4 w-4" />
                                     Generate
                                 </Button>
                             </div>
 
-                            {imageMode === 'upload' ? (
+                            {imageMode === 'upload' && (
                                 <div className="space-y-2">
                                     <Input
                                         type="file"
@@ -242,14 +240,6 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd }: AddRecipeDrawerPr
                                         />
                                     )}
                                 </div>
-                            ) : (
-                                <Input
-                                    placeholder={`Optional: Describe the image (or use "${title}" as the prompt)`}
-                                    value={imageDescription}
-                                    onChange={(e) => setImageDescription(e.target.value)}
-                                    disabled={isLoading || !title.trim()}
-                                    className="h-9"
-                                />
                             )}
                         </div>
 
