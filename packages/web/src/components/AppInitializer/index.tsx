@@ -1,49 +1,76 @@
-import { useTokenInitialization } from '@imapps/web-utils';
-import { Loader2 } from 'lucide-react';
+import { getAuthConfig, tryRefreshToken, useAuth } from '@imapps/web-utils';
+import { AnimatePresence, motion } from 'motion/react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import LoadingPage from '../LoadingPage';
 
 interface AppInitializerProps {
     children: React.ReactNode;
 }
 
 const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
-    const { isInitializing } = useTokenInitialization();
+    const [isReady, setIsReady] = useState(false);
     const [timeoutReached, setTimeoutReached] = useState(false);
+    const { login, logout } = useAuth();
+    const navigate = useNavigate();
 
     useEffect(() => {
-        if (isInitializing) {
-            const timeout = setTimeout(() => {
-                console.warn('Token initialization timeout reached, this might indicate cache/SW issues');
+        const timer = setTimeout(() => setTimeoutReached(true), 10000);
+        const config = getAuthConfig();
 
-                setTimeoutReached(true);
-            }, 10000);
+        const initializeAuth = async () => {
+            try {
+                const newToken = await tryRefreshToken(config);
+                if (newToken) {
+                    login(newToken);
+                } else {
+                    logout();
+                }
+            } catch (error) {
+                console.warn('Token refresh failed during initialization', error);
+                logout();
+            } finally {
+                clearTimeout(timer);
+                setIsReady(true);
+            }
+        };
 
-            return () => clearTimeout(timeout);
-        }
-    }, [isInitializing]);
+        initializeAuth();
 
-    if (isInitializing) {
-        return (
-            <div className="flex flex-col items-center justify-center h-screen gap-4">
-                <Loader2 className="h-10 w-10 animate-spin text-primary" />
-                <p className="text-muted-foreground">Loading Shoppingo...</p>
-                {timeoutReached && (
-                    <div className="text-center text-sm text-orange-600 max-w-md">
-                        <p>Taking longer than expected...</p>
-                        <p>If this persists, try:</p>
-                        <ul className="list-disc text-left mt-2 pl-4">
-                            <li>Hard refresh (Ctrl+F5)</li>
-                            <li>Clear browser data</li>
-                            <li>Reinstall the app</li>
-                        </ul>
-                    </div>
-                )}
-            </div>
-        );
-    }
+        return () => clearTimeout(timer);
+    }, [login, logout]);
 
-    return <>{children}</>;
+    useEffect(() => {
+        const handleSessionExpired = () => {
+            logout();
+            navigate('/login');
+        };
+
+        window.addEventListener('auth:session-expired', handleSessionExpired);
+
+        return () => {
+            window.removeEventListener('auth:session-expired', handleSessionExpired);
+        };
+    }, [logout, navigate]);
+
+    return (
+        <AnimatePresence mode="wait">
+            {!isReady ? (
+                <LoadingPage key="loading" timeoutReached={timeoutReached} />
+            ) : (
+                <motion.div
+                    key="content"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.3 }}
+                    style={{ height: '100%' }}
+                >
+                    {children}
+                </motion.div>
+            )}
+        </AnimatePresence>
+    );
 };
 
 export default AppInitializer;
