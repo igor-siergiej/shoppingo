@@ -205,7 +205,7 @@ export const getRecipesQuery = (userId: string) => ({
 
 export const getRecipes = async (userId: string): Promise<Array<Recipe>> => {
     return await makeRequest({
-        pathname: `/api/recipes/user/${userId}`,
+        pathname: '/api/recipes',
         method: MethodType.GET,
         operationString: 'get recipes',
     });
@@ -257,7 +257,7 @@ export const updateRecipe = async (
 ): Promise<Recipe> => {
     return await makeRequest({
         pathname: `/api/recipes/${encodeURIComponent(recipeId)}`,
-        method: MethodType.POST,
+        method: MethodType.PUT,
         operationString: 'update recipe',
         body: JSON.stringify({
             title,
@@ -294,18 +294,19 @@ export const removeUserFromRecipe = async (recipeId: string, userId: string): Pr
 
 export const setCoverImageKey = async (recipeId: string, coverImageKey: string): Promise<Recipe> => {
     return await makeRequest({
-        pathname: `/api/recipes/${encodeURIComponent(recipeId)}/cover-image`,
-        method: MethodType.POST,
+        pathname: `/api/recipes/${encodeURIComponent(recipeId)}/image`,
+        method: MethodType.PUT,
         operationString: 'set recipe cover image',
-        body: JSON.stringify({ coverImageKey }),
+        body: JSON.stringify({ imageKey: coverImageKey }),
     });
 };
 
 export const deleteCoverImageKey = async (recipeId: string): Promise<Recipe> => {
     return await makeRequest({
-        pathname: `/api/recipes/${encodeURIComponent(recipeId)}/cover-image`,
-        method: MethodType.DELETE,
+        pathname: `/api/recipes/${encodeURIComponent(recipeId)}/image`,
+        method: MethodType.PUT,
         operationString: 'delete recipe cover image',
+        body: JSON.stringify({ imageKey: undefined }),
     });
 };
 
