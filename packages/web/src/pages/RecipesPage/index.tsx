@@ -54,7 +54,7 @@ const RecipesPage = () => {
     const handleAddRecipe = async (
         title: string,
         ingredients: Array<{ name: string; quantity?: number; unit?: string }>,
-        imageKey?: string,
+        _imageKey?: string,
         selectedUsers?: string[]
     ) => {
         if (!user) {
@@ -62,7 +62,11 @@ const RecipesPage = () => {
             return;
         }
 
-        logger.info('Creating recipe', { title, ingredientCount: ingredients.length, sharedWith: selectedUsers?.length || 0 });
+        logger.info('Creating recipe', {
+            title,
+            ingredientCount: ingredients.length,
+            sharedWith: selectedUsers?.length || 0,
+        });
 
         try {
             await addRecipe(title, user, selectedUsers || [], ingredients);

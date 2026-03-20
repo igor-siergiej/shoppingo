@@ -211,6 +211,19 @@ export const getRecipes = async (userId: string): Promise<Array<Recipe>> => {
     });
 };
 
+export const getRecipeQuery = (recipeId: string) => ({
+    queryKey: ['recipe', recipeId],
+    queryFn: async () => await getRecipe(recipeId),
+});
+
+export const getRecipe = async (recipeId: string): Promise<Recipe> => {
+    return await makeRequest({
+        pathname: `/api/recipes/${encodeURIComponent(recipeId)}`,
+        method: MethodType.GET,
+        operationString: 'get recipe',
+    });
+};
+
 export const addRecipe = async (
     title: string,
     user: User,
@@ -234,6 +247,56 @@ export const addRecipe = async (
     });
 
     return result;
+};
+
+export const updateRecipe = async (
+    recipeId: string,
+    title: string,
+    ingredients: Array<{ name: string; quantity?: number; unit?: string }>
+): Promise<Recipe> => {
+    return await makeRequest({
+        pathname: `/api/recipes/${encodeURIComponent(recipeId)}`,
+        method: MethodType.POST,
+        operationString: 'update recipe',
+        body: JSON.stringify({
+            title,
+            ingredients,
+        }),
+    });
+};
+
+export const deleteRecipe = async (recipeId: string): Promise<void> => {
+    return await makeRequest({
+        pathname: `/api/recipes/${encodeURIComponent(recipeId)}`,
+        method: MethodType.DELETE,
+        operationString: 'delete recipe',
+    });
+};
+
+export const addUserToRecipe = async (recipeId: string, username: string): Promise<Recipe> => {
+    return await makeRequest({
+        pathname: `/api/recipes/${encodeURIComponent(recipeId)}/users`,
+        method: MethodType.POST,
+        operationString: 'add user to recipe',
+        body: JSON.stringify({ username }),
+    });
+};
+
+export const removeUserFromRecipe = async (recipeId: string, userId: string): Promise<Recipe> => {
+    return await makeRequest({
+        pathname: `/api/recipes/${encodeURIComponent(recipeId)}/users/${encodeURIComponent(userId)}`,
+        method: MethodType.DELETE,
+        operationString: 'remove user from recipe',
+    });
+};
+
+export const setCoverImageKey = async (recipeId: string, coverImageKey: string): Promise<Recipe> => {
+    return await makeRequest({
+        pathname: `/api/recipes/${encodeURIComponent(recipeId)}/cover-image`,
+        method: MethodType.POST,
+        operationString: 'set recipe cover image',
+        body: JSON.stringify({ coverImageKey }),
+    });
 };
 
 const generateTimestamp = (now: Date): string => {
