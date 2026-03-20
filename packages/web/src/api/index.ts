@@ -252,7 +252,8 @@ export const addRecipe = async (
 export const updateRecipe = async (
     recipeId: string,
     title: string,
-    ingredients: Array<{ name: string; quantity?: number; unit?: string }>
+    ingredients: Array<{ name: string; quantity?: number; unit?: string }>,
+    coverImageKey?: string
 ): Promise<Recipe> => {
     return await makeRequest({
         pathname: `/api/recipes/${encodeURIComponent(recipeId)}`,
@@ -261,6 +262,7 @@ export const updateRecipe = async (
         body: JSON.stringify({
             title,
             ingredients,
+            ...(coverImageKey !== undefined && { coverImageKey }),
         }),
     });
 };
@@ -296,6 +298,14 @@ export const setCoverImageKey = async (recipeId: string, coverImageKey: string):
         method: MethodType.POST,
         operationString: 'set recipe cover image',
         body: JSON.stringify({ coverImageKey }),
+    });
+};
+
+export const deleteCoverImageKey = async (recipeId: string): Promise<Recipe> => {
+    return await makeRequest({
+        pathname: `/api/recipes/${encodeURIComponent(recipeId)}/cover-image`,
+        method: MethodType.DELETE,
+        operationString: 'delete recipe cover image',
     });
 };
 

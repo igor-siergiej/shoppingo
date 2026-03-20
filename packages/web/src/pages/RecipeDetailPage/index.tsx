@@ -21,6 +21,7 @@ import {
 import { Skeleton } from '../../components/ui/skeleton';
 import { useConfirmation } from '../../hooks/useConfirmation';
 import { logger } from '../../utils/logger';
+import { CoverImageSection } from './CoverImageSection';
 import { ErrorState } from './ErrorState';
 import { IngredientsSection } from './IngredientsSection';
 import { RecipeDetailHeader } from './RecipeDetailHeader';
@@ -153,6 +154,32 @@ const RecipeDetailPage = () => {
         });
     };
 
+    const handleImageUpdate = async (imageKey: string) => {
+        if (!recipe) return;
+
+        try {
+            await updateRecipe(recipeId, recipe.title, recipe.ingredients, imageKey);
+            await refetch();
+            logger.info('Recipe cover image updated', { recipeId, imageKey });
+        } catch (error) {
+            const err = error as { message?: string };
+            throw err;
+        }
+    };
+
+    const handleImageDelete = async () => {
+        if (!recipe) return;
+
+        try {
+            await updateRecipe(recipeId, recipe.title, recipe.ingredients, undefined);
+            await refetch();
+            logger.info('Recipe cover image deleted', { recipeId });
+        } catch (error) {
+            const err = error as { message?: string };
+            throw err;
+        }
+    };
+
     return (
         <div className="flex flex-col h-full">
             {isLoading && (
@@ -199,6 +226,13 @@ const RecipeDetailPage = () => {
                                 onEditingTitleChange={setIsEditingTitle}
                                 onEditedTitleChange={setEditedTitle}
                                 onSaveTitle={handleSaveTitle}
+                            />
+
+                            <CoverImageSection
+                                recipe={recipe}
+                                isOwner={isOwner}
+                                onImageUpdate={handleImageUpdate}
+                                onImageDelete={handleImageDelete}
                             />
 
                             <IngredientsSection
