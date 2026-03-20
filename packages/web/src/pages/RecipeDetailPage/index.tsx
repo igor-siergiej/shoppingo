@@ -2,12 +2,13 @@
 
 import { useUser } from '@imapps/web-utils';
 import type { Ingredient } from '@shoppingo/types';
-import { ChevronLeft, Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useQuery } from 'react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { deleteRecipe, getRecipeQuery, updateRecipe } from '../../api';
+import ToolBar from '../../components/ToolBar';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -61,8 +62,42 @@ const RecipeDetailPage = () => {
         return <div className="text-center py-8 text-muted-foreground">Invalid recipe ID</div>;
     }
 
-    const handleBackClick = () => {
+    const handleGoBack = () => {
         navigate('/recipes');
+    };
+
+    const handleAddIngredient = async (name: string, quantity?: number, unit?: string) => {
+        if (!recipe) return;
+
+        const newIngredient: Ingredient = {
+            id: `temp-${Date.now()}`,
+            name,
+            ...(quantity !== undefined && { quantity }),
+            ...(unit !== undefined && { unit }),
+        };
+
+        const updated = [...recipe.ingredients, newIngredient];
+
+        try {
+            await updateRecipe(recipeId, recipe.title, updated);
+            await refetch();
+            toast.success('Ingredient added', {
+                style: {
+                    backgroundColor: '#10b981',
+                    color: '#ffffff',
+                    border: 'none',
+                },
+            });
+        } catch (error) {
+            const err = error as { message?: string };
+            toast.error(err.message || 'Failed to add ingredient', {
+                style: {
+                    backgroundColor: '#ef4444',
+                    color: '#ffffff',
+                    border: 'none',
+                },
+            });
+        }
     };
 
     const handleSaveTitle = async () => {
@@ -155,7 +190,7 @@ const RecipeDetailPage = () => {
     };
 
     return (
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-full pb-28">
             {isLoading && (
                 <div className="flex-1 p-4">
                     <Skeleton className="h-8 w-32 mb-4" />
@@ -170,14 +205,6 @@ const RecipeDetailPage = () => {
                 <div className="flex flex-col flex-1 overflow-hidden">
                     {isEditingTitle ? (
                         <div className="flex items-center gap-2 p-4 border-b flex-shrink-0">
-                            <button
-                                onClick={handleBackClick}
-                                className="p-1 hover:bg-muted rounded-md transition-colors"
-                                aria-label="Go back"
-                                type="button"
-                            >
-                                <ChevronLeft className="h-5 w-5" />
-                            </button>
                             <Input
                                 value={editedTitle}
                                 onChange={(e) => setEditedTitle(e.target.value)}
@@ -193,14 +220,6 @@ const RecipeDetailPage = () => {
                         </div>
                     ) : (
                         <div className="flex items-center gap-3 p-4 border-b flex-shrink-0">
-                            <button
-                                onClick={handleBackClick}
-                                className="p-1 hover:bg-muted rounded-md transition-colors"
-                                aria-label="Go back"
-                                type="button"
-                            >
-                                <ChevronLeft className="h-5 w-5" />
-                            </button>
                             <h1 className="text-xl font-semibold truncate flex-1">{recipe.title}</h1>
                             {isOwner && (
                                 <>
@@ -238,6 +257,8 @@ const RecipeDetailPage = () => {
                     </div>
                 </div>
             )}
+
+            <ToolBar onAddIngredient={isOwner ? handleAddIngredient : undefined} handleGoBack={handleGoBack} />
 
             <AlertDialog open={isOpen} onOpenChange={(open) => !open && handleCancel()}>
                 <AlertDialogContent>
