@@ -1,7 +1,9 @@
-import { ChefHat, ImagePlus, Plus, Trash2, X, Zap } from 'lucide-react';
+import { ChefHat, ImagePlus, Plus, Zap } from 'lucide-react';
 import { useCallback, useId, useMemo, useState } from 'react';
 import { toast } from 'sonner';
+import IngredientItem from '../../../components/IngredientItem';
 import { QuantityUnitField } from '../../../components/QuantityUnitField';
+import { SearchResults } from '../../../components/SearchResults';
 import { useSearch } from '../../../hooks/useSearch';
 import { Badge } from '../../ui/badge';
 import { Button } from '../../ui/button';
@@ -248,28 +250,16 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd }: AddRecipeDrawerPr
 
                             <div className="space-y-2">
                                 {ingredients.map((ing) => (
-                                    <div
+                                    <IngredientItem
                                         key={ing.id}
-                                        className="flex items-center justify-between bg-secondary p-2 rounded-md"
-                                    >
-                                        <div className="text-sm flex-1">
-                                            <span className="font-medium">{ing.name}</span>
-                                            {ing.quantity && (
-                                                <span className="text-muted-foreground ml-2">
-                                                    {ing.quantity}
-                                                    {ing.unit ? ` ${ing.unit}` : ''}
-                                                </span>
-                                            )}
-                                        </div>
-                                        <button
-                                            type="button"
-                                            onClick={() => handleRemoveIngredient(ing.id)}
-                                            disabled={isLoading}
-                                            className="ml-2 p-1 hover:bg-secondary/80 rounded"
-                                        >
-                                            <Trash2 className="h-4 w-4 text-muted-foreground" />
-                                        </button>
-                                    </div>
+                                        ingredient={ing}
+                                        onDelete={handleRemoveIngredient}
+                                        onEdit={(id, updated) => {
+                                            const newIngredients = ingredients.map((i) => (i.id === id ? updated : i));
+                                            setIngredients(newIngredients);
+                                        }}
+                                        isOwner={true}
+                                    />
                                 ))}
                             </div>
 
@@ -315,7 +305,7 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd }: AddRecipeDrawerPr
                                                 disabled={isLoading}
                                                 className="hover:text-slate-700"
                                             >
-                                                <X className="h-3 w-3" />
+                                                ×
                                             </button>
                                         </Badge>
                                     ))}
@@ -333,29 +323,18 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd }: AddRecipeDrawerPr
                                     className="h-9"
                                 />
 
-                                {showUserSearch && (query.length > 1 || results.usernames.length > 0) && (
-                                    <div className="absolute top-full left-0 right-0 bg-white border rounded-md shadow-lg max-h-32 overflow-y-auto z-10 mt-1">
-                                        {isSearchLoading ? (
-                                            <div className="p-2 text-sm text-slate-500">Searching...</div>
-                                        ) : results.usernames.length > 0 ? (
-                                            results.usernames.map((username) => (
-                                                <button
-                                                    key={username}
-                                                    type="button"
-                                                    onClick={() => {
-                                                        handleAddUser(username);
-                                                        setShowUserSearch(false);
-                                                    }}
-                                                    disabled={isLoading || selectedUsers.includes(username)}
-                                                    className="w-full text-left px-3 py-2 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-                                                >
-                                                    {username}
-                                                </button>
-                                            ))
-                                        ) : query.length > 1 ? (
-                                            <div className="p-2 text-sm text-slate-500">No users found</div>
-                                        ) : null}
-                                    </div>
+                                {showUserSearch && (
+                                    <SearchResults
+                                        results={results}
+                                        isLoading={isSearchLoading}
+                                        error={null}
+                                        query={query}
+                                        onSelect={(username) => {
+                                            handleAddUser(username);
+                                            setShowUserSearch(false);
+                                        }}
+                                        onClose={() => setShowUserSearch(false)}
+                                    />
                                 )}
                             </div>
                         </div>
