@@ -47,20 +47,20 @@ export interface Ingredient {
 
 export interface Recipe {
     id: string;
-    name: string;
-    ingredients: Array<Ingredient>;
+    title: string;
+    ingredients: Ingredient[];
     coverImageKey?: string;
+    users: User[];
     ownerId?: string;
-    users: Array<User>;
     dateAdded: Date;
 }
 
 export interface RecipeResponse {
     id: string;
-    name: string;
-    ingredients: Array<Ingredient>;
+    title: string;
+    ingredients: Ingredient[];
     coverImageKey?: string;
-    ownerId?: string;
     users: Array<{ username: string }>;
+    ownerId?: string;
     dateAdded: Date;
 }
