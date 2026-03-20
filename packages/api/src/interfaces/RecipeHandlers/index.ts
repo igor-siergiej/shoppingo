@@ -1,8 +1,10 @@
+import { readFile } from 'node:fs/promises';
 import type { Ingredient } from '@shoppingo/types';
 import type { Context } from 'koa';
 import { dependencyContainer } from '../../dependencies';
 import { DependencyToken } from '../../dependencies/types';
 import type { RecipeService } from '../../domain/RecipeService';
+import type { BucketStore } from '../../infrastructure/BucketStore';
 
 interface HttpError {
     status?: number;
@@ -11,6 +13,10 @@ interface HttpError {
 
 const getRecipeService = (): RecipeService => dependencyContainer.resolve(DependencyToken.RecipeService);
 const getLogger = () => dependencyContainer.resolve(DependencyToken.Logger);
+const getBucketStore = (): BucketStore => {
+    const bucket = dependencyContainer.resolve(DependencyToken.Bucket);
+    return new BucketStore(bucket);
+};
 
 // Helper to extract authenticated user from context
 const getAuthenticatedUser = (ctx: Context): { id: string; username: string } | null => {
@@ -423,7 +429,7 @@ export const removeUserFromRecipe = async (ctx: Context): Promise<void> => {
 
 export const setCoverImageKey = async (ctx: Context): Promise<void> => {
     const { recipeId } = ctx.params as { recipeId: string };
-    const { coverImageKey } = ctx.request.body as { coverImageKey: string };
+    const { imageKey } = ctx.request.body as { imageKey: string };
     const logger = getLogger();
     const authenticatedUser = getAuthenticatedUser(ctx);
 
@@ -437,9 +443,9 @@ export const setCoverImageKey = async (ctx: Context): Promise<void> => {
         return;
     }
 
-    if (!coverImageKey || typeof coverImageKey !== 'string' || coverImageKey.trim() === '') {
+    if (!imageKey || typeof imageKey !== 'string' || imageKey.trim() === '') {
         ctx.status = 400;
-        ctx.body = { error: 'coverImageKey is required and must be a non-empty string' };
+        ctx.body = { error: 'imageKey is required and must be a non-empty string' };
         return;
     }
 
@@ -456,12 +462,12 @@ export const setCoverImageKey = async (ctx: Context): Promise<void> => {
             return;
         }
 
-        const recipe = await getRecipeService().setCoverImageKey(recipeId, coverImageKey, authenticatedUser.id);
+        const recipe = await getRecipeService().setCoverImageKey(recipeId, imageKey, authenticatedUser.id);
 
         logger.info('API: Recipe cover image updated', {
             userId: authenticatedUser.id,
             recipeId,
-            coverImageKey,
+            imageKey,
         });
 
         ctx.status = 200;
@@ -472,6 +478,93 @@ export const setCoverImageKey = async (ctx: Context): Promise<void> => {
         const errorMessage = err.message || 'Internal Server Error';
 
         logger.error('API: Failed to set recipe cover image', {
+            userId: authenticatedUser.id,
+            recipeId,
+            error: errorMessage,
+            status,
+        });
+
+        ctx.status = status;
+        ctx.body = { error: errorMessage };
+    }
+};
+
+export const uploadRecipeImage = async (ctx: Context): Promise<void> => {
+    const { recipeId } = ctx.params as { recipeId: string };
+    const logger = getLogger();
+    const authenticatedUser = getAuthenticatedUser(ctx);
+
+    if (!authenticatedUser) {
+        logger.warn('Unauthorized recipe image upload attempt', {
+            recipeId,
+            ip: ctx.ip,
+        });
+        ctx.status = 401;
+        ctx.body = { error: 'Unauthorized' };
+        return;
+    }
+
+    try {
+        // Verify user has access to this recipe
+        const hasAccess = await verifyRecipeAccess(recipeId, authenticatedUser, ctx);
+        if (!hasAccess) {
+            logger.warn('Unauthorized recipe image upload attempt', {
+                authenticatedUserId: authenticatedUser.id,
+                recipeId,
+            });
+            ctx.status = 403;
+            ctx.body = { error: 'Forbidden' };
+            return;
+        }
+
+        // Get the uploaded file
+        const files = ctx.request.files as
+            | Record<string, { filepath: string; mimetype: string } | { filepath: string; mimetype: string }[]>
+            | undefined;
+        if (!files || !files.image) {
+            ctx.status = 400;
+            ctx.body = { error: 'No image file provided' };
+            return;
+        }
+
+        const imageFile = files.image;
+        const filePath = Array.isArray(imageFile) ? imageFile[0].filepath : imageFile.filepath;
+        const mimeType = Array.isArray(imageFile) ? imageFile[0].mimetype : imageFile.mimetype;
+
+        // Validate image MIME type
+        if (!mimeType?.startsWith('image/')) {
+            ctx.status = 400;
+            ctx.body = { error: 'File must be an image' };
+            return;
+        }
+
+        // Read file buffer
+        const fileBuffer = await readFile(filePath);
+
+        // Generate unique key: recipe-uploads/{userId}/{recipeId}
+        const imageKey = `recipe-uploads/${authenticatedUser.id}/${recipeId}`;
+
+        // Store in MinIO
+        const bucketStore = getBucketStore();
+        await bucketStore.putObject(imageKey, fileBuffer, { contentType: mimeType });
+
+        // Update recipe with the image key
+        const recipe = await getRecipeService().setCoverImageKey(recipeId, imageKey, authenticatedUser.id);
+
+        logger.info('API: Recipe image uploaded', {
+            userId: authenticatedUser.id,
+            recipeId,
+            imageKey,
+        });
+
+        ctx.status = 200;
+        ctx.body = { imageKey, recipe };
+    } catch (error: unknown) {
+        const err = error instanceof Error ? error : new Error(String(error));
+        const status = (error as HttpError)?.status ?? 500;
+        const errorMessage = err.message || 'Internal Server Error';
+
+        logger.error('API: Failed to upload recipe image', {
             userId: authenticatedUser.id,
             recipeId,
             error: errorMessage,

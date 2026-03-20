@@ -45,5 +45,6 @@ router.delete('/api/recipes/:recipeId/users/:targetUserId', authenticate, (ctx) 
     recipeHandlers.removeUserFromRecipe(ctx)
 );
 router.put('/api/recipes/:recipeId/image', authenticate, (ctx) => recipeHandlers.setCoverImageKey(ctx));
+router.post('/api/recipes/:recipeId/image/upload', authenticate, (ctx) => recipeHandlers.uploadRecipeImage(ctx));
 
 export default router;

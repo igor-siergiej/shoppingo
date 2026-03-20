@@ -1,5 +1,7 @@
+import { getStorageItem } from '@imapps/web-utils';
 import type { Item, ListResponse, ListType, Recipe, User } from '@shoppingo/types';
 
+import { getAuthConfig } from '../config/auth';
 import { makeRequest } from './makeRequest';
 import { MethodType } from './types';
 
@@ -229,7 +231,7 @@ export const addRecipe = async (
     user: User,
     selectedUsers?: Array<string>,
     ingredients?: Array<{ name: string; quantity?: number; unit?: string }>
-): Promise<unknown> => {
+): Promise<Recipe> => {
     const dateAdded = generateTimestamp(new Date());
     const requestBody = {
         title,
@@ -246,7 +248,7 @@ export const addRecipe = async (
         body: JSON.stringify(requestBody),
     });
 
-    return result;
+    return result as Recipe;
 };
 
 export const updateRecipe = async (
@@ -308,6 +310,35 @@ export const deleteCoverImageKey = async (recipeId: string): Promise<Recipe> => 
         operationString: 'delete recipe cover image',
         body: JSON.stringify({ imageKey: undefined }),
     });
+};
+
+export const uploadRecipeImage = async (recipeId: string, file: File): Promise<{ imageKey: string }> => {
+    const formData = new FormData();
+    formData.append('image', file);
+
+    const authConfig = getAuthConfig();
+    const accessToken = getStorageItem(
+        authConfig.accessTokenKey || 'accessToken',
+        authConfig.storageType || 'localStorage'
+    );
+
+    const headers: Record<string, string> = {};
+    if (accessToken) {
+        headers.Authorization = `Bearer ${accessToken}`;
+    }
+
+    const response = await fetch(`/api/recipes/${encodeURIComponent(recipeId)}/image/upload`, {
+        method: 'POST',
+        headers,
+        body: formData,
+    });
+
+    if (!response.ok) {
+        const errorBody = await response.json().catch(() => ({}));
+        throw new Error(errorBody.error || 'Failed to upload image');
+    }
+
+    return await response.json();
 };
 
 const generateTimestamp = (now: Date): string => {

@@ -239,7 +239,7 @@ const RecipeDetailPage = () => {
 
                     <div className="flex-1 overflow-y-auto">
                         <div className="p-4 space-y-6">
-                            <CoverImageSection recipe={recipe} isOwner={isOwner} />
+                            <CoverImageSection recipe={recipe} isOwner={isOwner} onImageChange={() => void refetch()} />
 
                             <IngredientsSection
                                 recipe={recipe}

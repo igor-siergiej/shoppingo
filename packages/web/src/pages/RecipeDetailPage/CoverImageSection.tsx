@@ -1,11 +1,14 @@
 import type { Recipe } from '@shoppingo/types';
 import { ImageIcon, ImageOff, Loader2, Sparkles } from 'lucide-react';
 import { useEffect, useId, useRef, useState } from 'react';
+import { toast } from 'sonner';
+import { setCoverImageKey, uploadRecipeImage } from '../../api';
 import { Button } from '../../components/ui/button';
 
 interface CoverImageSectionProps {
     recipe: Recipe;
     isOwner?: boolean;
+    onImageChange?: () => void;
 }
 
 export const CoverImageSection = ({ recipe, isOwner = false }: CoverImageSectionProps) => {
@@ -55,14 +58,34 @@ export const CoverImageSection = ({ recipe, isOwner = false }: CoverImageSection
 
         setIsUploading(true);
         try {
-            // TODO: Implement image upload to backend
-            // For now, create a local preview
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                setImageUrl(event.target?.result as string);
-                // TODO: Call onImageChange with uploaded image key
-            };
-            reader.readAsDataURL(file);
+            await uploadRecipeImage(recipe.id, file);
+            toast.success('Image uploaded successfully', { style: { backgroundColor: '#10b981', color: '#ffffff' } });
+            // Refresh the image by triggering onImageChange
+            onImageChange?.();
+        } catch (err) {
+            const message = err instanceof Error ? err.message : 'Failed to upload image';
+            toast.error(message, { style: { backgroundColor: '#ef4444', color: '#ffffff' } });
+        } finally {
+            setIsUploading(false);
+            if (fileInputRef.current) fileInputRef.current.value = '';
+        }
+    };
+
+    const handleAiGenerate = async () => {
+        setIsUploading(true);
+        try {
+            // Trigger AI generation via existing endpoint
+            await fetch(`/api/image/${encodeURIComponent(recipe.title)}`, {
+                method: 'GET',
+            });
+            // Set the imageKey to the normalized title
+            await setCoverImageKey(recipe.id, recipe.title.trim().toLowerCase());
+            toast.success('Image generated successfully', { style: { backgroundColor: '#10b981', color: '#ffffff' } });
+            // Refresh the image
+            onImageChange?.();
+        } catch (err) {
+            const message = err instanceof Error ? err.message : 'Failed to generate image';
+            toast.error(message, { style: { backgroundColor: '#ef4444', color: '#ffffff' } });
         } finally {
             setIsUploading(false);
         }
@@ -115,7 +138,13 @@ export const CoverImageSection = ({ recipe, isOwner = false }: CoverImageSection
                                 <ImageIcon className="h-4 w-4 mr-1" />
                                 Upload
                             </Button>
-                            <Button type="button" variant="outline" size="sm" disabled={isUploading}>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                disabled={isUploading}
+                                onClick={handleAiGenerate}
+                            >
                                 <Sparkles className="h-4 w-4 mr-1" />
                                 AI Generate
                             </Button>
