@@ -1,4 +1,4 @@
-import { ArrowLeft, BookOpen, Menu, ShoppingCart, Trash2 } from 'lucide-react';
+import { ArrowLeft, BookOpen, CheckCheck, Menu, ShoppingCart, Trash2 } from 'lucide-react';
 import { forwardRef, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ToolBarButton } from '../ToolBarButton';
@@ -50,40 +50,48 @@ export const ToolBarAppBar = forwardRef<HTMLDivElement, ToolBarAppBarProps>(
 
         return (
             <div ref={ref} className="flex items-center justify-between py-2.5 px-3">
-                {/* Left side */}
-                <div className="flex items-center gap-1">
+                {/* Left side - Navigation buttons */}
+                <div className="flex items-center gap-4">
                     {showBackButton ? (
-                        <ToolBarButton
-                            icon={ArrowLeft}
-                            title="Go back"
-                            onClick={handleGoBack}
-                        />
+                        <ToolBarButton icon={ArrowLeft} title="Go back" onClick={handleGoBack} />
                     ) : (
                         <>
-                            <ToolBarButton
-                                icon={ShoppingCart}
-                                title="Shopping lists"
+                            <button
+                                type="button"
                                 onClick={() => navigate('/')}
-                                variant={isListsPage ? 'default' : 'ghost'}
-                            />
-                            <ToolBarButton
-                                icon={BookOpen}
-                                title="Recipes"
+                                title="Shopping lists"
+                                className={`p-3 rounded-lg transition-colors ${
+                                    isListsPage
+                                        ? 'bg-primary/20 text-primary'
+                                        : 'text-muted-foreground hover:bg-secondary'
+                                }`}
+                            >
+                                <ShoppingCart className="h-6 w-6" />
+                            </button>
+                            <button
+                                type="button"
                                 onClick={() => navigate('/recipes')}
-                                variant={isRecipesPage ? 'default' : 'ghost'}
-                            />
+                                title="Recipes"
+                                className={`p-3 rounded-lg transition-colors ${
+                                    isRecipesPage
+                                        ? 'bg-primary/20 text-primary'
+                                        : 'text-muted-foreground hover:bg-secondary'
+                                }`}
+                            >
+                                <BookOpen className="h-6 w-6" />
+                            </button>
                         </>
                     )}
                 </div>
 
                 {/* Center - Add button */}
-                <div className="flex-1 flex justify-center">
+                <div>
                     {isItemsPage && itemDrawer}
                     {isListsPage && listDrawer}
                     {isRecipesPage && recipeDrawer}
                 </div>
 
-                {/* Right side */}
+                {/* Right side - Menu and action buttons */}
                 <div className="flex items-center gap-1">
                     {onClearSelected && (
                         <ToolBarButton

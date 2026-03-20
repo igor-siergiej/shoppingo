@@ -1,6 +1,7 @@
 import { ChefHat, ImagePlus, Plus, Trash2, X, Zap } from 'lucide-react';
 import { useCallback, useId, useMemo, useState } from 'react';
 import { toast } from 'sonner';
+import { QuantityUnitField } from '../../../components/QuantityUnitField';
 import { useSearch } from '../../../hooks/useSearch';
 import { Badge } from '../../ui/badge';
 import { Button } from '../../ui/button';
@@ -117,7 +118,10 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd }: AddRecipeDrawerPr
                 unit: ing.unit,
             }));
 
-            await onAdd(title, trimmedIngredients, imageKey || imageDescription || undefined, selectedUsers);
+            const imageValue =
+                imageKey || (imageDescription.trim() ? imageDescription : imageMode === 'generate' ? title : undefined);
+
+            await onAdd(title, trimmedIngredients, imageValue, selectedUsers);
 
             toast.success('Recipe created successfully!');
             handleCancel();
@@ -166,11 +170,10 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd }: AddRecipeDrawerPr
             <DrawerTrigger asChild>
                 <RippleButton
                     size="icon"
-                    variant="secondary"
-                    className="h-12 w-12 rounded-full shadow-lg"
+                    className="h-12 w-12 rounded-full border-2 border-primary/20 hover:border-primary/40 transition-colors"
                     aria-label="Add recipe"
                 >
-                    <Plus className="h-6 w-6" />
+                    <Plus className="size-5" />
                 </RippleButton>
             </DrawerTrigger>
             <DrawerContent>
@@ -195,75 +198,8 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd }: AddRecipeDrawerPr
                                 }}
                                 disabled={isLoading}
                                 autoFocus
-                                className="h-10"
+                                className="h-10 border border-foreground/30"
                             />
-                        </div>
-
-                        <div className="space-y-3 border-t pt-4">
-                            <Label className="text-sm font-semibold">Ingredients</Label>
-
-                            <div className="space-y-2">
-                                {ingredients.map((ing) => (
-                                    <div
-                                        key={ing.id}
-                                        className="flex items-center justify-between bg-slate-50 p-2 rounded-md"
-                                    >
-                                        <div className="text-sm flex-1">
-                                            <span className="font-medium">{ing.name}</span>
-                                            {ing.quantity && (
-                                                <span className="text-slate-500 ml-2">
-                                                    {ing.quantity}
-                                                    {ing.unit ? ` ${ing.unit}` : ''}
-                                                </span>
-                                            )}
-                                        </div>
-                                        <button
-                                            type="button"
-                                            onClick={() => handleRemoveIngredient(ing.id)}
-                                            disabled={isLoading}
-                                            className="ml-2 p-1 hover:bg-slate-200 rounded"
-                                        >
-                                            <Trash2 className="h-4 w-4 text-slate-500" />
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
-
-                            <div className="space-y-2 bg-slate-50 p-3 rounded-md">
-                                <Input
-                                    id={ingredientNameId}
-                                    placeholder="Ingredient name"
-                                    value={newIngredientName}
-                                    onChange={(e) => setNewIngredientName(e.target.value)}
-                                    disabled={isLoading}
-                                    className="h-9 text-sm"
-                                />
-                                <div className="grid grid-cols-3 gap-2">
-                                    <Input
-                                        placeholder="Quantity"
-                                        type="number"
-                                        value={newIngredientQuantity}
-                                        onChange={(e) => setNewIngredientQuantity(e.target.value)}
-                                        disabled={isLoading}
-                                        className="h-9 text-sm"
-                                    />
-                                    <Input
-                                        placeholder="Unit"
-                                        value={newIngredientUnit}
-                                        onChange={(e) => setNewIngredientUnit(e.target.value)}
-                                        disabled={isLoading}
-                                        className="h-9 text-sm"
-                                    />
-                                    <Button
-                                        onClick={handleAddIngredient}
-                                        disabled={isLoading || !newIngredientName.trim()}
-                                        size="sm"
-                                        className="h-9"
-                                    >
-                                        Add
-                                    </Button>
-                                </div>
-                            </div>
                         </div>
 
                         <div className="space-y-2 border-t pt-4">
@@ -308,13 +244,71 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd }: AddRecipeDrawerPr
                                 </div>
                             ) : (
                                 <Input
-                                    placeholder="Describe the image you want to generate..."
+                                    placeholder={`Optional: Describe the image (or use "${title}" as the prompt)`}
                                     value={imageDescription}
                                     onChange={(e) => setImageDescription(e.target.value)}
-                                    disabled={isLoading}
+                                    disabled={isLoading || !title.trim()}
                                     className="h-9"
                                 />
                             )}
+                        </div>
+
+                        <div className="space-y-3 border-t pt-4">
+                            <Label className="text-sm font-semibold">Ingredients</Label>
+
+                            <div className="space-y-2">
+                                {ingredients.map((ing) => (
+                                    <div
+                                        key={ing.id}
+                                        className="flex items-center justify-between bg-secondary p-2 rounded-md"
+                                    >
+                                        <div className="text-sm flex-1">
+                                            <span className="font-medium">{ing.name}</span>
+                                            {ing.quantity && (
+                                                <span className="text-muted-foreground ml-2">
+                                                    {ing.quantity}
+                                                    {ing.unit ? ` ${ing.unit}` : ''}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleRemoveIngredient(ing.id)}
+                                            disabled={isLoading}
+                                            className="ml-2 p-1 hover:bg-secondary/80 rounded"
+                                        >
+                                            <Trash2 className="h-4 w-4 text-muted-foreground" />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="space-y-3 bg-secondary p-3 rounded-md">
+                                <Input
+                                    id={ingredientNameId}
+                                    placeholder="Ingredient name"
+                                    value={newIngredientName}
+                                    onChange={(e) => setNewIngredientName(e.target.value)}
+                                    disabled={isLoading}
+                                    className="h-9 text-sm border border-foreground/30"
+                                />
+                                <QuantityUnitField
+                                    quantity={newIngredientQuantity}
+                                    unit={newIngredientUnit}
+                                    onQuantityChange={setNewIngredientQuantity}
+                                    onUnitChange={setNewIngredientUnit}
+                                    quantityId="ingredient-quantity"
+                                    unitId="ingredient-unit"
+                                />
+                                <Button
+                                    onClick={handleAddIngredient}
+                                    disabled={isLoading || !newIngredientName.trim()}
+                                    size="sm"
+                                    className="w-full"
+                                >
+                                    Add Ingredient
+                                </Button>
+                            </div>
                         </div>
 
                         <div className="space-y-3 border-t pt-4">
