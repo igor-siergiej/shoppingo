@@ -1,3 +1,10 @@
+# [1.23.0](https://github.com/igor-siergiej/shoppingo/compare/v1.22.0...v1.23.0) (2026-03-20)
+
+
+### Features
+
+* unified loading page with smooth transitions ([#37](https://github.com/igor-siergiej/shoppingo/issues/37)) ([d293aa7](https://github.com/igor-siergiej/shoppingo/commit/d293aa7553fe0d24af45cc13a50ecae95e5ed048))
+
 # [1.22.0](https://github.com/igor-siergiej/shoppingo/compare/v1.21.9...v1.22.0) (2026-03-19)
 
 
