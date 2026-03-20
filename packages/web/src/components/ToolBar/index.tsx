@@ -10,6 +10,7 @@ import useMeasure from 'react-use-measure';
 import { Card } from '../../components/ui/card';
 import { useToolBarState } from '../../hooks/useToolBarState';
 import { ManageUsersDrawer } from '../ManageUsersDrawer';
+import { AddIngredientDrawer } from './AddIngredientDrawer';
 import { AddItemDrawer } from './AddItemDrawer';
 import { AddListDrawer } from './AddListDrawer';
 import { AddRecipeDrawer } from './AddRecipeDrawer';
@@ -19,6 +20,7 @@ import { ToolBarAppBar } from './ToolBarAppBar';
 interface ToolBarProps {
     onAddList?: (name: string, listType: ListType, users: string[]) => Promise<void>;
     onAddItem?: (name: string, quantity?: number, unit?: string, dueDate?: Date) => Promise<void>;
+    onAddIngredient?: (name: string, quantity?: number, unit?: string) => Promise<void>;
     onAddRecipe?: (
         title: string,
         ingredients: Array<{ name: string; quantity?: number; unit?: string }>,
@@ -43,6 +45,7 @@ interface ToolBarProps {
 const ToolBar = ({
     onAddList,
     onAddItem,
+    onAddIngredient,
     onAddRecipe,
     handleGoBack,
     handleClearSelected,
@@ -76,9 +79,12 @@ const ToolBar = ({
         setIsMenuOpen,
     } = useToolBarState();
 
+    const [isAddIngredientDrawerOpen, setIsAddIngredientDrawerOpen] = useState(false);
+
     const isItemsPage = location.pathname.includes('/list/');
     const isListsPage = location.pathname === '/';
     const isRecipesPage = location.pathname === '/recipes';
+    const isRecipeDetailPage = location.pathname.includes('/recipes/');
 
     const [contentRef, { height: contentHeight }] = useMeasure();
     const [menuRef, { width: menuWidth }] = useMeasure();
@@ -174,6 +180,7 @@ const ToolBar = ({
                                 isItemsPage={isItemsPage}
                                 isListsPage={isListsPage}
                                 isRecipesPage={isRecipesPage}
+                                isRecipeDetailPage={isRecipeDetailPage}
                                 onGoBack={handleGoBack}
                                 onClearSelected={handleClearSelected}
                                 onRemoveAll={handleRemoveAll}
@@ -215,6 +222,15 @@ const ToolBar = ({
                                             onOpenChange={setIsAddRecipeDrawerOpen}
                                             onAdd={onAddRecipe}
                                             placeholder={placeholder}
+                                        />
+                                    ) : undefined
+                                }
+                                ingredientDrawer={
+                                    isRecipeDetailPage && onAddIngredient ? (
+                                        <AddIngredientDrawer
+                                            open={isAddIngredientDrawerOpen}
+                                            onOpenChange={setIsAddIngredientDrawerOpen}
+                                            onAdd={onAddIngredient}
                                         />
                                     ) : undefined
                                 }

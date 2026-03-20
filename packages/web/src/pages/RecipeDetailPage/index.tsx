@@ -2,12 +2,13 @@
 
 import { useUser } from '@imapps/web-utils';
 import type { Ingredient } from '@shoppingo/types';
-import { ChevronLeft, Trash2 } from 'lucide-react';
+import { Pencil, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useQuery } from 'react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { deleteRecipe, getRecipeQuery, updateRecipe } from '../../api';
+import ToolBar from '../../components/ToolBar';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -18,14 +19,14 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '../../components/ui/alert-dialog';
+import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
 import { Skeleton } from '../../components/ui/skeleton';
 import { useConfirmation } from '../../hooks/useConfirmation';
 import { logger } from '../../utils/logger';
 import { CoverImageSection } from './CoverImageSection';
 import { ErrorState } from './ErrorState';
 import { IngredientsSection } from './IngredientsSection';
-import { RecipeDetailHeader } from './RecipeDetailHeader';
-import { UserManagementSection } from './UserManagementSection';
 
 const RecipeDetailPage = () => {
     const { recipeId } = useParams<{ recipeId: string }>();
@@ -61,8 +62,35 @@ const RecipeDetailPage = () => {
         return <div className="text-center py-8 text-muted-foreground">Invalid recipe ID</div>;
     }
 
-    const handleBackClick = () => {
+    const handleGoBack = () => {
         navigate('/recipes');
+    };
+
+    const handleAddIngredient = async (name: string, quantity?: number, unit?: string) => {
+        if (!recipe) return;
+
+        const newIngredient: Ingredient = {
+            id: `temp-${Date.now()}`,
+            name,
+            ...(quantity !== undefined && { quantity }),
+            ...(unit !== undefined && { unit }),
+        };
+
+        const updated = [...recipe.ingredients, newIngredient];
+
+        try {
+            await updateRecipe(recipeId, recipe.title, updated);
+            await refetch();
+        } catch (error) {
+            const err = error as { message?: string };
+            toast.error(err.message || 'Failed to add ingredient', {
+                style: {
+                    backgroundColor: '#ef4444',
+                    color: '#ffffff',
+                    border: 'none',
+                },
+            });
+        }
     };
 
     const handleSaveTitle = async () => {
@@ -154,32 +182,6 @@ const RecipeDetailPage = () => {
         });
     };
 
-    const handleImageUpdate = async (imageKey: string) => {
-        if (!recipe) return;
-
-        try {
-            await updateRecipe(recipeId, recipe.title, recipe.ingredients, imageKey);
-            await refetch();
-            logger.info('Recipe cover image updated', { recipeId, imageKey });
-        } catch (error) {
-            const err = error as { message?: string };
-            throw err;
-        }
-    };
-
-    const handleImageDelete = async () => {
-        if (!recipe) return;
-
-        try {
-            await updateRecipe(recipeId, recipe.title, recipe.ingredients, undefined);
-            await refetch();
-            logger.info('Recipe cover image deleted', { recipeId });
-        } catch (error) {
-            const err = error as { message?: string };
-            throw err;
-        }
-    };
-
     return (
         <div className="flex flex-col h-full">
             {isLoading && (
@@ -194,65 +196,62 @@ const RecipeDetailPage = () => {
 
             {!isLoading && !isError && recipe && (
                 <div className="flex flex-col flex-1 overflow-hidden">
-                    <div className="flex items-center gap-3 p-4 border-b flex-shrink-0">
-                        <button
-                            onClick={handleBackClick}
-                            className="p-1 hover:bg-muted rounded-md transition-colors"
-                            aria-label="Go back"
-                            type="button"
-                        >
-                            <ChevronLeft className="h-5 w-5" />
-                        </button>
-                        <h1 className="text-xl font-semibold truncate">{recipe.title}</h1>
-                        {isOwner && (
-                            <button
-                                onClick={handleDeleteRecipe}
-                                className="ml-auto p-1 hover:bg-destructive hover:bg-opacity-10 rounded-md transition-colors text-destructive"
-                                aria-label="Delete recipe"
-                                type="button"
-                            >
-                                <Trash2 className="h-5 w-5" />
-                            </button>
-                        )}
-                    </div>
+                    {isEditingTitle ? (
+                        <div className="flex items-center gap-2 p-4 border-b flex-shrink-0">
+                            <Input
+                                value={editedTitle}
+                                onChange={(e) => setEditedTitle(e.target.value)}
+                                className="flex-1"
+                                autoFocus
+                            />
+                            <Button size="sm" onClick={handleSaveTitle}>
+                                Save
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={() => setIsEditingTitle(false)}>
+                                Cancel
+                            </Button>
+                        </div>
+                    ) : (
+                        <div className="flex items-center gap-3 p-4 border-b flex-shrink-0">
+                            <h1 className="text-xl font-semibold truncate flex-1">{recipe.title}</h1>
+                            {isOwner && (
+                                <>
+                                    <button
+                                        onClick={() => setIsEditingTitle(true)}
+                                        className="p-1 hover:bg-muted rounded-md transition-colors"
+                                        aria-label="Edit recipe title"
+                                        type="button"
+                                    >
+                                        <Pencil className="h-5 w-5" />
+                                    </button>
+                                    <button
+                                        onClick={handleDeleteRecipe}
+                                        className="p-1 hover:bg-destructive hover:bg-opacity-10 rounded-md transition-colors text-destructive"
+                                        aria-label="Delete recipe"
+                                        type="button"
+                                    >
+                                        <Trash2 className="h-5 w-5" />
+                                    </button>
+                                </>
+                            )}
+                        </div>
+                    )}
 
                     <div className="flex-1 overflow-y-auto">
                         <div className="p-4 space-y-6">
-                            <RecipeDetailHeader
-                                recipe={recipe}
-                                isOwner={isOwner}
-                                isEditingTitle={isEditingTitle}
-                                editedTitle={editedTitle}
-                                onEditingTitleChange={setIsEditingTitle}
-                                onEditedTitleChange={setEditedTitle}
-                                onSaveTitle={handleSaveTitle}
-                            />
-
-                            <CoverImageSection
-                                recipe={recipe}
-                                isOwner={isOwner}
-                                onImageUpdate={handleImageUpdate}
-                                onImageDelete={handleImageDelete}
-                            />
+                            <CoverImageSection recipe={recipe} isOwner={isOwner} />
 
                             <IngredientsSection
                                 recipe={recipe}
                                 isOwner={isOwner}
                                 onUpdateIngredients={handleUpdateIngredients}
                             />
-
-                            {recipe.users.length > 0 && (
-                                <UserManagementSection
-                                    recipe={recipe}
-                                    isOwner={isOwner}
-                                    onUserAdded={() => void refetch()}
-                                    onUserRemoved={() => void refetch()}
-                                />
-                            )}
                         </div>
                     </div>
                 </div>
             )}
+
+            <ToolBar onAddIngredient={isOwner ? handleAddIngredient : undefined} handleGoBack={handleGoBack} />
 
             <AlertDialog open={isOpen} onOpenChange={(open) => !open && handleCancel()}>
                 <AlertDialogContent>

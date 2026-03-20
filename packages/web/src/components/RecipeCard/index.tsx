@@ -52,7 +52,7 @@ export const RecipeCard = ({ recipe, onClick }: RecipeCardProps) => {
         <Card
             role="button"
             onClick={onClick}
-            className="group cursor-pointer overflow-hidden transition-all duration-200 hover:shadow-md hover:scale-[1.02] h-full flex flex-col"
+            className="group cursor-pointer overflow-hidden transition-all duration-200 hover:shadow-lg hover:scale-105 h-full flex flex-col relative z-10 origin-center"
             tabIndex={0}
             onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {

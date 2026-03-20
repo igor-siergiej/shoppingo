@@ -7,6 +7,7 @@ interface ToolBarAppBarProps {
     isItemsPage: boolean;
     isListsPage: boolean;
     isRecipesPage?: boolean;
+    isRecipeDetailPage?: boolean;
     onGoBack?: () => void;
     onClearSelected?: () => void;
     onRemoveAll?: () => void;
@@ -16,6 +17,7 @@ interface ToolBarAppBarProps {
     itemDrawer?: ReactNode;
     listDrawer?: ReactNode;
     recipeDrawer?: ReactNode;
+    ingredientDrawer?: ReactNode;
 }
 
 export const ToolBarAppBar = forwardRef<HTMLDivElement, ToolBarAppBarProps>(
@@ -24,6 +26,7 @@ export const ToolBarAppBar = forwardRef<HTMLDivElement, ToolBarAppBarProps>(
             isItemsPage,
             isListsPage,
             isRecipesPage,
+            isRecipeDetailPage,
             onGoBack,
             onClearSelected,
             onRemoveAll,
@@ -33,6 +36,7 @@ export const ToolBarAppBar = forwardRef<HTMLDivElement, ToolBarAppBarProps>(
             itemDrawer,
             listDrawer,
             recipeDrawer,
+            ingredientDrawer,
         },
         ref
     ) => {
@@ -46,7 +50,7 @@ export const ToolBarAppBar = forwardRef<HTMLDivElement, ToolBarAppBarProps>(
             }
         };
 
-        const showBackButton = isItemsPage;
+        const showBackButton = isItemsPage || isRecipeDetailPage;
 
         return (
             <div ref={ref} className="grid items-center py-2.5 px-3" style={{ gridTemplateColumns: '1fr auto 1fr' }}>
@@ -73,14 +77,15 @@ export const ToolBarAppBar = forwardRef<HTMLDivElement, ToolBarAppBarProps>(
                 </div>
 
                 {/* Center - Add button */}
-                <div className="flex justify-center px-2">
+                <div className="flex justify-center">
                     {isItemsPage && itemDrawer}
                     {isListsPage && listDrawer}
                     {isRecipesPage && recipeDrawer}
+                    {isRecipeDetailPage && ingredientDrawer}
                 </div>
 
                 {/* Right side - Menu and action buttons */}
-                <div className="flex items-center gap-2 justify-end min-w-0">
+                <div className="flex items-center gap-2 justify-end">
                     {onClearSelected && (
                         <ToolBarButton
                             icon={CheckCheck}
