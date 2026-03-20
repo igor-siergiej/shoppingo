@@ -49,9 +49,9 @@ export const ToolBarAppBar = forwardRef<HTMLDivElement, ToolBarAppBarProps>(
         const showBackButton = isItemsPage;
 
         return (
-            <div ref={ref} className="flex items-center py-2.5 px-3">
+            <div ref={ref} className="grid items-center py-2.5 px-3" style={{ gridTemplateColumns: '1fr auto 1fr' }}>
                 {/* Left side - Navigation buttons */}
-                <div className="flex items-center gap-4 flex-1">
+                <div className="flex items-center gap-4">
                     {showBackButton ? (
                         <ToolBarButton icon={ArrowLeft} title="Go back" onClick={handleGoBack} />
                     ) : (
@@ -80,7 +80,7 @@ export const ToolBarAppBar = forwardRef<HTMLDivElement, ToolBarAppBarProps>(
                 </div>
 
                 {/* Right side - Menu and action buttons */}
-                <div className="flex items-center gap-2 flex-1 justify-end">
+                <div className="flex items-center gap-2 justify-end">
                     {onClearSelected && (
                         <ToolBarButton
                             icon={CheckCheck}
