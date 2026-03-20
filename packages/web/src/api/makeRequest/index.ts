@@ -89,6 +89,9 @@ export const makeRequest = async ({ pathname, method, operationString, body, que
         }
 
         if (response.ok) {
+            if (response.status === 204) {
+                return undefined;
+            }
             return await response.json();
         }
 

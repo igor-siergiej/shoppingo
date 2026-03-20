@@ -19,31 +19,35 @@ export class MongoRecipeRepository implements RecipeRepository {
         return this.collection().find({ 'users.id': userId }).toArray();
     }
 
-    async insert(recipe: Recipe): Promise<void> {
+    async insert(recipe: Recipe): Promise<Recipe> {
         await this.collection().insertOne(recipe);
+        return recipe;
     }
 
-    async update(recipeId: string, recipe: Recipe): Promise<void> {
-        await this.collection().findOneAndReplace({ id: recipeId }, recipe, { returnDocument: 'after' });
+    async update(recipeId: string, recipe: Recipe): Promise<Recipe> {
+        const result = await this.collection().findOneAndReplace({ id: recipeId }, recipe, { returnDocument: 'after' });
+        return result.value as Recipe;
     }
 
     async deleteById(recipeId: string): Promise<void> {
         await this.collection().deleteOne({ id: recipeId });
     }
 
-    async addUser(recipeId: string, user: User): Promise<void> {
-        await this.collection().findOneAndUpdate(
+    async addUser(recipeId: string, user: User): Promise<Recipe> {
+        const result = await this.collection().findOneAndUpdate(
             { id: recipeId },
             { $push: { users: user } },
             { returnDocument: 'after' }
         );
+        return result.value as Recipe;
     }
 
-    async removeUser(recipeId: string, userId: string): Promise<void> {
-        await this.collection().findOneAndUpdate(
+    async removeUser(recipeId: string, userId: string): Promise<Recipe> {
+        const result = await this.collection().findOneAndUpdate(
             { id: recipeId },
             { $pull: { users: { id: userId } } },
             { returnDocument: 'after' }
         );
+        return result.value as Recipe;
     }
 }

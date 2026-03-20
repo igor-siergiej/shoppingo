@@ -49,50 +49,38 @@ export const ToolBarAppBar = forwardRef<HTMLDivElement, ToolBarAppBarProps>(
         const showBackButton = isItemsPage;
 
         return (
-            <div ref={ref} className="flex items-center justify-between py-2.5 px-3">
+            <div ref={ref} className="grid items-center py-2.5 px-3" style={{ gridTemplateColumns: '1fr auto 1fr' }}>
                 {/* Left side - Navigation buttons */}
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 min-w-0">
                     {showBackButton ? (
                         <ToolBarButton icon={ArrowLeft} title="Go back" onClick={handleGoBack} />
                     ) : (
                         <>
-                            <button
-                                type="button"
-                                onClick={() => navigate('/')}
+                            <ToolBarButton
+                                icon={ShoppingCart}
                                 title="Shopping lists"
-                                className={`p-3 rounded-lg transition-colors ${
-                                    isListsPage
-                                        ? 'bg-primary/20 text-primary'
-                                        : 'text-muted-foreground hover:bg-secondary'
-                                }`}
-                            >
-                                <ShoppingCart className="h-6 w-6" />
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => navigate('/recipes')}
+                                onClick={() => navigate('/')}
+                                active={isListsPage}
+                            />
+                            <ToolBarButton
+                                icon={BookOpen}
                                 title="Recipes"
-                                className={`p-3 rounded-lg transition-colors ${
-                                    isRecipesPage
-                                        ? 'bg-primary/20 text-primary'
-                                        : 'text-muted-foreground hover:bg-secondary'
-                                }`}
-                            >
-                                <BookOpen className="h-6 w-6" />
-                            </button>
+                                onClick={() => navigate('/recipes')}
+                                active={isRecipesPage}
+                            />
                         </>
                     )}
                 </div>
 
                 {/* Center - Add button */}
-                <div>
+                <div className="flex justify-center px-2">
                     {isItemsPage && itemDrawer}
                     {isListsPage && listDrawer}
                     {isRecipesPage && recipeDrawer}
                 </div>
 
                 {/* Right side - Menu and action buttons */}
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-2 justify-end min-w-0">
                     {onClearSelected && (
                         <ToolBarButton
                             icon={CheckCheck}

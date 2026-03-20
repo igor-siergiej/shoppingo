@@ -7,10 +7,11 @@ interface ToolBarButtonProps {
     onClick: () => void;
     disabled?: boolean;
     variant?: 'default' | 'destructive';
+    active?: boolean;
 }
 
 export const ToolBarButton = forwardRef<HTMLButtonElement, ToolBarButtonProps>(
-    ({ icon: Icon, title, onClick, disabled = false, variant = 'default' }, ref) => {
+    ({ icon: Icon, title, onClick, disabled = false, variant = 'default', active = false }, ref) => {
         const isDestructive = variant === 'destructive';
 
         return (
@@ -18,7 +19,11 @@ export const ToolBarButton = forwardRef<HTMLButtonElement, ToolBarButtonProps>(
                 ref={ref}
                 type="button"
                 className={`h-12 w-12 rounded-full transition-colors flex items-center justify-center ${
-                    isDestructive ? 'text-destructive hover:bg-destructive/10' : 'hover:bg-gray-500/10'
+                    active
+                        ? 'bg-primary/20 text-primary'
+                        : isDestructive
+                          ? 'text-destructive hover:bg-destructive/10'
+                          : 'hover:bg-gray-500/10'
                 } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                 title={title}
                 onClick={onClick}
