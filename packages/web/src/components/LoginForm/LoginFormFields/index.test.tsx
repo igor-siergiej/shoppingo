@@ -51,20 +51,18 @@ describe('LoginFormFields', () => {
     });
 
     it('disables inputs when submitting', () => {
-        const { container } = render(
-            <div>
-                {(() => {
-                    const {
-                        register,
-                        formState: { errors },
-                    } = useForm({
-                        defaultValues: { username: '', password: '' },
-                    });
+        const DisabledTestWrapper = () => {
+            const {
+                register,
+                formState: { errors },
+            } = useForm({
+                defaultValues: { username: '', password: '' },
+            });
 
-                    return <LoginFormFields register={register} errors={errors} isSubmitting={true} />;
-                })()}
-            </div>
-        );
+            return <LoginFormFields register={register} errors={errors} isSubmitting={true} />;
+        };
+
+        const { container } = render(<DisabledTestWrapper />);
 
         const inputs = container.querySelectorAll('input');
         inputs.forEach((input) => {

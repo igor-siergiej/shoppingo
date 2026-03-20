@@ -147,7 +147,7 @@ describe('useSwipeGesture', () => {
             });
         });
 
-        const initialState = result.current.swipeState;
+        expect(result.current.swipeState).toBe('left');
 
         act(() => {
             result.current.handleDragEnd(new PointerEvent('dragend'), {
@@ -156,6 +156,6 @@ describe('useSwipeGesture', () => {
             });
         });
 
-        expect(result.current.swipeState).toBe(initialState);
+        expect(result.current.swipeState).toBe('closed');
     });
 });

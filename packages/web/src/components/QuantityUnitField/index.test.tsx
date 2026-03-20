@@ -13,7 +13,7 @@ describe('QuantityUnitField', () => {
     });
 
     it('renders quantity and unit inputs', () => {
-        render(
+        const { container } = render(
             <QuantityUnitField
                 quantity="5"
                 unit="pcs"
@@ -23,10 +23,11 @@ describe('QuantityUnitField', () => {
         );
 
         const quantityInput = screen.getByDisplayValue('5');
-        const unitSelect = screen.getByDisplayValue('pcs');
+        const unitTrigger = container.querySelector('[id="unit"]');
 
         expect(quantityInput).toBeInTheDocument();
-        expect(unitSelect).toBeInTheDocument();
+        expect(unitTrigger).toBeInTheDocument();
+        expect(unitTrigger).toHaveTextContent('pcs');
     });
 
     it('displays quantity label', () => {
@@ -63,7 +64,7 @@ describe('QuantityUnitField', () => {
 
     it('calls onUnitChange when unit select changes', async () => {
         const user = userEvent.setup();
-        render(
+        const { container } = render(
             <QuantityUnitField
                 quantity="5"
                 unit="pcs"
@@ -72,8 +73,8 @@ describe('QuantityUnitField', () => {
             />
         );
 
-        const unitSelect = screen.getByDisplayValue('pcs');
-        await user.click(unitSelect);
+        const unitTrigger = container.querySelector('[id="unit"]') as HTMLElement;
+        await user.click(unitTrigger);
 
         const kgOption = screen.getByText('kg');
         await user.click(kgOption);
@@ -97,7 +98,7 @@ describe('QuantityUnitField', () => {
     });
 
     it('has all unit options available', async () => {
-        render(
+        const { container } = render(
             <QuantityUnitField
                 quantity=""
                 unit="pcs"
@@ -106,14 +107,20 @@ describe('QuantityUnitField', () => {
             />
         );
 
-        const unitSelect = screen.getByDisplayValue('pcs');
-        await userEvent.setup().click(unitSelect);
+        const unitTrigger = container.querySelector('[id="unit"]') as HTMLElement;
+        await userEvent.setup().click(unitTrigger);
 
-        expect(screen.getByText('pcs')).toBeInTheDocument();
-        expect(screen.getByText('g')).toBeInTheDocument();
-        expect(screen.getByText('kg')).toBeInTheDocument();
-        expect(screen.getByText('ml')).toBeInTheDocument();
-        expect(screen.getByText('L')).toBeInTheDocument();
+        const listbox = screen.getByRole('listbox');
+        expect(listbox).toBeInTheDocument();
+
+        const options = listbox.querySelectorAll('[role="option"]');
+        const optionTexts = Array.from(options).map((opt) => opt.textContent?.trim());
+
+        expect(optionTexts).toContain('pcs');
+        expect(optionTexts).toContain('g');
+        expect(optionTexts).toContain('kg');
+        expect(optionTexts).toContain('ml');
+        expect(optionTexts).toContain('L');
     });
 
     it('uses custom IDs when provided', () => {
