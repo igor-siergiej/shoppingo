@@ -1,4 +1,4 @@
-import { ArrowLeft, CheckCheck, Menu, Trash2 } from 'lucide-react';
+import { ArrowLeft, BookOpen, Menu, ShoppingCart, Trash2 } from 'lucide-react';
 import { forwardRef, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ToolBarButton } from '../ToolBarButton';
@@ -46,44 +46,66 @@ export const ToolBarAppBar = forwardRef<HTMLDivElement, ToolBarAppBarProps>(
             }
         };
 
-        const showBackButton = isItemsPage || (!isListsPage && !isRecipesPage);
+        const showBackButton = isItemsPage;
 
         return (
             <div ref={ref} className="flex items-center justify-between py-2.5 px-3">
-                {showBackButton && (
-                    <ToolBarButton
-                        icon={ArrowLeft}
-                        title={isItemsPage ? 'Go back' : 'Go home'}
-                        onClick={handleGoBack}
-                    />
-                )}
+                {/* Left side */}
+                <div className="flex items-center gap-1">
+                    {showBackButton ? (
+                        <ToolBarButton
+                            icon={ArrowLeft}
+                            title="Go back"
+                            onClick={handleGoBack}
+                        />
+                    ) : (
+                        <>
+                            <ToolBarButton
+                                icon={ShoppingCart}
+                                title="Shopping lists"
+                                onClick={() => navigate('/')}
+                                variant={isListsPage ? 'default' : 'ghost'}
+                            />
+                            <ToolBarButton
+                                icon={BookOpen}
+                                title="Recipes"
+                                onClick={() => navigate('/recipes')}
+                                variant={isRecipesPage ? 'default' : 'ghost'}
+                            />
+                        </>
+                    )}
+                </div>
 
-                {onClearSelected && (
-                    <ToolBarButton
-                        icon={CheckCheck}
-                        title="Clear selected items"
-                        onClick={onClearSelected}
-                        disabled={disableClearSelected}
-                    />
-                )}
+                {/* Center - Add button */}
+                <div className="flex-1 flex justify-center">
+                    {isItemsPage && itemDrawer}
+                    {isListsPage && listDrawer}
+                    {isRecipesPage && recipeDrawer}
+                </div>
 
-                {isItemsPage && itemDrawer}
+                {/* Right side */}
+                <div className="flex items-center gap-1">
+                    {onClearSelected && (
+                        <ToolBarButton
+                            icon={CheckCheck}
+                            title="Clear selected items"
+                            onClick={onClearSelected}
+                            disabled={disableClearSelected}
+                        />
+                    )}
 
-                {isListsPage && listDrawer}
+                    {onRemoveAll && (
+                        <ToolBarButton
+                            icon={Trash2}
+                            title="Remove all items"
+                            onClick={onRemoveAll}
+                            disabled={disableClearAll}
+                            variant="destructive"
+                        />
+                    )}
 
-                {isRecipesPage && recipeDrawer}
-
-                {onRemoveAll && (
-                    <ToolBarButton
-                        icon={Trash2}
-                        title="Remove all items"
-                        onClick={onRemoveAll}
-                        disabled={disableClearAll}
-                        variant="destructive"
-                    />
-                )}
-
-                <ToolBarButton icon={Menu} title="Menu" onClick={onMenuClick} />
+                    <ToolBarButton icon={Menu} title="Menu" onClick={onMenuClick} />
+                </div>
             </div>
         );
     }
