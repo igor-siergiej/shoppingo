@@ -1,4 +1,4 @@
-import { ChefHat, Plus, Image as ImageIcon, Sparkles, X } from 'lucide-react';
+import { ChefHat, Image as ImageIcon, Plus, Sparkles, X } from 'lucide-react';
 import { useCallback, useId, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { SearchResults } from '../../../components/SearchResults';
@@ -35,6 +35,7 @@ export interface AddRecipeDrawerProps {
 export const AddRecipeDrawer = ({ open, onOpenChange, onAdd }: AddRecipeDrawerProps) => {
     const recipeNameId = useId();
     const userSearchId = useId();
+    const fileInputId = useId();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const { query, setQuery, results, isLoading: isSearchLoading, clearResults } = useSearch();
@@ -195,7 +196,7 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd }: AddRecipeDrawerPr
                                     onChange={handleImageSelect}
                                     disabled={isLoading}
                                     className="hidden"
-                                    id="image-upload"
+                                    id={fileInputId}
                                 />
                                 <Button
                                     type="button"

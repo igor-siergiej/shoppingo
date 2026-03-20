@@ -5,9 +5,7 @@ import { type MouseEvent, useId, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { QuantityBadge } from '../../components/ItemCheckBox/QuantityBadge';
 import { QuantityUnitField } from '../../components/QuantityUnitField';
-import { Skeleton } from '../../components/ui/skeleton';
 import { Button } from '../../components/ui/button';
-import { useItemImage } from '../../hooks/useItemImage';
 import {
     Drawer,
     DrawerClose,
@@ -18,6 +16,8 @@ import {
 } from '../../components/ui/drawer';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
+import { Skeleton } from '../../components/ui/skeleton';
+import { useItemImage } from '../../hooks/useItemImage';
 import { useSwipeGesture } from '../../hooks/useSwipeGesture';
 
 export interface IngredientItemProps {

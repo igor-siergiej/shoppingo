@@ -38,10 +38,7 @@ export class MongoRecipeRepository implements RecipeRepository {
     }
 
     async addUser(recipeId: string, user: User): Promise<Recipe> {
-        await this.collection().findOneAndUpdate(
-            { id: recipeId },
-            { $push: { users: user } }
-        );
+        await this.collection().findOneAndUpdate({ id: recipeId }, { $push: { users: user } });
         const updated = await this.getById(recipeId);
         if (!updated) {
             throw new Error('Recipe not found');
@@ -50,10 +47,7 @@ export class MongoRecipeRepository implements RecipeRepository {
     }
 
     async removeUser(recipeId: string, userId: string): Promise<Recipe> {
-        await this.collection().findOneAndUpdate(
-            { id: recipeId },
-            { $pull: { users: { id: userId } } }
-        );
+        await this.collection().findOneAndUpdate({ id: recipeId }, { $pull: { users: { id: userId } } });
         const updated = await this.getById(recipeId);
         if (!updated) {
             throw new Error('Recipe not found');

@@ -1,15 +1,15 @@
 import type { Recipe } from '@shoppingo/types';
-import { ImageOff, Loader2, ImageIcon, Sparkles } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { ImageIcon, ImageOff, Loader2, Sparkles } from 'lucide-react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { Button } from '../../components/ui/button';
 
 interface CoverImageSectionProps {
     recipe: Recipe;
     isOwner?: boolean;
-    onImageChange?: (imageKey: string) => void;
 }
 
-export const CoverImageSection = ({ recipe, isOwner = false, onImageChange }: CoverImageSectionProps) => {
+export const CoverImageSection = ({ recipe, isOwner = false }: CoverImageSectionProps) => {
+    const fileInputId = useId();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [imageUrl, setImageUrl] = useState<string | null>(null);
     const [isLoadingImage, setIsLoadingImage] = useState(true);
@@ -103,7 +103,7 @@ export const CoverImageSection = ({ recipe, isOwner = false, onImageChange }: Co
                                 onChange={handleImageSelect}
                                 disabled={isUploading}
                                 className="hidden"
-                                id="recipe-image-upload"
+                                id={fileInputId}
                             />
                             <Button
                                 type="button"
@@ -115,12 +115,7 @@ export const CoverImageSection = ({ recipe, isOwner = false, onImageChange }: Co
                                 <ImageIcon className="h-4 w-4 mr-1" />
                                 Upload
                             </Button>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                disabled={isUploading}
-                            >
+                            <Button type="button" variant="outline" size="sm" disabled={isUploading}>
                                 <Sparkles className="h-4 w-4 mr-1" />
                                 AI Generate
                             </Button>
