@@ -1,7 +1,8 @@
 'use client';
 
 import { useAuth, useUser } from '@imapps/web-utils';
-import type { Item, ListType } from '@shoppingo/types';
+import { ListType } from '@shoppingo/types';
+import type { Item } from '@shoppingo/types';
 import { AnimatePresence, MotionConfig, motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -242,7 +243,7 @@ const ToolBar = ({
                                     ) : undefined
                                 }
                                 recipePickerDrawer={
-                                    isItemsPage && currentList && listItems && currentListType === 'SHOPPING' ? (
+                                    isItemsPage && currentList && listItems && currentListType === ListType.SHOPPING ? (
                                         <AddFromRecipeDrawer
                                             open={isAddFromRecipeDrawerOpen}
                                             onOpenChange={setIsAddFromRecipeDrawerOpen}
