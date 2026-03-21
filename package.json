@@ -39,6 +39,7 @@
     "*.{ts,tsx,json}": "biome check --fix --unsafe"
   },
   "dependencies": {
+    "koa-body": "^7.0.1",
     "sonner": "^2.0.7"
   }
 }

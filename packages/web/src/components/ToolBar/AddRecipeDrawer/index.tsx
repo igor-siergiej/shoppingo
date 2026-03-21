@@ -1,6 +1,7 @@
 import { ChefHat, Image as ImageIcon, Plus, Sparkles, X } from 'lucide-react';
 import { useCallback, useId, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { setCoverImageKey, uploadRecipeImage } from '../../../api';
 import { SearchResults } from '../../../components/SearchResults';
 import { useSearch } from '../../../hooks/useSearch';
 import { Badge } from '../../ui/badge';
@@ -25,10 +26,17 @@ export interface Ingredient {
     unit?: string;
 }
 
+import type { Recipe } from '@shoppingo/types';
+
 export interface AddRecipeDrawerProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    onAdd: (title: string, ingredients: Ingredient[], imageKey?: string, selectedUsers?: string[]) => Promise<void>;
+    onAdd: (
+        title: string,
+        ingredients: Ingredient[],
+        imageKey?: string,
+        selectedUsers?: string[]
+    ) => Promise<Recipe | undefined>;
     placeholder?: string;
 }
 
@@ -44,6 +52,8 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd }: AddRecipeDrawerPr
     const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
     const [showUserSearch, setShowUserSearch] = useState(false);
     const [imageUrl, setImageUrl] = useState<string | null>(null);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [wantsAiImage, setWantsAiImage] = useState(false);
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
@@ -65,6 +75,7 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd }: AddRecipeDrawerPr
     const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
+            setSelectedFile(file);
             const reader = new FileReader();
             reader.onload = (event) => {
                 setImageUrl(event.target?.result as string);
@@ -83,18 +94,34 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd }: AddRecipeDrawerPr
         setError('');
 
         try {
-            await onAdd(title, [], title, selectedUsers);
+            // Create recipe without imageKey initially (need recipeId for upload)
+            const recipe = await onAdd(title, [], undefined, selectedUsers);
+            if (!recipe) {
+                throw new Error('Failed to create recipe');
+            }
+
+            // Handle image upload or AI generation AFTER recipe creation
+            if (selectedFile) {
+                // User uploaded a file
+                await uploadRecipeImage(recipe.id, selectedFile);
+                toast.success('Recipe image uploaded', { style: { backgroundColor: '#10b981', color: '#ffffff' } });
+            } else if (wantsAiImage) {
+                // User wants AI-generated image
+                try {
+                    await fetch(`/api/image/${encodeURIComponent(title)}`, {
+                        method: 'GET',
+                    });
+                    // Set the imageKey to the normalized title
+                    await setCoverImageKey(recipe.id, title.trim().toLowerCase());
+                    toast.success('Recipe image generated', {
+                        style: { backgroundColor: '#10b981', color: '#ffffff' },
+                    });
+                } catch (_err) {
+                    // Image generation failed, recipe still created successfully
+                }
+            }
 
             handleCancel();
-
-            // Trigger automatic image generation (fire-and-forget)
-            void fetch(`/api/images/generate`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ description: title }),
-            }).catch(() => {
-                /* ignore errors, do not block recipe creation */
-            });
         } catch (err) {
             const message = err instanceof Error ? err.message : 'Failed to create recipe';
             toast.error(message, { style: { backgroundColor: '#ef4444', color: '#ffffff' } });
@@ -109,6 +136,8 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd }: AddRecipeDrawerPr
         setSelectedUsers([]);
         setShowUserSearch(false);
         setImageUrl(null);
+        setSelectedFile(null);
+        setWantsAiImage(false);
         setError('');
         setQuery('');
         clearResults();
@@ -172,6 +201,8 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd }: AddRecipeDrawerPr
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 setImageUrl(null);
+                                                setSelectedFile(null);
+                                                setWantsAiImage(false);
                                                 if (fileInputRef.current) fileInputRef.current.value = '';
                                             }}
                                             className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1.5 hover:bg-black/80 transition-colors"
@@ -211,29 +242,15 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd }: AddRecipeDrawerPr
                                 </Button>
                                 <Button
                                     type="button"
-                                    variant="outline"
+                                    variant={wantsAiImage ? 'default' : 'outline'}
                                     disabled={isLoading || !title.trim()}
                                     className="flex-1"
                                     size="sm"
-                                    onClick={async () => {
-                                        if (!title.trim()) return;
-                                        setIsLoading(true);
-                                        try {
-                                            const response = await fetch('/api/images/generate', {
-                                                method: 'POST',
-                                                headers: { 'Content-Type': 'application/json' },
-                                                body: JSON.stringify({ description: title }),
-                                            });
-                                            if (response.ok) {
-                                                const data = await response.json();
-                                                if (data.imageUrl) {
-                                                    setImageUrl(data.imageUrl);
-                                                }
-                                            }
-                                        } catch (err) {
-                                            console.error('Failed to generate image:', err);
-                                        } finally {
-                                            setIsLoading(false);
+                                    onClick={() => {
+                                        setWantsAiImage(!wantsAiImage);
+                                        if (!wantsAiImage) {
+                                            setSelectedFile(null);
+                                            if (fileInputRef.current) fileInputRef.current.value = '';
                                         }
                                     }}
                                 >

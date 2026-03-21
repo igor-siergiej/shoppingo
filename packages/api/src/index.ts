@@ -1,8 +1,8 @@
 import 'dotenv/config';
 
-import bodyParser from '@koa/bodyparser';
 import cors from '@koa/cors';
 import Koa, { type Context, type Next } from 'koa';
+import koaBody from 'koa-body';
 
 import { config } from './config';
 import { dependencyContainer, registerDepdendencies } from './dependencies';
@@ -61,7 +61,7 @@ export const onStartup = async () => {
         };
 
         app.use(requestLogger);
-        app.use(bodyParser({ enableTypes: ['json', 'form', 'text'] }));
+        app.use(koaBody({ multipart: true, formidable: { maxFileSize: 50 * 1024 * 1024 } }));
 
         // Global error handler
         app.use(async (ctx, next) => {

@@ -69,9 +69,14 @@ const RecipesPage = () => {
         });
 
         try {
-            await addRecipe(title, user, selectedUsers || [], ingredients);
-            logger.info('Recipe created successfully', { title, ingredientCount: ingredients.length });
+            const recipe = await addRecipe(title, user, selectedUsers || [], ingredients);
+            logger.info('Recipe created successfully', {
+                title,
+                recipeId: recipe.id,
+                ingredientCount: ingredients.length,
+            });
             await refetch();
+            return recipe;
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Unknown error';
             logger.error('Failed to create recipe', { title, error: errorMessage });
