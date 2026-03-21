@@ -1,52 +1,70 @@
 import { act, render, screen } from '@testing-library/react';
+import { BrowserRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import AppInitializer from './index';
 
 vi.mock('@imapps/web-utils', () => ({
-    useTokenInitialization: vi.fn(),
+    useAuth: vi.fn(),
+    tryRefreshToken: vi.fn(),
 }));
 
-import { useTokenInitialization } from '@imapps/web-utils';
+vi.mock('../../config/auth', () => ({
+    getAuthConfig: vi.fn().mockReturnValue({}),
+}));
+
+import { tryRefreshToken, useAuth } from '@imapps/web-utils';
+
+const mockLogin = vi.fn();
+const mockLogout = vi.fn();
+
+const renderWithRouter = (component: React.ReactElement) => {
+    return render(<BrowserRouter>{component}</BrowserRouter>);
+};
 
 describe('AppInitializer', () => {
     beforeEach(() => {
         vi.useFakeTimers();
         vi.clearAllMocks();
+        (useAuth as any).mockReturnValue({ login: mockLogin, logout: mockLogout });
     });
 
     afterEach(() => {
         vi.useRealTimers();
     });
 
-    it('renders children when initialization is complete', () => {
-        (useTokenInitialization as any).mockReturnValue({ isInitializing: false });
+    it('renders children when initialization is complete', async () => {
+        (tryRefreshToken as any).mockResolvedValue('token');
 
-        render(<AppInitializer>Test Content</AppInitializer>);
+        renderWithRouter(<AppInitializer>Test Content</AppInitializer>);
+
+        await act(async () => {
+            await vi.runAllTimersAsync();
+        });
 
         expect(screen.getByText('Test Content')).toBeInTheDocument();
     });
 
     it('shows loading spinner while initializing', () => {
-        (useTokenInitialization as any).mockReturnValue({ isInitializing: true });
+        (tryRefreshToken as any).mockImplementation(() => new Promise(() => {}));
 
-        render(<AppInitializer>Test Content</AppInitializer>);
+        renderWithRouter(<AppInitializer>Test Content</AppInitializer>);
 
-        expect(screen.getByText('Loading Shoppingo...')).toBeInTheDocument();
+        expect(document.querySelector('.loader')).toBeInTheDocument();
         expect(screen.queryByText('Test Content')).not.toBeInTheDocument();
     });
 
     it('does not show timeout message initially', () => {
-        (useTokenInitialization as any).mockReturnValue({ isInitializing: true });
+        (tryRefreshToken as any).mockImplementation(() => new Promise(() => {}));
 
-        render(<AppInitializer>Test Content</AppInitializer>);
+        renderWithRouter(<AppInitializer>Test Content</AppInitializer>);
 
         expect(screen.queryByText('Taking longer than expected...')).not.toBeInTheDocument();
     });
 
     it('shows timeout message after 10 seconds', async () => {
-        (useTokenInitialization as any).mockReturnValue({ isInitializing: true });
+        (tryRefreshToken as any).mockImplementation(() => new Promise(() => {}));
 
-        render(<AppInitializer>Test Content</AppInitializer>);
+        renderWithRouter(<AppInitializer>Test Content</AppInitializer>);
 
         await act(async () => {
             vi.advanceTimersByTime(10000);
@@ -56,9 +74,9 @@ describe('AppInitializer', () => {
     });
 
     it('shows recovery suggestions when timeout reached', async () => {
-        (useTokenInitialization as any).mockReturnValue({ isInitializing: true });
+        (tryRefreshToken as any).mockImplementation(() => new Promise(() => {}));
 
-        render(<AppInitializer>Test Content</AppInitializer>);
+        renderWithRouter(<AppInitializer>Test Content</AppInitializer>);
 
         await act(async () => {
             vi.advanceTimersByTime(10000);
@@ -71,13 +89,12 @@ describe('AppInitializer', () => {
 
     it('clears timeout when initialization completes', async () => {
         const clearTimeoutSpy = vi.spyOn(global, 'clearTimeout');
-        (useTokenInitialization as any).mockReturnValue({ isInitializing: true });
+        (tryRefreshToken as any).mockResolvedValue('token');
 
-        const { rerender } = render(<AppInitializer>Test Content</AppInitializer>);
+        renderWithRouter(<AppInitializer>Test Content</AppInitializer>);
 
-        (useTokenInitialization as any).mockReturnValue({ isInitializing: false });
         await act(async () => {
-            rerender(<AppInitializer>Test Content</AppInitializer>);
+            await vi.runAllTimersAsync();
         });
 
         expect(clearTimeoutSpy).toHaveBeenCalled();

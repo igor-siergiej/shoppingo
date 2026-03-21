@@ -1,16 +1,17 @@
 import '@testing-library/jest-dom';
 import { cleanup, render } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { DueDateBadge } from './index';
 
 describe('DueDateBadge', () => {
     beforeEach(() => {
-        const mockNow = new Date('2026-03-19T12:00:00');
-        global.Date.now = () => mockNow.getTime();
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date('2026-03-19T12:00:00'));
     });
 
     afterEach(() => {
+        vi.useRealTimers();
         cleanup();
     });
 
