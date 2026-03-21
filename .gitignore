@@ -16,3 +16,4 @@ coverage/
 
 # Git worktrees
 .worktrees
+.claude/
