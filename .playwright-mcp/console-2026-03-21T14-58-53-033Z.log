@@ -1,0 +1,13 @@
+[     298ms] [ERROR] Failed to load resource: the server responded with a status of 403 (Forbidden) @ http://localhost:3008/refresh:0
+[    5389ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:4000/api/lists/user/697650266a5d4444166310ad:0
+[    5389ms] [WARNING] [WARN] Request failed for get lists {status: 500, statusText: Internal Server Error} @ http://localhost:4000/src/utils/logger.ts:60
+[    5389ms] [ERROR] [ERROR] Error while trying to get lists {error: Internal Server Error} @ http://localhost:4000/src/utils/logger.ts:60
+[    5390ms] [ERROR] Error: Internal Server Error
+    at makeRequest (http://localhost:4000/src/api/makeRequest/index.ts:71:11)
+    at async getLists (http://localhost:4000/src/api/index.ts:21:10)
+    at async Object.queryFn (http://localhost:4000/src/api/index.ts:18:24) @ http://localhost:4000/node_modules/.vite/deps/react-query.js?v=f9e9cd74:921
+[    8992ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:4000/api/logs:0
+[    8995ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:4000/api/logs:0
+[    8997ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:4000/api/logs:0
+[    9000ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:4000/api/logs:0
+[    9002ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:4000/api/logs:0

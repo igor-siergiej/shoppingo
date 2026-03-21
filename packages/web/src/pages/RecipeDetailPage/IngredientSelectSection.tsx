@@ -1,6 +1,7 @@
 'use client';
 
 import type { ListResponse, Recipe } from '@shoppingo/types';
+import { ListType } from '@shoppingo/types';
 import { useState } from 'react';
 import { Button } from '../../components/ui/button';
 
@@ -12,11 +13,11 @@ interface IngredientSelectSectionProps {
 }
 
 export const IngredientSelectSection = ({ recipe, lists, onCancel, onConfirm }: IngredientSelectSectionProps) => {
-    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set(recipe.ingredients.map((ing) => ing.id)));
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [chosenList, setChosenList] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
-    const shoppingLists = lists.filter((list) => list.listType === 'SHOPPING');
+    const shoppingLists = lists.filter((list) => list.listType === ListType.SHOPPING);
 
     const handleToggleIngredient = (id: string) => {
         const newSelected = new Set(selectedIds);

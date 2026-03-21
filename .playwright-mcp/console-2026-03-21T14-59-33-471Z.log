@@ -1,0 +1,4 @@
+[      18ms] [ERROR] Failed to send log to backend: TypeError: Failed to fetch
+    at FrontendLogger.flushLogs (http://localhost:4000/src/utils/logger.ts:39:15)
+    at http://localhost:4000/src/utils/logger.ts:55:12 @ http://localhost:4000/src/utils/logger.ts:44
+[   60313ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:4000/api/images/recipe-uploads/697650266a5d4444166310ad/ba82281a-175a-47d7-ba26-d5a38d1ca33f:0
