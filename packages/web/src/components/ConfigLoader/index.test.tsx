@@ -6,8 +6,8 @@ vi.mock('../../utils/config', () => ({
     loadConfig: vi.fn(),
 }));
 
-vi.mock('../LoadingSpinner', () => ({
-    default: ({ message }: { message: string }) => <div data-testid="loading-spinner">{message}</div>,
+vi.mock('../LoadingPage', () => ({
+    default: () => <div data-testid="loading-spinner" />,
 }));
 
 vi.mock('../ErrorPage', () => ({
@@ -27,7 +27,6 @@ describe('ConfigLoader', () => {
         render(<ConfigLoader>Test Content</ConfigLoader>);
 
         expect(screen.getByTestId('loading-spinner')).toBeInTheDocument();
-        expect(screen.getByText('Loading configuration...')).toBeInTheDocument();
     });
 
     it('renders children when config loads successfully', async () => {

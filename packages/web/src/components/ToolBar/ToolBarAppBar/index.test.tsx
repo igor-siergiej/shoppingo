@@ -30,15 +30,17 @@ describe('ToolBarAppBar', () => {
         expect(backButton).toBeDefined();
     });
 
-    it('shows back button with "Go home" title on non-lists page', async () => {
+    it('shows navigation buttons on non-items non-lists page', async () => {
         const { ToolBarAppBar } = await import('./index');
         const { container } = renderWithRouter(
             <ToolBarAppBar isItemsPage={false} isListsPage={false} onMenuClick={() => {}} />
         );
 
         const buttons = container.querySelectorAll('button');
-        const backButton = Array.from(buttons).find((btn) => btn.title === 'Go home');
-        expect(backButton).toBeDefined();
+        const shoppingListsButton = Array.from(buttons).find((btn) => btn.title === 'Shopping lists');
+        expect(shoppingListsButton).toBeDefined();
+        const recipesButton = Array.from(buttons).find((btn) => btn.title === 'Recipes');
+        expect(recipesButton).toBeDefined();
     });
 
     it('hides back button on lists page', async () => {
