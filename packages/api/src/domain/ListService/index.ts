@@ -590,4 +590,59 @@ export class ListService {
 
         return list;
     }
+
+    async addItems(
+        title: string,
+        rawItems: Array<{ itemName: string; quantity?: number; unit?: string; dateAdded: Date }>,
+        userId: string
+    ): Promise<{ added: number; skipped: number }> {
+        try {
+            const list = await this.repo.getByTitle(title);
+
+            if (!list) {
+                throw Object.assign(new Error('List not found'), { status: 404 });
+            }
+
+            // Collect existing item names (lowercased)
+            const existingNames = new Set(list.items.map((item) => item.name.toLowerCase()));
+
+            // Filter duplicates and create Item objects
+            const newItems: Item[] = [];
+            let skipped = 0;
+
+            for (const raw of rawItems) {
+                if (existingNames.has(raw.itemName.toLowerCase())) {
+                    skipped++;
+                } else {
+                    const item: Item = {
+                        id: this.idGenerator.generate(),
+                        name: raw.itemName,
+                        dateAdded: raw.dateAdded,
+                        isSelected: false,
+                        ...(raw.quantity !== undefined && { quantity: raw.quantity }),
+                        ...(raw.unit !== undefined && { unit: raw.unit }),
+                    };
+                    newItems.push(item);
+                    existingNames.add(raw.itemName.toLowerCase());
+                }
+            }
+
+            // Push new items to list
+            if (newItems.length > 0) {
+                await this.repo.pushItems(title, newItems);
+            }
+
+            this.logger?.info('Items bulk added to list', {
+                listTitle: title,
+                userId,
+                addedCount: newItems.length,
+                skippedCount: skipped,
+            });
+
+            return { added: newItems.length, skipped };
+        } catch (error) {
+            this.logger?.error('Failed to add items to list', { listTitle: title, userId, error });
+            throw error;
+        }
+    }
 }

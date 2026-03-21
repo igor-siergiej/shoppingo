@@ -25,6 +25,7 @@ router.get('/api/lists/user/:userId', authenticate, listHandlers.getLists);
 router.delete('/api/lists/:title', authenticate, listHandlers.deleteList);
 router.post('/api/lists/:title', authenticate, listHandlers.updateList);
 router.put('/api/lists', authenticate, listHandlers.addList);
+router.put('/api/lists/:title/items/bulk', authenticate, listHandlers.addItems);
 router.put('/api/lists/:title/items', authenticate, listHandlers.addItem);
 router.post('/api/lists/:title/items/:itemName', authenticate, listHandlers.updateItem);
 router.delete('/api/lists/:title/items/:itemName', authenticate, listHandlers.deleteItem);

@@ -34,4 +34,8 @@ export class MongoListRepository implements ListRepository {
     async pushItem(title: string, item: Item): Promise<void> {
         await this.collection().findOneAndUpdate({ title }, { $push: { items: item } });
     }
+
+    async pushItems(title: string, items: Item[]): Promise<void> {
+        await this.collection().findOneAndUpdate({ title }, { $push: { items: { $each: items } } });
+    }
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth, useUser } from '@imapps/web-utils';
-import type { ListType } from '@shoppingo/types';
+import type { Item, ListType } from '@shoppingo/types';
 import { AnimatePresence, MotionConfig, motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -10,6 +10,7 @@ import useMeasure from 'react-use-measure';
 import { Card } from '../../components/ui/card';
 import { useToolBarState } from '../../hooks/useToolBarState';
 import { ManageUsersDrawer } from '../ManageUsersDrawer';
+import { AddFromRecipeDrawer } from './AddFromRecipeDrawer';
 import { AddIngredientDrawer } from './AddIngredientDrawer';
 import { AddItemDrawer } from './AddItemDrawer';
 import { AddListDrawer } from './AddListDrawer';
@@ -30,6 +31,7 @@ interface ToolBarProps {
     handleGoBack?: () => void;
     handleClearSelected?: () => void;
     handleRemoveAll?: () => void;
+    onToggleSelectMode?: () => void;
     placeholder?: string;
     currentListType?: ListType;
     currentList?: {
@@ -37,6 +39,7 @@ interface ToolBarProps {
         users: Array<{ id: string; username: string }>;
         ownerId?: string;
     };
+    listItems?: Item[];
     refetchList?: () => void;
     disableClearSelected?: boolean;
     disableClearAll?: boolean;
@@ -50,9 +53,11 @@ const ToolBar = ({
     handleGoBack,
     handleClearSelected,
     handleRemoveAll,
+    onToggleSelectMode,
     placeholder = 'Enter item name...',
     currentListType,
     currentList,
+    listItems,
     refetchList,
     disableClearSelected = false,
     disableClearAll = false,
@@ -80,6 +85,7 @@ const ToolBar = ({
     } = useToolBarState();
 
     const [isAddIngredientDrawerOpen, setIsAddIngredientDrawerOpen] = useState(false);
+    const [isAddFromRecipeDrawerOpen, setIsAddFromRecipeDrawerOpen] = useState(false);
 
     const isItemsPage = location.pathname.includes('/list/');
     const isListsPage = location.pathname === '/';
@@ -184,6 +190,7 @@ const ToolBar = ({
                                 onGoBack={handleGoBack}
                                 onClearSelected={handleClearSelected}
                                 onRemoveAll={handleRemoveAll}
+                                onToggleSelectMode={onToggleSelectMode}
                                 onMenuClick={() => {
                                     setIsMenuOpen(!isMenuOpen);
                                     if (!isMenuOpen) {
@@ -231,6 +238,16 @@ const ToolBar = ({
                                             open={isAddIngredientDrawerOpen}
                                             onOpenChange={setIsAddIngredientDrawerOpen}
                                             onAdd={onAddIngredient}
+                                        />
+                                    ) : undefined
+                                }
+                                recipePickerDrawer={
+                                    isItemsPage && currentList && listItems && currentListType === 'SHOPPING' ? (
+                                        <AddFromRecipeDrawer
+                                            open={isAddFromRecipeDrawerOpen}
+                                            onOpenChange={setIsAddFromRecipeDrawerOpen}
+                                            listTitle={currentList.title}
+                                            listItems={listItems}
                                         />
                                     ) : undefined
                                 }
