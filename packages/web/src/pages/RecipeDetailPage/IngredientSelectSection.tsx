@@ -16,7 +16,7 @@ export const IngredientSelectSection = ({ recipe, lists, onCancel, onConfirm }: 
     const [chosenList, setChosenList] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
-    const shoppingLists = lists.filter((list) => list.listType === 'SHOPPING');
+    const shoppingLists = lists.filter((list) => list.listType === 'shopping');
 
     const handleToggleIngredient = (id: string) => {
         const newSelected = new Set(selectedIds);

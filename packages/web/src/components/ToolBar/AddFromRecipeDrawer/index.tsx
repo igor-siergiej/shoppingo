@@ -31,6 +31,11 @@ export const AddFromRecipeDrawer = ({ open, onOpenChange, listTitle, listItems }
 
     const existingItemNames = new Set(listItems.map((item) => item.name.toLowerCase()));
 
+    // Filter recipes that have at least one ingredient not in the current list
+    const availableRecipes = recipes.filter((recipe) =>
+        recipe.ingredients.some((ing) => !existingItemNames.has(ing.name.toLowerCase()))
+    );
+
     const handleSelectRecipe = (recipe: Recipe) => {
         setChosenRecipe(recipe);
         const availableIds = new Set(
@@ -127,10 +132,12 @@ export const AddFromRecipeDrawer = ({ open, onOpenChange, listTitle, listItems }
                     <div className="p-4 pb-0 max-h-[60vh] overflow-y-auto">
                         {step === 'recipes' ? (
                             <div className="space-y-2">
-                                {recipes.length === 0 ? (
-                                    <p className="text-muted-foreground text-sm py-3">No recipes found</p>
+                                {availableRecipes.length === 0 ? (
+                                    <p className="text-muted-foreground text-sm py-3">
+                                        {recipes.length === 0 ? 'No recipes found' : 'All recipes have ingredients already in this list'}
+                                    </p>
                                 ) : (
-                                    recipes.map((recipe) => (
+                                    availableRecipes.map((recipe) => (
                                         <button
                                             key={recipe.id}
                                             onClick={() => handleSelectRecipe(recipe)}
@@ -162,48 +169,57 @@ export const AddFromRecipeDrawer = ({ open, onOpenChange, listTitle, listItems }
                                     {chosenRecipe.ingredients.length === 0 ? (
                                         <p className="text-muted-foreground text-sm py-3">No ingredients</p>
                                     ) : (
-                                        chosenRecipe.ingredients.map((ingredient) => {
-                                            const isSelected = selectedIds.has(ingredient.id);
-                                            const isAlreadyInList = existingItemNames.has(
-                                                ingredient.name.toLowerCase()
-                                            );
-
-                                            if (isAlreadyInList) {
-                                                return (
-                                                    <div
-                                                        key={ingredient.id}
-                                                        className="p-3 rounded-lg bg-muted/30 border border-muted-foreground/20 opacity-50"
-                                                    >
-                                                        <div className="font-medium line-through text-muted-foreground">
-                                                            {ingredient.name}
-                                                        </div>
-                                                        <div className="text-xs text-muted-foreground mt-1">
-                                                            Already in list
-                                                        </div>
-                                                    </div>
+                                        <>
+                                            {chosenRecipe.ingredients.every((ing) =>
+                                                existingItemNames.has(ing.name.toLowerCase())
+                                            ) && (
+                                                <p className="text-sm text-muted-foreground bg-blue-50 p-3 rounded border border-blue-200">
+                                                    All ingredients from this recipe are already in your shopping list.
+                                                </p>
+                                            )}
+                                            {chosenRecipe.ingredients.map((ingredient) => {
+                                                const isSelected = selectedIds.has(ingredient.id);
+                                                const isAlreadyInList = existingItemNames.has(
+                                                    ingredient.name.toLowerCase()
                                                 );
-                                            }
 
-                                            return (
-                                                <button
-                                                    key={ingredient.id}
-                                                    onClick={() => handleToggleIngredient(ingredient.id)}
-                                                    className={`w-full p-3 rounded-lg border transition-all text-left ${
-                                                        isSelected
-                                                            ? 'bg-blue-100 border-blue-300 text-foreground'
-                                                            : 'bg-muted/30 border-muted-foreground/20 text-foreground'
-                                                    }`}
-                                                    type="button"
-                                                >
-                                                    <div className="font-medium">{ingredient.name}</div>
-                                                    {(ingredient.quantity !== undefined || ingredient.unit) && (
-                                                        <div className="text-sm mt-1 text-muted-foreground">
-                                                            {ingredient.quantity} {ingredient.unit}
+                                                if (isAlreadyInList) {
+                                                    return (
+                                                        <div
+                                                            key={ingredient.id}
+                                                            className="p-3 rounded-lg bg-muted/30 border border-muted-foreground/20 opacity-50"
+                                                        >
+                                                            <div className="font-medium line-through text-muted-foreground">
+                                                                {ingredient.name}
+                                                            </div>
+                                                            <div className="text-xs text-muted-foreground mt-1">
+                                                                Already in list
+                                                            </div>
                                                         </div>
-                                                    )}
-                                                </button>
-                                            );
-                                        })
+                                                    );
+                                                }
+
+                                                return (
+                                                    <button
+                                                        key={ingredient.id}
+                                                        onClick={() => handleToggleIngredient(ingredient.id)}
+                                                        className={`w-full p-3 rounded-lg border transition-all text-left ${
+                                                            isSelected
+                                                                ? 'bg-blue-100 border-blue-300 text-foreground'
+                                                                : 'bg-muted/30 border-muted-foreground/20 text-foreground'
+                                                        }`}
+                                                        type="button"
+                                                    >
+                                                        <div className="font-medium">{ingredient.name}</div>
+                                                        {(ingredient.quantity !== undefined || ingredient.unit) && (
+                                                            <div className="text-sm mt-1 text-muted-foreground">
+                                                                {ingredient.quantity} {ingredient.unit}
+                                                            </div>
+                                                        )}
+                                                    </button>
+                                                );
+                                            })}
+                                        </>
                                     )}
                                 </div>
                             )
