@@ -1,3 +1,32 @@
+# [1.24.0](https://github.com/igor-siergiej/shoppingo/compare/v1.23.0...v1.24.0) (2026-03-21)
+
+
+### Bug Fixes
+
+* add helpful message when all recipe ingredients already in shopping list ([9744fd8](https://github.com/igor-siergiej/shoppingo/commit/9744fd8342b92d3c2d7fa87089de486dc882b447))
+* add recipe image retrieval and improve recipe card UI ([68595eb](https://github.com/igor-siergiej/shoppingo/commit/68595eb2b18b08a046f9b0cb55ee0b8a21c4ae42))
+* change recipe creation endpoint from POST to PUT ([d0add49](https://github.com/igor-siergiej/shoppingo/commit/d0add49b3d6be4bccc43e24c1ea2e125e8340efc))
+* correct selectedIds initialization and listType filter in IngredientSelectSection ([49ab15a](https://github.com/igor-siergiej/shoppingo/commit/49ab15a4715a32a9ff29a7262977033db5b8bb8c))
+* move recipe picker button to left section instead of right ([79fbd0f](https://github.com/igor-siergiej/shoppingo/commit/79fbd0fb131ed179e773baf601c2ed495d9f4bf3))
+* remove green background from recipe picker button ([6a5ee57](https://github.com/igor-siergiej/shoppingo/commit/6a5ee579301b446952541c1c49b902430a2cf800))
+* **tests:** update web component tests to match current component implementations ([#44](https://github.com/igor-siergiej/shoppingo/issues/44)) ([83f795c](https://github.com/igor-siergiej/shoppingo/commit/83f795c459f9875930df7669ddea2338111b0ed3))
+* use ListType enum for shopping list comparison in ToolBar ([d6c68f1](https://github.com/igor-siergiej/shoppingo/commit/d6c68f1b53eb5ca1d60e494cc06b41b810091017))
+
+
+### Features
+
+* add recipe-to-shopping-list bulk import feature ([#41](https://github.com/igor-siergiej/shoppingo/issues/41)) ([c044b17](https://github.com/igor-siergiej/shoppingo/commit/c044b1798ae33d9039e26723e361778c6a850c56))
+* consolidate recipe components with shared patterns ([#39](https://github.com/igor-siergiej/shoppingo/issues/39)) ([fd8e779](https://github.com/igor-siergiej/shoppingo/commit/fd8e779780b61d9104dc0a3aff83f764c317fb1e))
+* implement complete Recipes feature ([#38](https://github.com/igor-siergiej/shoppingo/issues/38)) ([4fa6376](https://github.com/igor-siergiej/shoppingo/commit/4fa637691d9fce6ff63284fbb1f7d1c58e559863))
+* implement recipe image upload and AI generation ([#42](https://github.com/igor-siergiej/shoppingo/issues/42)) ([be104b7](https://github.com/igor-siergiej/shoppingo/commit/be104b704af74603b86f0ca4a5f86e8b433c65a9))
+
+
+### Reverts
+
+* Revert "chore: remove active state background from navigation buttons" ([dcdf3a6](https://github.com/igor-siergiej/shoppingo/commit/dcdf3a6cb496b2e9cfb52cf46d2452408b95f788))
+* Revert "chore: remove colored border from recipe picker button" ([c6c6c01](https://github.com/igor-siergiej/shoppingo/commit/c6c6c01dd005750a73f06e8ca7c64e560e885e3c))
+* Revert "Reapply "chore: remove active state background from navigation buttons"" ([6659fca](https://github.com/igor-siergiej/shoppingo/commit/6659fca03fcbc1560bdd2bd3847514502fd86ce6))
+
 # [1.23.0](https://github.com/igor-siergiej/shoppingo/compare/v1.22.0...v1.23.0) (2026-03-20)
 
 
