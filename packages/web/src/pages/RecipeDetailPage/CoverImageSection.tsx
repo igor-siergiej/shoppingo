@@ -4,8 +4,8 @@ import { ImageIcon, ImageOff, Loader2, Sparkles } from 'lucide-react';
 import { useEffect, useId, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { setCoverImageKey, uploadRecipeImage } from '../../api';
-import { getAuthConfig } from '../../config/auth';
 import { Button } from '../../components/ui/button';
+import { getAuthConfig } from '../../config/auth';
 
 interface CoverImageSectionProps {
     recipe: Recipe;
@@ -65,7 +65,7 @@ export const CoverImageSection = ({ recipe, isOwner = false }: CoverImageSection
                 URL.revokeObjectURL(imageUrl);
             }
         };
-    }, [recipe.coverImageKey]);
+    }, [recipe.coverImageKey, imageUrl]);
 
     const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];

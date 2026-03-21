@@ -2,8 +2,8 @@ import { getStorageItem } from '@imapps/web-utils';
 import type { Recipe } from '@shoppingo/types';
 import { ImageOff, Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { getAuthConfig } from '../../config/auth';
 import { Card, CardContent } from '../../components/ui/card';
+import { getAuthConfig } from '../../config/auth';
 
 interface RecipeCardProps {
     recipe: Recipe;
@@ -58,7 +58,7 @@ export const RecipeCard = ({ recipe, onClick }: RecipeCardProps) => {
                 URL.revokeObjectURL(imageUrl);
             }
         };
-    }, [recipe.coverImageKey]);
+    }, [recipe.coverImageKey, imageUrl]);
 
     const ingredientCount = recipe.ingredients?.length ?? 0;
     const ingredientLabel = ingredientCount === 1 ? 'ingredient' : 'ingredients';
