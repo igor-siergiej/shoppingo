@@ -83,7 +83,6 @@ export const ToolBarAppBar = forwardRef<HTMLDivElement, ToolBarAppBarProps>(
                 {/* Center - Add button */}
                 <div className="flex justify-center gap-2">
                     {isItemsPage && itemDrawer}
-                    {isItemsPage && recipePickerDrawer}
                     {isListsPage && listDrawer}
                     {isRecipesPage && recipeDrawer}
                     {isRecipeDetailPage && ingredientDrawer}
@@ -109,6 +108,8 @@ export const ToolBarAppBar = forwardRef<HTMLDivElement, ToolBarAppBarProps>(
                             variant="destructive"
                         />
                     )}
+
+                    {isItemsPage && recipePickerDrawer}
 
                     {isRecipeDetailPage && onToggleSelectMode && (
                         <ToolBarButton icon={ShoppingCart} title="Add to shopping list" onClick={onToggleSelectMode} />
