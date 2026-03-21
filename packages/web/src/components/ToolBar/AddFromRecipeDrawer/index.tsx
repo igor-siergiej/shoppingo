@@ -100,7 +100,7 @@ export const AddFromRecipeDrawer = ({ open, onOpenChange, listTitle, listItems }
         <Drawer open={open} onOpenChange={onOpenChange}>
             <RippleButton
                 size="icon"
-                className="h-12 w-12 rounded-full border-2 border-primary/20 hover:border-primary/40 transition-colors"
+                className="h-12 w-12 rounded-full transition-colors"
                 onClick={() => onOpenChange(true)}
             >
                 <BookOpen className="size-5" />
