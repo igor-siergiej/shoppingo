@@ -1,0 +1,58 @@
+<h2>Picking a shopping list</h2>
+<p class="subtitle">After tapping "Add X items to list", how should you pick which shopping list to add to?</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Bottom sheet drawer</h3>
+      <p>Slides up from the bottom (like AddItemDrawer / ManageUsersDrawer). Lists your shopping lists, tap one to confirm and add.</p>
+      <div class="mockup" style="margin-top:10px">
+        <div class="mockup-header">Bottom Sheet</div>
+        <div class="mockup-body" style="padding:8px;font-family:sans-serif">
+          <div style="font-weight:600;font-size:14px;padding:4px 8px 10px">Choose a shopping list</div>
+          <div style="background:#f0f9ff;border:1.5px solid #3b82f6;border-radius:8px;padding:10px 12px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:13px;font-weight:500">Weekly Groceries</span>
+            <span style="font-size:11px;color:#6b7280">12 items</span>
+          </div>
+          <div style="background:#f9fafb;border-radius:8px;padding:10px 12px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:13px">Party Supplies</span>
+            <span style="font-size:11px;color:#6b7280">4 items</span>
+          </div>
+          <div style="background:#f9fafb;border-radius:8px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:13px">Pantry Restock</span>
+            <span style="font-size:11px;color:#6b7280">0 items</span>
+          </div>
+          <div style="margin-top:10px;background:#3b82f6;color:white;border-radius:8px;padding:10px;text-align:center;font-size:13px;font-weight:600">
+            Add to Weekly Groceries
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Inline in select mode</h3>
+      <p>The list picker appears directly on the recipe page above the CTA button — no drawer needed. Select a list then tap Add.</p>
+      <div class="mockup" style="margin-top:10px">
+        <div class="mockup-header">Recipe Detail — select mode</div>
+        <div class="mockup-body" style="padding:8px;font-family:sans-serif">
+          <div style="font-size:11px;color:#aaa;margin-bottom:6px">... ingredient cards ...</div>
+          <div style="background:#f9fafb;border-radius:8px;padding:8px;margin-bottom:8px">
+            <div style="font-size:11px;color:#6b7280;margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em">Add to list</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <div style="background:#3b82f6;color:white;border-radius:20px;padding:4px 12px;font-size:12px">Weekly Groceries</div>
+              <div style="background:#e5e7eb;color:#374151;border-radius:20px;padding:4px 12px;font-size:12px">Party Supplies</div>
+              <div style="background:#e5e7eb;color:#374151;border-radius:20px;padding:4px 12px;font-size:12px">Pantry Restock</div>
+            </div>
+          </div>
+          <div style="background:#3b82f6;color:white;border-radius:8px;padding:10px;text-align:center;font-size:13px;font-weight:600">
+            Add 3 items →
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

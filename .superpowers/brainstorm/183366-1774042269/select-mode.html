@@ -1,0 +1,95 @@
+<h2>Select mode — ingredient list</h2>
+<p class="subtitle">When you tap the toolbar button, all ingredients are pre-selected. How should selected vs deselected look?</p>
+
+<div class="split">
+  <div class="mockup">
+    <div class="mockup-header">Option A — Checkbox style</div>
+    <div class="mockup-body" style="padding:8px;font-family:sans-serif">
+      <div style="font-size:11px;color:#6b7280;padding:4px 8px 8px">3 of 4 selected</div>
+
+      <div style="background:#eff6ff;border:1.5px solid #3b82f6;border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;gap:10px">
+        <div style="width:18px;height:18px;border-radius:4px;background:#3b82f6;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <span style="color:white;font-size:12px">✓</span>
+        </div>
+        <div>
+          <div style="font-size:13px;font-weight:500">Flour</div>
+          <div style="font-size:11px;color:#6b7280">2 cups</div>
+        </div>
+      </div>
+
+      <div style="background:#eff6ff;border:1.5px solid #3b82f6;border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;gap:10px">
+        <div style="width:18px;height:18px;border-radius:4px;background:#3b82f6;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <span style="color:white;font-size:12px">✓</span>
+        </div>
+        <div>
+          <div style="font-size:13px;font-weight:500">Eggs</div>
+          <div style="font-size:11px;color:#6b7280">3</div>
+        </div>
+      </div>
+
+      <div style="background:#f9fafb;border:1.5px solid #e5e7eb;border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;gap:10px;opacity:0.6">
+        <div style="width:18px;height:18px;border-radius:4px;border:2px solid #d1d5db;flex-shrink:0"></div>
+        <div>
+          <div style="font-size:13px;font-weight:500;text-decoration:line-through;color:#9ca3af">Butter</div>
+          <div style="font-size:11px;color:#9ca3af">100g</div>
+        </div>
+      </div>
+
+      <div style="background:#eff6ff;border:1.5px solid #3b82f6;border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px">
+        <div style="width:18px;height:18px;border-radius:4px;background:#3b82f6;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <span style="color:white;font-size:12px">✓</span>
+        </div>
+        <div>
+          <div style="font-size:13px;font-weight:500">Sugar</div>
+          <div style="font-size:11px;color:#6b7280">1 cup</div>
+        </div>
+      </div>
+
+      <div style="margin-top:12px;background:#3b82f6;color:white;border-radius:8px;padding:10px;text-align:center;font-size:13px;font-weight:600">
+        Add 3 items to list →
+      </div>
+    </div>
+  </div>
+
+  <div class="mockup">
+    <div class="mockup-header">Option B — Toggle highlight (no checkbox)</div>
+    <div class="mockup-body" style="padding:8px;font-family:sans-serif">
+      <div style="font-size:11px;color:#6b7280;padding:4px 8px 8px">3 of 4 selected</div>
+
+      <div style="background:#dbeafe;border-radius:10px;padding:10px 12px;margin-bottom:8px">
+        <div style="font-size:13px;font-weight:500;color:#1d4ed8">Flour</div>
+        <div style="font-size:11px;color:#3b82f6">2 cups</div>
+      </div>
+
+      <div style="background:#dbeafe;border-radius:10px;padding:10px 12px;margin-bottom:8px">
+        <div style="font-size:13px;font-weight:500;color:#1d4ed8">Eggs</div>
+        <div style="font-size:11px;color:#3b82f6">3</div>
+      </div>
+
+      <div style="background:#f3f4f6;border-radius:10px;padding:10px 12px;margin-bottom:8px;opacity:0.5">
+        <div style="font-size:13px;font-weight:500;color:#9ca3af;text-decoration:line-through">Butter</div>
+        <div style="font-size:11px;color:#9ca3af">100g</div>
+      </div>
+
+      <div style="background:#dbeafe;border-radius:10px;padding:10px 12px">
+        <div style="font-size:13px;font-weight:500;color:#1d4ed8">Sugar</div>
+        <div style="font-size:11px;color:#3b82f6">1 cup</div>
+      </div>
+
+      <div style="margin-top:12px;background:#3b82f6;color:white;border-radius:8px;padding:10px;text-align:center;font-size:13px;font-weight:600">
+        Add 3 items to list →
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="options" style="margin-top:20px">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content"><h3>Checkbox style</h3><p>Explicit checkboxes — clear affordance for tap-to-toggle</p></div>
+  </div>
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content"><h3>Toggle highlight</h3><p>Tap the card itself to toggle — cleaner, matches existing card style</p></div>
+  </div>
+</div>
