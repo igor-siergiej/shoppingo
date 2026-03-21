@@ -4,7 +4,6 @@ import type { Context } from 'koa';
 import { dependencyContainer } from '../../dependencies';
 import { DependencyToken } from '../../dependencies/types';
 import type { RecipeService } from '../../domain/RecipeService';
-import type { BucketStore } from '../../infrastructure/BucketStore';
 
 interface HttpError {
     status?: number;
@@ -13,10 +12,7 @@ interface HttpError {
 
 const getRecipeService = (): RecipeService => dependencyContainer.resolve(DependencyToken.RecipeService);
 const getLogger = () => dependencyContainer.resolve(DependencyToken.Logger);
-const getBucketStore = (): BucketStore => {
-    const bucket = dependencyContainer.resolve(DependencyToken.Bucket);
-    return new BucketStore(bucket);
-};
+const getBucketStore = () => dependencyContainer.resolve(DependencyToken.ImageStore);
 
 // Helper to extract authenticated user from context
 const getAuthenticatedUser = (ctx: Context): { id: string; username: string } | null => {

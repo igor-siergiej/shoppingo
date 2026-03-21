@@ -94,19 +94,19 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd }: AddRecipeDrawerPr
         setError('');
 
         try {
-            // Create recipe without imageKey initially
+            // Create recipe without imageKey initially (need recipeId for upload)
             const recipe = await onAdd(title, [], undefined, selectedUsers);
             if (!recipe) {
                 throw new Error('Failed to create recipe');
             }
 
-            // Handle image upload or AI generation
+            // Handle image upload or AI generation AFTER recipe creation
             if (selectedFile) {
                 // User uploaded a file
                 await uploadRecipeImage(recipe.id, selectedFile);
                 toast.success('Recipe image uploaded', { style: { backgroundColor: '#10b981', color: '#ffffff' } });
             } else if (wantsAiImage) {
-                // User wants AI-generated image - trigger generation via existing endpoint
+                // User wants AI-generated image
                 try {
                     await fetch(`/api/image/${encodeURIComponent(title)}`, {
                         method: 'GET',
@@ -117,9 +117,7 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd }: AddRecipeDrawerPr
                         style: { backgroundColor: '#10b981', color: '#ffffff' },
                     });
                 } catch (_err) {
-                    toast.error('Failed to generate image', {
-                        style: { backgroundColor: '#ef4444', color: '#ffffff' },
-                    });
+                    // Image generation failed, recipe still created successfully
                 }
             }
 

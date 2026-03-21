@@ -61,7 +61,9 @@ export const CoverImageSection = ({ recipe, isOwner = false }: CoverImageSection
             await uploadRecipeImage(recipe.id, file);
             toast.success('Image uploaded successfully', { style: { backgroundColor: '#10b981', color: '#ffffff' } });
             // Refresh the image by triggering onImageChange
-            onImageChange?.();
+            if (onImageChange) {
+                onImageChange();
+            }
         } catch (err) {
             const message = err instanceof Error ? err.message : 'Failed to upload image';
             toast.error(message, { style: { backgroundColor: '#ef4444', color: '#ffffff' } });
@@ -82,7 +84,9 @@ export const CoverImageSection = ({ recipe, isOwner = false }: CoverImageSection
             await setCoverImageKey(recipe.id, recipe.title.trim().toLowerCase());
             toast.success('Image generated successfully', { style: { backgroundColor: '#10b981', color: '#ffffff' } });
             // Refresh the image
-            onImageChange?.();
+            if (onImageChange) {
+                onImageChange();
+            }
         } catch (err) {
             const message = err instanceof Error ? err.message : 'Failed to generate image';
             toast.error(message, { style: { backgroundColor: '#ef4444', color: '#ffffff' } });
