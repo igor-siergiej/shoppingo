@@ -11,6 +11,7 @@ interface ToolBarAppBarProps {
     onGoBack?: () => void;
     onClearSelected?: () => void;
     onRemoveAll?: () => void;
+    onToggleSelectMode?: () => void;
     onMenuClick: () => void;
     disableClearSelected?: boolean;
     disableClearAll?: boolean;
@@ -18,6 +19,7 @@ interface ToolBarAppBarProps {
     listDrawer?: ReactNode;
     recipeDrawer?: ReactNode;
     ingredientDrawer?: ReactNode;
+    recipePickerDrawer?: ReactNode;
 }
 
 export const ToolBarAppBar = forwardRef<HTMLDivElement, ToolBarAppBarProps>(
@@ -30,6 +32,7 @@ export const ToolBarAppBar = forwardRef<HTMLDivElement, ToolBarAppBarProps>(
             onGoBack,
             onClearSelected,
             onRemoveAll,
+            onToggleSelectMode,
             onMenuClick,
             disableClearSelected = false,
             disableClearAll = false,
@@ -37,6 +40,7 @@ export const ToolBarAppBar = forwardRef<HTMLDivElement, ToolBarAppBarProps>(
             listDrawer,
             recipeDrawer,
             ingredientDrawer,
+            recipePickerDrawer,
         },
         ref
     ) => {
@@ -77,8 +81,9 @@ export const ToolBarAppBar = forwardRef<HTMLDivElement, ToolBarAppBarProps>(
                 </div>
 
                 {/* Center - Add button */}
-                <div className="flex justify-center">
+                <div className="flex justify-center gap-2">
                     {isItemsPage && itemDrawer}
+                    {isItemsPage && recipePickerDrawer}
                     {isListsPage && listDrawer}
                     {isRecipesPage && recipeDrawer}
                     {isRecipeDetailPage && ingredientDrawer}
@@ -103,6 +108,10 @@ export const ToolBarAppBar = forwardRef<HTMLDivElement, ToolBarAppBarProps>(
                             disabled={disableClearAll}
                             variant="destructive"
                         />
+                    )}
+
+                    {isRecipeDetailPage && onToggleSelectMode && (
+                        <ToolBarButton icon={ShoppingCart} title="Add to shopping list" onClick={onToggleSelectMode} />
                     )}
 
                     <ToolBarButton icon={Menu} title="Menu" onClick={onMenuClick} />

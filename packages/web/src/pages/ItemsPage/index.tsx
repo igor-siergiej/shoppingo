@@ -129,6 +129,7 @@ const ItemsPage = () => {
                           }
                         : undefined
                 }
+                listItems={items}
                 refetchList={refetch}
                 disableClearSelected={selectedItemsCount === 0}
                 disableClearAll={items.length === 0}

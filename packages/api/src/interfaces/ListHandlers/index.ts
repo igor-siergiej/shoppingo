@@ -647,3 +647,57 @@ export const removeUserFromList = async (ctx: Context) => {
         ctx.body = { error: errorMessage };
     }
 };
+
+export const addItems = async (ctx: Context) => {
+    const { title } = ctx.params as { title: string };
+    const { items } = ctx.request.body as {
+        items: Array<{ itemName: string; quantity?: number; unit?: string; dateAdded: Date }>;
+    };
+    const logger = getLogger();
+    const authenticatedUser = ctx.state.user as { id: string; username: string };
+
+    // Validate input
+    if (!items || !Array.isArray(items) || items.length === 0) {
+        ctx.status = 400;
+        ctx.body = { error: 'Items array is required and must not be empty' };
+        return;
+    }
+
+    // Verify user has access to this list
+    const hasAccess = await verifyListAccess(title, authenticatedUser, ctx);
+    if (!hasAccess) {
+        logger.warn('Unauthorized list access attempt', {
+            authenticatedUserId: authenticatedUser.id,
+            listTitle: title,
+        });
+        ctx.status = 403;
+        ctx.body = { error: 'Forbidden' };
+        return;
+    }
+
+    try {
+        const result = await getListService().addItems(title, items, authenticatedUser.id);
+
+        logger.info('API: Items bulk added to list', {
+            listTitle: title,
+            userId: authenticatedUser.id,
+            username: authenticatedUser.username,
+            addedCount: result.added,
+            skippedCount: result.skipped,
+        });
+
+        ctx.status = 200;
+        ctx.body = result;
+    } catch (error: unknown) {
+        const err = error as { status?: number; message?: string };
+
+        logger.error('API: Failed to add items to list', {
+            listTitle: title,
+            userId: authenticatedUser.id,
+            username: authenticatedUser.username,
+            error: err.message,
+        });
+        ctx.status = err.status ?? 500;
+        ctx.body = { error: err.message ?? 'Internal Server Error' };
+    }
+};
