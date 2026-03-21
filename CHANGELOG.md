@@ -1,3 +1,10 @@
+## [1.24.1](https://github.com/igor-siergiej/shoppingo/compare/v1.24.0...v1.24.1) (2026-03-21)
+
+
+### Bug Fixes
+
+* remove accidentally committed claude worktree gitlinks ([#45](https://github.com/igor-siergiej/shoppingo/issues/45)) ([fa698d7](https://github.com/igor-siergiej/shoppingo/commit/fa698d736dc086945d879a643d4ad6bbb1c691cd))
+
 # [1.24.0](https://github.com/igor-siergiej/shoppingo/compare/v1.23.0...v1.24.0) (2026-03-21)
 
 
