@@ -78,6 +78,7 @@ export const ToolBarAppBar = forwardRef<HTMLDivElement, ToolBarAppBarProps>(
                             />
                         </>
                     )}
+                    {isItemsPage && recipePickerDrawer}
                 </div>
 
                 {/* Center - Add button */}
@@ -108,8 +109,6 @@ export const ToolBarAppBar = forwardRef<HTMLDivElement, ToolBarAppBarProps>(
                             variant="destructive"
                         />
                     )}
-
-                    {isItemsPage && recipePickerDrawer}
 
                     {isRecipeDetailPage && onToggleSelectMode && (
                         <ToolBarButton icon={ShoppingCart} title="Add to shopping list" onClick={onToggleSelectMode} />
