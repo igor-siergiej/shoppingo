@@ -296,7 +296,11 @@ const RecipeDetailPage = () => {
                                 />
                             ) : (
                                 <>
-                                    <CoverImageSection recipe={recipe} isOwner={isOwner} onImageChange={() => void refetch()} />
+                                    <CoverImageSection
+                                        recipe={recipe}
+                                        isOwner={isOwner}
+                                        onImageChange={() => void refetch()}
+                                    />
 
                                     <IngredientsSection
                                         recipe={recipe}
