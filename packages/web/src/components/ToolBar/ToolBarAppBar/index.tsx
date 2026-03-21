@@ -68,13 +68,11 @@ export const ToolBarAppBar = forwardRef<HTMLDivElement, ToolBarAppBarProps>(
                                 icon={ShoppingCart}
                                 title="Shopping lists"
                                 onClick={() => navigate('/')}
-                                active={isListsPage}
                             />
                             <ToolBarButton
                                 icon={BookOpen}
                                 title="Recipes"
                                 onClick={() => navigate('/recipes')}
-                                active={isRecipesPage}
                             />
                         </>
                     )}
