@@ -1,8 +1,8 @@
 'use client';
 
 import { useAuth, useUser } from '@imapps/web-utils';
-import { ListType } from '@shoppingo/types';
 import type { Item } from '@shoppingo/types';
+import { ListType } from '@shoppingo/types';
 import { AnimatePresence, MotionConfig, motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';

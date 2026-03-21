@@ -1,2 +1,4 @@
 [     145ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:3008/refresh:0
 [   17897ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:3008/refresh:0
+[   28801ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_RESET @ http://localhost:4000/src/index.css?t=1774105409972:0
+[   28801ms] [ERROR] [vite] Failed to reload /src/index.css. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:4000/@vite/client:808
