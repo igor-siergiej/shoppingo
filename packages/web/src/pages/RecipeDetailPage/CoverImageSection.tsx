@@ -1,8 +1,10 @@
+import { getStorageItem } from '@imapps/web-utils';
 import type { Recipe } from '@shoppingo/types';
 import { ImageIcon, ImageOff, Loader2, Sparkles } from 'lucide-react';
 import { useEffect, useId, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { setCoverImageKey, uploadRecipeImage } from '../../api';
+import { getAuthConfig } from '../../config/auth';
 import { Button } from '../../components/ui/button';
 
 interface CoverImageSectionProps {
@@ -27,7 +29,20 @@ export const CoverImageSection = ({ recipe, isOwner = false }: CoverImageSection
 
         const fetchImage = async () => {
             try {
-                const response = await fetch(`/api/images/${recipe.coverImageKey}`);
+                const authConfig = getAuthConfig();
+                const token = getStorageItem(
+                    authConfig.accessTokenKey || 'accessToken',
+                    authConfig.storageType || 'localStorage'
+                );
+
+                const headers: Record<string, string> = {};
+                if (token) {
+                    headers.Authorization = `Bearer ${token}`;
+                }
+
+                const response = await fetch(`/api/image/${encodeURIComponent(recipe.coverImageKey)}`, {
+                    headers,
+                });
                 if (!response.ok) {
                     setHasImageError(true);
                     return;
@@ -50,7 +65,7 @@ export const CoverImageSection = ({ recipe, isOwner = false }: CoverImageSection
                 URL.revokeObjectURL(imageUrl);
             }
         };
-    }, [recipe.coverImageKey, imageUrl]);
+    }, [recipe.coverImageKey]);
 
     const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];

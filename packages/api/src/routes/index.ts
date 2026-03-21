@@ -33,7 +33,18 @@ router.delete('/api/lists/:title/clear', authenticate, listHandlers.clearList);
 router.delete('/api/lists/:title/clearSelected', authenticate, listHandlers.deleteSelected);
 router.post('/api/lists/:title/users', authenticate, listHandlers.addUserToList);
 router.delete('/api/lists/:title/users/:userId', authenticate, listHandlers.removeUserFromList);
-router.get('/api/image/:name', authenticate, getImage);
+
+// Conditional auth for images: stored images need auth, AI images don't
+const conditionalImageAuth = async (ctx: any, next: any) => {
+    const { name } = ctx.params as { name: string };
+    // Only require auth for stored images (contain /)
+    if (name.includes('/')) {
+        return authenticate(ctx, next);
+    }
+    return next();
+};
+
+router.get('/api/image/:name', conditionalImageAuth, getImage);
 
 // Recipes
 router.get('/api/recipes', authenticate, (ctx) => recipeHandlers.getRecipes(ctx));

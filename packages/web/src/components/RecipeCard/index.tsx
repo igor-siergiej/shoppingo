@@ -1,6 +1,8 @@
+import { getStorageItem } from '@imapps/web-utils';
 import type { Recipe } from '@shoppingo/types';
 import { ImageOff, Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { getAuthConfig } from '../../config/auth';
 import { Card, CardContent } from '../../components/ui/card';
 
 interface RecipeCardProps {
@@ -21,7 +23,20 @@ export const RecipeCard = ({ recipe, onClick }: RecipeCardProps) => {
 
         const fetchImage = async () => {
             try {
-                const response = await fetch(`/api/images/${recipe.coverImageKey}`);
+                const authConfig = getAuthConfig();
+                const token = getStorageItem(
+                    authConfig.accessTokenKey || 'accessToken',
+                    authConfig.storageType || 'localStorage'
+                );
+
+                const headers: Record<string, string> = {};
+                if (token) {
+                    headers.Authorization = `Bearer ${token}`;
+                }
+
+                const response = await fetch(`/api/image/${encodeURIComponent(recipe.coverImageKey)}`, {
+                    headers,
+                });
                 if (!response.ok) {
                     setHasImageError(true);
                     return;
@@ -43,7 +58,7 @@ export const RecipeCard = ({ recipe, onClick }: RecipeCardProps) => {
                 URL.revokeObjectURL(imageUrl);
             }
         };
-    }, [recipe.coverImageKey, imageUrl]);
+    }, [recipe.coverImageKey]);
 
     const ingredientCount = recipe.ingredients?.length ?? 0;
     const ingredientLabel = ingredientCount === 1 ? 'ingredient' : 'ingredients';
@@ -61,7 +76,7 @@ export const RecipeCard = ({ recipe, onClick }: RecipeCardProps) => {
                 }
             }}
         >
-            <div className="relative h-40 w-full overflow-hidden bg-muted">
+            <div className="relative flex-1 w-full overflow-hidden bg-muted rounded-t-lg">
                 {imageUrl && !hasImageError && (
                     <img
                         src={imageUrl}
@@ -93,17 +108,13 @@ export const RecipeCard = ({ recipe, onClick }: RecipeCardProps) => {
                 )}
             </div>
 
-            <CardContent className="flex-1 p-3 flex flex-col justify-between">
-                <div>
-                    <h3 className="font-semibold text-base line-clamp-2 text-foreground mb-2 group-hover:text-primary transition-colors">
-                        {recipe.title}
-                    </h3>
-                </div>
-                <div className="inline-block">
-                    <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-primary/10 text-primary rounded">
-                        {ingredientCount} {ingredientLabel}
-                    </span>
-                </div>
+            <CardContent className="px-2 py-1.5 flex flex-col gap-1">
+                <h3 className="font-semibold text-sm line-clamp-1 text-foreground group-hover:text-primary transition-colors">
+                    {recipe.title}
+                </h3>
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-medium bg-primary/10 text-primary rounded w-fit">
+                    {ingredientCount} {ingredientLabel}
+                </span>
             </CardContent>
         </Card>
     );
