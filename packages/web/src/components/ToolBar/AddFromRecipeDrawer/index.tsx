@@ -4,7 +4,7 @@ import { useUser } from '@imapps/web-utils';
 import type { Item, Recipe } from '@shoppingo/types';
 import { ArrowLeft, BookOpen } from 'lucide-react';
 import { useState } from 'react';
-import { useQuery } from 'react-query';
+import { useQuery, useQueryClient } from 'react-query';
 import { toast } from 'sonner';
 import { addItemsBulk, getRecipesQuery } from '../../../api';
 import { Button } from '../../../components/ui/button';
@@ -20,6 +20,7 @@ interface AddFromRecipeDrawerProps {
 
 export const AddFromRecipeDrawer = ({ open, onOpenChange, listTitle, listItems }: AddFromRecipeDrawerProps) => {
     const { user } = useUser();
+    const queryClient = useQueryClient();
     const [step, setStep] = useState<'recipes' | 'ingredients'>('recipes');
     const [chosenRecipe, setChosenRecipe] = useState<Recipe | null>(null);
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -74,6 +75,7 @@ export const AddFromRecipeDrawer = ({ open, onOpenChange, listTitle, listItems }
                 },
             });
 
+            await queryClient.invalidateQueries([listTitle]);
             handleClose();
         } catch (error) {
             const err = error as { message?: string };
