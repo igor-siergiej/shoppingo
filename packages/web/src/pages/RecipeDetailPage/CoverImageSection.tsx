@@ -13,9 +13,10 @@ interface CoverImageSectionProps {
     onImageChange?: () => void;
 }
 
-export const CoverImageSection = ({ recipe, isOwner = false }: CoverImageSectionProps) => {
+export const CoverImageSection = ({ recipe, isOwner = false, onImageChange }: CoverImageSectionProps) => {
     const fileInputId = useId();
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const imageUrlRef = useRef<string | null>(null);
     const [imageUrl, setImageUrl] = useState<string | null>(null);
     const [isLoadingImage, setIsLoadingImage] = useState(true);
     const [hasImageError, setHasImageError] = useState(false);
@@ -49,6 +50,7 @@ export const CoverImageSection = ({ recipe, isOwner = false }: CoverImageSection
                 }
                 const blob = await response.blob();
                 const url = URL.createObjectURL(blob);
+                imageUrlRef.current = url;
                 setImageUrl(url);
                 setHasImageError(false);
             } catch {
@@ -61,11 +63,12 @@ export const CoverImageSection = ({ recipe, isOwner = false }: CoverImageSection
         fetchImage();
 
         return () => {
-            if (imageUrl) {
-                URL.revokeObjectURL(imageUrl);
+            if (imageUrlRef.current) {
+                URL.revokeObjectURL(imageUrlRef.current);
+                imageUrlRef.current = null;
             }
         };
-    }, [recipe.coverImageKey, imageUrl]);
+    }, [recipe.coverImageKey]);
 
     const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];

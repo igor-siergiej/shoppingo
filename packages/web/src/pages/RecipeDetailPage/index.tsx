@@ -4,7 +4,7 @@ import { useUser } from '@imapps/web-utils';
 import type { Ingredient } from '@shoppingo/types';
 import { Pencil, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useQuery } from 'react-query';
+import { useQuery, useQueryClient } from 'react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { addItemsBulk, deleteRecipe, getListsQuery, getRecipeQuery, updateRecipe } from '../../api';
@@ -33,6 +33,7 @@ const RecipeDetailPage = () => {
     const { recipeId } = useParams<{ recipeId: string }>();
     const navigate = useNavigate();
     const { user } = useUser();
+    const queryClient = useQueryClient();
     const { confirm, isOpen, config: confirmConfig, handleConfirm, handleCancel } = useConfirmation();
 
     const [isEditingTitle, setIsEditingTitle] = useState(false);
@@ -211,6 +212,7 @@ const RecipeDetailPage = () => {
                 },
             });
 
+            await queryClient.invalidateQueries([listTitle]);
             setIsSelectMode(false);
             logger.info('Ingredients added to list', {
                 recipeId,
