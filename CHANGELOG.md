@@ -1,3 +1,10 @@
+## [1.24.2](https://github.com/igor-siergiej/shoppingo/compare/v1.24.1...v1.24.2) (2026-03-22)
+
+
+### Bug Fixes
+
+* recipe images and list refresh after bulk ingredient add ([#46](https://github.com/igor-siergiej/shoppingo/issues/46)) ([dedf395](https://github.com/igor-siergiej/shoppingo/commit/dedf3958342dba0b5c40b9a49286410004a19aaf))
+
 ## [1.24.1](https://github.com/igor-siergiej/shoppingo/compare/v1.24.0...v1.24.1) (2026-03-21)
 
 
