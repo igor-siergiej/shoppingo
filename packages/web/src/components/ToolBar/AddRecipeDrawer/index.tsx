@@ -164,7 +164,7 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd }: AddRecipeDrawerPr
                     </DrawerTitle>
                 </DrawerHeader>
 
-                <div className="h-[500px] overflow-y-auto px-4">
+                <div className="max-h-[70vh] overflow-y-auto px-4">
                     <div className="space-y-4 pb-4">
                         <div className="space-y-2">
                             <Label htmlFor={recipeNameId}>Recipe Title</Label>
