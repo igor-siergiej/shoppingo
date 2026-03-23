@@ -1,4 +1,4 @@
-import { ChefHat, Image as ImageIcon, Plus, Sparkles, X } from 'lucide-react';
+import { ChefHat, Image as ImageIcon, Plus, X } from 'lucide-react';
 import { useCallback, useId, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { setCoverImageKey, uploadRecipeImage } from '../../../api';
@@ -54,7 +54,6 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd, onRefetch }: AddRec
     const [showUserSearch, setShowUserSearch] = useState(false);
     const [imageUrl, setImageUrl] = useState<string | null>(null);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
-    const [wantsAiImage, setWantsAiImage] = useState(false);
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
@@ -101,15 +100,15 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd, onRefetch }: AddRec
                 throw new Error('Failed to create recipe');
             }
 
-            // Handle image upload or AI generation AFTER recipe creation
+            // Handle image upload or auto-generation AFTER recipe creation
             if (selectedFile) {
                 // User uploaded a file
                 await uploadRecipeImage(recipe.id, selectedFile);
                 toast.success('Recipe image uploaded', { style: { backgroundColor: '#10b981', color: '#ffffff' } });
                 // Refetch to show the new image
                 if (onRefetch) await onRefetch();
-            } else if (wantsAiImage) {
-                // User wants AI-generated image
+            } else {
+                // Auto-generate image if no file was uploaded
                 try {
                     const response = await fetch(`/api/image/${encodeURIComponent(title)}`, {
                         method: 'GET',
@@ -144,7 +143,6 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd, onRefetch }: AddRec
         setShowUserSearch(false);
         setImageUrl(null);
         setSelectedFile(null);
-        setWantsAiImage(false);
         setError('');
         setQuery('');
         clearResults();
@@ -226,45 +224,26 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd, onRefetch }: AddRec
                                 )}
                             </button>
 
-                            <div className="flex gap-2">
-                                <input
-                                    ref={fileInputRef}
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handleImageSelect}
-                                    disabled={isLoading}
-                                    className="hidden"
-                                    id={fileInputId}
-                                />
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={() => fileInputRef.current?.click()}
-                                    disabled={isLoading}
-                                    className="flex-1"
-                                    size="sm"
-                                >
-                                    <ImageIcon className="h-4 w-4 mr-1" />
-                                    Upload
-                                </Button>
-                                <Button
-                                    type="button"
-                                    variant={wantsAiImage ? 'default' : 'outline'}
-                                    disabled={isLoading || !title.trim()}
-                                    className="flex-1"
-                                    size="sm"
-                                    onClick={() => {
-                                        setWantsAiImage(!wantsAiImage);
-                                        if (!wantsAiImage) {
-                                            setSelectedFile(null);
-                                            if (fileInputRef.current) fileInputRef.current.value = '';
-                                        }
-                                    }}
-                                >
-                                    <Sparkles className="h-4 w-4 mr-1" />
-                                    AI Generate
-                                </Button>
-                            </div>
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept="image/*"
+                                onChange={handleImageSelect}
+                                disabled={isLoading}
+                                className="hidden"
+                                id={fileInputId}
+                            />
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => fileInputRef.current?.click()}
+                                disabled={isLoading}
+                                className="w-full"
+                                size="sm"
+                            >
+                                <ImageIcon className="h-4 w-4 mr-1" />
+                                Upload Image (optional)
+                            </Button>
                         </div>
 
                         <div className="space-y-3 border-t pt-4">
