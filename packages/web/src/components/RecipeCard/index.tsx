@@ -15,6 +15,7 @@ export const RecipeCard = ({ recipe, onClick }: RecipeCardProps) => {
     const [isLoadingImage, setIsLoadingImage] = useState(true);
     const [hasImageError, setHasImageError] = useState(false);
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: imageUrl cleanup needs closure, not dependency
     useEffect(() => {
         if (!recipe.coverImageKey) {
             setIsLoadingImage(false);
