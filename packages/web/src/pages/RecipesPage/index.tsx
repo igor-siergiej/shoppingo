@@ -150,7 +150,7 @@ const RecipesPage = () => {
             {isLoading && <ListsSkeleton />}
             {!isLoading && !isError && pageContent}
 
-            <ToolBar onAddRecipe={handleAddRecipe} placeholder="Enter recipe name..." />
+            <ToolBar onAddRecipe={handleAddRecipe} onRefetchRecipes={refetch} placeholder="Enter recipe name..." />
         </>
     );
 };

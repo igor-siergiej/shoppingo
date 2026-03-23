@@ -8,7 +8,7 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<'div'
 
     return (
         <div className={`flex flex-col gap-6 ${className ?? ''}`} {...props}>
-            <Card>
+            <Card className="pt-4">
                 <CardHeader>
                     <CardTitle>Create your account</CardTitle>
                     <CardDescription>Enter your details below to create your account</CardDescription>

@@ -15,6 +15,7 @@ export const RecipeCard = ({ recipe, onClick }: RecipeCardProps) => {
     const [isLoadingImage, setIsLoadingImage] = useState(true);
     const [hasImageError, setHasImageError] = useState(false);
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: imageUrl cleanup needs closure, not dependency
     useEffect(() => {
         if (!recipe.coverImageKey) {
             setIsLoadingImage(false);
@@ -58,7 +59,7 @@ export const RecipeCard = ({ recipe, onClick }: RecipeCardProps) => {
                 URL.revokeObjectURL(imageUrl);
             }
         };
-    }, [recipe.coverImageKey, imageUrl]);
+    }, [recipe.coverImageKey]);
 
     const ingredientCount = recipe.ingredients?.length ?? 0;
     const ingredientLabel = ingredientCount === 1 ? 'ingredient' : 'ingredients';
