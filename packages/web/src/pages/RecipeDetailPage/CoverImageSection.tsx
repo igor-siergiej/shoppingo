@@ -13,7 +13,7 @@ interface CoverImageSectionProps {
     onImageChange?: () => void;
 }
 
-export const CoverImageSection = ({ recipe, isOwner = false }: CoverImageSectionProps) => {
+export const CoverImageSection = ({ recipe, isOwner = false, onImageChange }: CoverImageSectionProps) => {
     const fileInputId = useId();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [imageUrl, setImageUrl] = useState<string | null>(null);
