@@ -233,17 +233,6 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd, onRefetch }: AddRec
                                 className="hidden"
                                 id={fileInputId}
                             />
-                            <Button
-                                type="button"
-                                variant="outline"
-                                onClick={() => fileInputRef.current?.click()}
-                                disabled={isLoading}
-                                className="w-full"
-                                size="sm"
-                            >
-                                <ImageIcon className="h-4 w-4 mr-1" />
-                                Upload Image (optional)
-                            </Button>
                         </div>
 
                         <div className="space-y-3 border-t pt-4">
