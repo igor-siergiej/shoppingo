@@ -1,8 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'bun:test';
-import { render, screen, waitFor } from '@testing-library/preact';
-import userEvent from '@testing-library/user-event';
-import RecipesPage from './index';
-import * as api from '../../api';
+import { beforeEach, describe, expect, it, vi } from 'bun:test';
 import type { Recipe } from '@shoppingo/types';
 
 // Mock dependencies
@@ -25,7 +21,7 @@ vi.mock('react-query', () => ({
 }));
 
 describe('RecipesPage', () => {
-    const mockRecipes: Recipe[] = [
+    const _mockRecipes: Recipe[] = [
         {
             id: 'recipe-1',
             title: 'Recipe 1',

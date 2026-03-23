@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'bun:test';
+import { beforeEach, describe, expect, it, vi } from 'bun:test';
+import type { Recipe } from '@shoppingo/types';
 import { render, screen, waitFor } from '@testing-library/preact';
 import { RecipeCard } from './index';
-import type { Recipe } from '@shoppingo/types';
 
 describe('RecipeCard', () => {
     const mockRecipe: Recipe = {
@@ -35,34 +35,19 @@ describe('RecipeCard', () => {
     });
 
     it('renders recipe card with title', () => {
-        render(
-            <RecipeCard
-                recipe={mockRecipe}
-                onClick={vi.fn()}
-            />
-        );
+        render(<RecipeCard recipe={mockRecipe} onClick={vi.fn()} />);
 
         expect(screen.getByText('Test Recipe')).toBeTruthy();
     });
 
     it('displays ingredient count', () => {
-        render(
-            <RecipeCard
-                recipe={mockRecipe}
-                onClick={vi.fn()}
-            />
-        );
+        render(<RecipeCard recipe={mockRecipe} onClick={vi.fn()} />);
 
         expect(screen.getByText('2 ingredients')).toBeTruthy();
     });
 
     it('fetches and displays image when coverImageKey is present', async () => {
-        render(
-            <RecipeCard
-                recipe={mockRecipe}
-                onClick={vi.fn()}
-            />
-        );
+        render(<RecipeCard recipe={mockRecipe} onClick={vi.fn()} />);
 
         await waitFor(() => {
             expect(global.fetch).toHaveBeenCalledWith(
@@ -78,12 +63,7 @@ describe('RecipeCard', () => {
     });
 
     it('shows placeholder when no image', () => {
-        const { container } = render(
-            <RecipeCard
-                recipe={mockRecipeNoImage}
-                onClick={vi.fn()}
-            />
-        );
+        const { container } = render(<RecipeCard recipe={mockRecipeNoImage} onClick={vi.fn()} />);
 
         // Should show cooking emoji placeholder
         expect(container.textContent).toContain('🍳');
@@ -92,12 +72,7 @@ describe('RecipeCard', () => {
     it('calls onClick when card is clicked', () => {
         const mockClick = vi.fn();
 
-        const { container } = render(
-            <RecipeCard
-                recipe={mockRecipe}
-                onClick={mockClick}
-            />
-        );
+        const { container } = render(<RecipeCard recipe={mockRecipe} onClick={mockClick} />);
 
         const card = container.querySelector('[role="button"]');
         if (card) {
@@ -114,12 +89,7 @@ describe('RecipeCard', () => {
             } as Response)
         );
 
-        const { container } = render(
-            <RecipeCard
-                recipe={mockRecipe}
-                onClick={vi.fn()}
-            />
-        );
+        const { container } = render(<RecipeCard recipe={mockRecipe} onClick={vi.fn()} />);
 
         await waitFor(() => {
             // Should show error icon
@@ -128,12 +98,7 @@ describe('RecipeCard', () => {
     });
 
     it('cleans up object URL on unmount', async () => {
-        const { unmount } = render(
-            <RecipeCard
-                recipe={mockRecipe}
-                onClick={vi.fn()}
-            />
-        );
+        const { unmount } = render(<RecipeCard recipe={mockRecipe} onClick={vi.fn()} />);
 
         await waitFor(() => {
             expect(global.URL.createObjectURL).toHaveBeenCalled();
