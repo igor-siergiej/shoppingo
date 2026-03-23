@@ -37,10 +37,11 @@ export interface AddRecipeDrawerProps {
         imageKey?: string,
         selectedUsers?: string[]
     ) => Promise<Recipe | undefined>;
+    onRefetch?: () => Promise<void>;
     placeholder?: string;
 }
 
-export const AddRecipeDrawer = ({ open, onOpenChange, onAdd }: AddRecipeDrawerProps) => {
+export const AddRecipeDrawer = ({ open, onOpenChange, onAdd, onRefetch }: AddRecipeDrawerProps) => {
     const recipeNameId = useId();
     const userSearchId = useId();
     const fileInputId = useId();
@@ -105,17 +106,23 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd }: AddRecipeDrawerPr
                 // User uploaded a file
                 await uploadRecipeImage(recipe.id, selectedFile);
                 toast.success('Recipe image uploaded', { style: { backgroundColor: '#10b981', color: '#ffffff' } });
+                // Refetch to show the new image
+                if (onRefetch) await onRefetch();
             } else if (wantsAiImage) {
                 // User wants AI-generated image
                 try {
-                    await fetch(`/api/image/${encodeURIComponent(title)}`, {
+                    const response = await fetch(`/api/image/${encodeURIComponent(title)}`, {
                         method: 'GET',
                     });
-                    // Set the imageKey to the normalized title
-                    await setCoverImageKey(recipe.id, title.trim().toLowerCase());
-                    toast.success('Recipe image generated', {
-                        style: { backgroundColor: '#10b981', color: '#ffffff' },
-                    });
+                    if (response.ok) {
+                        // Set the imageKey to the normalized title
+                        await setCoverImageKey(recipe.id, title.trim().toLowerCase());
+                        toast.success('Recipe image generated', {
+                            style: { backgroundColor: '#10b981', color: '#ffffff' },
+                        });
+                        // Refetch to show the new image
+                        if (onRefetch) await onRefetch();
+                    }
                 } catch (_err) {
                     // Image generation failed, recipe still created successfully
                 }

@@ -29,6 +29,7 @@ interface ToolBarProps {
         imageKey?: string,
         selectedUsers?: string[]
     ) => Promise<void>;
+    onRefetchRecipes?: () => Promise<void>;
     handleGoBack?: () => void;
     handleClearSelected?: () => void;
     handleRemoveAll?: () => void;
@@ -51,6 +52,7 @@ const ToolBar = ({
     onAddItem,
     onAddIngredient,
     onAddRecipe,
+    onRefetchRecipes,
     handleGoBack,
     handleClearSelected,
     handleRemoveAll,
@@ -229,6 +231,7 @@ const ToolBar = ({
                                             open={isAddRecipeDrawerOpen}
                                             onOpenChange={setIsAddRecipeDrawerOpen}
                                             onAdd={onAddRecipe}
+                                            onRefetch={onRefetchRecipes}
                                             placeholder={placeholder}
                                         />
                                     ) : undefined
