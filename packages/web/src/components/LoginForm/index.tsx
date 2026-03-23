@@ -8,7 +8,7 @@ export const LoginForm: React.FC = () => {
 
     return (
         <div className="flex flex-col gap-6">
-            <Card>
+            <Card className="pt-4">
                 <CardHeader>
                     <CardTitle>Login to your account</CardTitle>
                     <CardDescription>Enter your username below to login to your account</CardDescription>

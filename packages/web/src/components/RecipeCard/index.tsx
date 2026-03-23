@@ -58,7 +58,7 @@ export const RecipeCard = ({ recipe, onClick }: RecipeCardProps) => {
                 URL.revokeObjectURL(imageUrl);
             }
         };
-    }, [recipe.coverImageKey, imageUrl]);
+    }, [recipe.coverImageKey]);
 
     const ingredientCount = recipe.ingredients?.length ?? 0;
     const ingredientLabel = ingredientCount === 1 ? 'ingredient' : 'ingredients';
