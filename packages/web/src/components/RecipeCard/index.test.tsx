@@ -1,6 +1,6 @@
-import { beforeEach, describe, expect, it, vi } from 'bun:test';
 import type { Recipe } from '@shoppingo/types';
-import { render, screen, waitFor } from '@testing-library/preact';
+import { render, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { RecipeCard } from './index';
 
 describe('RecipeCard', () => {

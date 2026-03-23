@@ -1,6 +1,6 @@
-import { beforeEach, describe, expect, it, vi } from 'bun:test';
-import { fireEvent, render, screen, waitFor } from '@testing-library/preact';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AddRecipeDrawer } from './index';
 
 describe('AddRecipeDrawer', () => {
@@ -41,7 +41,7 @@ describe('AddRecipeDrawer', () => {
     it('auto-generates image when no image is uploaded', async () => {
         mockOnAdd.mockResolvedValue({ id: 'recipe-1' });
 
-        const { container } = render(
+        render(
             <AddRecipeDrawer open={true} onOpenChange={mockOnOpenChange} onAdd={mockOnAdd} onRefetch={mockOnRefetch} />
         );
 
