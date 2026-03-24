@@ -1,7 +1,7 @@
 import { getStorageItem } from '@imapps/web-utils';
 import type { Recipe } from '@shoppingo/types';
 import { ImageOff, Loader2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Card, CardContent } from '../../components/ui/card';
 import { getAuthConfig } from '../../config/auth';
 
@@ -14,8 +14,8 @@ export const RecipeCard = ({ recipe, onClick }: RecipeCardProps) => {
     const [imageUrl, setImageUrl] = useState<string | null>(null);
     const [isLoadingImage, setIsLoadingImage] = useState(true);
     const [hasImageError, setHasImageError] = useState(false);
+    const objectUrlRef = useRef<string | null>(null);
 
-    // biome-ignore lint/correctness/useExhaustiveDependencies: imageUrl cleanup needs closure, not dependency
     useEffect(() => {
         if (!recipe.coverImageKey) {
             setIsLoadingImage(false);
@@ -44,6 +44,7 @@ export const RecipeCard = ({ recipe, onClick }: RecipeCardProps) => {
                 }
                 const blob = await response.blob();
                 const url = URL.createObjectURL(blob);
+                objectUrlRef.current = url;
                 setImageUrl(url);
             } catch {
                 setHasImageError(true);
@@ -55,8 +56,9 @@ export const RecipeCard = ({ recipe, onClick }: RecipeCardProps) => {
         fetchImage();
 
         return () => {
-            if (imageUrl) {
-                URL.revokeObjectURL(imageUrl);
+            if (objectUrlRef.current) {
+                URL.revokeObjectURL(objectUrlRef.current);
+                objectUrlRef.current = null;
             }
         };
     }, [recipe.coverImageKey]);

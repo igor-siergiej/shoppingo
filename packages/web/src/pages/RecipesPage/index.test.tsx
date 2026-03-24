@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from 'bun:test';
 import type { Recipe } from '@shoppingo/types';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock dependencies
 vi.mock('../../api', () => ({
