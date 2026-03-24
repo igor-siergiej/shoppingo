@@ -1,3 +1,11 @@
+## [1.24.3](https://github.com/igor-siergiej/shoppingo/compare/v1.24.2...v1.24.3) (2026-03-24)
+
+
+### Bug Fixes
+
+* recipe image not refreshing after upload or AI generation ([#47](https://github.com/igor-siergiej/shoppingo/issues/47)) ([b771cd1](https://github.com/igor-siergiej/shoppingo/commit/b771cd11ed264a1febdf0a8435556b10ae78a11b))
+* **tests:** fix failing web component tests ([#48](https://github.com/igor-siergiej/shoppingo/issues/48)) ([b6fe59d](https://github.com/igor-siergiej/shoppingo/commit/b6fe59dddf18d6351a5ca07ccf5582fe8e89b093))
+
 ## [1.24.2](https://github.com/igor-siergiej/shoppingo/compare/v1.24.1...v1.24.2) (2026-03-22)
 
 
