@@ -3,6 +3,17 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { RecipeCard } from './index';
 
+vi.mock('../../config/auth', () => ({
+    getAuthConfig: vi.fn(() => ({
+        accessTokenKey: 'accessToken',
+        storageType: 'localStorage',
+    })),
+}));
+
+vi.mock('@imapps/web-utils', () => ({
+    getStorageItem: vi.fn(() => null),
+}));
+
 describe('RecipeCard', () => {
     const mockRecipe: Recipe = {
         id: 'recipe-1',
@@ -92,8 +103,8 @@ describe('RecipeCard', () => {
         const { container } = render(<RecipeCard recipe={mockRecipe} onClick={vi.fn()} />);
 
         await waitFor(() => {
-            // Should show error icon
-            expect(container.textContent).toContain('📸') || expect(container.querySelector('svg')).toBeTruthy();
+            // Should show error icon (ImageOff SVG)
+            expect(container.querySelector('svg')).toBeTruthy();
         });
     });
 

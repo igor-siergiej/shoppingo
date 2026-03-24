@@ -3,6 +3,29 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AddRecipeDrawer } from './index';
 
+vi.mock('../../../api', () => ({
+    uploadRecipeImage: vi.fn(() => Promise.resolve({ imageKey: 'test-key' })),
+    setCoverImageKey: vi.fn(() => Promise.resolve({ id: 'recipe-1' })),
+}));
+
+vi.mock('../../../hooks/useSearch', () => ({
+    useSearch: vi.fn(() => ({
+        query: '',
+        setQuery: vi.fn(),
+        results: { success: 'false', usernames: [], count: 0, query: '' },
+        isLoading: false,
+        error: null,
+        clearResults: vi.fn(),
+    })),
+}));
+
+vi.mock('sonner', () => ({
+    toast: {
+        success: vi.fn(),
+        error: vi.fn(),
+    },
+}));
+
 describe('AddRecipeDrawer', () => {
     const mockOnAdd = vi.fn();
     const mockOnRefetch = vi.fn();
@@ -59,7 +82,7 @@ describe('AddRecipeDrawer', () => {
         // Should attempt image generation via API
         await waitFor(() => {
             expect(global.fetch).toHaveBeenCalledWith(
-                expect.stringContaining('/api/image/test recipe'),
+                expect.stringContaining('/api/image/Test%20Recipe'),
                 expect.objectContaining({ method: 'GET' })
             );
         });
