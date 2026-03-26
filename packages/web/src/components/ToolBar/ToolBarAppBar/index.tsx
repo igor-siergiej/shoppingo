@@ -90,7 +90,7 @@ export const ToolBarAppBar = forwardRef<HTMLDivElement, ToolBarAppBarProps>(
                 </div>
 
                 {/* Right side - Menu and action buttons */}
-                <div className="flex items-center gap-2 justify-end">
+                <div className="flex items-center gap-2 justify-end min-w-0">
                     {onClearSelected && (
                         <ToolBarButton
                             icon={CheckCheck}
