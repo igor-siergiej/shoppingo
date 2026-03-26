@@ -2,7 +2,7 @@
 
 import { useUser } from '@imapps/web-utils';
 import type { Ingredient } from '@shoppingo/types';
-import { Pencil, Trash2 } from 'lucide-react';
+import { ExternalLink, Pencil, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -28,6 +28,7 @@ import { CoverImageSection } from './CoverImageSection';
 import { ErrorState } from './ErrorState';
 import { IngredientSelectSection } from './IngredientSelectSection';
 import { IngredientsSection } from './IngredientsSection';
+import { InstructionsSection } from './InstructionsSection';
 
 const RecipeDetailPage = () => {
     const { recipeId } = useParams<{ recipeId: string }>();
@@ -39,6 +40,8 @@ const RecipeDetailPage = () => {
     const [isEditingTitle, setIsEditingTitle] = useState(false);
     const [editedTitle, setEditedTitle] = useState('');
     const [isSelectMode, setIsSelectMode] = useState(false);
+    const [isEditingLink, setIsEditingLink] = useState(false);
+    const [editedLink, setEditedLink] = useState('');
 
     const {
         data: recipe,
@@ -56,6 +59,7 @@ const RecipeDetailPage = () => {
     useEffect(() => {
         if (recipe) {
             setEditedTitle(recipe.title);
+            setEditedLink(recipe.link ?? '');
             logger.info('Recipe detail page loaded', {
                 recipeId,
                 title: recipe.title,
@@ -126,6 +130,53 @@ const RecipeDetailPage = () => {
                     color: '#ffffff',
                     border: 'none',
                 },
+            });
+        }
+    };
+
+    const handleSaveLink = async () => {
+        if (!recipe) return;
+        try {
+            await updateRecipe(
+                recipeId,
+                recipe.title,
+                recipe.ingredients,
+                undefined,
+                editedLink.trim() || undefined,
+                recipe.instructions
+            );
+            await refetch();
+            setIsEditingLink(false);
+            toast.success('Recipe link updated', {
+                style: { backgroundColor: '#10b981', color: '#ffffff', border: 'none' },
+            });
+        } catch (error) {
+            const err = error as { message?: string };
+            toast.error(err.message || 'Failed to update link', {
+                style: { backgroundColor: '#ef4444', color: '#ffffff', border: 'none' },
+            });
+        }
+    };
+
+    const handleSaveInstructions = async (instructions: string[]) => {
+        if (!recipe) return;
+        try {
+            await updateRecipe(
+                recipeId,
+                recipe.title,
+                recipe.ingredients,
+                undefined,
+                recipe.link,
+                instructions.length > 0 ? instructions : undefined
+            );
+            await refetch();
+            toast.success('Instructions updated', {
+                style: { backgroundColor: '#10b981', color: '#ffffff', border: 'none' },
+            });
+        } catch (error) {
+            const err = error as { message?: string };
+            toast.error(err.message || 'Failed to update instructions', {
+                style: { backgroundColor: '#ef4444', color: '#ffffff', border: 'none' },
             });
         }
     };
@@ -264,6 +315,18 @@ const RecipeDetailPage = () => {
                     ) : (
                         <div className="flex items-center gap-3 p-4 border-b flex-shrink-0">
                             <h1 className="text-xl font-semibold truncate flex-1">{recipe.title}</h1>
+                            {recipe.link && (
+                                <a
+                                    href={recipe.link}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-border bg-muted text-sm font-medium text-foreground hover:bg-muted/80 transition-colors"
+                                    aria-label="Open original recipe"
+                                >
+                                    <ExternalLink className="h-4 w-4" />
+                                    Recipe
+                                </a>
+                            )}
                             {isOwner && (
                                 <>
                                     <button
@@ -304,10 +367,54 @@ const RecipeDetailPage = () => {
                                         onImageChange={() => void refetch()}
                                     />
 
+                                    {isOwner && (
+                                        <div className="space-y-2">
+                                            <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
+                                                Recipe Link
+                                            </p>
+                                            {isEditingLink ? (
+                                                <div className="flex gap-2">
+                                                    <Input
+                                                        type="url"
+                                                        value={editedLink}
+                                                        onChange={(e) => setEditedLink(e.target.value)}
+                                                        placeholder="https://..."
+                                                        className="flex-1"
+                                                        autoFocus
+                                                    />
+                                                    <Button size="sm" onClick={handleSaveLink}>
+                                                        Save
+                                                    </Button>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="outline"
+                                                        onClick={() => setIsEditingLink(false)}
+                                                    >
+                                                        Cancel
+                                                    </Button>
+                                                </div>
+                                            ) : (
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => setIsEditingLink(true)}
+                                                >
+                                                    {recipe.link ? 'Edit Link' : 'Add Link'}
+                                                </Button>
+                                            )}
+                                        </div>
+                                    )}
+
                                     <IngredientsSection
                                         recipe={recipe}
                                         isOwner={isOwner}
                                         onUpdateIngredients={handleUpdateIngredients}
+                                    />
+
+                                    <InstructionsSection
+                                        instructions={recipe.instructions}
+                                        isOwner={isOwner}
+                                        onSave={handleSaveInstructions}
                                     />
                                 </>
                             )}

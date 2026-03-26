@@ -303,10 +303,12 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd, onRefetch, initialL
                                 <div className="space-y-1">
                                     {steps.map((step, i) => (
                                         <div
-                                            key={i}
+                                            key={`${i}-${step.slice(0, 20)}`}
                                             className="flex items-start gap-2 px-3 py-2 rounded-md bg-muted border border-border text-sm"
                                         >
-                                            <span className="font-semibold text-muted-foreground min-w-[1.25rem]">{i + 1}.</span>
+                                            <span className="font-semibold text-muted-foreground min-w-[1.25rem]">
+                                                {i + 1}.
+                                            </span>
                                             <span className="flex-1 text-foreground">{step}</span>
                                             <button
                                                 type="button"
