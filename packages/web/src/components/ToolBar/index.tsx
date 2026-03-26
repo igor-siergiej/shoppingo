@@ -27,9 +27,14 @@ interface ToolBarProps {
         title: string,
         ingredients: Array<{ name: string; quantity?: number; unit?: string }>,
         imageKey?: string,
-        selectedUsers?: string[]
+        selectedUsers?: string[],
+        link?: string,
+        instructions?: string[]
     ) => Promise<void>;
     onRefetchRecipes?: () => Promise<void>;
+    addRecipeDrawerOpen?: boolean;
+    onAddRecipeDrawerOpenChange?: (open: boolean) => void;
+    addRecipeInitialLink?: string;
     handleGoBack?: () => void;
     handleClearSelected?: () => void;
     handleRemoveAll?: () => void;
@@ -53,6 +58,9 @@ const ToolBar = ({
     onAddIngredient,
     onAddRecipe,
     onRefetchRecipes,
+    addRecipeDrawerOpen,
+    onAddRecipeDrawerOpenChange,
+    addRecipeInitialLink,
     handleGoBack,
     handleClearSelected,
     handleRemoveAll,
@@ -228,11 +236,12 @@ const ToolBar = ({
                                 recipeDrawer={
                                     isRecipesPage && onAddRecipe ? (
                                         <AddRecipeDrawer
-                                            open={isAddRecipeDrawerOpen}
-                                            onOpenChange={setIsAddRecipeDrawerOpen}
+                                            open={addRecipeDrawerOpen ?? isAddRecipeDrawerOpen}
+                                            onOpenChange={onAddRecipeDrawerOpenChange ?? setIsAddRecipeDrawerOpen}
                                             onAdd={onAddRecipe}
                                             onRefetch={onRefetchRecipes}
                                             placeholder={placeholder}
+                                            initialLink={addRecipeInitialLink}
                                         />
                                     ) : undefined
                                 }

@@ -76,7 +76,7 @@ describe('AddRecipeDrawer', () => {
 
         // Should call onAdd with recipe details
         await waitFor(() => {
-            expect(mockOnAdd).toHaveBeenCalledWith('Test Recipe', [], undefined, []);
+            expect(mockOnAdd).toHaveBeenCalledWith('Test Recipe', [], undefined, [], undefined, undefined);
         });
 
         // Should attempt image generation via API
@@ -127,6 +127,82 @@ describe('AddRecipeDrawer', () => {
         // Should refetch after image upload
         await waitFor(() => {
             expect(mockOnRefetch).toHaveBeenCalled();
+        });
+    });
+
+    it('renders recipe link input', () => {
+        render(
+            <AddRecipeDrawer open={true} onOpenChange={mockOnOpenChange} onAdd={mockOnAdd} onRefetch={mockOnRefetch} />
+        );
+        expect(screen.getByPlaceholderText('https://...')).toBeTruthy();
+    });
+
+    it('pre-fills link when initialLink is provided', () => {
+        render(
+            <AddRecipeDrawer
+                open={true}
+                onOpenChange={mockOnOpenChange}
+                onAdd={mockOnAdd}
+                onRefetch={mockOnRefetch}
+                initialLink="https://example.com/recipe"
+            />
+        );
+        const input = screen.getByPlaceholderText('https://...') as HTMLInputElement;
+        expect(input.value).toBe('https://example.com/recipe');
+    });
+
+    it('renders instructions paste textarea', () => {
+        render(
+            <AddRecipeDrawer open={true} onOpenChange={mockOnOpenChange} onAdd={mockOnAdd} onRefetch={mockOnRefetch} />
+        );
+        expect(screen.getByPlaceholderText(/Paste instructions here/)).toBeTruthy();
+    });
+
+    it('splits pasted text into steps on blur', async () => {
+        render(
+            <AddRecipeDrawer open={true} onOpenChange={mockOnOpenChange} onAdd={mockOnAdd} onRefetch={mockOnRefetch} />
+        );
+        const textarea = screen.getByPlaceholderText(/Paste instructions here/) as HTMLTextAreaElement;
+        await userEvent.type(textarea, 'Step one{enter}Step two{enter}Step three');
+        fireEvent.blur(textarea);
+        await waitFor(() => {
+            expect(screen.getByText('Step one')).toBeTruthy();
+            expect(screen.getByText('Step two')).toBeTruthy();
+            expect(screen.getByText('Step three')).toBeTruthy();
+        });
+    });
+
+    it('passes link and instructions to onAdd', async () => {
+        mockOnAdd.mockResolvedValue({ id: 'recipe-1' });
+        render(
+            <AddRecipeDrawer open={true} onOpenChange={mockOnOpenChange} onAdd={mockOnAdd} onRefetch={mockOnRefetch} />
+        );
+        const titleInput = screen.getByPlaceholderText('Enter recipe title...') as HTMLInputElement;
+        await userEvent.type(titleInput, 'My Recipe');
+
+        const linkInput = screen.getByPlaceholderText('https://...') as HTMLInputElement;
+        await userEvent.type(linkInput, 'https://example.com');
+
+        const textarea = screen.getByPlaceholderText(/Paste instructions here/) as HTMLTextAreaElement;
+        await userEvent.type(textarea, 'Step one{enter}Step two');
+        fireEvent.blur(textarea);
+
+        await waitFor(() => {
+            expect(screen.getByText('Step one')).toBeTruthy();
+        });
+
+        const createButton = screen.getByRole('button', { name: /Create Recipe/ });
+        await userEvent.click(createButton);
+
+        await waitFor(() => {
+            expect(mockOnAdd).toHaveBeenCalledWith(
+                'My Recipe',
+                [],
+                undefined,
+                [],
+                'https://example.com',
+                ['Step one', 'Step two']
+            );
         });
     });
 });
