@@ -1,3 +1,11 @@
+# [1.27.0](https://github.com/igor-siergiej/shoppingo/compare/v1.26.0...v1.27.0) (2026-03-26)
+
+
+### Features
+
+* fuzzy recipe search ([#53](https://github.com/igor-siergiej/shoppingo/issues/53)) ([480804f](https://github.com/igor-siergiej/shoppingo/commit/480804fc5985aed4e523c618120d7f40a487828e))
+* ingredient select theming and images ([#55](https://github.com/igor-siergiej/shoppingo/issues/55)) ([787d39b](https://github.com/igor-siergiej/shoppingo/commit/787d39bcefd9db4971a18e3b2ffcfdda3bb23815))
+
 # [1.26.0](https://github.com/igor-siergiej/shoppingo/compare/v1.25.1...v1.26.0) (2026-03-26)
 
 
