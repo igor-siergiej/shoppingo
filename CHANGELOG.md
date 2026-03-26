@@ -1,3 +1,10 @@
+# [1.26.0](https://github.com/igor-siergiej/shoppingo/compare/v1.25.1...v1.26.0) (2026-03-26)
+
+
+### Features
+
+* add recipe link and cooking instructions ([#54](https://github.com/igor-siergiej/shoppingo/issues/54)) ([147e31a](https://github.com/igor-siergiej/shoppingo/commit/147e31a7bf93de552a3d36e3658939074033e63b))
+
 ## [1.25.1](https://github.com/igor-siergiej/shoppingo/compare/v1.25.0...v1.25.1) (2026-03-26)
 
 
