@@ -1,3 +1,11 @@
+# [1.25.0](https://github.com/igor-siergiej/shoppingo/compare/v1.24.4...v1.25.0) (2026-03-26)
+
+
+### Features
+
+* improve add recipe button with composite BookOpen+Plus icon ([#51](https://github.com/igor-siergiej/shoppingo/issues/51)) ([a04a85a](https://github.com/igor-siergiej/shoppingo/commit/a04a85aea892dc4dd50d1ea55175ec0bc55f158c))
+* PWA update notification with user-controlled updates ([#50](https://github.com/igor-siergiej/shoppingo/issues/50)) ([1f3f11e](https://github.com/igor-siergiej/shoppingo/commit/1f3f11e32b79657c884949e2a2f1906a5601c604))
+
 ## [1.24.4](https://github.com/igor-siergiej/shoppingo/compare/v1.24.3...v1.24.4) (2026-03-26)
 
 
