@@ -1,3 +1,10 @@
+## [1.25.1](https://github.com/igor-siergiej/shoppingo/compare/v1.25.0...v1.25.1) (2026-03-26)
+
+
+### Bug Fixes
+
+* **ci:** add HTTP status code to deploy webhook curl output ([#52](https://github.com/igor-siergiej/shoppingo/issues/52)) ([14165b4](https://github.com/igor-siergiej/shoppingo/commit/14165b44fd6220da65544a6413b3980522c68aa6))
+
 # [1.25.0](https://github.com/igor-siergiej/shoppingo/compare/v1.24.4...v1.25.0) (2026-03-26)
 
 
