@@ -2,14 +2,16 @@
 
 import { useUser } from '@imapps/web-utils';
 import type { Item, Recipe } from '@shoppingo/types';
-import { ArrowLeft, BookOpen, Plus } from 'lucide-react';
+import { ArrowLeft, BookOpen, Plus, Search, X } from 'lucide-react';
 import { useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { toast } from 'sonner';
 import { addItemsBulk, getRecipesQuery } from '../../../api';
 import { Button } from '../../../components/ui/button';
 import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from '../../../components/ui/drawer';
+import { Input } from '../../../components/ui/input';
 import { RippleButton } from '../../../components/ui/ripple';
+import { useRecipeSearch } from '../../../hooks/useRecipeSearch';
 
 interface AddFromRecipeDrawerProps {
     open: boolean;
@@ -25,10 +27,12 @@ export const AddFromRecipeDrawer = ({ open, onOpenChange, listTitle, listItems }
     const [chosenRecipe, setChosenRecipe] = useState<Recipe | null>(null);
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [isLoading, setIsLoading] = useState(false);
+    const [recipeSearch, setRecipeSearch] = useState('');
 
-    const { data: recipes = [] } = useQuery(
+    const { data: allRecipes = [] } = useQuery(
         user?.id ? getRecipesQuery(user.id) : { queryKey: [], queryFn: async () => [] }
     );
+    const recipes = useRecipeSearch(allRecipes, recipeSearch);
 
     const existingItemNames = new Set(listItems.map((item) => item.name.toLowerCase()));
 
@@ -95,6 +99,7 @@ export const AddFromRecipeDrawer = ({ open, onOpenChange, listTitle, listItems }
         setStep('recipes');
         setChosenRecipe(null);
         setSelectedIds(new Set());
+        setRecipeSearch('');
         onOpenChange(false);
     };
 
@@ -133,6 +138,25 @@ export const AddFromRecipeDrawer = ({ open, onOpenChange, listTitle, listItems }
                     <div className="p-4 pb-0 max-h-[60vh] overflow-y-auto">
                         {step === 'recipes' ? (
                             <div className="space-y-2">
+                                <div className="relative mb-3">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                                    <Input
+                                        value={recipeSearch}
+                                        onChange={(e) => setRecipeSearch(e.target.value)}
+                                        placeholder="Search recipes..."
+                                        className="pl-9 pr-9"
+                                    />
+                                    {recipeSearch && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setRecipeSearch('')}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                            aria-label="Clear search"
+                                        >
+                                            <X className="h-4 w-4" />
+                                        </button>
+                                    )}
+                                </div>
                                 {recipes.length === 0 ? (
                                     <p className="text-muted-foreground text-sm py-3">No recipes found</p>
                                 ) : (
