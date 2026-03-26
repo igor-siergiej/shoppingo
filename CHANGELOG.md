@@ -1,3 +1,10 @@
+## [1.24.4](https://github.com/igor-siergiej/shoppingo/compare/v1.24.3...v1.24.4) (2026-03-26)
+
+
+### Bug Fixes
+
+* center add button when navigating to items page ([#49](https://github.com/igor-siergiej/shoppingo/issues/49)) ([ebca6c5](https://github.com/igor-siergiej/shoppingo/commit/ebca6c5391276f0294b333f0844361200701c6c5))
+
 ## [1.24.3](https://github.com/igor-siergiej/shoppingo/compare/v1.24.2...v1.24.3) (2026-03-24)
 
 
