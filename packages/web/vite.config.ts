@@ -50,6 +50,14 @@ export default defineConfig(({ mode }) => {
                     scope: '/',
                     orientation: 'portrait-primary',
                     categories: ['shopping', 'productivity', 'lifestyle'],
+                    share_target: {
+                        action: '/share',
+                        method: 'GET',
+                        params: {
+                            url: 'url',
+                            title: 'title',
+                        },
+                    },
                     icons: [
                         {
                             src: 'logo-192.png',

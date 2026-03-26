@@ -1,5 +1,5 @@
 import { ChefHat, Image as ImageIcon, Plus, X } from 'lucide-react';
-import { useCallback, useId, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { setCoverImageKey, uploadRecipeImage } from '../../../api';
 import { SearchResults } from '../../../components/SearchResults';
@@ -18,6 +18,7 @@ import {
 import { Input } from '../../ui/input';
 import { Label } from '../../ui/label';
 import { RippleButton } from '../../ui/ripple';
+import { Textarea } from '../../ui/textarea';
 
 export interface Ingredient {
     id: string;
@@ -35,13 +36,22 @@ export interface AddRecipeDrawerProps {
         title: string,
         ingredients: Ingredient[],
         imageKey?: string,
-        selectedUsers?: string[]
+        selectedUsers?: string[],
+        link?: string,
+        instructions?: string[]
     ) => Promise<Recipe | undefined>;
     onRefetch?: () => Promise<void>;
     placeholder?: string;
+    initialLink?: string;
 }
 
-export const AddRecipeDrawer = ({ open, onOpenChange, onAdd, onRefetch }: AddRecipeDrawerProps) => {
+const splitIntoSteps = (text: string): string[] =>
+    text
+        .split('\n')
+        .map((line) => line.replace(/^\s*\d+[.)]\s*/, '').trim())
+        .filter(Boolean);
+
+export const AddRecipeDrawer = ({ open, onOpenChange, onAdd, onRefetch, initialLink }: AddRecipeDrawerProps) => {
     const recipeNameId = useId();
     const userSearchId = useId();
     const fileInputId = useId();
@@ -56,6 +66,14 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd, onRefetch }: AddRec
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [link, setLink] = useState(initialLink ?? '');
+    const [instructionsPasteText, setInstructionsPasteText] = useState('');
+    const [steps, setSteps] = useState<string[]>([]);
+    const [showPasteArea, setShowPasteArea] = useState(true);
+
+    useEffect(() => {
+        setLink(initialLink ?? '');
+    }, [initialLink]);
 
     const handleAddUser = useCallback(
         (username: string) => {
@@ -94,32 +112,32 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd, onRefetch }: AddRec
         setError('');
 
         try {
-            // Create recipe without imageKey initially (need recipeId for upload)
-            const recipe = await onAdd(title, [], undefined, selectedUsers);
+            const recipe = await onAdd(
+                title,
+                [],
+                undefined,
+                selectedUsers,
+                link.trim() || undefined,
+                steps.length > 0 ? steps : undefined
+            );
             if (!recipe) {
                 throw new Error('Failed to create recipe');
             }
 
-            // Handle image upload or auto-generation AFTER recipe creation
             if (selectedFile) {
-                // User uploaded a file
                 await uploadRecipeImage(recipe.id, selectedFile);
                 toast.success('Recipe image uploaded', { style: { backgroundColor: '#10b981', color: '#ffffff' } });
-                // Refetch to show the new image
                 if (onRefetch) await onRefetch();
             } else {
-                // Auto-generate image if no file was uploaded
                 try {
                     const response = await fetch(`/api/image/${encodeURIComponent(title)}`, {
                         method: 'GET',
                     });
                     if (response.ok) {
-                        // Set the imageKey to the normalized title
                         await setCoverImageKey(recipe.id, title.trim().toLowerCase());
                         toast.success('Recipe image generated', {
                             style: { backgroundColor: '#10b981', color: '#ffffff' },
                         });
-                        // Refetch to show the new image
                         if (onRefetch) await onRefetch();
                     }
                 } catch (_err) {
@@ -146,6 +164,10 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd, onRefetch }: AddRec
         setError('');
         setQuery('');
         clearResults();
+        setLink('');
+        setInstructionsPasteText('');
+        setSteps([]);
+        setShowPasteArea(true);
         if (fileInputRef.current) fileInputRef.current.value = '';
         onOpenChange(false);
     };
@@ -207,7 +229,6 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd, onRefetch }: AddRec
                                                 e.stopPropagation();
                                                 setImageUrl(null);
                                                 setSelectedFile(null);
-                                                setWantsAiImage(false);
                                                 if (fileInputRef.current) fileInputRef.current.value = '';
                                             }}
                                             className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1.5 hover:bg-black/80 transition-colors"
@@ -233,6 +254,83 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd, onRefetch }: AddRec
                                 className="hidden"
                                 id={fileInputId}
                             />
+                        </div>
+
+                        {/* Recipe Link */}
+                        <div className="space-y-2">
+                            <Label>Recipe Link</Label>
+                            <Input
+                                type="url"
+                                placeholder="https://..."
+                                value={link}
+                                onChange={(e) => setLink(e.target.value)}
+                                disabled={isLoading}
+                                className="h-10 border border-foreground/30"
+                            />
+                        </div>
+
+                        {/* Instructions */}
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                                <Label>Instructions</Label>
+                                {steps.length > 0 && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPasteArea(true)}
+                                        className="text-xs text-muted-foreground underline"
+                                    >
+                                        edit text ↩
+                                    </button>
+                                )}
+                            </div>
+
+                            {showPasteArea || steps.length === 0 ? (
+                                <Textarea
+                                    placeholder="Paste instructions here — each line becomes a step automatically..."
+                                    value={instructionsPasteText}
+                                    onChange={(e) => setInstructionsPasteText(e.target.value)}
+                                    onBlur={() => {
+                                        const parsed = splitIntoSteps(instructionsPasteText);
+                                        if (parsed.length > 0) {
+                                            setSteps(parsed);
+                                            setShowPasteArea(false);
+                                        }
+                                    }}
+                                    disabled={isLoading}
+                                    className="min-h-[80px] resize-none border border-foreground/30"
+                                />
+                            ) : (
+                                <div className="space-y-1">
+                                    {steps.map((step, i) => (
+                                        <div
+                                            key={`${i}-${step.slice(0, 20)}`}
+                                            className="flex items-start gap-2 px-3 py-2 rounded-md bg-muted border border-border text-sm"
+                                        >
+                                            <span className="font-semibold text-muted-foreground min-w-[1.25rem]">
+                                                {i + 1}.
+                                            </span>
+                                            <span className="flex-1 text-foreground">{step}</span>
+                                            <button
+                                                type="button"
+                                                onClick={() => setSteps(steps.filter((_, idx) => idx !== i))}
+                                                disabled={isLoading}
+                                                className="text-destructive hover:opacity-70"
+                                                aria-label={`Remove step ${i + 1}`}
+                                            >
+                                                ×
+                                            </button>
+                                        </div>
+                                    ))}
+                                    <button
+                                        type="button"
+                                        onClick={() => setSteps([...steps, ''])}
+                                        disabled={isLoading}
+                                        className="w-full text-sm text-muted-foreground border border-dashed border-border rounded-md py-1.5 hover:bg-muted/50 transition-colors"
+                                    >
+                                        + Add step
+                                    </button>
+                                </div>
+                            )}
                         </div>
 
                         <div className="space-y-3 border-t pt-4">

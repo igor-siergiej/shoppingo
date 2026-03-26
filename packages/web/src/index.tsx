@@ -39,6 +39,7 @@ const LoginPage = lazyLoadPage(() => import('./pages/LoginPage'), 'login page');
 const RegisterPage = lazyLoadPage(() => import('./pages/RegisterPage'), 'register page');
 const RecipesPage = lazyLoadPage(() => import('./pages/RecipesPage'), 'recipes page');
 const RecipeDetailPage = lazyLoadPage(() => import('./pages/RecipeDetailPage'), 'recipe detail page');
+const ShareTargetPage = lazyLoadPage(() => import('./pages/ShareTargetPage'), 'share target page');
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -112,6 +113,14 @@ const router = createBrowserRouter([
                 element: (
                     <Suspense fallback={<LoadingPage />}>
                         <RecipeDetailPage />
+                    </Suspense>
+                ),
+            },
+            {
+                path: 'share',
+                element: (
+                    <Suspense fallback={<LoadingPage />}>
+                        <ShareTargetPage />
                     </Suspense>
                 ),
             },
