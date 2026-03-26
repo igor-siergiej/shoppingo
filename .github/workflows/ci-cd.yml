@@ -119,7 +119,7 @@ jobs:
     steps:
       - name: Trigger Dokploy deployment
         run: |
-          curl -X POST \
+          curl -X POST --fail-with-body \
             -H "Content-Type: application/json" \
             -H "CF-Access-Client-Id: ${{ secrets.CF_ACCESS_CLIENT_ID }}" \
             -H "CF-Access-Client-Secret: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}" \
