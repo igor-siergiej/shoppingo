@@ -1,5 +1,0 @@
-[     141ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:3008/refresh:0
-[     143ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:3008/logout:0
-[     143ms] [ERROR] Logout request failed: TypeError: Failed to fetch
-    at http://localhost:4000/node_modules/.vite/deps/@imapps_web-utils.js?v=f9e9cd74:298:17
-    at initializeAuth (http://localhost:4000/src/components/AppInitializer/index.tsx:24:11) @ http://localhost:4000/node_modules/.vite/deps/@imapps_web-utils.js?v=f9e9cd74:302

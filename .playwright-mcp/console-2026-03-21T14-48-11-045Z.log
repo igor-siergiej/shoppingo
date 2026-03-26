@@ -1,4 +1,0 @@
-[     222ms] [ERROR] Failed to load resource: the server responded with a status of 403 (Forbidden) @ http://localhost:3008/refresh:0
-[    9243ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:4000/api/images/bread:0
-[    9245ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:4000/api/images/recipe-uploads/697650266a5d4444166310ad/ba82281a-175a-47d7-ba26-d5a38d1ca33f:0
-[   18761ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:4000/api/images/recipe-uploads/697650266a5d4444166310ad/ba82281a-175a-47d7-ba26-d5a38d1ca33f:0
