@@ -2,7 +2,7 @@
 
 import { useUser } from '@imapps/web-utils';
 import type { Item, Recipe } from '@shoppingo/types';
-import { ArrowLeft, BookOpen } from 'lucide-react';
+import { ArrowLeft, BookOpen, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { toast } from 'sonner';
@@ -106,7 +106,10 @@ export const AddFromRecipeDrawer = ({ open, onOpenChange, listTitle, listItems }
                 className="h-12 w-12 rounded-full"
                 onClick={() => onOpenChange(true)}
             >
-                <BookOpen className="size-5" />
+                <div className="relative w-5 h-5 flex items-center justify-center">
+                    <BookOpen className="size-5" />
+                    <Plus className="size-3 absolute bottom-0 right-0 bg-white rounded-full text-primary" />
+                </div>
             </RippleButton>
 
             <DrawerContent>
