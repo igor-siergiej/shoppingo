@@ -53,6 +53,8 @@ export interface Recipe {
     users: User[];
     ownerId?: string;
     dateAdded: Date;
+    link?: string;
+    instructions?: string[];
 }
 
 export interface RecipeResponse {
@@ -63,4 +65,6 @@ export interface RecipeResponse {
     users: Array<{ username: string }>;
     ownerId?: string;
     dateAdded: Date;
+    link?: string;
+    instructions?: string[];
 }
