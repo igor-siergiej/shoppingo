@@ -12,6 +12,18 @@ vi.mock('../../config/auth', () => ({
     getAuthConfig: vi.fn().mockReturnValue({}),
 }));
 
+vi.mock('../../hooks/usePWA', () => ({
+    usePWA: vi.fn(() => ({
+        canInstall: false,
+        isInstalled: false,
+        hasUpdate: false,
+        isUpdating: false,
+        installApp: vi.fn(),
+        updateApp: vi.fn(),
+        dismissUpdate: vi.fn(),
+    })),
+}));
+
 import { tryRefreshToken, useAuth } from '@imapps/web-utils';
 
 const mockLogin = vi.fn();
