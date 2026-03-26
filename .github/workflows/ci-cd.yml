@@ -117,12 +117,21 @@ jobs:
     needs: build-publish
     if: success()
     steps:
-      - name: Trigger Dokploy deployment
+      - name: Trigger web deployment
         run: |
           curl -X POST --fail-with-body \
             -H "Content-Type: application/json" \
             -H "CF-Access-Client-Id: ${{ secrets.CF_ACCESS_CLIENT_ID }}" \
             -H "CF-Access-Client-Secret: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}" \
             -w "\nHTTP Status: %{http_code}\n" \
-            "${{ secrets.DOKPLOY_WEBHOOK_URL }}" \
+            "${{ secrets.DEPLOY_WEB_URL }}" \
+            -d '{"event":"deployment","timestamp":"'$(date -u +'%Y-%m-%dT%H:%M:%SZ')'","ref":"${{ github.ref }}"}'
+      - name: Trigger API deployment
+        run: |
+          curl -X POST --fail-with-body \
+            -H "Content-Type: application/json" \
+            -H "CF-Access-Client-Id: ${{ secrets.CF_ACCESS_CLIENT_ID }}" \
+            -H "CF-Access-Client-Secret: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}" \
+            -w "\nHTTP Status: %{http_code}\n" \
+            "${{ secrets.DEPLOY_API_URL }}" \
             -d '{"event":"deployment","timestamp":"'$(date -u +'%Y-%m-%dT%H:%M:%SZ')'","ref":"${{ github.ref }}"}'
