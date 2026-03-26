@@ -45,6 +45,9 @@ export const QuantityUnitField = ({
                         <SelectItem value="kg">kg</SelectItem>
                         <SelectItem value="ml">ml</SelectItem>
                         <SelectItem value="L">L</SelectItem>
+                        <SelectItem value="tbsp">tbsp</SelectItem>
+                        <SelectItem value="tsp">tsp</SelectItem>
+                        <SelectItem value="bag">bag</SelectItem>
                     </SelectContent>
                 </Select>
             </div>
