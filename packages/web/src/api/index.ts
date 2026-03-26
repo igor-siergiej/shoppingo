@@ -253,7 +253,9 @@ export const addRecipe = async (
     title: string,
     user: User,
     selectedUsers?: Array<string>,
-    ingredients?: Array<{ name: string; quantity?: number; unit?: string }>
+    ingredients?: Array<{ name: string; quantity?: number; unit?: string }>,
+    link?: string,
+    instructions?: string[]
 ): Promise<Recipe> => {
     const dateAdded = generateTimestamp(new Date());
     const requestBody = {
@@ -262,6 +264,8 @@ export const addRecipe = async (
         user,
         selectedUsers: selectedUsers || [],
         ...(ingredients !== undefined && { ingredients }),
+        ...(link !== undefined && { link }),
+        ...(instructions !== undefined && { instructions }),
     };
 
     const result = await makeRequest({
@@ -278,7 +282,9 @@ export const updateRecipe = async (
     recipeId: string,
     title: string,
     ingredients: Array<{ name: string; quantity?: number; unit?: string }>,
-    coverImageKey?: string
+    coverImageKey?: string,
+    link?: string,
+    instructions?: string[]
 ): Promise<Recipe> => {
     return await makeRequest({
         pathname: `/api/recipes/${encodeURIComponent(recipeId)}`,
@@ -288,6 +294,8 @@ export const updateRecipe = async (
             title,
             ingredients,
             ...(coverImageKey !== undefined && { coverImageKey }),
+            ...(link !== undefined && { link }),
+            ...(instructions !== undefined && { instructions }),
         }),
     });
 };
