@@ -4,6 +4,7 @@ import type React from 'react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAuthConfig } from '../../config/auth';
+import { usePWA } from '../../hooks/usePWA';
 import LoadingPage from '../LoadingPage';
 
 interface AppInitializerProps {
@@ -15,6 +16,7 @@ const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
     const [timeoutReached, setTimeoutReached] = useState(false);
     const { login, logout } = useAuth();
     const navigate = useNavigate();
+    const { isUpdating } = usePWA();
 
     useEffect(() => {
         const timer = setTimeout(() => setTimeoutReached(true), 10000);
@@ -57,7 +59,9 @@ const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
 
     return (
         <AnimatePresence mode="wait">
-            {!isReady ? (
+            {isUpdating ? (
+                <LoadingPage key="updating" />
+            ) : !isReady ? (
                 <LoadingPage key="loading" timeoutReached={timeoutReached} />
             ) : (
                 <motion.div
