@@ -122,9 +122,11 @@ export const getRecipe = async (ctx: Context): Promise<void> => {
 };
 
 export const createRecipe = async (ctx: Context): Promise<void> => {
-    const { title, ingredients } = ctx.request.body as {
+    const { title, ingredients, link, instructions } = ctx.request.body as {
         title: string;
         ingredients: Ingredient[];
+        link?: string;
+        instructions?: string[];
     };
     const logger = getLogger();
     const authenticatedUser = getAuthenticatedUser(ctx);
@@ -155,7 +157,9 @@ export const createRecipe = async (ctx: Context): Promise<void> => {
             title,
             ingredients,
             authenticatedUser.id,
-            authenticatedUser
+            authenticatedUser,
+            link,
+            instructions
         );
 
         logger.info('API: Recipe created', {
@@ -187,9 +191,11 @@ export const createRecipe = async (ctx: Context): Promise<void> => {
 
 export const updateRecipe = async (ctx: Context): Promise<void> => {
     const { recipeId } = ctx.params as { recipeId: string };
-    const { title, ingredients } = ctx.request.body as {
+    const { title, ingredients, link, instructions } = ctx.request.body as {
         title: string;
         ingredients: Ingredient[];
+        link?: string;
+        instructions?: string[];
     };
     const logger = getLogger();
     const authenticatedUser = getAuthenticatedUser(ctx);
@@ -217,7 +223,7 @@ export const updateRecipe = async (ctx: Context): Promise<void> => {
             return;
         }
 
-        const recipe = await getRecipeService().updateRecipe(recipeId, title, ingredients, authenticatedUser.id);
+        const recipe = await getRecipeService().updateRecipe(recipeId, title, ingredients, authenticatedUser.id, link, instructions);
 
         logger.info('API: Recipe updated', {
             userId: authenticatedUser.id,
