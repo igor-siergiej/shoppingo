@@ -1,4 +1,4 @@
-import { Download, LogOut, Moon, Sun, Users } from 'lucide-react';
+import { Download, LogOut, Moon, RefreshCw, Sun, Users } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Button } from '../../../components/ui/button';
 import { Switch } from '../../../components/ui/switch';
@@ -15,13 +15,18 @@ export interface HamburgerMenuProps {
 
 export const HamburgerMenu = ({ currentList, userId, onManageUsers, onClose, onLogout }: HamburgerMenuProps) => {
     const { theme, toggleTheme } = useTheme();
-    const { canInstall, isInstalled, installApp } = usePWA();
+    const { canInstall, isInstalled, hasUpdate, installApp, updateApp } = usePWA();
 
     const handleInstall = async () => {
         const success = await installApp();
         if (success) {
             onClose();
         }
+    };
+
+    const handleUpdate = async () => {
+        onClose();
+        await updateApp();
     };
 
     return (
@@ -69,6 +74,24 @@ export const HamburgerMenu = ({ currentList, userId, onManageUsers, onClose, onL
                     <Switch checked={theme === 'dark'} onCheckedChange={toggleTheme} />
                 </button>
             </motion.div>
+
+            {/* Update available action */}
+            {hasUpdate && (
+                <motion.div
+                    initial={{ opacity: 0, y: -8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1, duration: 0.2 }}
+                >
+                    <Button
+                        variant="outline"
+                        onClick={handleUpdate}
+                        className="w-full justify-center h-9 text-sm font-medium transition-all duration-200 hover:bg-slate-50 active:scale-95"
+                    >
+                        <RefreshCw className="h-4 w-4 mr-2" />
+                        Update available
+                    </Button>
+                </motion.div>
+            )}
 
             {/* Install app action */}
             {canInstall && !isInstalled && (

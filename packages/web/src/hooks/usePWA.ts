@@ -1,52 +1,62 @@
 import { useRegisterSW } from 'virtual:pwa-register/react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 
 import { usePWAContext } from '../contexts/PWAContext';
 import { checkForVersionUpdate } from '../utils/version';
 
 export const usePWA = () => {
     const { canInstall, isInstalled, installApp } = usePWAContext();
+    const [hasUpdate, setHasUpdate] = useState(false);
+    const [isUpdating, setIsUpdating] = useState(false);
+    const toastIdRef = useRef<string | number | null>(null);
 
-    // Use Vite PWA plugin's service worker registration with auto-update
     const { updateServiceWorker } = useRegisterSW({
-        onRegistered() {
-            // Service worker registered successfully
-        },
-        onRegisterError() {
-            // Service worker registration error
-        },
+        onRegistered() {},
+        onRegisterError() {},
         onNeedRefresh() {
-            updateServiceWorker(true);
+            setHasUpdate(true);
         },
-        onOfflineReady() {
-            // App ready to work offline
-        },
+        onOfflineReady() {},
     });
 
-    // Check for version updates from localStorage
-    const [, setHasVersionUpdate] = useState(false);
-
-    useEffect(() => {
-        // Check for app version updates
-        if (checkForVersionUpdate()) {
-            setHasVersionUpdate(true);
+    const updateApp = useCallback(async () => {
+        if (toastIdRef.current !== null) {
+            toast.dismiss(toastIdRef.current);
+            toastIdRef.current = null;
         }
-    }, []);
-
-    // Auto-update is now handled by the service worker
-    // Keep these methods for backward compatibility but they're no longer needed
-    const updateApp = async () => {
-        return true;
-    };
+        setIsUpdating(true);
+        updateServiceWorker(true);
+    }, [updateServiceWorker]);
 
     const dismissUpdate = () => {
-        // Auto-update is enabled, no action needed
+        // hasUpdate stays true so the hamburger button remains visible
     };
+
+    useEffect(() => {
+        if (!hasUpdate) return;
+
+        toastIdRef.current = toast('A new version is available', {
+            duration: Number.POSITIVE_INFINITY,
+            action: {
+                label: 'Update',
+                onClick: updateApp,
+            },
+            onDismiss: dismissUpdate,
+        });
+    }, [hasUpdate, updateApp]);
+
+    useEffect(() => {
+        if (checkForVersionUpdate()) {
+            // version utility handles cache clearing internally
+        }
+    }, []);
 
     return {
         canInstall,
         isInstalled,
-        hasUpdate: false, // Always false since auto-update is enabled
+        hasUpdate,
+        isUpdating,
         installApp,
         updateApp,
         dismissUpdate,
