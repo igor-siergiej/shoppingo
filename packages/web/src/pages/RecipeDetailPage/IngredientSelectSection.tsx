@@ -4,6 +4,7 @@ import type { ListResponse, Recipe } from '@shoppingo/types';
 import { ListType } from '@shoppingo/types';
 import { useState } from 'react';
 import { Button } from '../../components/ui/button';
+import { IngredientSelectRow } from './IngredientSelectRow';
 
 interface IngredientSelectSectionProps {
     recipe: Recipe;
@@ -49,28 +50,14 @@ export const IngredientSelectSection = ({ recipe, lists, onCancel, onConfirm }: 
                     {recipe.ingredients.length === 0 ? (
                         <p className="text-muted-foreground text-sm py-3">No ingredients to add</p>
                     ) : (
-                        recipe.ingredients.map((ingredient) => {
-                            const isSelected = selectedIds.has(ingredient.id);
-                            return (
-                                <button
-                                    key={ingredient.id}
-                                    onClick={() => handleToggleIngredient(ingredient.id)}
-                                    className={`p-3 rounded-lg border transition-all text-left ${
-                                        isSelected
-                                            ? 'bg-blue-100 border-blue-300 text-foreground'
-                                            : 'bg-muted/30 border-muted-foreground/20 text-muted-foreground line-through'
-                                    }`}
-                                    type="button"
-                                >
-                                    <div className="font-medium">{ingredient.name}</div>
-                                    {(ingredient.quantity !== undefined || ingredient.unit) && (
-                                        <div className="text-sm mt-1">
-                                            {ingredient.quantity} {ingredient.unit}
-                                        </div>
-                                    )}
-                                </button>
-                            );
-                        })
+                        recipe.ingredients.map((ingredient) => (
+                            <IngredientSelectRow
+                                key={ingredient.id}
+                                ingredient={ingredient}
+                                isSelected={selectedIds.has(ingredient.id)}
+                                onToggle={handleToggleIngredient}
+                            />
+                        ))
                     )}
                 </div>
             </div>
@@ -86,7 +73,7 @@ export const IngredientSelectSection = ({ recipe, lists, onCancel, onConfirm }: 
                                 onClick={() => setChosenList(list.title)}
                                 className={`px-4 py-2 rounded-full border font-medium transition-all ${
                                     chosenList === list.title
-                                        ? 'bg-blue-500 text-white border-blue-600'
+                                        ? 'bg-primary text-primary-foreground border-primary'
                                         : 'bg-muted border-muted-foreground/30 text-foreground hover:bg-muted/80'
                                 }`}
                                 type="button"
