@@ -53,13 +53,13 @@ const RecipesPage = () => {
         }
     }, [searchParams, setSearchParams]);
 
+    const recipes = data || [];
+    const searchResults = useRecipeSearch(recipes, searchQuery);
+
     if (!user?.id) {
         logger.warn('Recipes page accessed without user');
         return <div>User not available</div>;
     }
-
-    const recipes = data || [];
-    const searchResults = useRecipeSearch(recipes, searchQuery);
 
     const yourRecipes = recipes.filter((recipe) => recipe.ownerId === user.id);
     const sharedRecipes = recipes.filter((recipe) => recipe.ownerId !== user.id);
@@ -120,9 +120,7 @@ const RecipesPage = () => {
             {searchBar}
             {searchQuery.trim() ? (
                 <div>
-                    <h2 className="text-lg font-semibold mb-3 text-foreground">
-                        Results ({searchResults.length})
-                    </h2>
+                    <h2 className="text-lg font-semibold mb-3 text-foreground">Results ({searchResults.length})</h2>
                     {searchResults.length > 0 ? (
                         <RecipesList recipes={searchResults} onRecipeClick={handleRecipeClick} />
                     ) : (

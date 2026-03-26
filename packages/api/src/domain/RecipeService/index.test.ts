@@ -28,14 +28,16 @@ class MockRepository {
     }
 
     async addUser(id: string, user: User): Promise<Recipe> {
-        const r = this.store.get(id)!;
+        const r = this.store.get(id);
+        if (!r) throw new Error(`Recipe ${id} not found`);
         r.users.push(user);
         this.store.set(id, r);
         return r;
     }
 
     async removeUser(id: string, userId: string): Promise<Recipe> {
-        const r = this.store.get(id)!;
+        const r = this.store.get(id);
+        if (!r) throw new Error(`Recipe ${id} not found`);
         r.users = r.users.filter((u) => u.id !== userId);
         this.store.set(id, r);
         return r;

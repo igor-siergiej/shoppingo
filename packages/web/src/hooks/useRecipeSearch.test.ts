@@ -11,9 +11,30 @@ const makeRecipe = (overrides: Partial<Recipe> & { id: string; title: string }):
 });
 
 const recipes: Recipe[] = [
-    makeRecipe({ id: '1', title: 'Chicken Tikka Masala', ingredients: [{ id: 'i1', name: 'chicken' }, { id: 'i2', name: 'tomato' }] }),
-    makeRecipe({ id: '2', title: 'Pasta Carbonara', ingredients: [{ id: 'i3', name: 'spaghetti' }, { id: 'i4', name: 'egg' }] }),
-    makeRecipe({ id: '3', title: 'Beef Stew', ingredients: [{ id: 'i5', name: 'beef' }, { id: 'i6', name: 'carrot' }] }),
+    makeRecipe({
+        id: '1',
+        title: 'Chicken Tikka Masala',
+        ingredients: [
+            { id: 'i1', name: 'chicken' },
+            { id: 'i2', name: 'tomato' },
+        ],
+    }),
+    makeRecipe({
+        id: '2',
+        title: 'Pasta Carbonara',
+        ingredients: [
+            { id: 'i3', name: 'spaghetti' },
+            { id: 'i4', name: 'egg' },
+        ],
+    }),
+    makeRecipe({
+        id: '3',
+        title: 'Beef Stew',
+        ingredients: [
+            { id: 'i5', name: 'beef' },
+            { id: 'i6', name: 'carrot' },
+        ],
+    }),
 ];
 
 describe('useRecipeSearch', () => {
