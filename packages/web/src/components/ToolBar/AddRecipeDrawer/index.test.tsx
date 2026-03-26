@@ -195,14 +195,10 @@ describe('AddRecipeDrawer', () => {
         await userEvent.click(createButton);
 
         await waitFor(() => {
-            expect(mockOnAdd).toHaveBeenCalledWith(
-                'My Recipe',
-                [],
-                undefined,
-                [],
-                'https://example.com',
-                ['Step one', 'Step two']
-            );
+            expect(mockOnAdd).toHaveBeenCalledWith('My Recipe', [], undefined, [], 'https://example.com', [
+                'Step one',
+                'Step two',
+            ]);
         });
     });
 });

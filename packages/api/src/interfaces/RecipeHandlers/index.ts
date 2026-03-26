@@ -223,7 +223,14 @@ export const updateRecipe = async (ctx: Context): Promise<void> => {
             return;
         }
 
-        const recipe = await getRecipeService().updateRecipe(recipeId, title, ingredients, authenticatedUser.id, link, instructions);
+        const recipe = await getRecipeService().updateRecipe(
+            recipeId,
+            title,
+            ingredients,
+            authenticatedUser.id,
+            link,
+            instructions
+        );
 
         logger.info('API: Recipe updated', {
             userId: authenticatedUser.id,

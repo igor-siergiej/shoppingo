@@ -15,7 +15,14 @@ export class RecipeService {
         this.authorizationService = authorizationService ?? new AuthorizationService();
     }
 
-    async createRecipe(title: string, ingredients: Ingredient[], ownerId: string, owner: User, link?: string, instructions?: string[]): Promise<Recipe> {
+    async createRecipe(
+        title: string,
+        ingredients: Ingredient[],
+        ownerId: string,
+        owner: User,
+        link?: string,
+        instructions?: string[]
+    ): Promise<Recipe> {
         try {
             const recipe: Recipe = {
                 id: this.idGenerator.generate(),
@@ -62,7 +69,14 @@ export class RecipeService {
         return this.recipeRepository.findByUserId(userId);
     }
 
-    async updateRecipe(recipeId: string, title: string, ingredients: Ingredient[], ownerId: string, link?: string, instructions?: string[]): Promise<Recipe> {
+    async updateRecipe(
+        recipeId: string,
+        title: string,
+        ingredients: Ingredient[],
+        ownerId: string,
+        link?: string,
+        instructions?: string[]
+    ): Promise<Recipe> {
         try {
             const recipe = await this.getRecipe(recipeId);
             if (!this.authorizationService.isListOwner(recipe, ownerId)) {

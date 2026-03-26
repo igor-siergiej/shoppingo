@@ -41,32 +41,37 @@ class MockRepository {
         return r;
     }
 
-    reset() { this.store.clear(); }
+    reset() {
+        this.store.clear();
+    }
 }
 
 class MockIdGenerator {
     private n = 0;
-    generate() { return `id-${++this.n}`; }
-    reset() { this.n = 0; }
+    generate() {
+        return `id-${++this.n}`;
+    }
+    reset() {
+        this.n = 0;
+    }
 }
 
 const repo = new MockRepository();
 const ids = new MockIdGenerator();
 const owner: User = { id: 'user-1', username: 'alice' };
 
-beforeEach(() => { repo.reset(); ids.reset(); });
+beforeEach(() => {
+    repo.reset();
+    ids.reset();
+});
 
 describe('RecipeService.createRecipe', () => {
     it('persists link and instructions when provided', async () => {
         const svc = new RecipeService(repo as any, ids);
-        const recipe = await svc.createRecipe(
-            'Carbonara',
-            [],
-            owner.id,
-            owner,
-            'https://example.com/carbonara',
-            ['Boil water', 'Cook pasta']
-        );
+        const recipe = await svc.createRecipe('Carbonara', [], owner.id, owner, 'https://example.com/carbonara', [
+            'Boil water',
+            'Cook pasta',
+        ]);
         expect(recipe.link).toBe('https://example.com/carbonara');
         expect(recipe.instructions).toEqual(['Boil water', 'Cook pasta']);
     });
@@ -83,28 +88,17 @@ describe('RecipeService.updateRecipe', () => {
     it('persists link and instructions on update', async () => {
         const svc = new RecipeService(repo as any, ids);
         const created = await svc.createRecipe('Pasta', [], owner.id, owner);
-        const updated = await svc.updateRecipe(
-            created.id,
-            'Pasta v2',
-            [],
-            owner.id,
-            'https://example.com/pasta',
-            ['Step 1', 'Step 2']
-        );
+        const updated = await svc.updateRecipe(created.id, 'Pasta v2', [], owner.id, 'https://example.com/pasta', [
+            'Step 1',
+            'Step 2',
+        ]);
         expect(updated.link).toBe('https://example.com/pasta');
         expect(updated.instructions).toEqual(['Step 1', 'Step 2']);
     });
 
     it('clears link and instructions when passed as undefined', async () => {
         const svc = new RecipeService(repo as any, ids);
-        const created = await svc.createRecipe(
-            'Pasta',
-            [],
-            owner.id,
-            owner,
-            'https://example.com',
-            ['Step 1']
-        );
+        const created = await svc.createRecipe('Pasta', [], owner.id, owner, 'https://example.com', ['Step 1']);
         const updated = await svc.updateRecipe(created.id, 'Pasta', [], owner.id, undefined, undefined);
         expect(updated.link).toBeUndefined();
         expect(updated.instructions).toBeUndefined();
