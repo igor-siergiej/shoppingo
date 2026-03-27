@@ -1,3 +1,10 @@
+# [1.28.0](https://github.com/igor-siergiej/shoppingo/compare/v1.27.0...v1.28.0) (2026-03-27)
+
+
+### Features
+
+* single-column recipe card layout ([#56](https://github.com/igor-siergiej/shoppingo/issues/56)) ([2e049c7](https://github.com/igor-siergiej/shoppingo/commit/2e049c7634b4d196153c29b0d1d45d3a556392ba))
+
 # [1.27.0](https://github.com/igor-siergiej/shoppingo/compare/v1.26.0...v1.27.0) (2026-03-26)
 
 
