@@ -1,3 +1,10 @@
+# [1.29.0](https://github.com/igor-siergiej/shoppingo/compare/v1.28.0...v1.29.0) (2026-03-28)
+
+
+### Features
+
+* async recipe image generation with pizza spinner ([#57](https://github.com/igor-siergiej/shoppingo/issues/57)) ([ac225da](https://github.com/igor-siergiej/shoppingo/commit/ac225daa11af21ba8b76c1c1fd6fd2c77f012a6b))
+
 # [1.28.0](https://github.com/igor-siergiej/shoppingo/compare/v1.27.0...v1.28.0) (2026-03-27)
 
 
