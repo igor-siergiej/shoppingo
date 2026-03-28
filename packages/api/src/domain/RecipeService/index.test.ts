@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
-import type { Recipe, User } from '@shoppingo/types';
+import type { Ingredient, Recipe, User } from '@shoppingo/types';
 import { RecipeService } from './index';
 
 class MockRepository {
@@ -43,6 +43,14 @@ class MockRepository {
         return r;
     }
 
+    async setCoverImageKey(id: string, key: string): Promise<void> {
+        const r = this.store.get(id);
+        if (r) {
+            r.coverImageKey = key;
+            this.store.set(id, r);
+        }
+    }
+
     reset() {
         this.store.clear();
     }
@@ -83,6 +91,58 @@ describe('RecipeService.createRecipe', () => {
         const recipe = await svc.createRecipe('Pasta', [], owner.id, owner);
         expect(recipe.link).toBeUndefined();
         expect(recipe.instructions).toBeUndefined();
+    });
+});
+
+class MockRecipeImageService {
+    calls: Array<{ recipeId: string; title: string; ingredients: Ingredient[] }> = [];
+    shouldReject = false;
+
+    async generateRecipeImage(recipeId: string, title: string, ingredients: Ingredient[]): Promise<string> {
+        this.calls.push({ recipeId, title, ingredients });
+        if (this.shouldReject) throw new Error('generation failed');
+        return `recipe-images/${recipeId}`;
+    }
+
+    reset() {
+        this.calls = [];
+        this.shouldReject = false;
+    }
+}
+
+const mockImageService = new MockRecipeImageService();
+
+beforeEach(() => {
+    mockImageService.reset();
+});
+
+describe('RecipeService.createRecipe image enrichment', () => {
+    it('fires background image enrichment when recipeImageService provided', async () => {
+        const svc = new RecipeService(repo as any, ids, undefined, undefined, mockImageService as any);
+        const recipe = await svc.createRecipe('Pasta', [{ id: '1', name: 'flour' }], owner.id, owner);
+
+        await new Promise((r) => setTimeout(r, 10));
+
+        expect(mockImageService.calls.length).toBe(1);
+        expect(mockImageService.calls[0].recipeId).toBe(recipe.id);
+        expect(mockImageService.calls[0].title).toBe('Pasta');
+        expect(repo.store.get(recipe.id)?.coverImageKey).toBe(`recipe-images/${recipe.id}`);
+    });
+
+    it('skips enrichment when no recipeImageService provided', async () => {
+        const svc = new RecipeService(repo as any, ids);
+        await svc.createRecipe('Pasta', [], owner.id, owner);
+
+        await new Promise((r) => setTimeout(r, 10));
+
+        expect(mockImageService.calls.length).toBe(0);
+    });
+
+    it('does not throw when enrichment fails', async () => {
+        mockImageService.shouldReject = true;
+        const svc = new RecipeService(repo as any, ids, undefined, undefined, mockImageService as any);
+
+        await expect(svc.createRecipe('Pasta', [], owner.id, owner)).resolves.toBeDefined();
     });
 });
 

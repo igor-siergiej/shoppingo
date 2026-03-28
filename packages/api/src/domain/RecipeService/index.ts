@@ -1,6 +1,7 @@
 import type { IdGenerator, Logger } from '@imapps/api-utils';
 import type { Ingredient, Recipe, User } from '@shoppingo/types';
 import { AuthorizationService } from '../AuthorizationService';
+import type { RecipeImageService } from '../RecipeImageService';
 import type { RecipeRepository } from '../RecipeRepository';
 
 export class RecipeService {
@@ -10,7 +11,8 @@ export class RecipeService {
         private recipeRepository: RecipeRepository,
         private idGenerator: IdGenerator,
         private logger?: Logger,
-        authorizationService?: AuthorizationService
+        authorizationService?: AuthorizationService,
+        private recipeImageService?: RecipeImageService
     ) {
         this.authorizationService = authorizationService ?? new AuthorizationService();
     }
@@ -44,6 +46,7 @@ export class RecipeService {
                 owner: owner.username,
                 ingredientCount: created.ingredients.length,
             });
+            void this.enrichRecipeImage(created.id, title, ingredients);
             return created;
         } catch (error) {
             this.logger?.error('Failed to create recipe', {
@@ -192,6 +195,17 @@ export class RecipeService {
                 error,
             });
             throw error;
+        }
+    }
+
+    private async enrichRecipeImage(recipeId: string, title: string, ingredients: Ingredient[]): Promise<void> {
+        if (!this.recipeImageService) return;
+        try {
+            const key = await this.recipeImageService.generateRecipeImage(recipeId, title, ingredients);
+            await this.recipeRepository.setCoverImageKey(recipeId, key);
+            this.logger?.info('Recipe image enrichment complete', { recipeId, key });
+        } catch (error) {
+            this.logger?.error('Recipe image enrichment failed', { recipeId, error });
         }
     }
 

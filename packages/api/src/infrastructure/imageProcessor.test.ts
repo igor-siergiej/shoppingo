@@ -72,13 +72,28 @@ describe('imageProcessor', () => {
             expect(result).toEqual(expected);
         });
 
-        it('calls resize with 256x256 and correct options', async () => {
+        it('calls resize with 256x256 and correct options by default', async () => {
             const mockSharp = () => mockSharpInstance;
             await processImage(Buffer.from('input'), mockSharp as any);
 
             expect(mockSharpInstance.calls.resize[0]).toEqual([
                 256,
                 256,
+                {
+                    fit: 'contain',
+                    background: { r: 0, g: 0, b: 0, alpha: 0 },
+                    withoutEnlargement: true,
+                },
+            ]);
+        });
+
+        it('calls resize with custom size when provided', async () => {
+            const mockSharp = () => mockSharpInstance;
+            await processImage(Buffer.from('input'), mockSharp as any, 512);
+
+            expect(mockSharpInstance.calls.resize[0]).toEqual([
+                512,
+                512,
                 {
                     fit: 'contain',
                     background: { r: 0, g: 0, b: 0, alpha: 0 },
