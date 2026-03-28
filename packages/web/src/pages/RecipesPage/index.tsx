@@ -20,6 +20,7 @@ const RecipesPage = () => {
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [sharedUrl, setSharedUrl] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
+    const [generatingImageIds, setGeneratingImageIds] = useState<Set<string>>(new Set());
     const { data, isLoading, isError, refetch } = useQuery({
         ...getRecipesQuery(user?.id || ''),
         enabled: !!user?.id,
@@ -55,6 +56,18 @@ const RecipesPage = () => {
 
     const recipes = data || [];
     const searchResults = useRecipeSearch(recipes, searchQuery);
+
+    const handleImageGenerating = (recipeId: string) => {
+        setGeneratingImageIds((prev) => new Set(prev).add(recipeId));
+    };
+
+    const handleImageReady = (recipeId: string) => {
+        setGeneratingImageIds((prev) => {
+            const next = new Set(prev);
+            next.delete(recipeId);
+            return next;
+        });
+    };
 
     if (!user?.id) {
         logger.warn('Recipes page accessed without user');
@@ -122,7 +135,11 @@ const RecipesPage = () => {
                 <div>
                     <h2 className="text-lg font-semibold mb-3 text-foreground">Results ({searchResults.length})</h2>
                     {searchResults.length > 0 ? (
-                        <RecipesList recipes={searchResults} onRecipeClick={handleRecipeClick} />
+                        <RecipesList
+                            recipes={searchResults}
+                            onRecipeClick={handleRecipeClick}
+                            generatingImageIds={generatingImageIds}
+                        />
                     ) : (
                         <Empty className="flex-none justify-start p-4">
                             <EmptyHeader>
@@ -141,7 +158,11 @@ const RecipesPage = () => {
                     <div>
                         <h2 className="text-lg font-semibold mb-3 text-foreground">Your Recipes</h2>
                         {yourRecipes.length > 0 ? (
-                            <RecipesList recipes={yourRecipes} onRecipeClick={handleRecipeClick} />
+                            <RecipesList
+                                recipes={yourRecipes}
+                                onRecipeClick={handleRecipeClick}
+                                generatingImageIds={generatingImageIds}
+                            />
                         ) : (
                             <Empty className="flex-none justify-start p-4">
                                 <EmptyHeader>
@@ -159,7 +180,11 @@ const RecipesPage = () => {
                     <div>
                         <h2 className="text-lg font-semibold mb-3 text-foreground">Shared Recipes</h2>
                         {sharedRecipes.length > 0 ? (
-                            <RecipesList recipes={sharedRecipes} onRecipeClick={handleRecipeClick} />
+                            <RecipesList
+                                recipes={sharedRecipes}
+                                onRecipeClick={handleRecipeClick}
+                                generatingImageIds={generatingImageIds}
+                            />
                         ) : (
                             <Empty className="flex-none justify-start p-4">
                                 <EmptyHeader>
@@ -206,6 +231,8 @@ const RecipesPage = () => {
             <ToolBar
                 onAddRecipe={handleAddRecipe}
                 onRefetchRecipes={refetch}
+                onImageGenerating={handleImageGenerating}
+                onImageReady={handleImageReady}
                 placeholder="Enter recipe name..."
                 addRecipeDrawerOpen={drawerOpen}
                 onAddRecipeDrawerOpenChange={(open) => {

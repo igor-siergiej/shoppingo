@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth, useUser } from '@imapps/web-utils';
-import type { Item } from '@shoppingo/types';
+import type { Item, Recipe } from '@shoppingo/types';
 import { ListType } from '@shoppingo/types';
 import { AnimatePresence, MotionConfig, motion } from 'motion/react';
 import { useEffect, useState } from 'react';
@@ -30,8 +30,10 @@ interface ToolBarProps {
         selectedUsers?: string[],
         link?: string,
         instructions?: string[]
-    ) => Promise<void>;
+    ) => Promise<Recipe | undefined>;
     onRefetchRecipes?: () => Promise<void>;
+    onImageGenerating?: (recipeId: string) => void;
+    onImageReady?: (recipeId: string) => void;
     addRecipeDrawerOpen?: boolean;
     onAddRecipeDrawerOpenChange?: (open: boolean) => void;
     addRecipeInitialLink?: string;
@@ -58,6 +60,8 @@ const ToolBar = ({
     onAddIngredient,
     onAddRecipe,
     onRefetchRecipes,
+    onImageGenerating,
+    onImageReady,
     addRecipeDrawerOpen,
     onAddRecipeDrawerOpenChange,
     addRecipeInitialLink,
@@ -240,6 +244,8 @@ const ToolBar = ({
                                             onOpenChange={onAddRecipeDrawerOpenChange ?? setIsAddRecipeDrawerOpen}
                                             onAdd={onAddRecipe}
                                             onRefetch={onRefetchRecipes}
+                                            onImageGenerating={onImageGenerating}
+                                            onImageReady={onImageReady}
                                             placeholder={placeholder}
                                             initialLink={addRecipeInitialLink}
                                         />

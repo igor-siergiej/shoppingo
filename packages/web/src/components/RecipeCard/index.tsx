@@ -13,7 +13,7 @@ interface RecipeCardProps {
 
 export const RecipeCard = ({ recipe, onClick, isGeneratingImage = false }: RecipeCardProps) => {
     const [imageUrl, setImageUrl] = useState<string | null>(null);
-    const [isLoadingImage, setIsLoadingImage] = useState(true);
+    const [isLoadingImage, setIsLoadingImage] = useState(() => !!recipe.coverImageKey);
     const [hasImageError, setHasImageError] = useState(false);
     const objectUrlRef = useRef<string | null>(null);
 
