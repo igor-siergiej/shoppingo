@@ -119,4 +119,14 @@ describe('RecipeCard', () => {
 
         expect(global.URL.revokeObjectURL).toHaveBeenCalled();
     });
+
+    it('shows pizza spinner when isGeneratingImage is true and no image loaded', () => {
+        render(<RecipeCard recipe={mockRecipeNoImage} onClick={vi.fn()} isGeneratingImage />);
+        expect(screen.getByLabelText('Generating recipe image')).toBeTruthy();
+    });
+
+    it('does not show pizza spinner when isGeneratingImage is false', () => {
+        render(<RecipeCard recipe={mockRecipeNoImage} onClick={vi.fn()} isGeneratingImage={false} />);
+        expect(screen.queryByLabelText('Generating recipe image')).toBeNull();
+    });
 });
