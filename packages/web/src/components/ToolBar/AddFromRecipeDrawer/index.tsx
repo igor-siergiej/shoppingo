@@ -12,6 +12,7 @@ import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from '
 import { Input } from '../../../components/ui/input';
 import { RippleButton } from '../../../components/ui/ripple';
 import { useRecipeSearch } from '../../../hooks/useRecipeSearch';
+import { IngredientSelectRow } from '../../IngredientSelectRow';
 
 interface AddFromRecipeDrawerProps {
     open: boolean;
@@ -38,10 +39,7 @@ export const AddFromRecipeDrawer = ({ open, onOpenChange, listTitle, listItems }
 
     const handleSelectRecipe = (recipe: Recipe) => {
         setChosenRecipe(recipe);
-        const availableIds = new Set(
-            recipe.ingredients.filter((ing) => !existingItemNames.has(ing.name.toLowerCase())).map((ing) => ing.id)
-        );
-        setSelectedIds(availableIds);
+        setSelectedIds(new Set());
         setStep('ingredients');
     };
 
@@ -193,7 +191,6 @@ export const AddFromRecipeDrawer = ({ open, onOpenChange, listTitle, listItems }
                                         <p className="text-muted-foreground text-sm py-3">No ingredients</p>
                                     ) : (
                                         chosenRecipe.ingredients.map((ingredient) => {
-                                            const isSelected = selectedIds.has(ingredient.id);
                                             const isAlreadyInList = existingItemNames.has(
                                                 ingredient.name.toLowerCase()
                                             );
@@ -215,23 +212,12 @@ export const AddFromRecipeDrawer = ({ open, onOpenChange, listTitle, listItems }
                                             }
 
                                             return (
-                                                <button
+                                                <IngredientSelectRow
                                                     key={ingredient.id}
-                                                    onClick={() => handleToggleIngredient(ingredient.id)}
-                                                    className={`w-full p-3 rounded-lg border transition-all text-left ${
-                                                        isSelected
-                                                            ? 'bg-blue-100 border-blue-300 text-foreground'
-                                                            : 'bg-muted/30 border-muted-foreground/20 text-foreground'
-                                                    }`}
-                                                    type="button"
-                                                >
-                                                    <div className="font-medium">{ingredient.name}</div>
-                                                    {(ingredient.quantity !== undefined || ingredient.unit) && (
-                                                        <div className="text-sm mt-1 text-muted-foreground">
-                                                            {ingredient.quantity} {ingredient.unit}
-                                                        </div>
-                                                    )}
-                                                </button>
+                                                    ingredient={ingredient}
+                                                    isSelected={selectedIds.has(ingredient.id)}
+                                                    onToggle={handleToggleIngredient}
+                                                />
                                             );
                                         })
                                     )}

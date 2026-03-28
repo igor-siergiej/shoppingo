@@ -3,8 +3,8 @@
 import type { ListResponse, Recipe } from '@shoppingo/types';
 import { ListType } from '@shoppingo/types';
 import { useState } from 'react';
+import { IngredientSelectRow } from '../../components/IngredientSelectRow';
 import { Button } from '../../components/ui/button';
-import { IngredientSelectRow } from './IngredientSelectRow';
 
 interface IngredientSelectSectionProps {
     recipe: Recipe;
