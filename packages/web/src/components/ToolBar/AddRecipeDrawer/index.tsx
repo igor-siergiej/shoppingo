@@ -144,7 +144,9 @@ export const AddRecipeDrawer = ({
                 void (async () => {
                     try {
                         await uploadRecipeImage(recipe.id, capturedFile);
-                        toast.success('Recipe image uploaded', { style: { backgroundColor: '#10b981', color: '#ffffff' } });
+                        toast.success('Recipe image uploaded', {
+                            style: { backgroundColor: '#10b981', color: '#ffffff' },
+                        });
                     } catch {
                         // silent — recipe still usable
                     } finally {

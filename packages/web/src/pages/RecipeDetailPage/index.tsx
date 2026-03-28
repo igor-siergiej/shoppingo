@@ -412,7 +412,7 @@ const RecipeDetailPage = () => {
                                     />
 
                                     <InstructionsSection
-                                        instructions={recipe.instructions}
+                                        instructions={recipe.instructions ?? undefined}
                                         isOwner={isOwner}
                                         onSave={handleSaveInstructions}
                                     />
