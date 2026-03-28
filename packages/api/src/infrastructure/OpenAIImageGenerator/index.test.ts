@@ -76,7 +76,7 @@ describe('OpenAIImageGenerator', () => {
 
             const result = await generator.generateImage('test prompt');
 
-            expect(mockProcessImage).toHaveBeenCalledWith(imageBuffer);
+            expect(mockProcessImage).toHaveBeenCalledWith(imageBuffer, undefined, 256);
             expect(result.buffer).toEqual(processedBuffer);
             expect(result.contentType).toBe('image/webp');
         });

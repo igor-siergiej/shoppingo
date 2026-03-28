@@ -5,10 +5,10 @@ import { config } from '../config';
 import { AuthorizationService } from '../domain/AuthorizationService';
 import { ImageService } from '../domain/ImageService';
 import { ListService } from '../domain/ListService';
+import { RecipeImageService } from '../domain/RecipeImageService';
 import { RecipeService } from '../domain/RecipeService';
 import { HttpAuthClient } from '../infrastructure/AuthClient';
 import { BucketStore } from '../infrastructure/BucketStore';
-import { GeminiImageGenerator } from '../infrastructure/GeminiImageGenerator';
 import { MongoListRepository } from '../infrastructure/MongoListRepository';
 import { MongoRecipeRepository } from '../infrastructure/MongoRecipeRepository';
 import { OpenAIImageGenerator } from '../infrastructure/OpenAIImageGenerator';
@@ -74,7 +74,8 @@ export const registerDepdendencies = () => {
                     dependencyContainer.resolve(DependencyToken.RecipeRepository),
                     dependencyContainer.resolve(DependencyToken.IdGenerator),
                     dependencyContainer.resolve(DependencyToken.Logger),
-                    dependencyContainer.resolve(DependencyToken.AuthorizationService)
+                    dependencyContainer.resolve(DependencyToken.AuthorizationService),
+                    dependencyContainer.resolve(DependencyToken.RecipeImageService)
                 );
             }
         }
@@ -106,15 +107,19 @@ export const registerDepdendencies = () => {
         // @ts-expect-error - Dependency injection requires constructor return override
         class {
             constructor() {
-                const provider = config.get('imageProvider') || 'gemini';
+                const model = config.get('openaiModel') || 'gpt-image-1-mini';
+                return new OpenAIImageGenerator(config.get('openaiApiKey') || '', model);
+            }
+        }
+    );
 
-                if (provider === 'openai') {
-                    const model = config.get('openaiModel') || 'gpt-image-1-mini';
-                    return new OpenAIImageGenerator(config.get('openaiApiKey') || '', model);
-                } else {
-                    const model = config.get('geminiModel') || 'imagen-3.0-fast-001';
-                    return new GeminiImageGenerator(config.get('geminiApiKey') || '', model);
-                }
+    dependencyContainer.registerSingleton(
+        DependencyToken.RecipeImageGenerator,
+        // @ts-expect-error - Dependency injection requires constructor return override
+        class {
+            constructor() {
+                const model = config.get('openaiRecipeModel') || 'gpt-image-1';
+                return new OpenAIImageGenerator(config.get('openaiApiKey') || '', model, 512);
             }
         }
     );
@@ -127,6 +132,20 @@ export const registerDepdendencies = () => {
                 return new ImageService(
                     dependencyContainer.resolve(DependencyToken.ImageStore),
                     dependencyContainer.resolve(DependencyToken.ImageGenerator),
+                    dependencyContainer.resolve(DependencyToken.Logger)
+                );
+            }
+        }
+    );
+
+    dependencyContainer.registerSingleton(
+        DependencyToken.RecipeImageService,
+        // @ts-expect-error - Dependency injection requires constructor return override
+        class {
+            constructor() {
+                return new RecipeImageService(
+                    dependencyContainer.resolve(DependencyToken.ImageStore),
+                    dependencyContainer.resolve(DependencyToken.RecipeImageGenerator),
                     dependencyContainer.resolve(DependencyToken.Logger)
                 );
             }

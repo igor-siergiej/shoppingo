@@ -6,7 +6,8 @@ import { processImage } from '../imageProcessor';
 export class OpenAIImageGenerator implements ImageGenerator {
     constructor(
         private readonly apiKey: string,
-        private readonly model: string = 'gpt-image-1-mini'
+        private readonly model: string = 'gpt-image-1-mini',
+        private readonly outputSize: number = 256
     ) {}
 
     async generateImage(prompt: string): Promise<{ buffer: Buffer; contentType: string }> {
@@ -64,7 +65,7 @@ export class OpenAIImageGenerator implements ImageGenerator {
         let finalContentType = 'image/webp';
 
         try {
-            processedBuffer = await processImage(originalBuffer);
+            processedBuffer = await processImage(originalBuffer, undefined, this.outputSize);
         } catch {
             // Fallback: try to at least convert to WebP without resizing
             try {

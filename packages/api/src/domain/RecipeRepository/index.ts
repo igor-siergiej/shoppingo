@@ -8,4 +8,5 @@ export interface RecipeRepository {
     deleteById(recipeId: string): Promise<void>;
     addUser(recipeId: string, user: User): Promise<Recipe>;
     removeUser(recipeId: string, userId: string): Promise<Recipe>;
+    setCoverImageKey(recipeId: string, key: string): Promise<void>;
 }
