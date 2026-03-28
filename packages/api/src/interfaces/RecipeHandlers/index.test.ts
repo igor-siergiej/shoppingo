@@ -198,9 +198,7 @@ describe('RecipeHandlers', () => {
         });
 
         it('returns error status on service failure', async () => {
-            mockRecipeService.createRecipe.mockRejectedValue(
-                Object.assign(new Error('fail'), { status: 500 })
-            );
+            mockRecipeService.createRecipe.mockRejectedValue(Object.assign(new Error('fail'), { status: 500 }));
             const ctx = createMockContext({
                 request: { body: { title: 'Test', ingredients: [] } } as Context['request'],
             });
@@ -245,9 +243,7 @@ describe('RecipeHandlers', () => {
         });
 
         it('returns error status on service failure', async () => {
-            mockRecipeService.updateRecipe.mockRejectedValue(
-                Object.assign(new Error('fail'), { status: 403 })
-            );
+            mockRecipeService.updateRecipe.mockRejectedValue(Object.assign(new Error('fail'), { status: 403 }));
             const ctx = createMockContext({
                 params: { recipeId: 'recipe-1' },
                 request: { body: { title: 'Updated', ingredients: [] } } as Context['request'],
@@ -285,9 +281,7 @@ describe('RecipeHandlers', () => {
         });
 
         it('returns error status on service failure', async () => {
-            mockRecipeService.deleteRecipe.mockRejectedValue(
-                Object.assign(new Error('fail'), { status: 403 })
-            );
+            mockRecipeService.deleteRecipe.mockRejectedValue(Object.assign(new Error('fail'), { status: 403 }));
             const ctx = createMockContext({ params: { recipeId: 'recipe-1' } });
             await recipeHandlers.deleteRecipe(ctx);
             expect(ctx.response.status).toBe(403);
@@ -341,9 +335,7 @@ describe('RecipeHandlers', () => {
         });
 
         it('returns error on service failure', async () => {
-            mockRecipeService.addUserToRecipe.mockRejectedValue(
-                Object.assign(new Error('fail'), { status: 400 })
-            );
+            mockRecipeService.addUserToRecipe.mockRejectedValue(Object.assign(new Error('fail'), { status: 400 }));
             const ctx = createMockContext({
                 params: { recipeId: 'recipe-1' },
                 request: { body: { user: newUser } } as Context['request'],
@@ -385,9 +377,7 @@ describe('RecipeHandlers', () => {
         });
 
         it('returns error on service failure', async () => {
-            mockRecipeService.removeUserFromRecipe.mockRejectedValue(
-                Object.assign(new Error('fail'), { status: 400 })
-            );
+            mockRecipeService.removeUserFromRecipe.mockRejectedValue(Object.assign(new Error('fail'), { status: 400 }));
             const ctx = createMockContext({
                 params: { recipeId: 'recipe-1', targetUserId: 'user-2' },
             });
@@ -440,9 +430,7 @@ describe('RecipeHandlers', () => {
         });
 
         it('returns error on service failure', async () => {
-            mockRecipeService.setCoverImageKey.mockRejectedValue(
-                Object.assign(new Error('fail'), { status: 403 })
-            );
+            mockRecipeService.setCoverImageKey.mockRejectedValue(Object.assign(new Error('fail'), { status: 403 }));
             const ctx = createMockContext({
                 params: { recipeId: 'recipe-1' },
                 request: { body: { imageKey: 'some-key' } } as Context['request'],
@@ -495,7 +483,10 @@ describe('RecipeHandlers', () => {
 
         it('uploads image successfully', async () => {
             mockBucketStore.putObject.mockResolvedValue(undefined);
-            mockRecipeService.setCoverImageKey.mockResolvedValue({ ...baseRecipe, coverImageKey: 'recipe-uploads/user-1/recipe-1' });
+            mockRecipeService.setCoverImageKey.mockResolvedValue({
+                ...baseRecipe,
+                coverImageKey: 'recipe-uploads/user-1/recipe-1',
+            });
             const ctx = createMockContext({
                 params: { recipeId: 'recipe-1' },
                 request: {
