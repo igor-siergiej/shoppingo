@@ -146,6 +146,28 @@ describe('RecipeService.createRecipe image enrichment', () => {
     });
 });
 
+describe('RecipeService.getRecipe', () => {
+    it('throws 404 when recipe not found', async () => {
+        const svc = new RecipeService(repo as any, ids);
+        await expect(svc.getRecipe('missing-id')).rejects.toMatchObject({ status: 404, message: 'Recipe not found' });
+    });
+
+    it('returns recipe when found', async () => {
+        const svc = new RecipeService(repo as any, ids);
+        const created = await svc.createRecipe('Pasta', [], owner.id, owner);
+        const found = await svc.getRecipe(created.id);
+        expect(found.id).toBe(created.id);
+    });
+});
+
+describe('RecipeService.getRecipesByUserId', () => {
+    it('returns recipes for user', async () => {
+        const svc = new RecipeService(repo as any, ids);
+        const results = await svc.getRecipesByUserId(owner.id);
+        expect(Array.isArray(results)).toBe(true);
+    });
+});
+
 describe('RecipeService.updateRecipe', () => {
     it('persists link and instructions on update', async () => {
         const svc = new RecipeService(repo as any, ids);
@@ -164,5 +186,121 @@ describe('RecipeService.updateRecipe', () => {
         const updated = await svc.updateRecipe(created.id, 'Pasta', [], owner.id, undefined, undefined);
         expect(updated.link).toBeUndefined();
         expect(updated.instructions).toBeUndefined();
+    });
+
+    it('throws 403 when non-owner tries to update', async () => {
+        const svc = new RecipeService(repo as any, ids);
+        const created = await svc.createRecipe('Pasta', [], owner.id, owner);
+        await expect(svc.updateRecipe(created.id, 'Pasta', [], 'other-user')).rejects.toMatchObject({ status: 403 });
+    });
+
+    it('throws when recipe not found', async () => {
+        const svc = new RecipeService(repo as any, ids);
+        await expect(svc.updateRecipe('missing', 'Pasta', [], owner.id)).rejects.toMatchObject({ status: 404 });
+    });
+});
+
+describe('RecipeService.deleteRecipe', () => {
+    it('deletes recipe when owner', async () => {
+        const svc = new RecipeService(repo as any, ids);
+        const created = await svc.createRecipe('Pasta', [], owner.id, owner);
+        await expect(svc.deleteRecipe(created.id, owner.id)).resolves.toBeUndefined();
+        await expect(svc.getRecipe(created.id)).rejects.toMatchObject({ status: 404 });
+    });
+
+    it('throws 403 when non-owner tries to delete', async () => {
+        const svc = new RecipeService(repo as any, ids);
+        const created = await svc.createRecipe('Pasta', [], owner.id, owner);
+        await expect(svc.deleteRecipe(created.id, 'other-user')).rejects.toMatchObject({ status: 403 });
+    });
+
+    it('throws when recipe not found', async () => {
+        const svc = new RecipeService(repo as any, ids);
+        await expect(svc.deleteRecipe('missing', owner.id)).rejects.toMatchObject({ status: 404 });
+    });
+});
+
+const user2: User = { id: 'user-2', username: 'bob' };
+
+describe('RecipeService.addUserToRecipe', () => {
+    it('adds user to recipe', async () => {
+        const svc = new RecipeService(repo as any, ids);
+        const created = await svc.createRecipe('Pasta', [], owner.id, owner);
+        const updated = await svc.addUserToRecipe(created.id, user2, owner.id);
+        expect(updated.users.some((u) => u.id === user2.id)).toBe(true);
+    });
+
+    it('throws 403 when non-owner tries to add user', async () => {
+        const svc = new RecipeService(repo as any, ids);
+        const created = await svc.createRecipe('Pasta', [], owner.id, owner);
+        await expect(svc.addUserToRecipe(created.id, user2, 'other-user')).rejects.toMatchObject({ status: 403 });
+    });
+
+    it('throws 400 when user already in recipe', async () => {
+        const svc = new RecipeService(repo as any, ids);
+        const created = await svc.createRecipe('Pasta', [], owner.id, owner);
+        await expect(svc.addUserToRecipe(created.id, owner, owner.id)).rejects.toMatchObject({ status: 400 });
+    });
+
+    it('throws when recipe not found', async () => {
+        const svc = new RecipeService(repo as any, ids);
+        await expect(svc.addUserToRecipe('missing', user2, owner.id)).rejects.toMatchObject({ status: 404 });
+    });
+});
+
+describe('RecipeService.removeUserFromRecipe', () => {
+    it('removes user from recipe', async () => {
+        const svc = new RecipeService(repo as any, ids);
+        const created = await svc.createRecipe('Pasta', [], owner.id, owner);
+        await svc.addUserToRecipe(created.id, user2, owner.id);
+        const updated = await svc.removeUserFromRecipe(created.id, user2.id, owner.id);
+        expect(updated.users.some((u) => u.id === user2.id)).toBe(false);
+    });
+
+    it('throws 403 when non-owner tries to remove user', async () => {
+        const svc = new RecipeService(repo as any, ids);
+        const created = await svc.createRecipe('Pasta', [], owner.id, owner);
+        await svc.addUserToRecipe(created.id, user2, owner.id);
+        await expect(svc.removeUserFromRecipe(created.id, user2.id, 'other-user')).rejects.toMatchObject({
+            status: 403,
+        });
+    });
+
+    it('throws 400 when trying to remove owner', async () => {
+        const svc = new RecipeService(repo as any, ids);
+        const created = await svc.createRecipe('Pasta', [], owner.id, owner);
+        await svc.addUserToRecipe(created.id, user2, owner.id);
+        await expect(svc.removeUserFromRecipe(created.id, owner.id, owner.id)).rejects.toMatchObject({ status: 400 });
+    });
+
+    it('throws 400 when trying to remove last user', async () => {
+        const svc = new RecipeService(repo as any, ids);
+        const created = await svc.createRecipe('Pasta', [], owner.id, owner);
+        await expect(svc.removeUserFromRecipe(created.id, user2.id, owner.id)).rejects.toMatchObject({ status: 400 });
+    });
+
+    it('throws when recipe not found', async () => {
+        const svc = new RecipeService(repo as any, ids);
+        await expect(svc.removeUserFromRecipe('missing', user2.id, owner.id)).rejects.toMatchObject({ status: 404 });
+    });
+});
+
+describe('RecipeService.setCoverImageKey', () => {
+    it('sets cover image key when owner', async () => {
+        const svc = new RecipeService(repo as any, ids);
+        const created = await svc.createRecipe('Pasta', [], owner.id, owner);
+        const updated = await svc.setCoverImageKey(created.id, 'some-key', owner.id);
+        expect(updated.coverImageKey).toBe('some-key');
+    });
+
+    it('throws 403 when non-owner tries to set image key', async () => {
+        const svc = new RecipeService(repo as any, ids);
+        const created = await svc.createRecipe('Pasta', [], owner.id, owner);
+        await expect(svc.setCoverImageKey(created.id, 'key', 'other-user')).rejects.toMatchObject({ status: 403 });
+    });
+
+    it('throws when recipe not found', async () => {
+        const svc = new RecipeService(repo as any, ids);
+        await expect(svc.setCoverImageKey('missing', 'key', owner.id)).rejects.toMatchObject({ status: 404 });
     });
 });
