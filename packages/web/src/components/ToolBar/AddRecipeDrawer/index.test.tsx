@@ -172,6 +172,40 @@ describe('AddRecipeDrawer', () => {
         });
     });
 
+    it('closes the drawer immediately after recipe creation without waiting for image generation', async () => {
+        let resolveImageFetch!: () => void;
+        const imageGenStarted = new Promise<void>((res) => {
+            resolveImageFetch = res;
+        });
+
+        const mockOnAdd = vi.fn().mockResolvedValue({ id: 'recipe-123' });
+
+        global.fetch = vi.fn().mockImplementationOnce(() => {
+            resolveImageFetch();
+            return new Promise(() => {}); // never resolves
+        });
+
+        const mockOnOpenChange = vi.fn();
+        const mockOnImageGenerating = vi.fn();
+
+        render(
+            <AddRecipeDrawer
+                open={true}
+                onOpenChange={mockOnOpenChange}
+                onAdd={mockOnAdd}
+                onImageGenerating={mockOnImageGenerating}
+                onImageReady={vi.fn()}
+            />
+        );
+
+        await userEvent.type(screen.getByPlaceholderText('Enter recipe title...'), 'Pizza Margherita');
+        await userEvent.click(screen.getByRole('button', { name: /create recipe/i }));
+
+        await waitFor(() => expect(mockOnOpenChange).toHaveBeenCalledWith(false));
+        await imageGenStarted;
+        expect(mockOnImageGenerating).toHaveBeenCalledWith('recipe-123');
+    });
+
     it('passes link and instructions to onAdd', async () => {
         mockOnAdd.mockResolvedValue({ id: 'recipe-1' });
         render(

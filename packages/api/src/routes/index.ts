@@ -1,3 +1,4 @@
+import type { Context, Next } from 'koa';
 import Router from 'koa-router';
 import { getImage } from '../interfaces/ImageHandlers';
 import * as listHandlers from '../interfaces/ListHandlers';
@@ -35,7 +36,7 @@ router.post('/api/lists/:title/users', authenticate, listHandlers.addUserToList)
 router.delete('/api/lists/:title/users/:userId', authenticate, listHandlers.removeUserFromList);
 
 // Conditional auth for images: stored images need auth, AI images don't
-const conditionalImageAuth = async (ctx: any, next: any) => {
+const conditionalImageAuth = async (ctx: Context, next: Next) => {
     const { name } = ctx.params as { name: string };
     // Only require auth for stored images (contain /)
     if (name.includes('/')) {

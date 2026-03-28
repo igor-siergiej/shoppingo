@@ -7,9 +7,10 @@ interface RecipesListProps {
     recipes: Recipe[];
     onRecipeClick: (recipeId: string) => void;
     isLoading?: boolean;
+    generatingImageIds?: Set<string>;
 }
 
-export const RecipesList = ({ recipes, onRecipeClick, isLoading }: RecipesListProps) => {
+export const RecipesList = ({ recipes, onRecipeClick, isLoading, generatingImageIds }: RecipesListProps) => {
     if (isLoading) {
         return (
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 px-2">
@@ -42,7 +43,12 @@ export const RecipesList = ({ recipes, onRecipeClick, isLoading }: RecipesListPr
     return (
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 px-2">
             {recipes.map((recipe) => (
-                <RecipeCard key={recipe.id} recipe={recipe} onClick={() => onRecipeClick(recipe.id)} />
+                <RecipeCard
+                    key={recipe.id}
+                    recipe={recipe}
+                    onClick={() => onRecipeClick(recipe.id)}
+                    isGeneratingImage={generatingImageIds?.has(recipe.id) ?? false}
+                />
             ))}
         </div>
     );
