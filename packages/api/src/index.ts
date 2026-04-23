@@ -7,6 +7,12 @@ import koaBody from 'koa-body';
 import { config } from './config';
 import { dependencyContainer, registerDepdendencies } from './dependencies';
 import { DependencyToken } from './dependencies/types';
+import {
+    httpRequestDurationSeconds,
+    httpRequestsTotal,
+    metricsRegister,
+    startDefaultMetrics,
+} from './infrastructure/metrics';
 import routes from './routes';
 
 const port = config.get('port');
@@ -36,6 +42,8 @@ export const onStartup = async () => {
     try {
         const app = new Koa();
 
+        startDefaultMetrics();
+
         app.use(cors(corsOptions));
 
         registerDepdendencies();
@@ -47,6 +55,29 @@ export const onStartup = async () => {
         if (!database) {
             throw new Error('Database dependency not found');
         }
+
+        // Metrics endpoint — exposed before any auth. Low-cardinality route label
+        // comes from koa-router's matched layer (ctx._matchedRoute), not raw URL.
+        const metricsMiddleware = async (ctx: Context, next: Next) => {
+            if (ctx.path === '/api/metrics') {
+                ctx.set('Content-Type', metricsRegister.contentType);
+                ctx.status = 200;
+                ctx.body = await metricsRegister.metrics();
+                return;
+            }
+
+            const endTimer = httpRequestDurationSeconds.startTimer();
+
+            await next();
+
+            const route = (ctx as unknown as { _matchedRoute?: string })._matchedRoute ?? 'unmatched';
+            const labels = { method: ctx.method, route, status: String(ctx.status) };
+
+            endTimer(labels);
+            httpRequestsTotal.inc(labels);
+        };
+
+        app.use(metricsMiddleware);
 
         // Request logger
         const requestLogger = async (ctx: Context, next: Next) => {

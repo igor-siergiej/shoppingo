@@ -1,5 +1,6 @@
 import type { Logger } from '@imapps/api-utils';
 
+import { imageGenerationFailuresTotal, imagesGeneratedTotal, imagesServedTotal } from '../../infrastructure/metrics';
 import type { ImageGenerator, ImageStore } from './types';
 
 export class ImageService {
@@ -33,6 +34,8 @@ export class ImageService {
                     source: 'cache',
                 });
 
+                imagesServedTotal.inc({ source: 'cache' });
+
                 return {
                     stream,
                     contentType,
@@ -46,13 +49,23 @@ export class ImageService {
 
             // Generate new image
             const prompt = this.generatePrompt(normalisedName);
-            const { buffer, contentType } = await this.generator.generateImage(prompt);
+            let buffer: Buffer;
+            let contentType: string;
+            try {
+                ({ buffer, contentType } = await this.generator.generateImage(prompt));
+            } catch (genErr) {
+                imageGenerationFailuresTotal.inc({ provider: 'openai' });
+                throw genErr;
+            }
 
             this.logger?.info('Image generated using AI', {
                 itemName: normalisedName,
                 contentType,
                 source: 'gemini',
             });
+
+            imagesGeneratedTotal.inc({ provider: 'openai' });
+            imagesServedTotal.inc({ source: 'fresh' });
 
             // Store the generated image (fire and forget)
             try {
