@@ -1,3 +1,17 @@
+# [1.30.0](https://github.com/igor-siergiej/shoppingo/compare/v1.29.0...v1.30.0) (2026-04-23)
+
+
+### Bug Fixes
+
+* **web:** move IngredientSelectRow test next to component ([6190015](https://github.com/igor-siergiej/shoppingo/commit/61900150ec67c38b8073346fd5002a1dde6f0dae))
+
+
+### Features
+
+* **api:** Prometheus metrics + RecipeImageService split ([#60](https://github.com/igor-siergiej/shoppingo/issues/60)) ([4598f78](https://github.com/igor-siergiej/shoppingo/commit/4598f78df6e5814aef772ed4b978435bf63859aa))
+* reuse IngredientSelectRow in AddFromRecipeDrawer for consistent theming ([#58](https://github.com/igor-siergiej/shoppingo/issues/58)) ([9b88c48](https://github.com/igor-siergiej/shoppingo/commit/9b88c482e5355b384b4d73a88476fa8a2087cf62))
+* separate RecipeImageService with food photography prompt and 512px output ([#59](https://github.com/igor-siergiej/shoppingo/issues/59)) ([58d482f](https://github.com/igor-siergiej/shoppingo/commit/58d482fa046cdf60aa4d8225f7c48191242b22e1))
+
 # [1.29.0](https://github.com/igor-siergiej/shoppingo/compare/v1.28.0...v1.29.0) (2026-03-28)
 
 
