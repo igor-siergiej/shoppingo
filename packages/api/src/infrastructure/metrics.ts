@@ -1,4 +1,4 @@
-import { collectDefaultMetrics, Counter, Histogram, register } from 'prom-client';
+import { Counter, collectDefaultMetrics, Histogram, register } from 'prom-client';
 
 let defaultsStarted = false;
 

@@ -1,10 +1,6 @@
 import type { Logger } from '@imapps/api-utils';
 
-import {
-    imageGenerationFailuresTotal,
-    imagesGeneratedTotal,
-    imagesServedTotal,
-} from '../../infrastructure/metrics';
+import { imageGenerationFailuresTotal, imagesGeneratedTotal, imagesServedTotal } from '../../infrastructure/metrics';
 import type { ImageGenerator, ImageStore } from './types';
 
 export class ImageService {
