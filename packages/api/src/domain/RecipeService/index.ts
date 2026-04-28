@@ -212,7 +212,7 @@ export class RecipeService {
         if (recipe.coverImageKey) {
             return recipe;
         }
-        const key = await this.recipeImageService.generateRecipeImage(recipeId, recipe.title, recipe.ingredients, true);
+        const key = await this.recipeImageService.generateRecipeImage(recipeId, recipe.title, recipe.ingredients);
         await this.recipeRepository.setCoverImageKey(recipeId, key);
         return this.getRecipe(recipeId);
     }

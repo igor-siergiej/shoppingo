@@ -101,7 +101,7 @@ class MockRecipeImageService {
     async generateRecipeImage(recipeId: string, title: string, ingredients: Ingredient[]): Promise<string> {
         this.calls.push({ recipeId, title, ingredients });
         if (this.shouldReject) throw new Error('generation failed');
-        return `recipe-images/${recipeId}`;
+        return `recipe-image/${title.trim().toLowerCase()}`;
     }
 
     reset() {
@@ -125,7 +125,7 @@ describe('RecipeService.regenerateImage', () => {
 
         expect(mockImageService.calls.length).toBe(1);
         expect(mockImageService.calls[0].recipeId).toBe(created.id);
-        expect(result.coverImageKey).toBe(`recipe-images/${created.id}`);
+        expect(result.coverImageKey).toBe('recipe-image/pasta');
     });
 
     it('returns existing recipe without generating when coverImageKey already set', async () => {
