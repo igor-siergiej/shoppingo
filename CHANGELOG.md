@@ -1,3 +1,15 @@
+# [1.31.0](https://github.com/igor-siergiej/shoppingo/compare/v1.30.0...v1.31.0) (2026-04-28)
+
+
+### Bug Fixes
+
+* **web:** make unit tests pass for client-initiated image generation ([e039ce6](https://github.com/igor-siergiej/shoppingo/commit/e039ce644daf59b8da19d7b048f0037dcb8814e8))
+
+
+### Features
+
+* client-initiated recipe image generation with skeleton loading ([#61](https://github.com/igor-siergiej/shoppingo/issues/61)) ([33f9895](https://github.com/igor-siergiej/shoppingo/commit/33f989555a3434c16cee4d50e4b31a0b54a6107b))
+
 # [1.30.0](https://github.com/igor-siergiej/shoppingo/compare/v1.29.0...v1.30.0) (2026-04-23)
 
 
