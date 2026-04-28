@@ -1,3 +1,10 @@
+# [1.32.0](https://github.com/igor-siergiej/shoppingo/compare/v1.31.0...v1.32.0) (2026-04-28)
+
+
+### Features
+
+* **api:** shared AI recipe image cache by title ([#62](https://github.com/igor-siergiej/shoppingo/issues/62)) ([3d57686](https://github.com/igor-siergiej/shoppingo/commit/3d576867efc28c1ad86cf6d033adca647a32c1b6))
+
 # [1.31.0](https://github.com/igor-siergiej/shoppingo/compare/v1.30.0...v1.31.0) (2026-04-28)
 
 
