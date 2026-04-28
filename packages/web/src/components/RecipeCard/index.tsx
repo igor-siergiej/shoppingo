@@ -1,17 +1,17 @@
 import { getStorageItem } from '@imapps/web-utils';
 import type { Recipe } from '@shoppingo/types';
-import { ImageOff, Loader2, Pizza } from 'lucide-react';
+import { ImageOff } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Card, CardContent } from '../../components/ui/card';
+import { Skeleton } from '../../components/ui/skeleton';
 import { getAuthConfig } from '../../config/auth';
 
 interface RecipeCardProps {
     recipe: Recipe;
     onClick: () => void;
-    isGeneratingImage?: boolean;
 }
 
-export const RecipeCard = ({ recipe, onClick, isGeneratingImage = false }: RecipeCardProps) => {
+export const RecipeCard = ({ recipe, onClick }: RecipeCardProps) => {
     const [imageUrl, setImageUrl] = useState<string | null>(null);
     const [isLoadingImage, setIsLoadingImage] = useState(() => !!recipe.coverImageKey);
     const [hasImageError, setHasImageError] = useState(false);
@@ -89,35 +89,13 @@ export const RecipeCard = ({ recipe, onClick, isGeneratingImage = false }: Recip
                     />
                 )}
 
-                {isLoadingImage && !imageUrl && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-muted/50">
-                        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                    </div>
+                {(isLoadingImage || !recipe.coverImageKey) && !imageUrl && !hasImageError && (
+                    <Skeleton className="absolute inset-0 h-full w-full rounded-none" />
                 )}
 
                 {hasImageError && (
                     <div className="absolute inset-0 flex items-center justify-center bg-muted/20 text-muted-foreground">
                         <ImageOff className="h-8 w-8" />
-                    </div>
-                )}
-
-                {isGeneratingImage && !imageUrl && !isLoadingImage && !hasImageError && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-muted/40 to-muted/60">
-                        <Pizza
-                            role="img"
-                            className="h-10 w-10 text-muted-foreground/60 animate-pulse"
-                            aria-label="Generating recipe image"
-                        />
-                    </div>
-                )}
-
-                {!isGeneratingImage && !imageUrl && !isLoadingImage && !hasImageError && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-muted/40 to-muted/60">
-                        <div className="text-center">
-                            <div className="h-10 w-10 mx-auto rounded-full bg-muted-foreground/20 flex items-center justify-center">
-                                <span className="text-2xl">🍳</span>
-                            </div>
-                        </div>
                     </div>
                 )}
             </div>

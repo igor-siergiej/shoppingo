@@ -46,7 +46,6 @@ export class RecipeService {
                 owner: owner.username,
                 ingredientCount: created.ingredients.length,
             });
-            void this.enrichRecipeImage(created.id, title, ingredients);
             return created;
         } catch (error) {
             this.logger?.error('Failed to create recipe', {
@@ -198,15 +197,24 @@ export class RecipeService {
         }
     }
 
-    private async enrichRecipeImage(recipeId: string, title: string, ingredients: Ingredient[]): Promise<void> {
-        if (!this.recipeImageService) return;
-        try {
-            const key = await this.recipeImageService.generateRecipeImage(recipeId, title, ingredients);
-            await this.recipeRepository.setCoverImageKey(recipeId, key);
-            this.logger?.info('Recipe image enrichment complete', { recipeId, key });
-        } catch (error) {
-            this.logger?.error('Recipe image enrichment failed', { recipeId, error });
+    async regenerateImage(recipeId: string, userId: string): Promise<Recipe> {
+        if (!this.recipeImageService) {
+            const error = new Error('Image service not configured');
+            Object.assign(error, { status: 503 });
+            throw error;
         }
+        const recipe = await this.getRecipe(recipeId);
+        if (!this.authorizationService.isListOwner(recipe, userId)) {
+            const error = new Error('Only recipe owner can regenerate image');
+            Object.assign(error, { status: 403 });
+            throw error;
+        }
+        if (recipe.coverImageKey) {
+            return recipe;
+        }
+        const key = await this.recipeImageService.generateRecipeImage(recipeId, recipe.title, recipe.ingredients, true);
+        await this.recipeRepository.setCoverImageKey(recipeId, key);
+        return this.getRecipe(recipeId);
     }
 
     async setCoverImageKey(recipeId: string, coverImageKey: string, userId: string): Promise<Recipe> {

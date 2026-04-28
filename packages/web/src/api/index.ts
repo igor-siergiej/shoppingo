@@ -343,6 +343,14 @@ export const deleteCoverImageKey = async (recipeId: string): Promise<Recipe> => 
     });
 };
 
+export const generateRecipeAiImage = async (recipeId: string): Promise<Recipe> => {
+    return await makeRequest({
+        pathname: `/api/recipes/${encodeURIComponent(recipeId)}/image/generate`,
+        method: MethodType.POST,
+        operationString: 'generate recipe ai image',
+    });
+};
+
 export const uploadRecipeImage = async (recipeId: string, file: File): Promise<{ imageKey: string }> => {
     const formData = new FormData();
     formData.append('image', file);

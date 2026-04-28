@@ -584,3 +584,48 @@ export const uploadRecipeImage = async (ctx: Context): Promise<void> => {
         ctx.body = { error: errorMessage };
     }
 };
+
+export const generateRecipeImage = async (ctx: Context): Promise<void> => {
+    const { recipeId } = ctx.params as { recipeId: string };
+    const logger = getLogger();
+    const authenticatedUser = getAuthenticatedUser(ctx);
+
+    if (!authenticatedUser) {
+        ctx.status = 401;
+        ctx.body = { error: 'Unauthorized' };
+        return;
+    }
+
+    try {
+        const hasAccess = await verifyRecipeAccess(recipeId, authenticatedUser, ctx);
+        if (!hasAccess) {
+            ctx.status = 403;
+            ctx.body = { error: 'Forbidden' };
+            return;
+        }
+
+        const recipe = await getRecipeService().regenerateImage(recipeId, authenticatedUser.id);
+
+        logger.info('API: Recipe image generated', {
+            userId: authenticatedUser.id,
+            recipeId,
+        });
+
+        ctx.status = 200;
+        ctx.body = recipe;
+    } catch (error: unknown) {
+        const err = error instanceof Error ? error : new Error(String(error));
+        const status = (error as HttpError)?.status ?? 500;
+        const errorMessage = err.message || 'Internal Server Error';
+
+        logger.error('API: Failed to generate recipe image', {
+            userId: authenticatedUser.id,
+            recipeId,
+            error: errorMessage,
+            status,
+        });
+
+        ctx.status = status;
+        ctx.body = { error: errorMessage };
+    }
+};

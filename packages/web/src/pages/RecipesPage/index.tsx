@@ -1,9 +1,9 @@
 import { useUser } from '@imapps/web-utils';
 import { AlertTriangle, BookOpen, ChefHat, Search, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useQuery } from 'react-query';
+import { useQuery, useQueryClient } from 'react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { addRecipe, getRecipesQuery } from '../../api';
+import { addRecipe, generateRecipeAiImage, getRecipesQuery } from '../../api';
 import { ListsSkeleton } from '../../components/LoadingSkeleton';
 import { RecipesList } from '../../components/RecipesList';
 import ToolBar from '../../components/ToolBar';
@@ -16,11 +16,11 @@ import { logger } from '../../utils/logger';
 const RecipesPage = () => {
     const { user } = useUser();
     const navigate = useNavigate();
+    const queryClient = useQueryClient();
     const [searchParams, setSearchParams] = useSearchParams();
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [sharedUrl, setSharedUrl] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
-    const [generatingImageIds, setGeneratingImageIds] = useState<Set<string>>(new Set());
     const { data, isLoading, isError, refetch } = useQuery({
         ...getRecipesQuery(user?.id || ''),
         enabled: !!user?.id,
@@ -57,18 +57,6 @@ const RecipesPage = () => {
     const recipes = data || [];
     const searchResults = useRecipeSearch(recipes, searchQuery);
 
-    const handleImageGenerating = (recipeId: string) => {
-        setGeneratingImageIds((prev) => new Set(prev).add(recipeId));
-    };
-
-    const handleImageReady = (recipeId: string) => {
-        setGeneratingImageIds((prev) => {
-            const next = new Set(prev);
-            next.delete(recipeId);
-            return next;
-        });
-    };
-
     if (!user?.id) {
         logger.warn('Recipes page accessed without user');
         return <div>User not available</div>;
@@ -98,6 +86,9 @@ const RecipesPage = () => {
             const recipe = await addRecipe(title, user, selectedUsers || [], ingredients, link, instructions);
             logger.info('Recipe created successfully', { title, recipeId: recipe.id });
             await refetch();
+            void generateRecipeAiImage(recipe.id).then(() =>
+                queryClient.invalidateQueries(getRecipesQuery(user.id).queryKey)
+            );
             return recipe;
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -135,11 +126,7 @@ const RecipesPage = () => {
                 <div>
                     <h2 className="text-lg font-semibold mb-3 text-foreground">Results ({searchResults.length})</h2>
                     {searchResults.length > 0 ? (
-                        <RecipesList
-                            recipes={searchResults}
-                            onRecipeClick={handleRecipeClick}
-                            generatingImageIds={generatingImageIds}
-                        />
+                        <RecipesList recipes={searchResults} onRecipeClick={handleRecipeClick} />
                     ) : (
                         <Empty className="flex-none justify-start p-4">
                             <EmptyHeader>
@@ -158,11 +145,7 @@ const RecipesPage = () => {
                     <div>
                         <h2 className="text-lg font-semibold mb-3 text-foreground">Your Recipes</h2>
                         {yourRecipes.length > 0 ? (
-                            <RecipesList
-                                recipes={yourRecipes}
-                                onRecipeClick={handleRecipeClick}
-                                generatingImageIds={generatingImageIds}
-                            />
+                            <RecipesList recipes={yourRecipes} onRecipeClick={handleRecipeClick} />
                         ) : (
                             <Empty className="flex-none justify-start p-4">
                                 <EmptyHeader>
@@ -180,11 +163,7 @@ const RecipesPage = () => {
                     <div>
                         <h2 className="text-lg font-semibold mb-3 text-foreground">Shared Recipes</h2>
                         {sharedRecipes.length > 0 ? (
-                            <RecipesList
-                                recipes={sharedRecipes}
-                                onRecipeClick={handleRecipeClick}
-                                generatingImageIds={generatingImageIds}
-                            />
+                            <RecipesList recipes={sharedRecipes} onRecipeClick={handleRecipeClick} />
                         ) : (
                             <Empty className="flex-none justify-start p-4">
                                 <EmptyHeader>
@@ -230,9 +209,6 @@ const RecipesPage = () => {
 
             <ToolBar
                 onAddRecipe={handleAddRecipe}
-                onRefetchRecipes={refetch}
-                onImageGenerating={handleImageGenerating}
-                onImageReady={handleImageReady}
                 placeholder="Enter recipe name..."
                 addRecipeDrawerOpen={drawerOpen}
                 onAddRecipeDrawerOpenChange={(open) => {
