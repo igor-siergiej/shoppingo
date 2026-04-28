@@ -10,15 +10,22 @@ export class RecipeImageService {
         private readonly logger?: Logger
     ) {}
 
-    async generateRecipeImage(recipeId: string, title: string, ingredients: Ingredient[]): Promise<string> {
+    async generateRecipeImage(
+        recipeId: string,
+        title: string,
+        ingredients: Ingredient[],
+        force = false
+    ): Promise<string> {
         const key = `recipe-images/${recipeId}`;
 
-        try {
-            await this.store.getHeadObject(key);
-            this.logger?.info('Recipe image already exists in store', { recipeId });
-            return key;
-        } catch {
-            this.logger?.info('Recipe image not found in store, generating', { recipeId });
+        if (!force) {
+            try {
+                await this.store.getHeadObject(key);
+                this.logger?.info('Recipe image already exists in store', { recipeId });
+                return key;
+            } catch {
+                this.logger?.info('Recipe image not found in store, generating', { recipeId });
+            }
         }
 
         const prompt = this.generatePrompt(title, ingredients);

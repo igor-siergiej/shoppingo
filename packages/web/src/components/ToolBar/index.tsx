@@ -31,9 +31,6 @@ interface ToolBarProps {
         link?: string,
         instructions?: string[]
     ) => Promise<Recipe | undefined>;
-    onRefetchRecipes?: () => Promise<void>;
-    onImageGenerating?: (recipeId: string) => void;
-    onImageReady?: (recipeId: string) => void;
     addRecipeDrawerOpen?: boolean;
     onAddRecipeDrawerOpenChange?: (open: boolean) => void;
     addRecipeInitialLink?: string;
@@ -59,9 +56,6 @@ const ToolBar = ({
     onAddItem,
     onAddIngredient,
     onAddRecipe,
-    onRefetchRecipes,
-    onImageGenerating,
-    onImageReady,
     addRecipeDrawerOpen,
     onAddRecipeDrawerOpenChange,
     addRecipeInitialLink,
@@ -243,9 +237,6 @@ const ToolBar = ({
                                             open={addRecipeDrawerOpen ?? isAddRecipeDrawerOpen}
                                             onOpenChange={onAddRecipeDrawerOpenChange ?? setIsAddRecipeDrawerOpen}
                                             onAdd={onAddRecipe}
-                                            onRefetch={onRefetchRecipes}
-                                            onImageGenerating={onImageGenerating}
-                                            onImageReady={onImageReady}
                                             placeholder={placeholder}
                                             initialLink={addRecipeInitialLink}
                                         />

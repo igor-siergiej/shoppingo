@@ -116,33 +116,41 @@ beforeEach(() => {
     mockImageService.reset();
 });
 
-describe('RecipeService.createRecipe image enrichment', () => {
-    it('fires background image enrichment when recipeImageService provided', async () => {
+describe('RecipeService.regenerateImage', () => {
+    it('generates image when coverImageKey is not set', async () => {
         const svc = new RecipeService(repo as any, ids, undefined, undefined, mockImageService as any);
-        const recipe = await svc.createRecipe('Pasta', [{ id: '1', name: 'flour' }], owner.id, owner);
+        const created = await svc.createRecipe('Pasta', [{ id: '1', name: 'flour' }], owner.id, owner);
 
-        await new Promise((r) => setTimeout(r, 10));
+        const result = await svc.regenerateImage(created.id, owner.id);
 
         expect(mockImageService.calls.length).toBe(1);
-        expect(mockImageService.calls[0].recipeId).toBe(recipe.id);
-        expect(mockImageService.calls[0].title).toBe('Pasta');
-        expect(repo.store.get(recipe.id)?.coverImageKey).toBe(`recipe-images/${recipe.id}`);
+        expect(mockImageService.calls[0].recipeId).toBe(created.id);
+        expect(result.coverImageKey).toBe(`recipe-images/${created.id}`);
     });
 
-    it('skips enrichment when no recipeImageService provided', async () => {
-        const svc = new RecipeService(repo as any, ids);
-        await svc.createRecipe('Pasta', [], owner.id, owner);
+    it('returns existing recipe without generating when coverImageKey already set', async () => {
+        const svc = new RecipeService(repo as any, ids, undefined, undefined, mockImageService as any);
+        const created = await svc.createRecipe('Pasta', [], owner.id, owner);
+        await svc.setCoverImageKey(created.id, 'existing-key', owner.id);
 
-        await new Promise((r) => setTimeout(r, 10));
+        const result = await svc.regenerateImage(created.id, owner.id);
 
         expect(mockImageService.calls.length).toBe(0);
+        expect(result.coverImageKey).toBe('existing-key');
     });
 
-    it('does not throw when enrichment fails', async () => {
-        mockImageService.shouldReject = true;
-        const svc = new RecipeService(repo as any, ids, undefined, undefined, mockImageService as any);
+    it('throws 503 when image service not configured', async () => {
+        const svc = new RecipeService(repo as any, ids);
+        const created = await svc.createRecipe('Pasta', [], owner.id, owner);
 
-        await expect(svc.createRecipe('Pasta', [], owner.id, owner)).resolves.toBeDefined();
+        await expect(svc.regenerateImage(created.id, owner.id)).rejects.toMatchObject({ status: 503 });
+    });
+
+    it('throws 403 when non-owner tries to regenerate', async () => {
+        const svc = new RecipeService(repo as any, ids, undefined, undefined, mockImageService as any);
+        const created = await svc.createRecipe('Pasta', [], owner.id, owner);
+
+        await expect(svc.regenerateImage(created.id, 'other-user')).rejects.toMatchObject({ status: 403 });
     });
 });
 

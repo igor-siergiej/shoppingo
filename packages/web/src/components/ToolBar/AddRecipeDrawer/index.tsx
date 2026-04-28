@@ -1,7 +1,7 @@
 import { ChefHat, Image as ImageIcon, Plus, X } from 'lucide-react';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { setCoverImageKey, uploadRecipeImage } from '../../../api';
+import { uploadRecipeImage } from '../../../api';
 import { SearchResults } from '../../../components/SearchResults';
 import { useSearch } from '../../../hooks/useSearch';
 import { Badge } from '../../ui/badge';
@@ -40,9 +40,6 @@ export interface AddRecipeDrawerProps {
         link?: string,
         instructions?: string[]
     ) => Promise<Recipe | undefined>;
-    onRefetch?: () => Promise<void>;
-    onImageGenerating?: (recipeId: string) => void;
-    onImageReady?: (recipeId: string) => void;
     placeholder?: string;
     initialLink?: string;
 }
@@ -53,15 +50,7 @@ const splitIntoSteps = (text: string): string[] =>
         .map((line) => line.replace(/^\s*\d+[.)]\s*/, '').trim())
         .filter(Boolean);
 
-export const AddRecipeDrawer = ({
-    open,
-    onOpenChange,
-    onAdd,
-    onRefetch,
-    onImageGenerating,
-    onImageReady,
-    initialLink,
-}: AddRecipeDrawerProps) => {
+export const AddRecipeDrawer = ({ open, onOpenChange, onAdd, initialLink }: AddRecipeDrawerProps) => {
     const recipeNameId = useId();
     const userSearchId = useId();
     const fileInputId = useId();
@@ -134,46 +123,14 @@ export const AddRecipeDrawer = ({
                 throw new Error('Failed to create recipe');
             }
 
-            const capturedTitle = title;
             const capturedFile = selectedFile;
 
             handleCancel();
 
             if (capturedFile) {
-                onImageGenerating?.(recipe.id);
-                void (async () => {
-                    try {
-                        await uploadRecipeImage(recipe.id, capturedFile);
-                        toast.success('Recipe image uploaded', {
-                            style: { backgroundColor: '#10b981', color: '#ffffff' },
-                        });
-                    } catch {
-                        // silent — recipe still usable
-                    } finally {
-                        onImageReady?.(recipe.id);
-                        if (onRefetch) await onRefetch();
-                    }
-                })();
-            } else {
-                onImageGenerating?.(recipe.id);
-                void (async () => {
-                    try {
-                        const response = await fetch(`/api/image/${encodeURIComponent(capturedTitle)}`, {
-                            method: 'GET',
-                        });
-                        if (response.ok) {
-                            await setCoverImageKey(recipe.id, capturedTitle.trim().toLowerCase());
-                            toast.success('Recipe image generated', {
-                                style: { backgroundColor: '#10b981', color: '#ffffff' },
-                            });
-                        }
-                    } catch {
-                        // silent — recipe still usable
-                    } finally {
-                        onImageReady?.(recipe.id);
-                        if (onRefetch) await onRefetch();
-                    }
-                })();
+                void uploadRecipeImage(recipe.id, capturedFile).catch(() => {
+                    // silent — recipe still usable
+                });
             }
         } catch (err) {
             const message = err instanceof Error ? err.message : 'Failed to create recipe';
