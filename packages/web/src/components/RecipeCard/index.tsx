@@ -2,6 +2,7 @@ import { getStorageItem } from '@imapps/web-utils';
 import type { Recipe } from '@shoppingo/types';
 import { ImageOff } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+
 import { Card, CardContent } from '../../components/ui/card';
 import { Skeleton } from '../../components/ui/skeleton';
 import { getAuthConfig } from '../../config/auth';
@@ -9,10 +10,9 @@ import { getAuthConfig } from '../../config/auth';
 interface RecipeCardProps {
     recipe: Recipe;
     onClick: () => void;
-    isGeneratingImage?: boolean;
 }
 
-export const RecipeCard = ({ recipe, onClick, isGeneratingImage }: RecipeCardProps) => {
+export const RecipeCard = ({ recipe, onClick }: RecipeCardProps) => {
     const [imageUrl, setImageUrl] = useState<string | null>(null);
     const [isLoadingImage, setIsLoadingImage] = useState(() => !!recipe.coverImageKey);
     const [hasImageError, setHasImageError] = useState(false);
@@ -23,6 +23,8 @@ export const RecipeCard = ({ recipe, onClick, isGeneratingImage }: RecipeCardPro
             setIsLoadingImage(false);
             return;
         }
+
+        setIsLoadingImage(true);
 
         const fetchImage = async () => {
             try {
@@ -90,24 +92,9 @@ export const RecipeCard = ({ recipe, onClick, isGeneratingImage }: RecipeCardPro
                     />
                 )}
 
-                {isLoadingImage && !imageUrl && !hasImageError && (
+                {(isLoadingImage || !recipe.coverImageKey) && !imageUrl && !hasImageError && (
                     <Skeleton className="absolute inset-0 h-full w-full rounded-none" />
                 )}
-
-                {!recipe.coverImageKey &&
-                    !imageUrl &&
-                    !hasImageError &&
-                    (isGeneratingImage ? (
-                        <div
-                            role="img"
-                            aria-label="Generating recipe image"
-                            className="absolute inset-0 flex items-center justify-center text-4xl animate-pulse"
-                        >
-                            🍕
-                        </div>
-                    ) : (
-                        <div className="absolute inset-0 flex items-center justify-center text-4xl">🍳</div>
-                    ))}
 
                 {hasImageError && (
                     <div className="absolute inset-0 flex items-center justify-center bg-muted/20 text-muted-foreground">

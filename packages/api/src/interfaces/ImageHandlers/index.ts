@@ -14,7 +14,7 @@ export const getImage = async (ctx: Context) => {
 
     try {
         if (name.startsWith('recipe-upload/')) {
-            // Stored images require authentication
+            // User-uploaded images: require auth, bucket only
             const user = ctx.state.user as { id: string; username: string } | undefined;
             if (!user?.id) {
                 ctx.status = 401;
@@ -52,7 +52,33 @@ export const getImage = async (ctx: Context) => {
             return;
         }
 
-        // AI-generated images are public (no auth required)
+        if (name.startsWith('recipe-image/')) {
+            // AI-generated recipe images: public, bucket only — no fallback generation
+            const bucketStore = getBucketStore();
+            try {
+                const head = await bucketStore.getHeadObject(name);
+                const contentType = head?.metaData?.['content-type'] ?? 'image/webp';
+                const stream = await bucketStore.getObjectStream(name);
+
+                logger.info('API: Recipe AI image retrieved', { imageKey: name, contentType });
+
+                ctx.set('Content-Type', contentType);
+                ctx.set('Cache-Control', 'public, max-age=31536000, immutable');
+                ctx.status = 200;
+
+                await new Promise((resolve, reject) => {
+                    stream.pipe(ctx.res, { end: true });
+                    stream.on('end', resolve);
+                    stream.on('error', reject);
+                });
+            } catch {
+                ctx.status = 404;
+                ctx.body = { error: 'Image not found' };
+            }
+            return;
+        }
+
+        // Shopping list AI images: public, with AI generation fallback
         const { stream, contentType, cacheControl } = await getImageService().getImage(name);
 
         logger.info('API: AI image retrieved', {

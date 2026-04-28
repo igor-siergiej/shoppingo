@@ -37,12 +37,19 @@ const createMockContext = (overrides: Partial<Context> = {}): Context =>
         ...overrides,
     }) as Context;
 
+const mockBucketStore = {
+    getHeadObject: vi.fn(),
+    getObjectStream: vi.fn(),
+    putObject: vi.fn(),
+};
+
 describe('ImageHandlers', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         mockDependencyContainer.resolve.mockImplementation((token: string) => {
             if (token === 'ImageService') return mockImageService;
             if (token === 'Logger') return mockLogger;
+            if (token === 'ImageStore') return mockBucketStore;
             return null;
         });
     });
@@ -171,6 +178,34 @@ describe('ImageHandlers', () => {
 
             expect(ctx.status).toBe(500);
             expect(ctx.body).toEqual({ error: 'Stream error' });
+        });
+
+        describe('recipe-image/* keys', () => {
+            it('returns image from bucket without auth', async () => {
+                const mockStream = { pipe: vi.fn(), on: vi.fn() };
+                mockBucketStore.getHeadObject.mockResolvedValue({ metaData: { 'content-type': 'image/webp' } });
+                mockBucketStore.getObjectStream.mockResolvedValue(mockStream);
+                mockStream.on.mockImplementation((event: string, cb: () => void) => {
+                    if (event === 'end') setTimeout(cb, 0);
+                });
+
+                const ctx = createMockContext({ params: { name: 'recipe-image/pasta' } });
+                await imageHandlers.getImage(ctx);
+
+                expect(mockImageService.getImage).not.toHaveBeenCalled();
+                expect(ctx.status).toBe(200);
+                expect(ctx.set).toHaveBeenCalledWith('Content-Type', 'image/webp');
+            });
+
+            it('returns 404 when recipe image not in bucket', async () => {
+                mockBucketStore.getHeadObject.mockRejectedValue(new Error('Not found'));
+
+                const ctx = createMockContext({ params: { name: 'recipe-image/pasta' } });
+                await imageHandlers.getImage(ctx);
+
+                expect(mockImageService.getImage).not.toHaveBeenCalled();
+                expect(ctx.status).toBe(404);
+            });
         });
 
         it('should handle stream end event', async () => {

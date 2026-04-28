@@ -73,11 +73,10 @@ describe('RecipeCard', () => {
         });
     });
 
-    it('shows placeholder when no image', () => {
+    it('shows skeleton when no coverImageKey', () => {
         const { container } = render(<RecipeCard recipe={mockRecipeNoImage} onClick={vi.fn()} />);
 
-        // Should show cooking emoji placeholder
-        expect(container.textContent).toContain('🍳');
+        expect(container.querySelector('[data-slot="skeleton"]')).toBeTruthy();
     });
 
     it('calls onClick when card is clicked', () => {
@@ -118,15 +117,5 @@ describe('RecipeCard', () => {
         unmount();
 
         expect(global.URL.revokeObjectURL).toHaveBeenCalled();
-    });
-
-    it('shows pizza spinner when isGeneratingImage is true and no image loaded', () => {
-        render(<RecipeCard recipe={mockRecipeNoImage} onClick={vi.fn()} isGeneratingImage />);
-        expect(screen.getByLabelText('Generating recipe image')).toBeTruthy();
-    });
-
-    it('does not show pizza spinner when isGeneratingImage is false', () => {
-        render(<RecipeCard recipe={mockRecipeNoImage} onClick={vi.fn()} isGeneratingImage={false} />);
-        expect(screen.queryByLabelText('Generating recipe image')).toBeNull();
     });
 });
