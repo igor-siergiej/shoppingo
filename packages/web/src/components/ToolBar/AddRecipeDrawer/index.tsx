@@ -42,6 +42,9 @@ export interface AddRecipeDrawerProps {
     ) => Promise<Recipe | undefined>;
     placeholder?: string;
     initialLink?: string;
+    onRefetch?: () => void;
+    onImageGenerating?: (recipeId: string) => void;
+    onImageReady?: () => void;
 }
 
 const splitIntoSteps = (text: string): string[] =>
@@ -50,7 +53,15 @@ const splitIntoSteps = (text: string): string[] =>
         .map((line) => line.replace(/^\s*\d+[.)]\s*/, '').trim())
         .filter(Boolean);
 
-export const AddRecipeDrawer = ({ open, onOpenChange, onAdd, initialLink }: AddRecipeDrawerProps) => {
+export const AddRecipeDrawer = ({
+    open,
+    onOpenChange,
+    onAdd,
+    initialLink,
+    onRefetch,
+    onImageGenerating,
+    onImageReady,
+}: AddRecipeDrawerProps) => {
     const recipeNameId = useId();
     const userSearchId = useId();
     const fileInputId = useId();
@@ -124,13 +135,25 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd, initialLink }: AddR
             }
 
             const capturedFile = selectedFile;
+            const capturedTitle = title;
+            const capturedRecipeId = recipe.id;
 
             handleCancel();
 
             if (capturedFile) {
-                void uploadRecipeImage(recipe.id, capturedFile).catch(() => {
-                    // silent — recipe still usable
-                });
+                void uploadRecipeImage(capturedRecipeId, capturedFile)
+                    .then(() => onRefetch?.())
+                    .catch(() => {});
+            } else {
+                onImageGenerating?.(capturedRecipeId);
+                void fetch(`/api/image/${encodeURIComponent(capturedTitle)}`, { method: 'GET' })
+                    .then((response) => {
+                        if (response.ok) {
+                            onRefetch?.();
+                            onImageReady?.();
+                        }
+                    })
+                    .catch(() => {});
             }
         } catch (err) {
             const message = err instanceof Error ? err.message : 'Failed to create recipe';
