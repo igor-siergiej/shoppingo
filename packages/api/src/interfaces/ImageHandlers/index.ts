@@ -13,8 +13,7 @@ export const getImage = async (ctx: Context) => {
     const logger = getLogger();
 
     try {
-        // Check if it's a stored image key (e.g., recipe-uploads/...)
-        if (name.includes('/')) {
+        if (name.startsWith('recipe-upload/')) {
             // Stored images require authentication
             const user = ctx.state.user as { id: string; username: string } | undefined;
             if (!user?.id) {

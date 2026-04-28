@@ -485,7 +485,7 @@ describe('RecipeHandlers', () => {
             mockBucketStore.putObject.mockResolvedValue(undefined);
             mockRecipeService.setCoverImageKey.mockResolvedValue({
                 ...baseRecipe,
-                coverImageKey: 'recipe-uploads/user-1/recipe-1',
+                coverImageKey: 'recipe-upload/user-1/recipe-1',
             });
             const ctx = createMockContext({
                 params: { recipeId: 'recipe-1' },

@@ -35,11 +35,9 @@ router.delete('/api/lists/:title/clearSelected', authenticate, listHandlers.dele
 router.post('/api/lists/:title/users', authenticate, listHandlers.addUserToList);
 router.delete('/api/lists/:title/users/:userId', authenticate, listHandlers.removeUserFromList);
 
-// Conditional auth for images: stored images need auth, AI images don't
 const conditionalImageAuth = async (ctx: Context, next: Next) => {
     const { name } = ctx.params as { name: string };
-    // Only require auth for stored images (contain /)
-    if (name.includes('/')) {
+    if (name.startsWith('recipe-upload/')) {
         return authenticate(ctx, next);
     }
     return next();

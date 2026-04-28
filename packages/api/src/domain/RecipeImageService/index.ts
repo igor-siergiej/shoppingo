@@ -16,7 +16,7 @@ export class RecipeImageService {
         ingredients: Ingredient[],
         force = false
     ): Promise<string> {
-        const key = `recipe-images/${recipeId}`;
+        const key = `recipe-image/${title.trim().toLowerCase()}`;
 
         if (!force) {
             try {

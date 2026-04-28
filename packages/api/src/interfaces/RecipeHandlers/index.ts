@@ -550,8 +550,7 @@ export const uploadRecipeImage = async (ctx: Context): Promise<void> => {
         // Read file buffer
         const fileBuffer = await readFile(filePath);
 
-        // Generate unique key: recipe-uploads/{userId}/{recipeId}
-        const imageKey = `recipe-uploads/${authenticatedUser.id}/${recipeId}`;
+        const imageKey = `recipe-upload/${authenticatedUser.id}/${recipeId}`;
 
         // Store in MinIO
         const bucketStore = getBucketStore();
