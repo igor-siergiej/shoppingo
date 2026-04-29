@@ -13,17 +13,11 @@ interface RecipeCardProps {
 
 export const RecipeCard = ({ recipe, onClick }: RecipeCardProps) => {
     const [imageUrl, setImageUrl] = useState<string | null>(null);
-    const [isLoadingImage, setIsLoadingImage] = useState(() => !!recipe.coverImageKey);
     const [hasImageError, setHasImageError] = useState(false);
     const objectUrlRef = useRef<string | null>(null);
 
     useEffect(() => {
-        if (!recipe.coverImageKey) {
-            setIsLoadingImage(false);
-            return;
-        }
-
-        setIsLoadingImage(true);
+        if (!recipe.coverImageKey) return;
 
         const fetchImage = async () => {
             try {
@@ -51,8 +45,6 @@ export const RecipeCard = ({ recipe, onClick }: RecipeCardProps) => {
                 setImageUrl(url);
             } catch {
                 setHasImageError(true);
-            } finally {
-                setIsLoadingImage(false);
             }
         };
 
@@ -91,9 +83,7 @@ export const RecipeCard = ({ recipe, onClick }: RecipeCardProps) => {
                     />
                 )}
 
-                {(isLoadingImage || !recipe.coverImageKey) && !imageUrl && !hasImageError && (
-                    <Skeleton className="absolute inset-0 h-full w-full rounded-none" />
-                )}
+                {!imageUrl && !hasImageError && <Skeleton className="absolute inset-0 h-full w-full rounded-none" />}
 
                 {hasImageError && (
                     <div className="absolute inset-0 flex items-center justify-center bg-muted/20 text-muted-foreground">
