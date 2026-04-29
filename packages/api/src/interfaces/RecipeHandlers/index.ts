@@ -122,11 +122,12 @@ export const getRecipe = async (ctx: Context): Promise<void> => {
 };
 
 export const createRecipe = async (ctx: Context): Promise<void> => {
-    const { title, ingredients, link, instructions } = ctx.request.body as {
+    const { title, ingredients, link, instructions, selectedUsers } = ctx.request.body as {
         title: string;
         ingredients: Ingredient[];
         link?: string;
         instructions?: string[];
+        selectedUsers?: string[];
     };
     const logger = getLogger();
     const authenticatedUser = getAuthenticatedUser(ctx);
@@ -159,7 +160,8 @@ export const createRecipe = async (ctx: Context): Promise<void> => {
             authenticatedUser.id,
             authenticatedUser,
             link,
-            instructions
+            instructions,
+            selectedUsers
         );
 
         logger.info('API: Recipe created', {
