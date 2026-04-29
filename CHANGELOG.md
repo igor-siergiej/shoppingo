@@ -1,3 +1,10 @@
+## [1.32.2](https://github.com/igor-siergiej/shoppingo/compare/v1.32.1...v1.32.2) (2026-04-29)
+
+
+### Bug Fixes
+
+* **api:** share recipes with selected users at creation time ([#64](https://github.com/igor-siergiej/shoppingo/issues/64)) ([1cde950](https://github.com/igor-siergiej/shoppingo/commit/1cde950156176a9c7e7a2fca9740337d1ede4118))
+
 ## [1.32.1](https://github.com/igor-siergiej/shoppingo/compare/v1.32.0...v1.32.1) (2026-04-29)
 
 
