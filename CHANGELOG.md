@@ -1,3 +1,10 @@
+## [1.32.3](https://github.com/igor-siergiej/shoppingo/compare/v1.32.2...v1.32.3) (2026-04-29)
+
+
+### Bug Fixes
+
+* **web:** show skeleton during coverImageKey transition in RecipeCard ([#65](https://github.com/igor-siergiej/shoppingo/issues/65)) ([4bb5ed5](https://github.com/igor-siergiej/shoppingo/commit/4bb5ed59c75e14d7990e5d02fa9b8d76b60fd5ce))
+
 ## [1.32.2](https://github.com/igor-siergiej/shoppingo/compare/v1.32.1...v1.32.2) (2026-04-29)
 
 
