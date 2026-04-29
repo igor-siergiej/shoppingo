@@ -70,9 +70,25 @@ const repo = new MockRepository();
 const ids = new MockIdGenerator();
 const owner: User = { id: 'user-1', username: 'alice' };
 
+const user2: User = { id: 'user-2', username: 'bob' };
+const user3: User = { id: 'user-3', username: 'carol' };
+
+class MockAuthClient {
+    users: User[] = [];
+    async getUsersByUsernames(usernames: string[]): Promise<User[]> {
+        return this.users.filter((u) => usernames.includes(u.username));
+    }
+    reset() {
+        this.users = [];
+    }
+}
+
+const mockAuth = new MockAuthClient();
+
 beforeEach(() => {
     repo.reset();
     ids.reset();
+    mockAuth.reset();
 });
 
 describe('RecipeService.createRecipe', () => {
@@ -91,6 +107,38 @@ describe('RecipeService.createRecipe', () => {
         const recipe = await svc.createRecipe('Pasta', [], owner.id, owner);
         expect(recipe.link).toBeUndefined();
         expect(recipe.instructions).toBeUndefined();
+    });
+
+    it('creates recipe with only owner when no selectedUsers provided', async () => {
+        const svc = new RecipeService(repo as any, ids, undefined, undefined, undefined, mockAuth as any);
+        const recipe = await svc.createRecipe('Pasta', [], owner.id, owner);
+        expect(recipe.users).toHaveLength(1);
+        expect(recipe.users[0].id).toBe(owner.id);
+    });
+
+    it('shares recipe with selected users at creation time', async () => {
+        mockAuth.users = [user2, user3];
+        const svc = new RecipeService(repo as any, ids, undefined, undefined, undefined, mockAuth as any);
+        const recipe = await svc.createRecipe('Pasta', [], owner.id, owner, undefined, undefined, ['bob', 'carol']);
+        expect(recipe.users).toHaveLength(3);
+        expect(recipe.users.map((u) => u.id)).toContain(owner.id);
+        expect(recipe.users.map((u) => u.id)).toContain(user2.id);
+        expect(recipe.users.map((u) => u.id)).toContain(user3.id);
+    });
+
+    it('throws 502 when selectedUsers provided but no auth service configured', async () => {
+        const svc = new RecipeService(repo as any, ids);
+        await expect(
+            svc.createRecipe('Pasta', [], owner.id, owner, undefined, undefined, ['bob'])
+        ).rejects.toMatchObject({ status: 502 });
+    });
+
+    it('throws 400 when selected usernames resolve to no users', async () => {
+        mockAuth.users = [];
+        const svc = new RecipeService(repo as any, ids, undefined, undefined, undefined, mockAuth as any);
+        await expect(
+            svc.createRecipe('Pasta', [], owner.id, owner, undefined, undefined, ['nonexistent'])
+        ).rejects.toMatchObject({ status: 400 });
     });
 });
 
@@ -227,8 +275,6 @@ describe('RecipeService.deleteRecipe', () => {
         await expect(svc.deleteRecipe('missing', owner.id)).rejects.toMatchObject({ status: 404 });
     });
 });
-
-const user2: User = { id: 'user-2', username: 'bob' };
 
 describe('RecipeService.addUserToRecipe', () => {
     it('adds user to recipe', async () => {

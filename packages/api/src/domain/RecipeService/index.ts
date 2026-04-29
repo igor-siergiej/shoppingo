@@ -4,6 +4,10 @@ import { AuthorizationService } from '../AuthorizationService';
 import type { RecipeImageService } from '../RecipeImageService';
 import type { RecipeRepository } from '../RecipeRepository';
 
+interface AuthClient {
+    getUsersByUsernames(usernames: Array<string>): Promise<Array<User>>;
+}
+
 export class RecipeService {
     private readonly authorizationService: AuthorizationService;
 
@@ -12,9 +16,72 @@ export class RecipeService {
         private idGenerator: IdGenerator,
         private logger?: Logger,
         authorizationService?: AuthorizationService,
-        private recipeImageService?: RecipeImageService
+        private recipeImageService?: RecipeImageService,
+        private auth?: AuthClient
     ) {
         this.authorizationService = authorizationService ?? new AuthorizationService();
+    }
+
+    private async resolveSharedUsers(title: string, owner: User, usernames?: Array<string>): Promise<Array<User>> {
+        if (!usernames || usernames.length === 0) {
+            return [owner];
+        }
+
+        if (!this.auth) {
+            throw Object.assign(new Error('Auth service not configured'), { status: 502 });
+        }
+
+        try {
+            const fetched = await this.auth.getUsersByUsernames(usernames);
+
+            if (!fetched || fetched.length === 0) {
+                throw Object.assign(new Error('No users found for the provided usernames'), {
+                    status: 400,
+                    usersNotFound: true,
+                });
+            }
+
+            this.logger?.info('Recipe shared with users', {
+                recipeTitle: title,
+                owner: owner.username,
+                sharedWithCount: fetched.length,
+                sharedWith: fetched.map((u) => u.username),
+            });
+
+            return [owner, ...fetched];
+        } catch (error) {
+            const errorWithStatus = error as {
+                status?: number;
+                usersNotFound?: boolean;
+                authServiceError?: boolean;
+            };
+
+            if (errorWithStatus.usersNotFound) {
+                this.logger?.warn('Attempted to share recipe with non-existent users', {
+                    recipeTitle: title,
+                    owner: owner.username,
+                    selectedUsernames: usernames,
+                    message: (error as Error).message,
+                });
+                throw error;
+            } else if (errorWithStatus.authServiceError) {
+                this.logger?.error('Auth service unavailable when sharing recipe', {
+                    recipeTitle: title,
+                    owner: owner.username,
+                    selectedUsernames: usernames,
+                    message: (error as Error).message,
+                });
+                throw Object.assign(new Error('Auth service unavailable. Please try again later.'), { status: 502 });
+            } else {
+                this.logger?.error('Failed to share recipe with users', {
+                    recipeTitle: title,
+                    owner: owner.username,
+                    selectedUsernames: usernames,
+                    error,
+                });
+                throw Object.assign(new Error('Failed to share recipe. Please try again.'), { status: 500 });
+            }
+        }
     }
 
     async createRecipe(
@@ -23,9 +90,11 @@ export class RecipeService {
         ownerId: string,
         owner: User,
         link?: string,
-        instructions?: string[]
+        instructions?: string[],
+        selectedUsers?: string[]
     ): Promise<Recipe> {
         try {
+            const users = await this.resolveSharedUsers(title, owner, selectedUsers);
             const recipe: Recipe = {
                 id: this.idGenerator.generate(),
                 title,
@@ -34,7 +103,7 @@ export class RecipeService {
                     id: this.idGenerator.generate(),
                 })),
                 ownerId,
-                users: [owner],
+                users,
                 dateAdded: new Date(),
                 ...(link !== undefined && { link }),
                 ...(instructions !== undefined && { instructions }),
