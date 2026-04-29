@@ -1,3 +1,10 @@
+## [1.32.1](https://github.com/igor-siergiej/shoppingo/compare/v1.32.0...v1.32.1) (2026-04-29)
+
+
+### Bug Fixes
+
+* **web,api:** restore skeleton loading and prevent double image generation ([#63](https://github.com/igor-siergiej/shoppingo/issues/63)) ([f6f5495](https://github.com/igor-siergiej/shoppingo/commit/f6f5495c21231e804165c44841461c9af1699916))
+
 # [1.32.0](https://github.com/igor-siergiej/shoppingo/compare/v1.31.0...v1.32.0) (2026-04-28)
 
 
