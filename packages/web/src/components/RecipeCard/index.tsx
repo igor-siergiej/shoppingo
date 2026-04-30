@@ -83,9 +83,7 @@ export const RecipeCard = ({ recipe, onClick }: RecipeCardProps) => {
                     />
                 )}
 
-                {!imageUrl && !hasImageError && recipe.coverImageKey && (
-                    <Skeleton className="absolute inset-0 h-full w-full rounded-none" />
-                )}
+                {!imageUrl && !hasImageError && <Skeleton className="absolute inset-0 h-full w-full rounded-none" />}
 
                 {hasImageError && (
                     <div className="absolute inset-0 flex items-center justify-center bg-muted/20 text-muted-foreground">
