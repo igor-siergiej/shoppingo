@@ -1,3 +1,16 @@
+# [1.33.0](https://github.com/igor-siergiej/shoppingo/compare/v1.32.3...v1.33.0) (2026-04-30)
+
+
+### Bug Fixes
+
+* show skeleton while AI recipe image is loading ([#66](https://github.com/igor-siergiej/shoppingo/issues/66)) ([0e2d7e7](https://github.com/igor-siergiej/shoppingo/commit/0e2d7e7eaf9d0cc0b47311266f367038237fbdc3))
+* **web:** show skeleton when coverImageKey absent ([530f7ae](https://github.com/igor-siergiej/shoppingo/commit/530f7aeb2f42791d800a0833e9a1ba06c819feb0))
+
+
+### Features
+
+* **web:** replace pulse skeleton with shimmer animation on recipe cards ([#67](https://github.com/igor-siergiej/shoppingo/issues/67)) ([fb278e6](https://github.com/igor-siergiej/shoppingo/commit/fb278e6a9769564d81d8d4e4b6c780bab57431ff))
+
 ## [1.32.3](https://github.com/igor-siergiej/shoppingo/compare/v1.32.2...v1.32.3) (2026-04-29)
 
 
