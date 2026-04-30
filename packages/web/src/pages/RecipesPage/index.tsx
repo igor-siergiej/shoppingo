@@ -1,6 +1,6 @@
 import { useUser } from '@imapps/web-utils';
 import { AlertTriangle, BookOpen, ChefHat, Search, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { addRecipe, generateRecipeAiImage, getRecipesQuery } from '../../api';
@@ -21,6 +21,7 @@ const RecipesPage = () => {
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [sharedUrl, setSharedUrl] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
+    const generatingRef = useRef<Set<string>>(new Set());
     const { data, isLoading, isError, refetch } = useQuery({
         ...getRecipesQuery(user?.id || ''),
         enabled: !!user?.id,
@@ -41,6 +42,18 @@ const RecipesPage = () => {
             logger.error('Failed to load recipes', { userId: user?.id });
         }
     }, [isError, user?.id]);
+
+    useEffect(() => {
+        if (!data || !user?.id) return;
+        const missing = data.filter((r) => !r.coverImageKey && r.ownerId === user.id);
+        for (const recipe of missing) {
+            if (generatingRef.current.has(recipe.id)) continue;
+            generatingRef.current.add(recipe.id);
+            void generateRecipeAiImage(recipe.id).then(() =>
+                queryClient.invalidateQueries(getRecipesQuery(user.id).queryKey)
+            );
+        }
+    }, [data, user?.id, queryClient]);
 
     useEffect(() => {
         const url = searchParams.get('sharedUrl');

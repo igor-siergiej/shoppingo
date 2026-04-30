@@ -17,3 +17,6 @@ coverage/
 # Git worktrees
 .worktrees
 .claude/
+
+# Playwright MCP artifacts
+.playwright-mcp/
