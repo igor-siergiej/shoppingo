@@ -1,10 +1,13 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
+import { PullToRefreshProvider } from '../../contexts/PullToRefreshContext';
 import { Layout } from './index';
+
+const renderWithProvider = (ui: React.ReactElement) => render(<PullToRefreshProvider>{ui}</PullToRefreshProvider>);
 
 describe('Layout', () => {
     it('renders children', () => {
-        render(
+        renderWithProvider(
             <Layout>
                 <p>Test content</p>
             </Layout>
@@ -14,7 +17,7 @@ describe('Layout', () => {
     });
 
     it('applies fixed positioning styles', () => {
-        const { container } = render(
+        const { container } = renderWithProvider(
             <Layout>
                 <p>Content</p>
             </Layout>
@@ -25,7 +28,7 @@ describe('Layout', () => {
     });
 
     it('applies padding and max-width', () => {
-        const { container } = render(
+        const { container } = renderWithProvider(
             <Layout>
                 <p>Content</p>
             </Layout>
@@ -36,14 +39,15 @@ describe('Layout', () => {
     });
 
     it('renders children in reverse flex column', () => {
-        const { container } = render(
+        const { container } = renderWithProvider(
             <Layout>
                 <p>Content</p>
             </Layout>
         );
 
         const outerDiv = container.firstChild as HTMLElement;
-        const innerDiv = outerDiv.firstChild as HTMLElement;
-        expect(innerDiv).toHaveClass('flex-col-reverse', 'overflow-y-auto', 'h-full');
+        // The scroll container is the last child (after PullToRefreshIndicator)
+        const scrollDiv = outerDiv.lastElementChild as HTMLElement;
+        expect(scrollDiv).toHaveClass('flex-col-reverse', 'overflow-y-auto', 'h-full', 'overscroll-y-contain');
     });
 });

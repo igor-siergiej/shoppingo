@@ -13,6 +13,7 @@ import LoadingPage from './components/LoadingPage';
 import { RootLayout } from './components/RootLayout';
 import RouterErrorHandler from './components/RouterErrorHandler';
 import { getAuthConfig } from './config/auth';
+import { PullToRefreshProvider } from './contexts/PullToRefreshContext';
 import { PWAProvider } from './contexts/PWAContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 
@@ -135,9 +136,11 @@ const AppContent: React.FC = () => {
                 <UserProvider>
                     <AuthProvider>
                         <ThemeProvider>
-                            <PWAProvider>
-                                <RouterProvider router={router} />
-                            </PWAProvider>
+                            <PullToRefreshProvider>
+                                <PWAProvider>
+                                    <RouterProvider router={router} />
+                                </PWAProvider>
+                            </PullToRefreshProvider>
                         </ThemeProvider>
                     </AuthProvider>
                 </UserProvider>

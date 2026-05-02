@@ -9,6 +9,7 @@ import { ListsSkeleton } from '../../components/LoadingSkeleton';
 import ToolBar from '../../components/ToolBar';
 import { Button } from '../../components/ui/button';
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '../../components/ui/empty';
+import { usePullToRefreshContext } from '../../contexts/PullToRefreshContext';
 import { logger } from '../../utils/logger';
 
 const ListsPage = () => {
@@ -17,6 +18,13 @@ const ListsPage = () => {
         ...getListsQuery(user?.id || ''),
         enabled: !!user?.id,
     });
+    const { registerRefresh } = usePullToRefreshContext();
+
+    useEffect(() => {
+        return registerRefresh(async () => {
+            await refetch();
+        });
+    }, [registerRefresh, refetch]);
 
     useEffect(() => {
         if (user?.id) {
