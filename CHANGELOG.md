@@ -1,3 +1,10 @@
+# [1.34.0](https://github.com/igor-siergiej/shoppingo/compare/v1.33.0...v1.34.0) (2026-05-02)
+
+
+### Features
+
+* **web:** add pull-to-refresh with haptics, overscroll indicator, and PWA update check ([#68](https://github.com/igor-siergiej/shoppingo/issues/68)) ([bb3b439](https://github.com/igor-siergiej/shoppingo/commit/bb3b4398c1fd96bc296ec75bd88dafe42f8fe4b7))
+
 # [1.33.0](https://github.com/igor-siergiej/shoppingo/compare/v1.32.3...v1.33.0) (2026-04-30)
 
 
