@@ -25,6 +25,12 @@ if (typeof URL !== 'undefined') {
     URL.revokeObjectURL = vi.fn();
 }
 
+// Mock navigator.vibrate (not supported in jsdom)
+Object.defineProperty(navigator, 'vibrate', {
+    writable: true,
+    value: vi.fn(),
+});
+
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
     writable: true,

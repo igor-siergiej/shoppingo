@@ -17,6 +17,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '../../components/ui/alert-dialog';
+import { usePullToRefreshContext } from '../../contexts/PullToRefreshContext';
 import { useConfirmation } from '../../hooks/useConfirmation';
 import { useItemPageMutations } from '../../hooks/useItemPageMutations';
 import { logger } from '../../utils/logger';
@@ -40,6 +41,13 @@ const ItemsPage = () => {
     const selectedItemsCount = items.filter((item) => item.isSelected).length;
 
     const { addItemMutation, clearSelectedMutation, clearListMutation } = useItemPageMutations(listTitle);
+    const { registerRefresh } = usePullToRefreshContext();
+
+    useEffect(() => {
+        return registerRefresh(async () => {
+            await refetch();
+        });
+    }, [registerRefresh, refetch]);
 
     useEffect(() => {
         setCurrentListType(listType);
