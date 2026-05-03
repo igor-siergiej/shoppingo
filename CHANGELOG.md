@@ -1,3 +1,10 @@
+## [1.34.2](https://github.com/igor-siergiej/shoppingo/compare/v1.34.1...v1.34.2) (2026-05-03)
+
+
+### Bug Fixes
+
+* **web:** fix PWA update dialog not appearing after new version published ([#70](https://github.com/igor-siergiej/shoppingo/issues/70)) ([2aa44c6](https://github.com/igor-siergiej/shoppingo/commit/2aa44c6ad1918c8d70b68d84dfa64e5f1e486e88))
+
 ## [1.34.1](https://github.com/igor-siergiej/shoppingo/compare/v1.34.0...v1.34.1) (2026-05-03)
 
 
