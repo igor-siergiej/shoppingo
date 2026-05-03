@@ -1,3 +1,10 @@
+## [1.34.1](https://github.com/igor-siergiej/shoppingo/compare/v1.34.0...v1.34.1) (2026-05-03)
+
+
+### Bug Fixes
+
+* **web:** pull-to-refresh scroll fix and indicator polish ([#69](https://github.com/igor-siergiej/shoppingo/issues/69)) ([601c2f1](https://github.com/igor-siergiej/shoppingo/commit/601c2f1f90fb49e01abd3d2cdf011530125ca538))
+
 # [1.34.0](https://github.com/igor-siergiej/shoppingo/compare/v1.33.0...v1.34.0) (2026-05-02)
 
 
