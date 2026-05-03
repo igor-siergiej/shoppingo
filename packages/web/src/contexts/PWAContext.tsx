@@ -47,7 +47,7 @@ export const PWAProvider: React.FC<PWAProviderProps> = ({ children }) => {
             if (r) {
                 setInterval(() => {
                     if (!r.installing && navigator.onLine) {
-                        r.update();
+                        void r.update();
                     }
                 }, 60 * 60 * 1000);
             }
