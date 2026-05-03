@@ -34,14 +34,6 @@ export const PullToRefreshProvider = ({ children }: PullToRefreshProviderProps) 
         isExecutingRef.current = true;
         try {
             await refreshFnRef.current?.();
-            if ('serviceWorker' in navigator) {
-                try {
-                    const registration = await navigator.serviceWorker.ready;
-                    await registration.update();
-                } catch {
-                    // Silent fail — SW may not be available in dev or tests
-                }
-            }
         } finally {
             isExecutingRef.current = false;
         }
