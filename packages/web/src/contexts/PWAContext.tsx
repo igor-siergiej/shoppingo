@@ -1,7 +1,7 @@
+import { useRegisterSW } from 'virtual:pwa-register/react';
 import type React from 'react';
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { useRegisterSW } from 'virtual:pwa-register/react';
 
 interface BeforeInstallPromptEvent extends Event {
     prompt: () => Promise<void>;
@@ -45,11 +45,14 @@ export const PWAProvider: React.FC<PWAProviderProps> = ({ children }) => {
     const { updateServiceWorker } = useRegisterSW({
         onRegisteredSW(_swUrl, r) {
             if (r) {
-                setInterval(() => {
-                    if (!r.installing && navigator.onLine) {
-                        void r.update();
-                    }
-                }, 60 * 60 * 1000);
+                setInterval(
+                    () => {
+                        if (!r.installing && navigator.onLine) {
+                            void r.update();
+                        }
+                    },
+                    60 * 60 * 1000
+                );
             }
         },
         onRegisterError() {},
