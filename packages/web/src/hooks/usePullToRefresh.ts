@@ -4,6 +4,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 const RESISTANCE = 0.4;
 const THRESHOLD = 80;
 const MAX_PULL = 120;
+// Minimum downward travel before committing to pull mode and calling preventDefault.
+// Without this, any tiny downward jitter at scrollTop=0 would lock the touch sequence
+// into pull mode and prevent the browser from scrolling.
+const PULL_COMMIT_THRESHOLD = 12;
 
 const SPRING_BACK = { type: 'spring', stiffness: 300, damping: 30 } as const;
 const SPRING_HOLD = { type: 'spring', stiffness: 200, damping: 25 } as const;
@@ -23,6 +27,7 @@ export function usePullToRefresh(onRefresh: () => Promise<void>): UsePullToRefre
     const pullY = useMotionValue(0);
 
     const isPulling = useRef(false);
+    const isCommitted = useRef(false); // true once we've called preventDefault and taken over the gesture
     const touchStartY = useRef(0);
     const hasFiredHaptic = useRef(false);
     const isRefreshingRef = useRef(false);
@@ -45,23 +50,37 @@ export function usePullToRefresh(onRefresh: () => Promise<void>): UsePullToRefre
             if (el.scrollTop > 0) return;
             touchStartY.current = e.touches[0].clientY;
             isPulling.current = true;
+            isCommitted.current = false;
             hasFiredHaptic.current = false;
         };
 
         const onTouchMove = (e: TouchEvent) => {
             if (!isPulling.current) return;
+            // User scrolled away from top — abort pull mode
             if (el.scrollTop > 0) {
                 isPulling.current = false;
+                isCommitted.current = false;
                 return;
             }
 
             const rawDelta = e.touches[0].clientY - touchStartY.current;
+
+            // Upward motion — let the browser scroll, stop tracking
             if (rawDelta <= 0) {
                 isPulling.current = false;
+                isCommitted.current = false;
                 pullY.set(0);
                 return;
             }
 
+            // Wait for enough downward movement before committing.
+            // During this window we don't call preventDefault, so if the user's
+            // intent turns out to be scrolling (rawDelta goes negative), the browser
+            // handles it naturally without us having blocked it first.
+            if (rawDelta < PULL_COMMIT_THRESHOLD) return;
+
+            // Clear downward intent confirmed — take over the gesture
+            isCommitted.current = true;
             e.preventDefault();
 
             const resisted = Math.min(rawDelta * RESISTANCE, MAX_PULL);
@@ -80,6 +99,13 @@ export function usePullToRefresh(onRefresh: () => Promise<void>): UsePullToRefre
         const onTouchEnd = async () => {
             if (!isPulling.current) return;
             isPulling.current = false;
+
+            // If we never committed (user didn't clearly pull down), do nothing
+            if (!isCommitted.current) {
+                isCommitted.current = false;
+                return;
+            }
+            isCommitted.current = false;
 
             const current = pullY.get();
             if (current >= THRESHOLD) {
