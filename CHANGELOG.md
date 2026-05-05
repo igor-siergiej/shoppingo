@@ -1,3 +1,10 @@
+## [1.34.3](https://github.com/igor-siergiej/shoppingo/compare/v1.34.2...v1.34.3) (2026-05-05)
+
+
+### Bug Fixes
+
+* store user-uploaded recipe image instead of generating AI image ([#71](https://github.com/igor-siergiej/shoppingo/issues/71)) ([e5b75ed](https://github.com/igor-siergiej/shoppingo/commit/e5b75ed5d7b4715b33dde8b179e20aa844125be6))
+
 ## [1.34.2](https://github.com/igor-siergiej/shoppingo/compare/v1.34.1...v1.34.2) (2026-05-03)
 
 
