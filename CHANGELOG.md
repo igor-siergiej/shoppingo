@@ -1,3 +1,10 @@
+# [1.35.0](https://github.com/igor-siergiej/shoppingo/compare/v1.34.4...v1.35.0) (2026-05-05)
+
+
+### Features
+
+* **pwa:** add manual check for updates button in menu ([b503e1f](https://github.com/igor-siergiej/shoppingo/commit/b503e1f9c54607df1f0fc2b3440978d5d0f8fc9a))
+
 ## [1.34.4](https://github.com/igor-siergiej/shoppingo/compare/v1.34.3...v1.34.4) (2026-05-05)
 
 
