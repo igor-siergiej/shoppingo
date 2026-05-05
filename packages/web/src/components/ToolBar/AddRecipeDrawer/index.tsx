@@ -50,12 +50,7 @@ const splitIntoSteps = (text: string): string[] =>
         .map((line) => line.replace(/^\s*\d+[.)]\s*/, '').trim())
         .filter(Boolean);
 
-export const AddRecipeDrawer = ({
-    open,
-    onOpenChange,
-    onAdd,
-    initialLink,
-}: AddRecipeDrawerProps) => {
+export const AddRecipeDrawer = ({ open, onOpenChange, onAdd, initialLink }: AddRecipeDrawerProps) => {
     const recipeNameId = useId();
     const userSearchId = useId();
     const fileInputId = useId();
