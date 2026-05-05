@@ -3,11 +3,6 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AddRecipeDrawer } from './index';
 
-vi.mock('../../../api', () => ({
-    uploadRecipeImage: vi.fn(() => Promise.resolve({ imageKey: 'test-key' })),
-    setCoverImageKey: vi.fn(() => Promise.resolve({ id: 'recipe-1' })),
-}));
-
 vi.mock('../../../hooks/useSearch', () => ({
     useSearch: vi.fn(() => ({
         query: '',
@@ -28,35 +23,21 @@ vi.mock('sonner', () => ({
 
 describe('AddRecipeDrawer', () => {
     const mockOnAdd = vi.fn();
-    const mockOnRefetch = vi.fn();
     const mockOnOpenChange = vi.fn();
 
     beforeEach(() => {
         mockOnAdd.mockClear();
-        mockOnRefetch.mockClear();
         mockOnOpenChange.mockClear();
-
-        // Mock fetch for image generation
-        global.fetch = vi.fn(() =>
-            Promise.resolve({
-                ok: true,
-                blob: () => Promise.resolve(new Blob(['image data'])),
-            } as Response)
-        );
     });
 
     it('renders drawer with recipe title input', () => {
-        render(
-            <AddRecipeDrawer open={true} onOpenChange={mockOnOpenChange} onAdd={mockOnAdd} onRefetch={mockOnRefetch} />
-        );
+        render(<AddRecipeDrawer open={true} onOpenChange={mockOnOpenChange} onAdd={mockOnAdd} />);
 
         expect(screen.getByPlaceholderText('Enter recipe title...')).toBeTruthy();
     });
 
     it('displays image upload area', () => {
-        render(
-            <AddRecipeDrawer open={true} onOpenChange={mockOnOpenChange} onAdd={mockOnAdd} onRefetch={mockOnRefetch} />
-        );
+        render(<AddRecipeDrawer open={true} onOpenChange={mockOnOpenChange} onAdd={mockOnAdd} />);
 
         expect(screen.getByText('Click to upload image')).toBeTruthy();
     });
@@ -64,9 +45,7 @@ describe('AddRecipeDrawer', () => {
     it('auto-generates image when no image is uploaded', async () => {
         mockOnAdd.mockResolvedValue({ id: 'recipe-1' });
 
-        render(
-            <AddRecipeDrawer open={true} onOpenChange={mockOnOpenChange} onAdd={mockOnAdd} onRefetch={mockOnRefetch} />
-        );
+        render(<AddRecipeDrawer open={true} onOpenChange={mockOnOpenChange} onAdd={mockOnAdd} />);
 
         const titleInput = screen.getByPlaceholderText('Enter recipe title...') as HTMLInputElement;
         await userEvent.type(titleInput, 'Test Recipe');
@@ -74,48 +53,27 @@ describe('AddRecipeDrawer', () => {
         const createButton = screen.getByRole('button', { name: /Create Recipe/ });
         await userEvent.click(createButton);
 
-        // Should call onAdd with recipe details
+        // Should call onAdd with no imageFile (undefined) so the caller handles AI generation
         await waitFor(() => {
-            expect(mockOnAdd).toHaveBeenCalledWith('Test Recipe', [], undefined, [], undefined, undefined);
-        });
-
-        // Should attempt image generation via API
-        await waitFor(() => {
-            expect(global.fetch).toHaveBeenCalledWith(
-                expect.stringContaining('/api/image/Test%20Recipe'),
-                expect.objectContaining({ method: 'GET' })
-            );
-        });
-
-        // Should refetch after image generation
-        await waitFor(() => {
-            expect(mockOnRefetch).toHaveBeenCalled();
+            expect(mockOnAdd).toHaveBeenCalledWith('Test Recipe', [], undefined, [], undefined, undefined, undefined);
         });
     });
 
     it('does not show AI Generate button', () => {
-        render(
-            <AddRecipeDrawer open={true} onOpenChange={mockOnOpenChange} onAdd={mockOnAdd} onRefetch={mockOnRefetch} />
-        );
+        render(<AddRecipeDrawer open={true} onOpenChange={mockOnOpenChange} onAdd={mockOnAdd} />);
 
         expect(screen.queryByText('AI Generate')).toBeFalsy();
     });
 
-    it('handles image upload and refetch', async () => {
+    it('handles image upload by passing file to onAdd', async () => {
         mockOnAdd.mockResolvedValue({ id: 'recipe-1' });
 
-        render(
-            <AddRecipeDrawer open={true} onOpenChange={mockOnOpenChange} onAdd={mockOnAdd} onRefetch={mockOnRefetch} />
-        );
+        render(<AddRecipeDrawer open={true} onOpenChange={mockOnOpenChange} onAdd={mockOnAdd} />);
 
         const titleInput = screen.getByPlaceholderText('Enter recipe title...') as HTMLInputElement;
         await userEvent.type(titleInput, 'Another Recipe');
 
-        // Simulate file upload
-        const _imageButton = screen.getByText('Click to upload image');
         const imageFile = new File(['image'], 'test.jpg', { type: 'image/jpeg' });
-
-        // Find the hidden file input
         const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
         if (fileInput) {
             fireEvent.change(fileInput, { target: { files: [imageFile] } });
@@ -124,16 +82,22 @@ describe('AddRecipeDrawer', () => {
         const createButton = screen.getByRole('button', { name: /Create Recipe/ });
         await userEvent.click(createButton);
 
-        // Should refetch after image upload
+        // File should be passed directly to onAdd so the caller uploads it before refetching
         await waitFor(() => {
-            expect(mockOnRefetch).toHaveBeenCalled();
+            expect(mockOnAdd).toHaveBeenCalledWith(
+                'Another Recipe',
+                [],
+                undefined,
+                [],
+                undefined,
+                undefined,
+                imageFile
+            );
         });
     });
 
     it('renders recipe link input', () => {
-        render(
-            <AddRecipeDrawer open={true} onOpenChange={mockOnOpenChange} onAdd={mockOnAdd} onRefetch={mockOnRefetch} />
-        );
+        render(<AddRecipeDrawer open={true} onOpenChange={mockOnOpenChange} onAdd={mockOnAdd} />);
         expect(screen.getByPlaceholderText('https://...')).toBeTruthy();
     });
 
@@ -143,7 +107,6 @@ describe('AddRecipeDrawer', () => {
                 open={true}
                 onOpenChange={mockOnOpenChange}
                 onAdd={mockOnAdd}
-                onRefetch={mockOnRefetch}
                 initialLink="https://example.com/recipe"
             />
         );
@@ -152,16 +115,12 @@ describe('AddRecipeDrawer', () => {
     });
 
     it('renders instructions paste textarea', () => {
-        render(
-            <AddRecipeDrawer open={true} onOpenChange={mockOnOpenChange} onAdd={mockOnAdd} onRefetch={mockOnRefetch} />
-        );
+        render(<AddRecipeDrawer open={true} onOpenChange={mockOnOpenChange} onAdd={mockOnAdd} />);
         expect(screen.getByPlaceholderText(/Paste instructions here/)).toBeTruthy();
     });
 
     it('splits pasted text into steps on blur', async () => {
-        render(
-            <AddRecipeDrawer open={true} onOpenChange={mockOnOpenChange} onAdd={mockOnAdd} onRefetch={mockOnRefetch} />
-        );
+        render(<AddRecipeDrawer open={true} onOpenChange={mockOnOpenChange} onAdd={mockOnAdd} />);
         const textarea = screen.getByPlaceholderText(/Paste instructions here/) as HTMLTextAreaElement;
         await userEvent.type(textarea, 'Step one{enter}Step two{enter}Step three');
         fireEvent.blur(textarea);
@@ -172,45 +131,21 @@ describe('AddRecipeDrawer', () => {
         });
     });
 
-    it('closes the drawer immediately after recipe creation without waiting for image generation', async () => {
-        let resolveImageFetch!: () => void;
-        const imageGenStarted = new Promise<void>((res) => {
-            resolveImageFetch = res;
-        });
-
-        const mockOnAdd = vi.fn().mockResolvedValue({ id: 'recipe-123' });
-
-        global.fetch = vi.fn().mockImplementationOnce(() => {
-            resolveImageFetch();
-            return new Promise(() => {}); // never resolves
-        });
+    it('closes the drawer after recipe creation', async () => {
+        mockOnAdd.mockResolvedValue({ id: 'recipe-123' });
 
         const mockOnOpenChange = vi.fn();
-        const mockOnImageGenerating = vi.fn();
-
-        render(
-            <AddRecipeDrawer
-                open={true}
-                onOpenChange={mockOnOpenChange}
-                onAdd={mockOnAdd}
-                onImageGenerating={mockOnImageGenerating}
-                onImageReady={vi.fn()}
-            />
-        );
+        render(<AddRecipeDrawer open={true} onOpenChange={mockOnOpenChange} onAdd={mockOnAdd} />);
 
         await userEvent.type(screen.getByPlaceholderText('Enter recipe title...'), 'Pizza Margherita');
         await userEvent.click(screen.getByRole('button', { name: /create recipe/i }));
 
         await waitFor(() => expect(mockOnOpenChange).toHaveBeenCalledWith(false));
-        await imageGenStarted;
-        expect(mockOnImageGenerating).toHaveBeenCalledWith('recipe-123');
     });
 
     it('passes link and instructions to onAdd', async () => {
         mockOnAdd.mockResolvedValue({ id: 'recipe-1' });
-        render(
-            <AddRecipeDrawer open={true} onOpenChange={mockOnOpenChange} onAdd={mockOnAdd} onRefetch={mockOnRefetch} />
-        );
+        render(<AddRecipeDrawer open={true} onOpenChange={mockOnOpenChange} onAdd={mockOnAdd} />);
         const titleInput = screen.getByPlaceholderText('Enter recipe title...') as HTMLInputElement;
         await userEvent.type(titleInput, 'My Recipe');
 
@@ -229,10 +164,15 @@ describe('AddRecipeDrawer', () => {
         await userEvent.click(createButton);
 
         await waitFor(() => {
-            expect(mockOnAdd).toHaveBeenCalledWith('My Recipe', [], undefined, [], 'https://example.com', [
-                'Step one',
-                'Step two',
-            ]);
+            expect(mockOnAdd).toHaveBeenCalledWith(
+                'My Recipe',
+                [],
+                undefined,
+                [],
+                'https://example.com',
+                ['Step one', 'Step two'],
+                undefined
+            );
         });
     });
 });
