@@ -44,16 +44,21 @@ export const PWAProvider: React.FC<PWAProviderProps> = ({ children }) => {
 
     const { updateServiceWorker } = useRegisterSW({
         onRegisteredSW(_swUrl, r) {
-            if (r) {
-                setInterval(
-                    () => {
-                        if (!r.installing && navigator.onLine) {
-                            void r.update();
-                        }
-                    },
-                    60 * 60 * 1000
-                );
-            }
+            if (!r) return;
+
+            const checkForUpdate = () => {
+                if (!r.installing && navigator.onLine) {
+                    void r.update();
+                }
+            };
+
+            setInterval(checkForUpdate, 5 * 60 * 1000);
+
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') {
+                    checkForUpdate();
+                }
+            });
         },
         onRegisterError() {},
         onNeedRefresh() {
