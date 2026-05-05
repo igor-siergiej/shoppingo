@@ -1,4 +1,4 @@
-import { Download, LogOut, Moon, RefreshCw, Sun, Users } from 'lucide-react';
+import { Download, Loader2, LogOut, Moon, RefreshCw, Sun, Users } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Button } from '../../../components/ui/button';
 import { Switch } from '../../../components/ui/switch';
@@ -15,7 +15,7 @@ export interface HamburgerMenuProps {
 
 export const HamburgerMenu = ({ currentList, userId, onManageUsers, onClose, onLogout }: HamburgerMenuProps) => {
     const { theme, toggleTheme } = useTheme();
-    const { canInstall, isInstalled, hasUpdate, installApp, updateApp } = usePWA();
+    const { canInstall, isInstalled, hasUpdate, installApp, updateApp, checkForUpdate, isCheckingForUpdate } = usePWA();
 
     const handleInstall = async () => {
         const success = await installApp();
@@ -75,13 +75,13 @@ export const HamburgerMenu = ({ currentList, userId, onManageUsers, onClose, onL
                 </button>
             </motion.div>
 
-            {/* Update available action */}
-            {hasUpdate && (
-                <motion.div
-                    initial={{ opacity: 0, y: -8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1, duration: 0.2 }}
-                >
+            {/* Update / check for updates */}
+            <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1, duration: 0.2 }}
+            >
+                {hasUpdate ? (
                     <Button
                         variant="outline"
                         onClick={handleUpdate}
@@ -90,8 +90,22 @@ export const HamburgerMenu = ({ currentList, userId, onManageUsers, onClose, onL
                         <RefreshCw className="h-4 w-4 mr-2" />
                         Update available
                     </Button>
-                </motion.div>
-            )}
+                ) : (
+                    <Button
+                        variant="outline"
+                        onClick={() => void checkForUpdate()}
+                        disabled={isCheckingForUpdate}
+                        className="w-full justify-center h-9 text-sm font-medium transition-all duration-200 hover:bg-slate-50 active:scale-95"
+                    >
+                        {isCheckingForUpdate ? (
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        ) : (
+                            <RefreshCw className="h-4 w-4 mr-2" />
+                        )}
+                        {isCheckingForUpdate ? 'Checking...' : 'Check for updates'}
+                    </Button>
+                )}
+            </motion.div>
 
             {/* Install app action */}
             {canInstall && !isInstalled && (

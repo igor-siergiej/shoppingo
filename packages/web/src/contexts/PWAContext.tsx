@@ -16,6 +16,8 @@ interface PWAContextType {
     hasUpdate: boolean;
     isUpdating: boolean;
     updateApp: () => void;
+    checkForUpdate: () => Promise<void>;
+    isCheckingForUpdate: boolean;
 }
 
 const PWAContext = createContext<PWAContextType | undefined>(undefined);
@@ -40,11 +42,15 @@ export const PWAProvider: React.FC<PWAProviderProps> = ({ children }) => {
     const [isInstalled, setIsInstalled] = useState(false);
     const [hasUpdate, setHasUpdate] = useState(false);
     const [isUpdating, setIsUpdating] = useState(false);
+    const [isCheckingForUpdate, setIsCheckingForUpdate] = useState(false);
     const toastIdRef = useRef<string | number | null>(null);
+    const registrationRef = useRef<ServiceWorkerRegistration | null>(null);
 
     const { updateServiceWorker } = useRegisterSW({
         onRegisteredSW(_swUrl, r) {
             if (!r) return;
+
+            registrationRef.current = r;
 
             const checkForUpdate = () => {
                 if (!r.installing && navigator.onLine) {
@@ -66,6 +72,17 @@ export const PWAProvider: React.FC<PWAProviderProps> = ({ children }) => {
         },
         onOfflineReady() {},
     });
+
+    const checkForUpdate = useCallback(async () => {
+        const r = registrationRef.current;
+        if (!r || isCheckingForUpdate) return;
+        setIsCheckingForUpdate(true);
+        try {
+            await r.update();
+        } finally {
+            setIsCheckingForUpdate(false);
+        }
+    }, [isCheckingForUpdate]);
 
     const updateApp = useCallback(() => {
         if (toastIdRef.current !== null) {
@@ -151,6 +168,8 @@ export const PWAProvider: React.FC<PWAProviderProps> = ({ children }) => {
         hasUpdate,
         isUpdating,
         updateApp,
+        checkForUpdate,
+        isCheckingForUpdate,
     };
 
     return <PWAContext.Provider value={value}>{children}</PWAContext.Provider>;
