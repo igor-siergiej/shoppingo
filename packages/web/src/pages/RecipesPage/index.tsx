@@ -3,7 +3,7 @@ import { AlertTriangle, BookOpen, ChefHat, Search, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { addRecipe, generateRecipeAiImage, getRecipesQuery } from '../../api';
+import { addRecipe, generateRecipeAiImage, getRecipesQuery, uploadRecipeImage } from '../../api';
 import { ListsSkeleton } from '../../components/LoadingSkeleton';
 import { RecipesList } from '../../components/RecipesList';
 import ToolBar from '../../components/ToolBar';
@@ -96,7 +96,8 @@ const RecipesPage = () => {
         _imageKey?: string,
         selectedUsers?: string[],
         link?: string,
-        instructions?: string[]
+        instructions?: string[],
+        imageFile?: File
     ) => {
         if (!user) {
             logger.warn('Attempted to add recipe without user');
@@ -106,10 +107,21 @@ const RecipesPage = () => {
         try {
             const recipe = await addRecipe(title, user, selectedUsers || [], ingredients, link, instructions);
             logger.info('Recipe created successfully', { title, recipeId: recipe.id });
+
+            if (imageFile) {
+                await uploadRecipeImage(recipe.id, imageFile);
+            } else {
+                generatingRef.current.add(recipe.id);
+            }
+
             await refetch();
-            void generateRecipeAiImage(recipe.id).then(() =>
-                queryClient.invalidateQueries(getRecipesQuery(user.id).queryKey)
-            );
+
+            if (!imageFile) {
+                void generateRecipeAiImage(recipe.id).then(() =>
+                    queryClient.invalidateQueries(getRecipesQuery(user.id).queryKey)
+                );
+            }
+
             return recipe;
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Unknown error';

@@ -29,7 +29,8 @@ interface ToolBarProps {
         imageKey?: string,
         selectedUsers?: string[],
         link?: string,
-        instructions?: string[]
+        instructions?: string[],
+        imageFile?: File
     ) => Promise<Recipe | undefined>;
     addRecipeDrawerOpen?: boolean;
     onAddRecipeDrawerOpenChange?: (open: boolean) => void;
