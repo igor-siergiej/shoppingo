@@ -1,3 +1,10 @@
+## [1.34.4](https://github.com/igor-siergiej/shoppingo/compare/v1.34.3...v1.34.4) (2026-05-05)
+
+
+### Bug Fixes
+
+* **pwa:** check for updates on tab visibility change and reduce poll interval ([398cd3d](https://github.com/igor-siergiej/shoppingo/commit/398cd3d6b8df9d311caa1fd2f567d4a261685f8c))
+
 ## [1.34.3](https://github.com/igor-siergiej/shoppingo/compare/v1.34.2...v1.34.3) (2026-05-05)
 
 
