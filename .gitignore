@@ -20,3 +20,8 @@ coverage/
 
 # Playwright MCP artifacts
 .playwright-mcp/
+
+# Playwright E2E
+playwright-report/
+test-results/
+.auth/
