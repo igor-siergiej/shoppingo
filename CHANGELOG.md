@@ -1,3 +1,10 @@
+# [1.36.0](https://github.com/igor-siergiej/shoppingo/compare/v1.35.0...v1.36.0) (2026-05-14)
+
+
+### Features
+
+* **e2e:** Playwright E2E testing infrastructure ([#72](https://github.com/igor-siergiej/shoppingo/issues/72)) ([7b7fa07](https://github.com/igor-siergiej/shoppingo/commit/7b7fa072b43b54ff0a0afb149014f43717a0179a))
+
 # [1.35.0](https://github.com/igor-siergiej/shoppingo/compare/v1.34.4...v1.35.0) (2026-05-05)
 
 
