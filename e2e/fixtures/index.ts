@@ -1,5 +1,5 @@
 import { test as base, type Page } from '@playwright/test';
-import { mockApiRoutes } from '../mocks/api';
+import { MongoClient } from 'mongodb';
 import { MOCK_TOKEN, mockAuthRoutes } from '../mocks/auth';
 import { ItemsPage } from '../page-objects/ItemsPage';
 import { ListsPage } from '../page-objects/ListsPage';
@@ -7,6 +7,9 @@ import { LoginPage } from '../page-objects/LoginPage';
 import { RecipeDetailPage } from '../page-objects/RecipeDetailPage';
 import { RecipesPage } from '../page-objects/RecipesPage';
 import { RegisterPage } from '../page-objects/RegisterPage';
+
+const MONGO_URI = process.env.E2E_MONGO_URI ?? 'mongodb://localhost:27017/';
+const DB_NAME = 'shoppingo_e2e';
 
 interface Fixtures {
     authenticatedPage: Page;
@@ -20,10 +23,24 @@ interface Fixtures {
 
 export const test = base.extend<Fixtures>({
     authenticatedPage: async ({ page }, use) => {
+        const client = new MongoClient(MONGO_URI);
+        await client.connect();
+        const db = client.db(DB_NAME);
+        await db.collection('list').deleteMany({});
+        await db.collection('recipe').deleteMany({});
+        await client.close();
+
         await mockAuthRoutes(page);
+
+        // Prevent image fetch errors — images are not under test
+        await page.route(/\/api\/image\//, (route) =>
+            route.fulfill({ status: 200, contentType: 'image/gif', body: Buffer.from('GIF89a', 'ascii') })
+        );
+
         await page.addInitScript((token) => {
             localStorage.setItem('accessToken', token);
         }, MOCK_TOKEN);
+
         await use(page);
     },
 
@@ -53,5 +70,4 @@ export const test = base.extend<Fixtures>({
 });
 
 export { expect } from '@playwright/test';
-export { mockApiRoutes };
 export { mockAuthRoutes };

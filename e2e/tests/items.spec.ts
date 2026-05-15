@@ -1,37 +1,30 @@
-import { expect, mockApiRoutes, test } from '../fixtures';
-import { makeItem, makeList } from '../mocks/data/lists';
+import { apiAddItem, apiCreateList, apiUpdateItem } from '../api-helpers';
+import { expect, test } from '../fixtures';
 
 const LIST_TITLE = 'Groceries';
 
 test.describe('Items page', () => {
     test('shows empty state for empty list', async ({ authenticatedPage }) => {
-        await mockApiRoutes(authenticatedPage, {
-            lists: [makeList({ title: LIST_TITLE, items: [] })],
-        });
+        await apiCreateList(LIST_TITLE);
         await authenticatedPage.goto(`/list/${LIST_TITLE}`);
-        // Empty state text varies by list type — just check for no items
         await expect(authenticatedPage.getByRole('button', { name: 'Go back' })).toBeVisible();
     });
 
-    test('renders items', async ({ authenticatedPage }) => {
-        const items = [makeItem({ name: 'Milk' }), makeItem({ name: 'Bread' })];
-        await mockApiRoutes(authenticatedPage, {
-            lists: [makeList({ title: LIST_TITLE, items })],
-        });
+    test('renders items from database', async ({ authenticatedPage }) => {
+        await apiCreateList(LIST_TITLE);
+        await apiAddItem(LIST_TITLE, 'Milk');
+        await apiAddItem(LIST_TITLE, 'Bread');
         await authenticatedPage.goto(`/list/${LIST_TITLE}`);
         await expect(authenticatedPage.getByText('Milk')).toBeVisible();
         await expect(authenticatedPage.getByText('Bread')).toBeVisible();
     });
 
     test('can add an item', async ({ authenticatedPage }) => {
-        await mockApiRoutes(authenticatedPage, {
-            lists: [makeList({ title: LIST_TITLE })],
-        });
+        await apiCreateList(LIST_TITLE);
         await authenticatedPage.goto(`/list/${LIST_TITLE}`);
 
         await authenticatedPage.locator('button[class*="border-primary"]').first().click();
         await expect(authenticatedPage.getByText('Add New Item', { exact: true })).toBeVisible();
-
         await authenticatedPage.getByPlaceholder('Enter item name...').fill('Eggs');
         await authenticatedPage.getByRole('button', { name: 'Add Item' }).click();
 
@@ -39,24 +32,19 @@ test.describe('Items page', () => {
     });
 
     test('can toggle item selection', async ({ authenticatedPage }) => {
-        const item = makeItem({ name: 'Milk', isSelected: false });
-        await mockApiRoutes(authenticatedPage, {
-            lists: [makeList({ title: LIST_TITLE, items: [item] })],
-        });
+        await apiCreateList(LIST_TITLE);
+        await apiAddItem(LIST_TITLE, 'Milk');
         await authenticatedPage.goto(`/list/${LIST_TITLE}`);
         await expect(authenticatedPage.getByText('Milk')).toBeVisible();
 
-        // Click the item card to toggle selection
         await authenticatedPage.getByText('Milk').click();
-        // The mock updates state — item moves to selected; verify no error thrown
         await expect(authenticatedPage.getByText('Milk')).toBeVisible();
     });
 
     test('can clear all items', async ({ authenticatedPage }) => {
-        const items = [makeItem({ name: 'Milk' }), makeItem({ name: 'Bread' })];
-        await mockApiRoutes(authenticatedPage, {
-            lists: [makeList({ title: LIST_TITLE, items })],
-        });
+        await apiCreateList(LIST_TITLE);
+        await apiAddItem(LIST_TITLE, 'Milk');
+        await apiAddItem(LIST_TITLE, 'Bread');
         await authenticatedPage.goto(`/list/${LIST_TITLE}`);
 
         await authenticatedPage.getByRole('button', { name: 'Remove all items' }).click();
@@ -68,10 +56,10 @@ test.describe('Items page', () => {
     });
 
     test('can clear selected items', async ({ authenticatedPage }) => {
-        const items = [makeItem({ name: 'Milk', isSelected: true }), makeItem({ name: 'Bread', isSelected: false })];
-        await mockApiRoutes(authenticatedPage, {
-            lists: [makeList({ title: LIST_TITLE, items })],
-        });
+        await apiCreateList(LIST_TITLE);
+        await apiAddItem(LIST_TITLE, 'Milk');
+        await apiAddItem(LIST_TITLE, 'Bread');
+        await apiUpdateItem(LIST_TITLE, 'Milk', { isSelected: true });
         await authenticatedPage.goto(`/list/${LIST_TITLE}`);
 
         await authenticatedPage.getByRole('button', { name: 'Clear selected items' }).click();
@@ -83,19 +71,15 @@ test.describe('Items page', () => {
     });
 
     test('back button returns to lists page', async ({ authenticatedPage }) => {
-        await mockApiRoutes(authenticatedPage, {
-            lists: [makeList({ title: LIST_TITLE })],
-        });
+        await apiCreateList(LIST_TITLE);
         await authenticatedPage.goto(`/list/${LIST_TITLE}`);
         await authenticatedPage.getByRole('button', { name: 'Go back' }).click();
         await authenticatedPage.waitForURL('/');
     });
 
     test('swipe left reveals delete — deletes item', async ({ authenticatedPage }) => {
-        const item = makeItem({ name: 'Butter' });
-        await mockApiRoutes(authenticatedPage, {
-            lists: [makeList({ title: LIST_TITLE, items: [item] })],
-        });
+        await apiCreateList(LIST_TITLE);
+        await apiAddItem(LIST_TITLE, 'Butter');
         await authenticatedPage.goto(`/list/${LIST_TITLE}`);
         await expect(authenticatedPage.getByText('Butter')).toBeVisible();
 
@@ -110,7 +94,6 @@ test.describe('Items page', () => {
             await authenticatedPage.mouse.up();
             await authenticatedPage.waitForTimeout(300);
 
-            // Delete button should be visible — click it
             const deleteButtons = authenticatedPage.locator(
                 'button[class*="destructive"], button[class*="bg-destructive"]'
             );
@@ -122,10 +105,8 @@ test.describe('Items page', () => {
     });
 
     test('edit item changes name', async ({ authenticatedPage }) => {
-        const item = makeItem({ name: 'Butter' });
-        await mockApiRoutes(authenticatedPage, {
-            lists: [makeList({ title: LIST_TITLE, items: [item] })],
-        });
+        await apiCreateList(LIST_TITLE);
+        await apiAddItem(LIST_TITLE, 'Butter');
         await authenticatedPage.goto(`/list/${LIST_TITLE}`);
 
         const itemEl = authenticatedPage.getByText('Butter');
@@ -146,6 +127,7 @@ test.describe('Items page', () => {
                 await authenticatedPage.getByLabel('Item Name').clear();
                 await authenticatedPage.getByLabel('Item Name').fill('Margarine');
                 await authenticatedPage.getByRole('button', { name: 'Save Changes' }).click();
+                await expect(authenticatedPage.getByText('Margarine')).toBeVisible();
             }
         }
     });

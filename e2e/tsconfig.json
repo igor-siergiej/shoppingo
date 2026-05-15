@@ -7,7 +7,9 @@
     "strict": true,
     "esModuleInterop": true,
     "moduleResolution": "node",
-    "target": "ES2020",
-    "module": "CommonJS"
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM"],
+    "module": "CommonJS",
+    "types": ["node"]
   }
 }

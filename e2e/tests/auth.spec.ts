@@ -1,4 +1,4 @@
-import { expect, mockApiRoutes, mockAuthRoutes, test } from '../fixtures';
+import { expect, mockAuthRoutes, test } from '../fixtures';
 
 test.describe('Login', () => {
     test('renders login form', async ({ page, loginPage }) => {
@@ -27,7 +27,6 @@ test.describe('Login', () => {
 
     test('valid credentials redirect to home', async ({ page, loginPage }) => {
         await mockAuthRoutes(page);
-        await mockApiRoutes(page);
         await loginPage.goto();
         await loginPage.login('testuser', 'password123');
         await page.waitForURL('/');
@@ -67,7 +66,6 @@ test.describe('Register', () => {
 
     test('valid registration redirects to home', async ({ page, registerPage }) => {
         await mockAuthRoutes(page);
-        await mockApiRoutes(page);
         await registerPage.goto();
         await registerPage.register('newuser', 'password123', 'password123');
         await page.waitForURL('/');
@@ -83,7 +81,6 @@ test.describe('Register', () => {
 
 test.describe('Logout', () => {
     test('logout redirects to /login', async ({ authenticatedPage }) => {
-        await mockApiRoutes(authenticatedPage);
         await authenticatedPage.goto('/');
         await expect(authenticatedPage.getByRole('heading', { name: 'Your Lists', level: 2 })).toBeVisible();
         await authenticatedPage.getByRole('button', { name: 'Menu' }).click();
