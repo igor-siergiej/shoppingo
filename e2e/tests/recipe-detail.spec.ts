@@ -3,7 +3,7 @@ import { makeIngredient, makeRecipe } from '../mocks/data/recipes';
 import { MOCK_USER, MOCK_USER_2 } from '../mocks/data/users';
 
 const waitForRecipe = async (page: import('@playwright/test').Page) => {
-    await page.locator('h1').waitFor({ timeout: 10000 });
+    await page.locator('h1').last().waitFor({ timeout: 10000 });
 };
 
 test.describe('Recipe detail page', () => {
