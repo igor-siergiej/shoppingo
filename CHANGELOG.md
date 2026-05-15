@@ -1,3 +1,17 @@
+# [1.37.0](https://github.com/igor-siergiej/shoppingo/compare/v1.36.0...v1.37.0) (2026-05-15)
+
+
+### Bug Fixes
+
+* **api:** update sharp to 0.34.5 and resync lockfile to restore failing tests ([#74](https://github.com/igor-siergiej/shoppingo/issues/74)) ([adaf914](https://github.com/igor-siergiej/shoppingo/commit/adaf914193fe561e8ce5a94fddb5456a4d0c8687))
+* **web:** add mutateAsync to ManageUsersDrawer test mock ([f11e65e](https://github.com/igor-siergiej/shoppingo/commit/f11e65e766db2c28d4825aec10afd9cac8422aa9))
+
+
+### Features
+
+* **e2e:** 55/55 Playwright E2E tests with full mock infrastructure ([#73](https://github.com/igor-siergiej/shoppingo/issues/73)) ([3e64752](https://github.com/igor-siergiej/shoppingo/commit/3e64752936403270e502e7e05d2456efa61db561))
+* **e2e:** convert to true e2e tests against real API and MongoDB ([6294767](https://github.com/igor-siergiej/shoppingo/commit/62947673020cdeaa77289b16e8446e33f3027698))
+
 # [1.36.0](https://github.com/igor-siergiej/shoppingo/compare/v1.35.0...v1.36.0) (2026-05-14)
 
 
