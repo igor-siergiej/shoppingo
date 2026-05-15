@@ -28,7 +28,7 @@ export interface ListResponse {
     title: string;
     dateAdded: Date;
     items: Array<Item>;
-    users: Array<{ username: string }>;
+    users: Array<User>;
     listType: ListType;
     ownerId?: string;
 }

@@ -273,8 +273,16 @@ const ToolBar = ({
                 <ManageUsersDrawer
                     open={isManageUsersOpen}
                     onOpenChange={setIsManageUsersOpen}
-                    currentList={currentList}
-                    refetchList={refetchList}
+                    listTitle={currentList.title}
+                    currentUsers={currentList.users}
+                    ownerId={currentList.ownerId ?? ''}
+                    currentUserId={userId ?? ''}
+                    onUserAdded={() => {
+                        refetchList?.();
+                    }}
+                    onUserRemoved={() => {
+                        refetchList?.();
+                    }}
                 />
             )}
         </>

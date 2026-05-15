@@ -38,26 +38,26 @@ export const ManageUsersDrawer = ({
 }: ManageUsersDrawerProps) => {
     const [confirmRemoveUserId, setConfirmRemoveUserId] = useState<string | null>(null);
 
-    const {
-        searchInput,
-        setSearchInput,
-        availableUsers,
-        isSearching,
-        addUserMutation,
-        removeUserMutation,
-        handleAddUser,
-        handleRemoveUser,
-    } = useManageUsers({ listTitle, currentUsers, ownerId });
+    const { searchInput, setSearchInput, availableUsers, isSearching, addUserMutation, removeUserMutation } =
+        useManageUsers({ listTitle, currentUsers, ownerId });
 
-    const handleAddUserWithCallback = (username: string) => {
-        handleAddUser(username);
-        onUserAdded();
+    const handleAddUserWithCallback = async (username: string) => {
+        try {
+            await addUserMutation.mutateAsync(username);
+            onUserAdded();
+        } catch {
+            // error handled by onError in useManageUsers
+        }
     };
 
-    const handleRemoveUserWithCallback = (userId: string) => {
-        handleRemoveUser(userId);
-        setConfirmRemoveUserId(null);
-        onUserRemoved();
+    const handleRemoveUserWithCallback = async (userId: string) => {
+        try {
+            await removeUserMutation.mutateAsync(userId);
+            setConfirmRemoveUserId(null);
+            onUserRemoved();
+        } catch {
+            // error handled by onError in useManageUsers
+        }
     };
 
     return (
