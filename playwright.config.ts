@@ -1,7 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
+import { resolveMongoUri } from './e2e/mongo-uri';
 
 const E2E_KIVO_PORT = 3099;
-const E2E_MONGO_URI = process.env.E2E_MONGO_URI ?? 'mongodb://localhost:27017/';
+const E2E_MONGO_URI = resolveMongoUri();
 
 export default defineConfig({
     testDir: './e2e/tests',

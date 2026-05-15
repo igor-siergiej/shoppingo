@@ -34,6 +34,23 @@ test.describe('Lists page', () => {
         await expect(authenticatedPage.getByRole('button', { name: 'My Tasks' })).toBeVisible();
     });
 
+    test('can rename a list', async ({ authenticatedPage }) => {
+        await apiCreateList('Old Name');
+        await authenticatedPage.goto('/');
+        await expect(authenticatedPage.getByRole('button', { name: 'Old Name' })).toBeVisible();
+
+        const card = authenticatedPage.getByRole('button', { name: 'Old Name' });
+        await card.locator('..').locator('..').getByRole('button').nth(1).click();
+
+        const input = authenticatedPage.getByRole('textbox');
+        await input.waitFor();
+        await input.fill('New Name');
+        await input.press('Enter');
+
+        await expect(authenticatedPage.getByRole('button', { name: 'New Name' })).toBeVisible({ timeout: 10000 });
+        await expect(authenticatedPage.getByRole('button', { name: 'Old Name' })).not.toBeVisible();
+    });
+
     test('can delete a list', async ({ authenticatedPage }) => {
         await apiCreateList('To Delete');
         await authenticatedPage.goto('/');

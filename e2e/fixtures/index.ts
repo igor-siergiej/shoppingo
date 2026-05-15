@@ -1,6 +1,7 @@
 import { test as base, type Page } from '@playwright/test';
 import { MongoClient } from 'mongodb';
 import { MOCK_TOKEN, mockAuthRoutes } from '../mocks/auth';
+import { resolveMongoUri } from '../mongo-uri';
 import { ItemsPage } from '../page-objects/ItemsPage';
 import { ListsPage } from '../page-objects/ListsPage';
 import { LoginPage } from '../page-objects/LoginPage';
@@ -8,7 +9,7 @@ import { RecipeDetailPage } from '../page-objects/RecipeDetailPage';
 import { RecipesPage } from '../page-objects/RecipesPage';
 import { RegisterPage } from '../page-objects/RegisterPage';
 
-const MONGO_URI = process.env.E2E_MONGO_URI ?? 'mongodb://localhost:27017/';
+const MONGO_URI = resolveMongoUri();
 const DB_NAME = 'shoppingo_e2e';
 
 interface Fixtures {

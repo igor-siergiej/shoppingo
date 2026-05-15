@@ -1,4 +1,6 @@
 import { createServer } from 'node:http';
+import { MongoClient } from 'mongodb';
+import { resolveMongoUri } from './mongo-uri';
 
 const KIVO_PORT = 3099;
 
@@ -29,5 +31,14 @@ export default async function globalSetup(): Promise<() => Promise<void>> {
 
     return async () => {
         await new Promise<void>((resolve) => kivoServer.close(() => resolve()));
+
+        const mongoUri = resolveMongoUri();
+        const client = new MongoClient(mongoUri);
+        try {
+            await client.connect();
+            await client.db('shoppingo_e2e').dropDatabase();
+        } finally {
+            await client.close();
+        }
     };
 }
