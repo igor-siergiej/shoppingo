@@ -1,5 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
+import { config } from 'dotenv';
 import { resolveMongoUri } from './e2e/mongo-uri';
+
+config();
 
 const E2E_KIVO_PORT = 3099;
 const E2E_MONGO_URI = resolveMongoUri();
