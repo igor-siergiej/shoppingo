@@ -1,3 +1,11 @@
+# [1.39.0](https://github.com/igor-siergiej/shoppingo/compare/v1.38.0...v1.39.0) (2026-05-16)
+
+
+### Features
+
+* **e2e:** add coverage for TODO lists, add-from-recipe, share-target and share-on-create ([a9f2aa9](https://github.com/igor-siergiej/shoppingo/commit/a9f2aa910f0d1c9b2db7a329bcdf0d2257952659))
+* **e2e:** expand coverage and fix local test runner setup ([74aee6a](https://github.com/igor-siergiej/shoppingo/commit/74aee6a1408518fc6d00a115abb73e1c4da73950))
+
 # [1.38.0](https://github.com/igor-siergiej/shoppingo/compare/v1.37.0...v1.38.0) (2026-05-16)
 
 
