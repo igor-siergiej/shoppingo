@@ -20,7 +20,7 @@ export async function apiCreateList(title: string, listType = 'shopping') {
 export async function apiAddItem(
     listTitle: string,
     itemName: string,
-    overrides: { quantity?: number; unit?: string; isSelected?: boolean } = {}
+    overrides: { quantity?: number; unit?: string; isSelected?: boolean; dueDate?: string } = {}
 ) {
     const res = await fetch(`${API_BASE}/api/lists/${encodeURIComponent(listTitle)}/items`, {
         method: 'PUT',

@@ -106,6 +106,7 @@ export const AddFromRecipeDrawer = ({ open, onOpenChange, listTitle, listItems }
             <RippleButton
                 size="icon"
                 variant="ghost"
+                aria-label="Add from recipe"
                 className="h-12 w-12 rounded-full"
                 onClick={() => onOpenChange(true)}
             >

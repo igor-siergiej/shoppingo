@@ -92,4 +92,34 @@ export class ItemsPage {
         await this.clearSelectedButton.click();
         await this.page.getByRole('button', { name: 'Clear Selected' }).click();
     }
+
+    // TODO list
+    get addTaskDrawerTitle() {
+        return this.page.getByText('Add New Task', { exact: true });
+    }
+
+    get taskNameInput() {
+        return this.page.getByLabel('Task Name');
+    }
+
+    get dueDateButton() {
+        return this.page.getByRole('button', { name: 'Pick a date' });
+    }
+
+    get dueDateOptionalLabel() {
+        return this.page.getByText('Due Date (Optional)');
+    }
+
+    // AddFromRecipe drawer
+    async openAddFromRecipeDrawer() {
+        await this.page.getByRole('button', { name: 'Add from recipe' }).click();
+    }
+
+    async chooseRecipe(title: string) {
+        await this.page.getByRole('button', { name: new RegExp(title) }).click();
+    }
+
+    async confirmAddFromRecipe() {
+        await this.page.getByRole('button', { name: /Add \d+ items/ }).click();
+    }
 }
