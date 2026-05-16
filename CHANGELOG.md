@@ -1,3 +1,10 @@
+# [1.38.0](https://github.com/igor-siergiej/shoppingo/compare/v1.37.0...v1.38.0) (2026-05-16)
+
+
+### Features
+
+* **e2e:** expand coverage and fix local test runner ([#75](https://github.com/igor-siergiej/shoppingo/issues/75)) ([24539bf](https://github.com/igor-siergiej/shoppingo/commit/24539bf235a33c24da86f40371325a4ff1a1a637))
+
 # [1.37.0](https://github.com/igor-siergiej/shoppingo/compare/v1.36.0...v1.37.0) (2026-05-15)
 
 
