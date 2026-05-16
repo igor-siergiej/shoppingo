@@ -102,6 +102,9 @@ jobs:
         image: mongo:7
         ports:
           - 27017:27017
+        env:
+          MONGO_INITDB_ROOT_USERNAME: devuser
+          MONGO_INITDB_ROOT_PASSWORD: devpassword
     steps:
       - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2

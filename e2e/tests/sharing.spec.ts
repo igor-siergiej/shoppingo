@@ -58,4 +58,26 @@ test.describe('Manage Users (list sharing)', () => {
 
         await expect(authenticatedPage.getByText('Owner')).toBeVisible();
     });
+
+    test('can remove a user from the list', async ({ authenticatedPage }) => {
+        await apiCreateList('My List');
+        await authenticatedPage.goto('/list/My List');
+        await waitForListData(authenticatedPage);
+
+        await authenticatedPage.getByRole('button', { name: 'Menu' }).click();
+        await authenticatedPage.getByRole('button', { name: 'Manage Users' }).click();
+
+        await authenticatedPage.getByPlaceholder('Search for users...').fill('otheruser');
+        await expect(authenticatedPage.getByRole('button', { name: 'otheruser' })).toBeVisible();
+        await Promise.all([
+            authenticatedPage.waitForResponse((r) => r.url().includes('/users') && r.request().method() === 'POST'),
+            authenticatedPage.getByRole('button', { name: 'otheruser' }).click(),
+        ]);
+        await expect(authenticatedPage.getByText('Members (2)')).toBeVisible({ timeout: 10000 });
+
+        await authenticatedPage.getByText('otheruser').locator('..').locator('..').getByRole('button').click();
+        await authenticatedPage.getByRole('button', { name: 'Remove' }).click();
+
+        await expect(authenticatedPage.getByText('Members (1)')).toBeVisible({ timeout: 10000 });
+    });
 });

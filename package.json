@@ -33,6 +33,7 @@
     "@semantic-release/npm": "^12.0.1",
     "@semantic-release/release-notes-generator": "^14.0.1",
     "@types/node": "^25.8.0",
+    "dotenv": "^16",
     "dotenv-cli": "^10.0.0",
     "mongodb": "^7.2.0",
     "semantic-release": "^24.2.0",

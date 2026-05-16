@@ -104,6 +104,51 @@ test.describe('Items page', () => {
         }
     });
 
+    test('can add item with quantity and unit', async ({ authenticatedPage }) => {
+        await apiCreateList(LIST_TITLE);
+        await authenticatedPage.goto(`/list/${LIST_TITLE}`);
+
+        await authenticatedPage.locator('button[class*="border-primary"]').first().click();
+        await expect(authenticatedPage.getByText('Add New Item', { exact: true })).toBeVisible();
+        await authenticatedPage.getByPlaceholder('Enter item name...').fill('Milk');
+        await authenticatedPage.getByLabel('Quantity').fill('2');
+        await authenticatedPage.getByLabel('Unit').click();
+        await authenticatedPage.getByRole('option', { name: 'L', exact: true }).click();
+        await authenticatedPage.getByRole('button', { name: 'Add Item' }).click();
+
+        await expect(authenticatedPage.getByText('Milk')).toBeVisible();
+        await expect(authenticatedPage.getByText('2 L')).toBeVisible();
+    });
+
+    test('can edit item quantity and unit', async ({ authenticatedPage }) => {
+        await apiCreateList(LIST_TITLE);
+        await apiAddItem(LIST_TITLE, 'Butter');
+        await authenticatedPage.goto(`/list/${LIST_TITLE}`);
+
+        const itemEl = authenticatedPage.getByText('Butter');
+        const box = await itemEl.boundingBox();
+        if (box) {
+            const cx = box.x + box.width / 2;
+            const cy = box.y + box.height / 2;
+            await authenticatedPage.mouse.move(cx, cy);
+            await authenticatedPage.mouse.down();
+            await authenticatedPage.mouse.move(cx + 90, cy, { steps: 10 });
+            await authenticatedPage.mouse.up();
+            await authenticatedPage.waitForTimeout(300);
+
+            const editButtons = authenticatedPage.locator('button[class*="bg-blue"]');
+            if ((await editButtons.count()) > 0) {
+                await editButtons.first().click();
+                await expect(authenticatedPage.getByText('Edit Item', { exact: true })).toBeVisible();
+                await authenticatedPage.getByLabel('Quantity').fill('3');
+                await authenticatedPage.getByLabel('Unit').click();
+                await authenticatedPage.getByRole('option', { name: 'kg' }).click();
+                await authenticatedPage.getByRole('button', { name: 'Save Changes' }).click();
+                await expect(authenticatedPage.getByText('3 kg')).toBeVisible();
+            }
+        }
+    });
+
     test('edit item changes name', async ({ authenticatedPage }) => {
         await apiCreateList(LIST_TITLE);
         await apiAddItem(LIST_TITLE, 'Butter');
