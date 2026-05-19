@@ -14,6 +14,8 @@ coverage/
 .env.local
 .env.*.local
 
+.superpowers/
+
 # Git worktrees
 .worktrees
 .claude/
