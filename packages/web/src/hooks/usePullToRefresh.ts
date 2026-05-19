@@ -5,9 +5,10 @@ const RESISTANCE = 0.4;
 const THRESHOLD = 80;
 const MAX_PULL = 120;
 // Minimum downward travel before committing to pull mode and calling preventDefault.
-// Without this, any tiny downward jitter at scrollTop=0 would lock the touch sequence
-// into pull mode and prevent the browser from scrolling.
-const PULL_COMMIT_THRESHOLD = 12;
+// Must be large enough that: (a) ordinary scroll-down gestures that start with a
+// tiny downward jitter don't accidentally lock into pull mode, and (b) the user's
+// finger is clearly past the halfway point of a deliberate pull before we take over.
+const PULL_COMMIT_THRESHOLD = 60;
 
 const SPRING_BACK = { type: 'spring', stiffness: 300, damping: 30 } as const;
 const SPRING_HOLD = { type: 'spring', stiffness: 200, damping: 25 } as const;
@@ -45,9 +46,21 @@ export function usePullToRefresh(onRefresh: () => Promise<void>): UsePullToRefre
         const el = scrollRef.current;
         if (!el) return;
 
+        // Abort any uncommitted pull the moment the container actually scrolls.
+        // This catches the case where the user touches at scrollTop=0 then swipes
+        // up (to scroll down into content) — the browser fires a scroll event and
+        // we immediately give up the gesture before calling preventDefault.
+        const onScroll = () => {
+            if (isPulling.current && !isCommitted.current) {
+                isPulling.current = false;
+                pullY.set(0);
+            }
+        };
+
         const onTouchStart = (e: TouchEvent) => {
             if (isRefreshingRef.current) return;
-            if (el.scrollTop > 0) return;
+            // Use a tolerance of 1px to absorb sub-pixel rounding at the true top.
+            if (el.scrollTop > 1) return;
             touchStartY.current = e.touches[0].clientY;
             isPulling.current = true;
             isCommitted.current = false;
@@ -57,7 +70,7 @@ export function usePullToRefresh(onRefresh: () => Promise<void>): UsePullToRefre
         const onTouchMove = (e: TouchEvent) => {
             if (!isPulling.current) return;
             // User scrolled away from top — abort pull mode
-            if (el.scrollTop > 0) {
+            if (el.scrollTop > 1) {
                 isPulling.current = false;
                 isCommitted.current = false;
                 return;
@@ -126,11 +139,13 @@ export function usePullToRefresh(onRefresh: () => Promise<void>): UsePullToRefre
             }
         };
 
+        el.addEventListener('scroll', onScroll, { passive: true });
         el.addEventListener('touchstart', onTouchStart, { passive: true });
         el.addEventListener('touchmove', onTouchMove, { passive: false });
         el.addEventListener('touchend', onTouchEnd, { passive: true });
 
         return () => {
+            el.removeEventListener('scroll', onScroll);
             el.removeEventListener('touchstart', onTouchStart);
             el.removeEventListener('touchmove', onTouchMove);
             el.removeEventListener('touchend', onTouchEnd);
