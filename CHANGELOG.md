@@ -1,3 +1,10 @@
+# [1.41.0](https://github.com/igor-siergiej/shoppingo/compare/v1.40.0...v1.41.0) (2026-05-19)
+
+
+### Features
+
+* **ci:** restore workflows-utils submodule ([#79](https://github.com/igor-siergiej/shoppingo/issues/79)) ([267df19](https://github.com/igor-siergiej/shoppingo/commit/267df199a31ed575751ed0e147eca06b9610d50f))
+
 # [1.40.0](https://github.com/igor-siergiej/shoppingo/compare/v1.39.0...v1.40.0) (2026-05-19)
 
 
