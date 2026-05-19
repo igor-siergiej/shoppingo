@@ -1,3 +1,15 @@
+# [1.40.0](https://github.com/igor-siergiej/shoppingo/compare/v1.39.0...v1.40.0) (2026-05-19)
+
+
+### Bug Fixes
+
+* **web:** prevent pull-to-refresh from firing mid-scroll or too easily ([#78](https://github.com/igor-siergiej/shoppingo/issues/78)) ([f92f872](https://github.com/igor-siergiej/shoppingo/commit/f92f8726df7e6cf9c9ba1db1f253d53f603e2bd7))
+
+
+### Features
+
+* **web:** clean up superpowers directory ([4f39296](https://github.com/igor-siergiej/shoppingo/commit/4f392965948da21097754cb1c20d3352ed14bf3a))
+
 # [1.39.0](https://github.com/igor-siergiej/shoppingo/compare/v1.38.0...v1.39.0) (2026-05-16)
 
 
