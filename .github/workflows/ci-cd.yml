@@ -9,19 +9,8 @@ on:
 jobs:
   lint:
     if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: read
-    steps:
-      - uses: actions/checkout@v6
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-      - run: bun install
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GH_TOKEN }}
-      - run: bun run lint
+    uses: igor-siergiej/utils/.github/workflows/reusable-lint-test.yml@main
+    secrets: inherit
 
   test:
     if: github.event_name == 'pull_request'
@@ -46,10 +35,10 @@ jobs:
           COVERAGE=$(cat packages/api/coverage/coverage-summary.json | grep -o '"lines"[^}]*}' | grep -o '[0-9.]*' | head -1)
           echo "Code coverage: ${COVERAGE}%"
           if (( $(echo "$COVERAGE < 90" | bc -l) )); then
-            echo "❌ Coverage ${COVERAGE}% is below 90% threshold"
+            echo "Coverage ${COVERAGE}% is below 90% threshold"
             exit 1
           fi
-          echo "✅ Coverage ${COVERAGE}% meets 90% threshold"
+          echo "Coverage ${COVERAGE}% meets 90% threshold"
 
   e2e:
     if: github.event_name == 'pull_request'
@@ -106,24 +95,9 @@ jobs:
 
   release:
     if: github.event_name == 'push'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      packages: read
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-      - run: bun install
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GH_TOKEN }}
-      - run: bunx semantic-release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+    uses: igor-siergiej/utils/.github/workflows/reusable-release.yml@main
+    secrets:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
   build-publish:
     if: github.event_name == 'push'
