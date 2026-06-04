@@ -6,8 +6,5 @@
     "**/dist/**",
     "**/coverage/**"
   ],
-  "ignoreUnresolvedImports": [
-    "bun:test",
-    "virtual:pwa-register/react"
-  ]
+  "ignoreUnresolvedImports": ["bun:test", "virtual:pwa-register/react"]
 }
