@@ -1,0 +1,13 @@
+{
+  "ignorePatterns": [
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "packages/web/src/components/ui/**",
+    "**/dist/**",
+    "**/coverage/**"
+  ],
+  "ignoreUnresolvedImports": [
+    "bun:test",
+    "virtual:pwa-register/react"
+  ]
+}
