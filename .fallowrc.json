@@ -1,0 +1,26 @@
+{
+  "ignorePatterns": [
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "packages/web/src/components/ui/**",
+    "**/dist/**",
+    "**/coverage/**"
+  ],
+  "ignoreUnresolvedImports": ["bun:test", "virtual:pwa-register/react"],
+  "ignoreDependencies": [
+    "@radix-ui/react-alert-dialog",
+    "@radix-ui/react-checkbox",
+    "@radix-ui/react-dialog",
+    "@radix-ui/react-label",
+    "@radix-ui/react-popover",
+    "@radix-ui/react-scroll-area",
+    "@radix-ui/react-select",
+    "@radix-ui/react-slot",
+    "@radix-ui/react-switch",
+    "vaul",
+    "react-day-picker",
+    "@tailwindcss/vite",
+    "shadcn",
+    "@imapps/biome-config"
+  ]
+}
