@@ -93,6 +93,7 @@ jobs:
           command: audit
           comment: true
           review-comments: true
+          gate: new-only
 
   semgrep:
     if: github.actor != 'dependabot[bot]'
