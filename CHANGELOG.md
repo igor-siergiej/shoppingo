@@ -1,3 +1,10 @@
+# [1.42.0](https://github.com/igor-siergiej/shoppingo/compare/v1.41.0...v1.42.0) (2026-06-04)
+
+
+### Features
+
+* **ci:** add fallow static analysis ([#81](https://github.com/igor-siergiej/shoppingo/issues/81)) ([bb77b40](https://github.com/igor-siergiej/shoppingo/commit/bb77b409d9b223e8f0f3534635d06736e6eed77a))
+
 # [1.41.0](https://github.com/igor-siergiej/shoppingo/compare/v1.40.0...v1.41.0) (2026-05-19)
 
 
