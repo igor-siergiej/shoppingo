@@ -22,7 +22,7 @@ import { useItemMutations } from '../../hooks/useItemMutations';
 import { useSwipeGesture } from '../../hooks/useSwipeGesture';
 import { ItemCheckBoxCard } from './ItemCheckBoxCard';
 
-export interface ItemCheckBoxProps {
+interface ItemCheckBoxProps {
     item: Item;
     listTitle: string;
     listType: ListType;

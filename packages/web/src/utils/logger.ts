@@ -162,5 +162,3 @@ document.addEventListener('visibilitychange', () => {
         logger.flushBeforeUnload();
     }
 });
-
-export default logger;

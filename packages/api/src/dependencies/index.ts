@@ -1,5 +1,5 @@
 // biome-ignore-all lint/correctness/noConstructorReturn: I need to figure out a better way to do this
-import { DependencyContainer, Logger, MongoDbConnection, ObjectStoreConnection } from '@imapps/api-utils';
+import { Logger, MongoDbConnection, ObjectStoreConnection } from '@imapps/api-utils';
 
 import { config } from '../config';
 import { AuthorizationService } from '../domain/AuthorizationService';
@@ -14,9 +14,10 @@ import { MongoRecipeRepository } from '../infrastructure/MongoRecipeRepository';
 import { OpenAIImageGenerator } from '../infrastructure/OpenAIImageGenerator';
 import { UuidGenerator } from '../infrastructure/UuidGenerator';
 import * as RecipeHandlers from '../interfaces/RecipeHandlers';
-import { type Dependencies, DependencyToken } from './types';
+import { dependencyContainer } from './container';
+import { DependencyToken } from './types';
 
-export const dependencyContainer = DependencyContainer.getInstance<Dependencies>();
+export { dependencyContainer };
 
 export const registerDepdendencies = () => {
     // Core infrastructure services

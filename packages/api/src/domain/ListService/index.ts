@@ -99,11 +99,6 @@ export class ListService {
         return list;
     }
 
-    async getListItems(title: string): Promise<Array<Item>> {
-        const list = await this.getList(title);
-        return list.items;
-    }
-
     async getListsForUser(userId: string) {
         if (!userId) {
             throw Object.assign(new Error('userId is required'), { status: 400 });

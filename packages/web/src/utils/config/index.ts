@@ -1,6 +1,6 @@
 import type { AppConfig, ConfigState } from './types';
 
-export const configState: ConfigState = {
+const configState: ConfigState = {
     config: null,
     isLoading: false,
     error: null,
@@ -43,10 +43,6 @@ export const getConfig = (): AppConfig => {
     }
 
     return configState.config;
-};
-
-export const getConfigState = (): ConfigState => {
-    return { ...configState };
 };
 
 export const getAuthUrl = (): string => {

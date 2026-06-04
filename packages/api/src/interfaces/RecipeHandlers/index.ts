@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import type { Ingredient } from '@shoppingo/types';
 import type { Context } from 'koa';
-import { dependencyContainer } from '../../dependencies';
+import { dependencyContainer } from '../../dependencies/container';
 import { DependencyToken } from '../../dependencies/types';
 import type { RecipeService } from '../../domain/RecipeService';
 

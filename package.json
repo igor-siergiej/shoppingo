@@ -23,7 +23,6 @@
     "@biomejs/biome": "2.2.5",
     "@commitlint/cli": "^20.1.0",
     "@commitlint/config-conventional": "^20.0.0",
-    "@happy-dom/global-registrator": "^20.8.4",
     "@imapps/biome-config": "0.5.1",
     "@playwright/test": "^1.60.0",
     "@semantic-release/changelog": "^6.0.3",
@@ -43,9 +42,5 @@
   "packageManager": "bun@1.3.9",
   "lint-staged": {
     "*.{ts,tsx,json}": "biome check --fix --unsafe"
-  },
-  "dependencies": {
-    "koa-body": "^7.0.1",
-    "sonner": "^2.0.7"
   }
 }
