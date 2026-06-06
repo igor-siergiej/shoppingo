@@ -1,5 +1,5 @@
 import { getStorageItem } from '@imapps/web-utils';
-import type { Item, ListResponse, ListType, Recipe, User } from '@shoppingo/types';
+import type { Item, Label, ListResponse, ListType, Recipe, Todo, User } from '@shoppingo/types';
 
 import { getAuthConfig } from '../config/auth';
 import { makeRequest } from './makeRequest';
@@ -343,6 +343,101 @@ export const uploadRecipeImage = async (recipeId: string, file: File): Promise<{
     }
 
     return await response.json();
+};
+
+export interface CreateTodoBody {
+    title: string;
+    dueDate?: Date;
+    time?: string;
+    labelId?: string;
+    recurrence?: Todo['recurrence'];
+}
+
+export const getTodosQuery = () => ({
+    queryKey: ['todos'],
+    queryFn: async () => await getTodos(),
+});
+
+const getTodos = async (): Promise<Array<Todo>> => {
+    return await makeRequest({
+        pathname: '/api/todos',
+        method: MethodType.GET,
+        operationString: 'get todos',
+    });
+};
+
+export const createTodo = async (body: CreateTodoBody): Promise<Todo> => {
+    return await makeRequest({
+        pathname: '/api/todos',
+        method: MethodType.PUT,
+        operationString: 'create todo',
+        body: JSON.stringify(body),
+    });
+};
+
+export const updateTodo = async (id: string, body: Partial<Todo>): Promise<Todo> => {
+    return await makeRequest({
+        pathname: `/api/todos/${encodeURIComponent(id)}`,
+        method: MethodType.POST,
+        operationString: 'update todo',
+        body: JSON.stringify(body),
+    });
+};
+
+export const deleteTodo = async (id: string): Promise<void> => {
+    return await makeRequest({
+        pathname: `/api/todos/${encodeURIComponent(id)}`,
+        method: MethodType.DELETE,
+        operationString: 'delete todo',
+    });
+};
+
+export const completeTodo = async (id: string, date?: string): Promise<Todo> => {
+    return await makeRequest({
+        pathname: `/api/todos/${encodeURIComponent(id)}/complete`,
+        method: MethodType.POST,
+        operationString: 'complete todo',
+        body: JSON.stringify(date !== undefined ? { date } : {}),
+    });
+};
+
+export const getLabelsQuery = () => ({
+    queryKey: ['labels'],
+    queryFn: async () => await getLabels(),
+});
+
+const getLabels = async (): Promise<Array<Label>> => {
+    return await makeRequest({
+        pathname: '/api/labels',
+        method: MethodType.GET,
+        operationString: 'get labels',
+    });
+};
+
+export const createLabel = async (body: { name: string; color: string }): Promise<Label> => {
+    return await makeRequest({
+        pathname: '/api/labels',
+        method: MethodType.PUT,
+        operationString: 'create label',
+        body: JSON.stringify(body),
+    });
+};
+
+export const updateLabel = async (id: string, body: { name?: string; color?: string }): Promise<Label> => {
+    return await makeRequest({
+        pathname: `/api/labels/${encodeURIComponent(id)}`,
+        method: MethodType.POST,
+        operationString: 'update label',
+        body: JSON.stringify(body),
+    });
+};
+
+export const deleteLabel = async (id: string): Promise<void> => {
+    return await makeRequest({
+        pathname: `/api/labels/${encodeURIComponent(id)}`,
+        method: MethodType.DELETE,
+        operationString: 'delete label',
+    });
 };
 
 const generateTimestamp = (now: Date): string => {
