@@ -7,24 +7,14 @@ export const useItemPageMutations = (listTitle?: string) => {
     const queryClient = useQueryClient();
 
     const addItemMutation = useMutation({
-        mutationFn: ({
-            itemName,
-            quantity,
-            unit,
-            dueDate,
-        }: {
-            itemName: string;
-            quantity?: number;
-            unit?: string;
-            dueDate?: Date;
-        }) => addItem(itemName, listTitle, quantity, unit, dueDate),
+        mutationFn: ({ itemName, quantity, unit }: { itemName: string; quantity?: number; unit?: string }) =>
+            addItem(itemName, listTitle, quantity, unit),
         onSuccess: (_, variables) => {
             logger.info('Item added', {
                 listTitle,
                 itemName: variables.itemName,
                 quantity: variables.quantity,
                 unit: variables.unit,
-                dueDate: variables.dueDate,
             });
             void queryClient.invalidateQueries([listTitle]);
         },

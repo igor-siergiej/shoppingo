@@ -23,7 +23,7 @@ import { ToolBarAppBar } from './ToolBarAppBar';
 
 interface ToolBarProps {
     onAddList?: (name: string, listType: ListType, users: string[]) => Promise<void>;
-    onAddItem?: (name: string, quantity?: number, unit?: string, dueDate?: Date) => Promise<void>;
+    onAddItem?: (name: string, quantity?: number, unit?: string) => Promise<void>;
     onAddIngredient?: (name: string, quantity?: number, unit?: string) => Promise<void>;
     onAddTodo?: (body: import('../../api').CreateTodoBody) => Promise<void>;
     labels?: import('@shoppingo/types').Label[];

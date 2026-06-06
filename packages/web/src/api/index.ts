@@ -67,8 +67,7 @@ export const addItem = async (
     itemName: string,
     listTitle: string,
     quantity?: number,
-    unit?: string,
-    dueDate?: Date
+    unit?: string
 ): Promise<unknown> => {
     const dateAdded = generateTimestamp(new Date());
 
@@ -81,7 +80,6 @@ export const addItem = async (
             dateAdded,
             ...(quantity !== undefined && { quantity }),
             ...(unit !== undefined && { unit }),
-            ...(dueDate !== undefined && { dueDate }),
         }),
     });
 
@@ -191,17 +189,6 @@ export const updateItemQuantity = async (listTitle: string, itemName: string, qu
         body: JSON.stringify({
             ...(quantity !== undefined && { quantity }),
             ...(unit !== undefined && { unit }),
-        }),
-    });
-};
-
-export const updateItemDueDate = async (listTitle: string, itemName: string, dueDate?: Date) => {
-    return await makeRequest({
-        pathname: `/api/lists/${encodeURIComponent(listTitle)}/items/${encodeURIComponent(itemName)}`,
-        method: MethodType.POST,
-        operationString: 'update item due date',
-        body: JSON.stringify({
-            ...(dueDate !== undefined && { dueDate }),
         }),
     });
 };

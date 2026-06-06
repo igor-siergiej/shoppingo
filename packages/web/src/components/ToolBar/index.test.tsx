@@ -51,6 +51,10 @@ vi.mock('../ManageUsersDrawer', () => ({
     ManageUsersDrawer: () => <div data-testid="manage-users-drawer">Users</div>,
 }));
 
+vi.mock('../ManageLabelsDrawer', () => ({
+    ManageLabelsDrawer: () => <div data-testid="manage-labels-drawer">Labels</div>,
+}));
+
 describe('ToolBar', () => {
     beforeEach(() => {
         mockUseToolBarState.mockReturnValue({
