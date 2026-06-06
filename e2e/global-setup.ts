@@ -33,15 +33,10 @@ export default async function globalSetup(): Promise<() => Promise<void>> {
         await new Promise<void>((resolve) => kivoServer.close(() => resolve()));
 
         const mongoUri = resolveMongoUri();
-        if (!mongoUri.includes('shoppingo_e2e') && !process.env.E2E_MONGO_URI && !process.env.CONNECTION_URI) {
-            return;
-        }
         const client = new MongoClient(mongoUri);
         try {
             await client.connect();
             await client.db('shoppingo_e2e').dropDatabase();
-        } catch {
-            // DB cleanup is best-effort — skip if not configured for e2e
         } finally {
             await client.close();
         }

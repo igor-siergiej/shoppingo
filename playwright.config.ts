@@ -1,35 +1,52 @@
 import { defineConfig, devices } from '@playwright/test';
+import { config } from 'dotenv';
+import { resolveMongoUri } from './e2e/mongo-uri';
 
-const BASE_URL = 'http://localhost:4000';
+config();
+
+const E2E_KIVO_PORT = 3099;
+const E2E_MONGO_URI = resolveMongoUri();
 
 export default defineConfig({
-    testDir: './e2e',
-    timeout: 30_000,
-    expect: { timeout: 10_000 },
+    testDir: './e2e/tests',
+    tsconfig: './e2e/tsconfig.json',
     fullyParallel: false,
-    forbidOnly: !!process.env.CI,
-    retries: process.env.CI ? 1 : 0,
     workers: 1,
-    reporter: process.env.CI ? 'github' : 'list',
+    forbidOnly: !!process.env.CI,
+    retries: process.env.CI ? 2 : 0,
+    reporter: 'html',
     globalSetup: './e2e/global-setup.ts',
     use: {
-        baseURL: BASE_URL,
+        baseURL: 'http://localhost:4000',
         trace: 'on-first-retry',
-        screenshot: 'only-on-failure',
         serviceWorkers: 'block',
     },
     projects: [
-        { name: 'setup', testMatch: /auth\.setup\.ts/ },
         {
             name: 'chromium',
-            use: { ...devices['Desktop Chrome'], storageState: 'e2e/.auth/user.json' },
-            dependencies: ['setup'],
+            use: { ...devices['Desktop Chrome'] },
         },
     ],
-    webServer: {
-        command: 'bun run start:with-mock',
-        url: BASE_URL,
-        reuseExistingServer: !process.env.CI,
-        timeout: 120_000,
-    },
+    webServer: [
+        {
+            command: 'bun run start:web',
+            url: 'http://localhost:4000',
+            reuseExistingServer: !process.env.CI,
+        },
+        {
+            command: 'bun run --filter @shoppingo/api start:e2e',
+            url: 'http://localhost:4001/api/health',
+            reuseExistingServer: false,
+            env: {
+                PORT: '4001',
+                AUTH_URL: `http://localhost:${E2E_KIVO_PORT}`,
+                CONNECTION_URI: E2E_MONGO_URI,
+                DATABASE_NAME: 'shoppingo_e2e',
+                BUCKET_ENDPOINT: 'localhost:9000',
+                BUCKET_NAME: 'shoppingo',
+                BUCKET_ACCESS_KEY: 'minioadmin',
+                BUCKET_SECRET_KEY: 'minioadmin',
+            },
+        },
+    ],
 });
