@@ -61,4 +61,5 @@ export type Dependencies = {
 export enum CollectionNames {
     List = 'list',
     Recipe = 'recipe',
+    Todo = 'todo',
 }
