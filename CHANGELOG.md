@@ -1,3 +1,15 @@
+# [1.43.0](https://github.com/igor-siergiej/shoppingo/compare/v1.42.0...v1.43.0) (2026-06-06)
+
+
+### Bug Fixes
+
+* **fallow:** resolve all dead-code report findings ([#82](https://github.com/igor-siergiej/shoppingo/issues/82)) ([36df440](https://github.com/igor-siergiej/shoppingo/commit/36df4405afe97639a3d67e6d3336dde0f938f3ee))
+
+
+### Features
+
+* first-class todos + calendar view ([#83](https://github.com/igor-siergiej/shoppingo/issues/83)) ([fd0d70e](https://github.com/igor-siergiej/shoppingo/commit/fd0d70ee2d32249270346a226673279c517c39a5)), closes [#82](https://github.com/igor-siergiej/shoppingo/issues/82) [hi#crap-score](https://github.com/hi/issues/crap-score)
+
 # [1.42.0](https://github.com/igor-siergiej/shoppingo/compare/v1.41.0...v1.42.0) (2026-06-04)
 
 
