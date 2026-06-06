@@ -1,4 +1,4 @@
-import { apiCreateLabel, apiCreateTodo } from '../api-helpers';
+import { apiCreateTodo } from '../api-helpers';
 import { expect, test } from '../fixtures';
 
 function isoDay(d: Date): string {

@@ -67,28 +67,23 @@ export async function apiCreateRecipe(
     return res.json() as Promise<{ id: string; title: string; ingredients: Array<{ id: string; name: string }> }>;
 }
 
-export async function apiCreateTodo(body: {
+async function apiPut<T>(path: string, body: unknown): Promise<T> {
+    const res = await fetch(`${API_BASE}${path}`, {
+        method: 'PUT',
+        headers: authHeaders,
+        body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error(`PUT ${path} failed: ${await res.text()}`);
+    return res.json() as Promise<T>;
+}
+
+export const apiCreateTodo = (body: {
     title: string;
     dueDate?: string;
     time?: string;
     labelId?: string;
     recurrence?: { freq: string; interval: number; until?: string };
-}) {
-    const res = await fetch(`${API_BASE}/api/todos`, {
-        method: 'PUT',
-        headers: authHeaders,
-        body: JSON.stringify(body),
-    });
-    if (!res.ok) throw new Error(`apiCreateTodo failed: ${await res.text()}`);
-    return res.json() as Promise<{ id: string; title: string }>;
-}
+}) => apiPut<{ id: string; title: string }>('/api/todos', body);
 
-export async function apiCreateLabel(body: { name: string; color: string }) {
-    const res = await fetch(`${API_BASE}/api/labels`, {
-        method: 'PUT',
-        headers: authHeaders,
-        body: JSON.stringify(body),
-    });
-    if (!res.ok) throw new Error(`apiCreateLabel failed: ${await res.text()}`);
-    return res.json() as Promise<{ id: string; name: string; color: string }>;
-}
+export const apiCreateLabel = (body: { name: string; color: string }) =>
+    apiPut<{ id: string; name: string; color: string }>('/api/labels', body);
