@@ -20,6 +20,7 @@ interface ItemCheckBoxCardProps {
     onImageError: () => void;
 }
 
+// fallow-ignore-next-line complexity
 export const ItemCheckBoxCard = ({
     item,
     listType,
