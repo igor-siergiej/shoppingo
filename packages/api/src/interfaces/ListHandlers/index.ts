@@ -36,9 +36,8 @@ const resolveItemOperation = (body: {
     newItemName?: string;
     quantity?: number;
     unit?: string;
-    dueDate?: Date;
 }): {
-    type: 'name' | 'selection' | 'quantity' | 'dueDate';
+    type: 'name' | 'selection' | 'quantity';
     execute: (service: ReturnType<typeof getListService>, title: string, itemName: string) => Promise<unknown>;
 } | null => {
     if (body.newItemName !== undefined) {
@@ -60,13 +59,6 @@ const resolveItemOperation = (body: {
             type: 'quantity',
             execute: (service, title, itemName) =>
                 service.updateItemQuantity(title, itemName, body.quantity, body.unit),
-        };
-    }
-
-    if (body.dueDate !== undefined) {
-        return {
-            type: 'dueDate',
-            execute: (service, title, itemName) => service.updateItemDueDate(title, itemName, body.dueDate),
         };
     }
 
@@ -204,12 +196,11 @@ export const addList = async (ctx: Context) => {
 
 export const addItem = async (ctx: Context) => {
     const { title } = ctx.params as { title: string };
-    const { itemName, dateAdded, quantity, unit, dueDate } = ctx.request.body as {
+    const { itemName, dateAdded, quantity, unit } = ctx.request.body as {
         itemName: string;
         dateAdded: Date;
         quantity?: number;
         unit?: string;
-        dueDate?: Date;
     };
     const logger = getLogger();
     const authenticatedUser = ctx.state.user as { id: string; username: string };
@@ -234,7 +225,7 @@ export const addItem = async (ctx: Context) => {
             return;
         }
 
-        const item = await getListService().addItem(title, itemName, dateAdded, quantity, unit, dueDate);
+        const item = await getListService().addItem(title, itemName, dateAdded, quantity, unit);
 
         logger.info('API: Item added to list', {
             listTitle: title,
@@ -242,7 +233,6 @@ export const addItem = async (ctx: Context) => {
             itemId: item.id,
             quantity,
             unit,
-            dueDate,
         });
 
         ctx.status = 200;
@@ -267,7 +257,6 @@ export const updateItem = async (ctx: Context) => {
         newItemName?: string;
         quantity?: number;
         unit?: string;
-        dueDate?: Date;
     };
     const logger = getLogger();
     const authenticatedUser = ctx.state.user as { id: string; username: string };
@@ -299,7 +288,7 @@ export const updateItem = async (ctx: Context) => {
         if (!operation) {
             ctx.status = 400;
             ctx.body = {
-                error: 'Either isSelected (boolean), newItemName (string), quantity/unit, or dueDate must be provided',
+                error: 'Either isSelected (boolean), newItemName (string), or quantity/unit must be provided',
             };
             logger.warn('API: Invalid item update request', {
                 listTitle: title,
