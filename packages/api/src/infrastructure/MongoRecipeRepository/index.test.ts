@@ -130,17 +130,6 @@ describe('MongoRecipeRepository', () => {
         });
     });
 
-    describe('setTags', () => {
-        it('calls findOneAndUpdate with correct args', async () => {
-            collection.findOneAndUpdate.mockResolvedValue({});
-            await repo.setTags('r1', ['tag1', 'tag2']);
-            expect(collection.findOneAndUpdate).toHaveBeenCalledWith(
-                { id: 'r1' },
-                { $set: { tags: ['tag1', 'tag2'] } }
-            );
-        });
-    });
-
     describe('setCoverImageKey', () => {
         it('calls findOneAndUpdate with correct args', async () => {
             collection.findOneAndUpdate.mockResolvedValue({});

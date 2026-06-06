@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-export interface ConfirmationConfig {
+interface ConfirmationConfig {
     title: string;
     description: string;
     actionLabel?: string;

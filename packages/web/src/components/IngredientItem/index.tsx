@@ -20,7 +20,7 @@ import { Skeleton } from '../../components/ui/skeleton';
 import { useItemImage } from '../../hooks/useItemImage';
 import { useSwipeGesture } from '../../hooks/useSwipeGesture';
 
-export interface IngredientItemProps {
+interface IngredientItemProps {
     ingredient: Ingredient;
     onDelete: (id: string) => void;
     onEdit: (id: string, updated: Ingredient) => void;

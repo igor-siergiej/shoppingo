@@ -106,5 +106,3 @@ export const getImage = async (ctx: Context) => {
         ctx.body = { error: err.message ?? 'Internal Server Error' };
     }
 };
-
-export default getImage;

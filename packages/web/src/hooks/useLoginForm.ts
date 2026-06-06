@@ -19,7 +19,7 @@ const loginSchema = z.object({
         .max(100, 'Password must not exceed 100 characters'),
 });
 
-export type LoginFormData = z.infer<typeof loginSchema>;
+type LoginFormData = z.infer<typeof loginSchema>;
 
 export const useLoginForm = () => {
     const navigate = useNavigate();

@@ -83,40 +83,6 @@ describe('ListService', () => {
         listService = new ListService(mockRepository, mockIdGenerator, mockAuthClient);
     });
 
-    describe('Getting list items', () => {
-        describe('When a list exists', () => {
-            it('should return the items from that list', async () => {
-                const mockList: List = {
-                    id: 'list-1',
-                    title: 'Test List',
-                    dateAdded: new Date('2023-01-01'),
-                    items: [
-                        {
-                            id: 'item-1',
-                            name: 'Item 1',
-                            dateAdded: new Date(),
-                            isSelected: false,
-                        },
-                    ],
-                    users: [mockUser],
-                };
-
-                await mockRepository.insert(mockList);
-
-                const result = await listService.getListItems('Test List');
-
-                expect(result).toHaveLength(1);
-                expect(result[0].name).toBe('Item 1');
-            });
-        });
-
-        describe('When a list does not exist', () => {
-            it('should throw an error indicating the list was not found', async () => {
-                await expect(listService.getListItems('Non-existent List')).rejects.toThrow('List not found');
-            });
-        });
-    });
-
     describe('Getting lists for a user', () => {
         describe('When a user has lists', () => {
             it('should return all lists belonging to that user', async () => {

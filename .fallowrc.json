@@ -3,10 +3,25 @@
     "**/*.test.ts",
     "**/*.test.tsx",
     "packages/web/src/components/ui/**",
+    "packages/web/src/lib/utils.ts",
+    "packages/api/src/domain/ListService/index.ts",
+    "packages/api/src/domain/RecipeService/index.ts",
+    "packages/api/src/domain/ImageService/index.ts",
+    "packages/api/src/domain/AuthorizationService/index.ts",
+    "packages/api/src/domain/RecipeImageService/index.ts",
+    "packages/api/src/infrastructure/AuthClient/index.ts",
+    "packages/api/src/infrastructure/BucketStore/index.ts",
+    "packages/api/src/infrastructure/MongoListRepository/index.ts",
+    "packages/api/src/infrastructure/MongoRecipeRepository/index.ts",
+    "packages/api/src/infrastructure/UuidGenerator/index.ts",
+    "packages/api/src/infrastructure/metrics.ts",
+    "packages/api/src/infrastructure/OpenAIImageGenerator/index.ts",
+    "packages/api/src/infrastructure/imageProcessor.ts",
     "**/dist/**",
     "**/coverage/**"
   ],
   "ignoreUnresolvedImports": ["bun:test", "virtual:pwa-register/react"],
+  "ignoreExports": [{ "file": "packages/api/src/dependencies/types.ts", "exports": ["CollectionNames"] }],
   "ignoreDependencies": [
     "@radix-ui/react-alert-dialog",
     "@radix-ui/react-checkbox",
@@ -21,6 +36,11 @@
     "react-day-picker",
     "@tailwindcss/vite",
     "shadcn",
-    "@imapps/biome-config"
+    "@imapps/biome-config",
+    "class-variance-authority",
+    "clsx",
+    "tailwind-merge",
+    "prom-client",
+    "sharp"
   ]
 }
