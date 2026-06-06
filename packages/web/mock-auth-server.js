@@ -94,6 +94,7 @@ app.post('/register', (req, res) => {
     });
 
     res.status(201).json({
+        accessToken,
         token: accessToken,
         user: {
             username,
