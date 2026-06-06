@@ -18,7 +18,8 @@
     "packages/api/src/infrastructure/OpenAIImageGenerator/index.ts",
     "packages/api/src/infrastructure/imageProcessor.ts",
     "**/dist/**",
-    "**/coverage/**"
+    "**/coverage/**",
+    "scripts/**"
   ],
   "ignoreUnresolvedImports": ["bun:test", "virtual:pwa-register/react"],
   "ignoreExports": [{ "file": "packages/api/src/dependencies/types.ts", "exports": ["CollectionNames"] }],
