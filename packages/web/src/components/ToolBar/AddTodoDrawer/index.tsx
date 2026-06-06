@@ -28,13 +28,13 @@ interface BuildTodoBodyArgs {
     recurrence?: Recurrence;
 }
 
-const buildTodoBody = ({ title, dueDate, time, labelId, recurrence }: BuildTodoBodyArgs): CreateTodoBody => ({
-    title,
-    ...(dueDate !== undefined && { dueDate }),
-    ...(time !== undefined && { time }),
-    ...(labelId !== undefined && { labelId }),
-    ...(recurrence !== undefined && { recurrence }),
-});
+const buildTodoBody = ({ title, ...optional }: BuildTodoBodyArgs): CreateTodoBody => {
+    const body: CreateTodoBody = { title };
+    for (const [key, value] of Object.entries(optional)) {
+        if (value !== undefined) (body as Record<string, unknown>)[key] = value;
+    }
+    return body;
+};
 
 export interface AddTodoDrawerProps {
     open: boolean;

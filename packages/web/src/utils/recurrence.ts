@@ -25,14 +25,20 @@ const expandSingle = (todo: Todo, start: Date, end: Date): Occurrence[] => {
     return [{ date: anchor, done: todo.done }];
 };
 
+const resolveLimit = (recurrence: Recurrence, end: Date): Date => {
+    if (!recurrence.until) return end;
+    const until = normalize(new Date(recurrence.until));
+    return isBefore(until, end) ? until : end;
+};
+
+const toDoneSet = (dates: string[] | undefined): Set<string> => new Set(dates ?? []);
+
 const expandRecurring = (todo: Todo, start: Date, end: Date): Occurrence[] => {
-    const anchor = normalize(new Date(todo.dueDate as Date));
     const rec = todo.recurrence as Recurrence;
-    const completed = new Set(todo.completedDates ?? []);
-    const hardEnd = rec.until ? normalize(new Date(rec.until)) : end;
-    const limit = isBefore(hardEnd, end) ? hardEnd : end;
+    const completed = toDoneSet(todo.completedDates);
+    const limit = resolveLimit(rec, end);
     const occurrences: Occurrence[] = [];
-    let cursor = anchor;
+    let cursor = normalize(new Date(todo.dueDate as Date));
     for (let i = 0; i < 1000 && !isAfter(cursor, limit); i += 1) {
         if (!isBefore(cursor, start)) {
             occurrences.push({ date: cursor, done: completed.has(isoDay(cursor)) });

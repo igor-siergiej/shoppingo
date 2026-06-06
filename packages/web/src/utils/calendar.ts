@@ -8,9 +8,27 @@ interface CalendarDayData {
     selectedItems: DayTodoItem[];
 }
 
-const addOccurrenceToDots = (dots: Record<string, string[]>, key: string, color: string): void => {
+const addOccurrenceToDots = (dots: Record<string, string[]>, key: string, color: string | undefined): void => {
     if (!dots[key]) dots[key] = [];
-    dots[key].push(color);
+    dots[key].push(color ?? '#3b82f6');
+};
+
+interface CollectCtx {
+    selectedKey: string;
+    rangeStart: Date;
+    rangeEnd: Date;
+    labelColor: Map<string, string>;
+    dots: Record<string, string[]>;
+    items: DayTodoItem[];
+}
+
+const collectTodo = (todo: Todo, ctx: CollectCtx): void => {
+    const color = todo.labelId ? ctx.labelColor.get(todo.labelId) : undefined;
+    for (const occ of expandOccurrences(todo, ctx.rangeStart, ctx.rangeEnd)) {
+        const key = dayKey(occ.date);
+        addOccurrenceToDots(ctx.dots, key, color);
+        if (key === ctx.selectedKey) ctx.items.push(toSelectedItem(todo, color, occ.date, occ.done));
+    }
 };
 
 const toSelectedItem = (todo: Todo, color: string | undefined, occDate: Date, done: boolean): DayTodoItem => ({
@@ -32,17 +50,10 @@ export const buildCalendarDayData = (
 ): CalendarDayData => {
     const dots: Record<string, string[]> = {};
     const items: DayTodoItem[] = [];
-    const selectedKey = dayKey(selectedDay);
+    const ctx: CollectCtx = { selectedKey: dayKey(selectedDay), rangeStart, rangeEnd, labelColor, dots, items };
 
     for (const todo of visible) {
-        const color = todo.labelId ? labelColor.get(todo.labelId) : undefined;
-        for (const occ of expandOccurrences(todo, rangeStart, rangeEnd)) {
-            const key = dayKey(occ.date);
-            addOccurrenceToDots(dots, key, color ?? '#3b82f6');
-            if (key === selectedKey) {
-                items.push(toSelectedItem(todo, color, occ.date, occ.done));
-            }
-        }
+        collectTodo(todo, ctx);
     }
 
     return { dotsByDay: dots, selectedItems: items };
