@@ -91,6 +91,7 @@ jobs:
       - uses: fallow-rs/fallow@v2
         with:
           command: audit
+          comment: true
           review-comments: true
           gate: new-only
 
