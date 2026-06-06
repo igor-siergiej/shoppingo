@@ -163,21 +163,12 @@ export class ListService {
         }
     }
 
-    async addItem(title: string, itemName: string, dateAdded: Date, quantity?: number, unit?: string, dueDate?: Date) {
+    async addItem(title: string, itemName: string, dateAdded: Date, quantity?: number, unit?: string) {
         try {
             const list = await this.repo.getByTitle(title);
 
             if (!list) {
                 throw Object.assign(new Error('List not found'), { status: 404 });
-            }
-
-            // Validate list type constraints
-            if (list.listType === ListTypeEnum.TODO && (quantity !== undefined || unit !== undefined)) {
-                throw Object.assign(new Error('TODO lists cannot have quantity or unit'), { status: 400 });
-            }
-
-            if (list.listType === ListTypeEnum.SHOPPING && dueDate !== undefined) {
-                throw Object.assign(new Error('Shopping lists cannot have due dates'), { status: 400 });
             }
 
             // Check if an item with the same name already exists (case-insensitive)
@@ -194,7 +185,6 @@ export class ListService {
                 isSelected: false,
                 ...(quantity !== undefined && { quantity }),
                 ...(unit !== undefined && { unit }),
-                ...(dueDate !== undefined && { dueDate }),
             };
 
             await this.repo.pushItem(title, item);
@@ -209,40 +199,6 @@ export class ListService {
             return item;
         } catch (error) {
             this.logger?.error('Failed to add item to list', { listTitle: title, itemName, error });
-            throw error;
-        }
-    }
-
-    async updateItemDueDate(title: string, itemName: string, dueDate?: Date) {
-        try {
-            const list = await this.repo.getByTitle(title);
-
-            if (!list) {
-                throw Object.assign(new Error('List not found'), { status: 404 });
-            }
-
-            if (list.listType !== ListTypeEnum.TODO) {
-                throw Object.assign(new Error('Due dates only available for TODO lists'), { status: 400 });
-            }
-
-            list.items = list.items.map((item) => (item.name === itemName ? { ...item, dueDate } : item));
-
-            await this.repo.replaceByTitle(title, list);
-
-            this.logger?.info('Item due date updated', {
-                listTitle: title,
-                itemName,
-                dueDate,
-            });
-
-            return { message: 'Due date updated successfully' };
-        } catch (error) {
-            this.logger?.error('Failed to update item due date', {
-                listTitle: title,
-                itemName,
-                dueDate,
-                error,
-            });
             throw error;
         }
     }

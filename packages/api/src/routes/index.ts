@@ -1,9 +1,11 @@
 import type { Context, Next } from 'koa';
 import Router from 'koa-router';
 import { getImage } from '../interfaces/ImageHandlers';
+import * as labelHandlers from '../interfaces/LabelHandlers';
 import * as listHandlers from '../interfaces/ListHandlers';
 import { receiveLogs } from '../interfaces/LogHandlers';
 import * as recipeHandlers from '../interfaces/RecipeHandlers';
+import * as todoHandlers from '../interfaces/TodoHandlers';
 import { authenticate } from '../middleware/auth';
 
 const router = new Router();
@@ -58,5 +60,18 @@ router.delete('/api/recipes/:recipeId/users/:targetUserId', authenticate, (ctx) 
 router.put('/api/recipes/:recipeId/image', authenticate, (ctx) => recipeHandlers.setCoverImageKey(ctx));
 router.post('/api/recipes/:recipeId/image/upload', authenticate, (ctx) => recipeHandlers.uploadRecipeImage(ctx));
 router.post('/api/recipes/:recipeId/image/generate', authenticate, (ctx) => recipeHandlers.generateRecipeImage(ctx));
+
+// Todos
+router.get('/api/todos', authenticate, (ctx) => todoHandlers.getTodos(ctx));
+router.put('/api/todos', authenticate, (ctx) => todoHandlers.createTodo(ctx));
+router.post('/api/todos/:id', authenticate, (ctx) => todoHandlers.updateTodo(ctx));
+router.delete('/api/todos/:id', authenticate, (ctx) => todoHandlers.deleteTodo(ctx));
+router.post('/api/todos/:id/complete', authenticate, (ctx) => todoHandlers.completeTodo(ctx));
+
+// Labels
+router.get('/api/labels', authenticate, (ctx) => labelHandlers.getLabels(ctx));
+router.put('/api/labels', authenticate, (ctx) => labelHandlers.createLabel(ctx));
+router.post('/api/labels/:id', authenticate, (ctx) => labelHandlers.updateLabel(ctx));
+router.delete('/api/labels/:id', authenticate, (ctx) => labelHandlers.deleteLabel(ctx));
 
 export default router;

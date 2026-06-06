@@ -1,7 +1,7 @@
 import type { Item, ListType } from '@shoppingo/types';
 import type { UseMutationOptions } from 'react-query';
 import { useMutation, useQueryClient } from 'react-query';
-import { deleteItem, updateItem, updateItemDueDate, updateItemName, updateItemQuantity } from '../api';
+import { deleteItem, updateItem, updateItemName, updateItemQuantity } from '../api';
 
 interface OptimisticMutationContext {
     previousData: { listType: ListType; items: Item[] } | undefined;
@@ -90,28 +90,10 @@ export function useItemMutations(listTitle: string, itemName: string) {
         ) as UseMutationOptions<unknown, unknown, { quantity?: number; unit?: string }, OptimisticMutationContext>
     );
 
-    const updateDueDateMutation = useMutation(
-        createOptimisticMutation(
-            queryClient,
-            listTitle,
-            (dueDate?: Date) => updateItemDueDate(listTitle, itemName, dueDate),
-            (items, dueDate) =>
-                items.map((i) =>
-                    i.name === itemName
-                        ? {
-                              ...i,
-                              ...(dueDate !== undefined && { dueDate }),
-                          }
-                        : i
-                )
-        ) as UseMutationOptions<unknown, unknown, Date | undefined, OptimisticMutationContext>
-    );
-
     return {
         toggleMutation,
         deleteMutation,
         updateNameMutation,
         updateQuantityMutation,
-        updateDueDateMutation,
     };
 }

@@ -26,7 +26,6 @@ const mockListService = {
     clearList: vi.fn(),
     addItem: vi.fn(),
     updateItemQuantity: vi.fn(),
-    updateItemDueDate: vi.fn(),
     addUserToList: vi.fn(),
     removeUserFromList: vi.fn(),
 };
@@ -522,7 +521,6 @@ describe('ListHandlers', () => {
                 'New Item',
                 expect.any(String),
                 undefined,
-                undefined,
                 undefined
             );
             expect(ctx.response.status).toBe(200);
@@ -963,26 +961,6 @@ describe('ListHandlers', () => {
             expect(mockListService.updateItemQuantity).toHaveBeenCalledWith('Test List', 'Item', 5, 'kg');
             expect(ctx.response.status).toBe(200);
             expect(ctx.body).toEqual({ message: 'Item quantity updated' });
-        });
-
-        it('should update item due date successfully', async () => {
-            const dueDate = new Date('2025-12-31');
-            const ctx = createMockContext({
-                params: { title: 'Test List', itemName: 'Item' },
-                request: {
-                    body: { dueDate },
-                } as Context['request'],
-            });
-
-            mockListService.updateItemDueDate.mockResolvedValue({
-                message: 'Item due date updated',
-            });
-
-            await listHandlers.updateItem(ctx);
-
-            expect(mockListService.updateItemDueDate).toHaveBeenCalledWith('Test List', 'Item', dueDate);
-            expect(ctx.response.status).toBe(200);
-            expect(ctx.body).toEqual({ message: 'Item due date updated' });
         });
 
         it('should return 400 when no valid update fields provided', async () => {

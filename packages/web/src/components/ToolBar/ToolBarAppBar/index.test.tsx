@@ -133,4 +133,14 @@ describe('ToolBarAppBar', () => {
         const removeButton = Array.from(buttons).find((btn) => btn.title === 'Remove all items') as HTMLButtonElement;
         expect(removeButton?.disabled).toBe(true);
     });
+
+    it('renders a Calendar button that navigates to /calendar', async () => {
+        const { ToolBarAppBar } = await import('./index');
+        const { container } = renderWithRouter(
+            <ToolBarAppBar isItemsPage={false} isListsPage={false} isCalendarPage={false} onMenuClick={() => {}} />
+        );
+        const buttons = container.querySelectorAll('button');
+        const calendarButton = Array.from(buttons).find((btn) => btn.title === 'Calendar');
+        expect(calendarButton).toBeDefined();
+    });
 });

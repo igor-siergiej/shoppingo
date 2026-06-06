@@ -6,6 +6,8 @@
     "packages/web/src/lib/utils.ts",
     "packages/api/src/domain/ListService/index.ts",
     "packages/api/src/domain/RecipeService/index.ts",
+    "packages/api/src/domain/TodoService/index.ts",
+    "packages/api/src/domain/LabelService/index.ts",
     "packages/api/src/domain/ImageService/index.ts",
     "packages/api/src/domain/AuthorizationService/index.ts",
     "packages/api/src/domain/RecipeImageService/index.ts",
@@ -13,12 +15,15 @@
     "packages/api/src/infrastructure/BucketStore/index.ts",
     "packages/api/src/infrastructure/MongoListRepository/index.ts",
     "packages/api/src/infrastructure/MongoRecipeRepository/index.ts",
+    "packages/api/src/infrastructure/MongoTodoRepository/index.ts",
+    "packages/api/src/infrastructure/MongoLabelRepository/index.ts",
     "packages/api/src/infrastructure/UuidGenerator/index.ts",
     "packages/api/src/infrastructure/metrics.ts",
     "packages/api/src/infrastructure/OpenAIImageGenerator/index.ts",
     "packages/api/src/infrastructure/imageProcessor.ts",
     "**/dist/**",
-    "**/coverage/**"
+    "**/coverage/**",
+    "scripts/**"
   ],
   "ignoreUnresolvedImports": ["bun:test", "virtual:pwa-register/react"],
   "ignoreExports": [{ "file": "packages/api/src/dependencies/types.ts", "exports": ["CollectionNames"] }],
@@ -41,6 +46,7 @@
     "clsx",
     "tailwind-merge",
     "prom-client",
-    "sharp"
+    "sharp",
+    "workbox-window"
   ]
 }

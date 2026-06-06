@@ -25,15 +25,6 @@ test.describe('Lists page', () => {
         await expect(authenticatedPage.getByRole('button', { name: 'New List' })).toBeVisible();
     });
 
-    test('can add a TODO list', async ({ authenticatedPage }) => {
-        await authenticatedPage.goto('/');
-        await authenticatedPage.locator('button[class*="border-primary"]').first().click();
-        await authenticatedPage.getByLabel('List Name').fill('My Tasks');
-        await authenticatedPage.getByLabel('TODO').click();
-        await authenticatedPage.getByRole('button', { name: 'Add List' }).click();
-        await expect(authenticatedPage.getByRole('button', { name: 'My Tasks' })).toBeVisible();
-    });
-
     test('can rename a list', async ({ authenticatedPage }) => {
         await apiCreateList('Old Name');
         await authenticatedPage.goto('/');

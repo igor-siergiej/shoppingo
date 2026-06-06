@@ -1,22 +1,28 @@
 import type { Logger, MongoDbConnection, ObjectStoreConnection } from '@imapps/api-utils';
-import type { List, Recipe } from '@shoppingo/types';
+import type { Label, List, Recipe, Todo } from '@shoppingo/types';
 
 import type { AuthorizationService } from '../domain/AuthorizationService';
 import type { IdGenerator } from '../domain/IdGenerator';
 import type { ImageService } from '../domain/ImageService';
 import type { ImageGenerator, ImageStore } from '../domain/ImageService/types';
+import type { LabelRepository } from '../domain/LabelRepository';
+import type { LabelService } from '../domain/LabelService';
 import type { ListRepository } from '../domain/ListRepository';
 import type { ListService } from '../domain/ListService';
 import type { AuthClient } from '../domain/ListService/types';
 import type { RecipeImageService } from '../domain/RecipeImageService';
 import type { RecipeRepository } from '../domain/RecipeRepository';
 import type { RecipeService } from '../domain/RecipeService';
+import type { TodoRepository } from '../domain/TodoRepository';
+import type { TodoService } from '../domain/TodoService';
 import type { RecipeHandlers } from '../interfaces/RecipeHandlers';
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 export type Collections = {
     [CollectionNames.List]: List;
     [CollectionNames.Recipe]: Recipe;
+    [CollectionNames.Todo]: Todo;
+    [CollectionNames.Label]: Label;
 };
 
 export enum DependencyToken {
@@ -36,6 +42,10 @@ export enum DependencyToken {
     RecipeHandlers = 'RecipeHandlers',
     RecipeImageGenerator = 'RecipeImageGenerator',
     RecipeImageService = 'RecipeImageService',
+    TodoRepository = 'TodoRepository',
+    TodoService = 'TodoService',
+    LabelRepository = 'LabelRepository',
+    LabelService = 'LabelService',
 }
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
@@ -56,9 +66,15 @@ export type Dependencies = {
     [DependencyToken.RecipeHandlers]: RecipeHandlers;
     [DependencyToken.RecipeImageGenerator]: ImageGenerator;
     [DependencyToken.RecipeImageService]: RecipeImageService;
+    [DependencyToken.TodoRepository]: TodoRepository;
+    [DependencyToken.TodoService]: TodoService;
+    [DependencyToken.LabelRepository]: LabelRepository;
+    [DependencyToken.LabelService]: LabelService;
 };
 
 export enum CollectionNames {
     List = 'list',
     Recipe = 'recipe',
+    Todo = 'todo',
+    Label = 'label',
 }

@@ -28,11 +28,8 @@ export interface AddListDrawerProps {
 
 export const AddListDrawer = ({ open, onOpenChange, onAdd, placeholder }: AddListDrawerProps) => {
     const listNameId = useId();
-    const shoppingListTypeId = useId();
-    const todoListTypeId = useId();
     const searchUsersId = useId();
     const [newName, setNewName] = useState('');
-    const [listType, setListType] = useState<ListType>(ListTypeEnum.SHOPPING);
     const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -61,10 +58,9 @@ export const AddListDrawer = ({ open, onOpenChange, onAdd, placeholder }: AddLis
         setError('');
 
         try {
-            await onAdd(trimmedName, listType, selectedUsers);
+            await onAdd(trimmedName, ListTypeEnum.SHOPPING, selectedUsers);
 
             setNewName('');
-            setListType(ListTypeEnum.SHOPPING);
             setSelectedUsers([]);
             onOpenChange(false);
         } catch (err) {
@@ -76,7 +72,6 @@ export const AddListDrawer = ({ open, onOpenChange, onAdd, placeholder }: AddLis
 
     const handleCancel = () => {
         setNewName('');
-        setListType(ListTypeEnum.SHOPPING);
         setSelectedUsers([]);
         setError('');
         clearResults();
@@ -122,39 +117,6 @@ export const AddListDrawer = ({ open, onOpenChange, onAdd, placeholder }: AddLis
                                 }}
                             />
                             {error && <p className="text-sm text-destructive">{error}</p>}
-                        </div>
-
-                        {/* List type selector */}
-                        <div className="space-y-2">
-                            <Label>List Type</Label>
-                            <div className="flex gap-4">
-                                <div className="flex items-center space-x-2">
-                                    <input
-                                        type="radio"
-                                        id={shoppingListTypeId}
-                                        name="listType"
-                                        checked={listType === ListTypeEnum.SHOPPING}
-                                        onChange={() => setListType(ListTypeEnum.SHOPPING)}
-                                        className="cursor-pointer"
-                                    />
-                                    <Label htmlFor={shoppingListTypeId} className="cursor-pointer font-normal">
-                                        Shopping
-                                    </Label>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                    <input
-                                        type="radio"
-                                        id={todoListTypeId}
-                                        name="listType"
-                                        checked={listType === ListTypeEnum.TODO}
-                                        onChange={() => setListType(ListTypeEnum.TODO)}
-                                        className="cursor-pointer"
-                                    />
-                                    <Label htmlFor={todoListTypeId} className="cursor-pointer font-normal">
-                                        TODO
-                                    </Label>
-                                </div>
-                            </div>
                         </div>
 
                         {/* User search */}

@@ -10,19 +10,24 @@ import useMeasure from 'react-use-measure';
 
 import { Card } from '../../components/ui/card';
 import { useToolBarState } from '../../hooks/useToolBarState';
+import { ManageLabelsDrawer } from '../ManageLabelsDrawer';
 import { ManageUsersDrawer } from '../ManageUsersDrawer';
 import { AddFromRecipeDrawer } from './AddFromRecipeDrawer';
 import { AddIngredientDrawer } from './AddIngredientDrawer';
 import { AddItemDrawer } from './AddItemDrawer';
 import { AddListDrawer } from './AddListDrawer';
 import { AddRecipeDrawer } from './AddRecipeDrawer';
+import { AddTodoDrawer } from './AddTodoDrawer';
 import { HamburgerMenu } from './HamburgerMenu';
 import { ToolBarAppBar } from './ToolBarAppBar';
 
 interface ToolBarProps {
     onAddList?: (name: string, listType: ListType, users: string[]) => Promise<void>;
-    onAddItem?: (name: string, quantity?: number, unit?: string, dueDate?: Date) => Promise<void>;
+    onAddItem?: (name: string, quantity?: number, unit?: string) => Promise<void>;
     onAddIngredient?: (name: string, quantity?: number, unit?: string) => Promise<void>;
+    onAddTodo?: (body: import('../../api').CreateTodoBody) => Promise<void>;
+    labels?: import('@shoppingo/types').Label[];
+    prefillTodoDate?: Date;
     onAddRecipe?: (
         title: string,
         ingredients: Array<{ name: string; quantity?: number; unit?: string }>,
@@ -71,6 +76,9 @@ const ToolBar = ({
     refetchList,
     disableClearSelected = false,
     disableClearAll = false,
+    onAddTodo,
+    labels,
+    prefillTodoDate,
 }: ToolBarProps) => {
     const location = useLocation();
     const navigate = useNavigate();
@@ -96,11 +104,14 @@ const ToolBar = ({
 
     const [isAddIngredientDrawerOpen, setIsAddIngredientDrawerOpen] = useState(false);
     const [isAddFromRecipeDrawerOpen, setIsAddFromRecipeDrawerOpen] = useState(false);
+    const [isAddTodoDrawerOpen, setIsAddTodoDrawerOpen] = useState(false);
+    const [isManageLabelsOpen, setIsManageLabelsOpen] = useState(false);
 
     const isItemsPage = location.pathname.includes('/list/');
     const isListsPage = location.pathname === '/';
     const isRecipesPage = location.pathname === '/recipes';
     const isRecipeDetailPage = location.pathname.includes('/recipes/');
+    const isCalendarPage = location.pathname === '/calendar';
 
     const [contentRef, { height: contentHeight }] = useMeasure();
     const [menuRef, { width: menuWidth }] = useMeasure();
@@ -169,6 +180,15 @@ const ToolBar = ({
                                                             setIsMenuOpen(false);
                                                             setMenuActive(null);
                                                         }}
+                                                        onManageLabels={
+                                                            isCalendarPage
+                                                                ? () => {
+                                                                      setIsManageLabelsOpen(true);
+                                                                      setIsMenuOpen(false);
+                                                                      setMenuActive(null);
+                                                                  }
+                                                                : undefined
+                                                        }
                                                         onClose={() => {
                                                             setIsMenuOpen(false);
                                                             setMenuActive(null);
@@ -197,6 +217,7 @@ const ToolBar = ({
                                 isListsPage={isListsPage}
                                 isRecipesPage={isRecipesPage}
                                 isRecipeDetailPage={isRecipeDetailPage}
+                                isCalendarPage={isCalendarPage}
                                 onGoBack={handleGoBack}
                                 onClearSelected={handleClearSelected}
                                 onRemoveAll={handleRemoveAll}
@@ -211,6 +232,17 @@ const ToolBar = ({
                                 }}
                                 disableClearSelected={disableClearSelected}
                                 disableClearAll={disableClearAll}
+                                todoDrawer={
+                                    isCalendarPage && onAddTodo ? (
+                                        <AddTodoDrawer
+                                            open={isAddTodoDrawerOpen}
+                                            onOpenChange={setIsAddTodoDrawerOpen}
+                                            onAdd={onAddTodo}
+                                            labels={labels ?? []}
+                                            prefillDate={prefillTodoDate}
+                                        />
+                                    ) : undefined
+                                }
                                 itemDrawer={
                                     isItemsPage && onAddItem ? (
                                         <AddItemDrawer
@@ -267,6 +299,9 @@ const ToolBar = ({
                     </MotionConfig>
                 </div>
             </div>
+
+            {/* ManageLabelsDrawer */}
+            <ManageLabelsDrawer open={isManageLabelsOpen} onOpenChange={setIsManageLabelsOpen} />
 
             {/* ManageUsersDrawer and Drawer backdrop */}
             {currentList && isItemsPage && (

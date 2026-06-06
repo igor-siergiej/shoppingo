@@ -3,7 +3,6 @@ import { ListType as ListTypeEnum } from '@shoppingo/types';
 import { Edit2, Loader2, Trash2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { type MouseEvent, useId, useRef, useState } from 'react';
-import { DueDateField } from '../../components/DueDateField';
 import { QuantityUnitField } from '../../components/QuantityUnitField';
 import { Button } from '../../components/ui/button';
 import {
@@ -27,12 +26,6 @@ interface ItemCheckBoxProps {
     listTitle: string;
     listType: ListType;
 }
-
-const normaliseDueDate = (d: Date | string | undefined): Date | undefined => {
-    if (d instanceof Date) return d;
-    if (typeof d === 'string') return new Date(d);
-    return undefined;
-};
 
 interface ItemCheckBoxActionButtonsProps {
     isDeleting: boolean;
@@ -86,8 +79,10 @@ const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
 
     const { imageBlobUrl, hasLoadedImage, hasImageError, onImageLoad, onImageError } = useItemImage(item.name);
     const { x, controls, swipeState, handleDragEnd, closeSwipe } = useSwipeGesture();
-    const { toggleMutation, deleteMutation, updateNameMutation, updateQuantityMutation, updateDueDateMutation } =
-        useItemMutations(listTitle, item.name);
+    const { toggleMutation, deleteMutation, updateNameMutation, updateQuantityMutation } = useItemMutations(
+        listTitle,
+        item.name
+    );
     const drawerState = useItemEditDrawer();
 
     const handleDeleteItem = async (e?: MouseEvent) => {
@@ -104,7 +99,6 @@ const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
             name: item.name,
             quantity: item.quantity,
             unit: item.unit,
-            dueDate: normaliseDueDate(item.dueDate),
         });
         setTimeout(() => {
             drawerInputRef.current?.focus();
@@ -123,12 +117,9 @@ const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
         const newQuantity = values.quantity.trim() ? parseFloat(values.quantity) : undefined;
         const newUnit = values.unit.trim() || undefined;
         const hasQuantityChange = newQuantity !== item.quantity || newUnit !== item.unit;
-        const hasDueDateChange =
-            values.dueDate?.toDateString() !== (item.dueDate instanceof Date ? item.dueDate.toDateString() : undefined);
 
         if (hasNameChange) updateNameMutation.mutate(values.name.trim());
         if (hasQuantityChange) updateQuantityMutation.mutate({ quantity: newQuantity, unit: newUnit });
-        if (hasDueDateChange) updateDueDateMutation.mutate(values.dueDate);
 
         drawerState.closeDrawer();
     };
@@ -219,10 +210,6 @@ const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
                                     quantityId={itemQuantityId}
                                     unitId={itemUnitId}
                                 />
-                            )}
-
-                            {listType === ListTypeEnum.TODO && (
-                                <DueDateField value={drawerState.values.dueDate} onChange={drawerState.updateDueDate} />
                             )}
                         </div>
                         <DrawerFooter>

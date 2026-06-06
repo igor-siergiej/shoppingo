@@ -42,13 +42,8 @@ describe('ListItem', () => {
         expect(buttons.length).toBeGreaterThan(0);
     });
 
-    it('renders ListTodo icon for TODO list type', () => {
-        const todoList: ListResponse = {
-            ...mockListResponse,
-            listType: ListType.TODO,
-        };
-
-        render(<ListItem list={todoList} isOwner={true} isEditing={false} editValue="" {...mockCallbacks} />);
+    it('renders ShoppingCart icon for list', () => {
+        render(<ListItem list={mockListResponse} isOwner={true} isEditing={false} editValue="" {...mockCallbacks} />);
 
         expect(screen.getByText('Test List')).toBeInTheDocument();
     });

@@ -66,3 +66,21 @@ export async function apiCreateRecipe(
     if (!res.ok) throw new Error(`apiCreateRecipe failed: ${await res.text()}`);
     return res.json() as Promise<{ id: string; title: string; ingredients: Array<{ id: string; name: string }> }>;
 }
+
+async function apiPut<T>(path: string, body: unknown): Promise<T> {
+    const res = await fetch(`${API_BASE}${path}`, {
+        method: 'PUT',
+        headers: authHeaders,
+        body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error(`PUT ${path} failed: ${await res.text()}`);
+    return res.json() as Promise<T>;
+}
+
+export const apiCreateTodo = (body: {
+    title: string;
+    dueDate?: string;
+    time?: string;
+    labelId?: string;
+    recurrence?: { freq: string; interval: number; until?: string };
+}) => apiPut<{ id: string; title: string }>('/api/todos', body);

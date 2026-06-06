@@ -37,18 +37,6 @@ vi.mock('./ItemCheckBoxCard', () => ({
     ),
 }));
 
-vi.mock('../../components/DueDateField', () => ({
-    DueDateField: ({ value, onChange }: any) => (
-        <div>
-            <input
-                type="date"
-                value={value ? value.toISOString().split('T')[0] : ''}
-                onChange={(e) => onChange(e.target.value ? new Date(e.target.value) : undefined)}
-            />
-        </div>
-    ),
-}));
-
 vi.mock('../../components/QuantityUnitField', () => ({
     QuantityUnitField: ({ quantity, unit }: any) => (
         <div>
@@ -72,18 +60,16 @@ describe('ItemCheckBox', () => {
         deleteMutation: { isLoading: false, mutate: vi.fn() },
         updateNameMutation: { isLoading: false, mutate: vi.fn() },
         updateQuantityMutation: { isLoading: false, mutate: vi.fn() },
-        updateDueDateMutation: { isLoading: false, mutate: vi.fn() },
     };
 
     const defaultDrawerState = {
         isOpen: false,
-        values: { name: 'Milk', quantity: '', unit: '', dueDate: undefined },
+        values: { name: 'Milk', quantity: '', unit: '' },
         openDrawer: vi.fn(),
         closeDrawer: vi.fn(),
         updateName: vi.fn(),
         updateQuantity: vi.fn(),
         updateUnit: vi.fn(),
-        updateDueDate: vi.fn(),
     };
 
     beforeEach(() => {
@@ -146,22 +132,11 @@ describe('ItemCheckBox', () => {
         expect(screen.getByPlaceholderText('Quantity')).toBeInTheDocument();
     });
 
-    it('renders DueDateField for todo list type', () => {
-        mockUseItemEditDrawer.mockReturnValue({
-            ...defaultDrawerState,
-            isOpen: true,
-        });
-
-        render(<ItemCheckBox item={mockItem} listTitle="Todo" listType={ListTypeEnum.TODO} />);
-
-        expect(screen.getByRole('textbox', { hidden: true })).toBeInTheDocument();
-    });
-
     it('disables save button when name is empty', () => {
         mockUseItemEditDrawer.mockReturnValue({
             ...defaultDrawerState,
             isOpen: true,
-            values: { name: '', quantity: '', unit: '', dueDate: undefined },
+            values: { name: '', quantity: '', unit: '' },
         });
 
         render(<ItemCheckBox item={mockItem} listTitle="Shopping" listType={ListTypeEnum.SHOPPING} />);

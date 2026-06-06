@@ -5,10 +5,6 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ItemCheckBoxCard } from './index';
 
-vi.mock('../DueDateBadge', () => ({
-    DueDateBadge: ({ dueDate }: any) => <div data-testid="due-date-badge">Due: {dueDate}</div>,
-}));
-
 vi.mock('../QuantityBadge', () => ({
     QuantityBadge: ({ quantity, unit }: any) => (
         <div data-testid="quantity-badge">
@@ -63,14 +59,6 @@ describe('ItemCheckBoxCard', () => {
         expect(mockOnToggle).toHaveBeenCalled();
     });
 
-    it('renders todo checkbox icon for todo list type', () => {
-        render(<ItemCheckBoxCard {...defaultProps} listType={ListType.TODO} />);
-
-        // Todo list should have a checkbox
-        const card = screen.getByRole('button');
-        expect(card).toBeInTheDocument();
-    });
-
     it('renders image for shopping list type', () => {
         render(
             <ItemCheckBoxCard
@@ -112,21 +100,9 @@ describe('ItemCheckBoxCard', () => {
         expect(screen.getByTestId('quantity-badge')).toBeInTheDocument();
     });
 
-    it('renders DueDateBadge for todo list', () => {
-        const itemWithDueDate: Item = {
-            ...mockItem,
-            dueDate: new Date().toISOString(),
-        };
-
-        render(<ItemCheckBoxCard {...defaultProps} item={itemWithDueDate} listType={ListType.TODO} />);
-
-        expect(screen.getByTestId('due-date-badge')).toBeInTheDocument();
-    });
-
     it('shows loading spinner when isLoading is true', () => {
         const { container } = render(<ItemCheckBoxCard {...defaultProps} isLoading={true} />);
 
-        // Loading state should disable pointer events
         const card = container.querySelector('[role="button"]');
         expect(card).toHaveClass('pointer-events-none');
     });
@@ -151,17 +127,5 @@ describe('ItemCheckBoxCard', () => {
         await user.keyboard(' ');
 
         expect(mockOnToggle).toHaveBeenCalled();
-    });
-
-    it('does not render DueDateBadge for shopping list', () => {
-        render(<ItemCheckBoxCard {...defaultProps} listType={ListType.SHOPPING} />);
-
-        expect(screen.queryByTestId('due-date-badge')).not.toBeInTheDocument();
-    });
-
-    it('does not render QuantityBadge for todo list', () => {
-        render(<ItemCheckBoxCard {...defaultProps} listType={ListType.TODO} />);
-
-        expect(screen.queryByTestId('quantity-badge')).not.toBeInTheDocument();
     });
 });

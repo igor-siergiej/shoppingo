@@ -41,6 +41,7 @@ const RegisterPage = lazyLoadPage(() => import('./pages/RegisterPage'), 'registe
 const RecipesPage = lazyLoadPage(() => import('./pages/RecipesPage'), 'recipes page');
 const RecipeDetailPage = lazyLoadPage(() => import('./pages/RecipeDetailPage'), 'recipe detail page');
 const ShareTargetPage = lazyLoadPage(() => import('./pages/ShareTargetPage'), 'share target page');
+const CalendarPage = lazyLoadPage(() => import('./pages/CalendarPage'), 'calendar page');
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -122,6 +123,14 @@ const router = createBrowserRouter([
                 element: (
                     <Suspense fallback={<LoadingPage />}>
                         <ShareTargetPage />
+                    </Suspense>
+                ),
+            },
+            {
+                path: 'calendar',
+                element: (
+                    <Suspense fallback={<LoadingPage />}>
+                        <CalendarPage />
                     </Suspense>
                 ),
             },
