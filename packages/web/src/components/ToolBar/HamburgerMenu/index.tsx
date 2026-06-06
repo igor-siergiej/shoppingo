@@ -1,4 +1,4 @@
-import { Download, Loader2, LogOut, Moon, RefreshCw, Sun, Users } from 'lucide-react';
+import { Download, Loader2, LogOut, Moon, RefreshCw, Sun, Tag, Users } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Button } from '../../../components/ui/button';
 import { Switch } from '../../../components/ui/switch';
@@ -9,11 +9,19 @@ export interface HamburgerMenuProps {
     currentList?: { title: string; ownerId?: string };
     userId?: string;
     onManageUsers: () => void;
+    onManageLabels?: () => void;
     onClose: () => void;
     onLogout: () => void;
 }
 
-export const HamburgerMenu = ({ currentList, userId, onManageUsers, onClose, onLogout }: HamburgerMenuProps) => {
+export const HamburgerMenu = ({
+    currentList,
+    userId,
+    onManageUsers,
+    onManageLabels,
+    onClose,
+    onLogout,
+}: HamburgerMenuProps) => {
     const { theme, toggleTheme } = useTheme();
     const { canInstall, isInstalled, hasUpdate, installApp, updateApp, checkForUpdate, isCheckingForUpdate } = usePWA();
 
@@ -45,6 +53,24 @@ export const HamburgerMenu = ({ currentList, userId, onManageUsers, onClose, onL
                     >
                         <Users className="h-4 w-4 mr-2" />
                         Manage Users
+                    </Button>
+                </motion.div>
+            )}
+
+            {/* Manage Labels action */}
+            {onManageLabels && (
+                <motion.div
+                    initial={{ opacity: 0, y: -8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.05, duration: 0.2 }}
+                >
+                    <Button
+                        variant="outline"
+                        onClick={onManageLabels}
+                        className="w-full justify-center h-9 text-sm font-medium transition-all duration-200 hover:bg-slate-50 active:scale-95"
+                    >
+                        <Tag className="h-4 w-4 mr-2" />
+                        Manage Labels
                     </Button>
                 </motion.div>
             )}
