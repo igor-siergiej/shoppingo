@@ -4,13 +4,17 @@ import { Logger, MongoDbConnection, ObjectStoreConnection } from '@imapps/api-ut
 import { config } from '../config';
 import { AuthorizationService } from '../domain/AuthorizationService';
 import { ImageService } from '../domain/ImageService';
+import { LabelService } from '../domain/LabelService';
 import { ListService } from '../domain/ListService';
 import { RecipeImageService } from '../domain/RecipeImageService';
 import { RecipeService } from '../domain/RecipeService';
+import { TodoService } from '../domain/TodoService';
 import { HttpAuthClient } from '../infrastructure/AuthClient';
 import { BucketStore } from '../infrastructure/BucketStore';
+import { MongoLabelRepository } from '../infrastructure/MongoLabelRepository';
 import { MongoListRepository } from '../infrastructure/MongoListRepository';
 import { MongoRecipeRepository } from '../infrastructure/MongoRecipeRepository';
+import { MongoTodoRepository } from '../infrastructure/MongoTodoRepository';
 import { OpenAIImageGenerator } from '../infrastructure/OpenAIImageGenerator';
 import { UuidGenerator } from '../infrastructure/UuidGenerator';
 import * as RecipeHandlers from '../interfaces/RecipeHandlers';
@@ -78,6 +82,57 @@ export const registerDepdendencies = () => {
                     dependencyContainer.resolve(DependencyToken.AuthorizationService),
                     dependencyContainer.resolve(DependencyToken.RecipeImageService),
                     dependencyContainer.resolve(DependencyToken.AuthClient)
+                );
+            }
+        }
+    );
+
+    // Todo services
+    dependencyContainer.registerSingleton(
+        DependencyToken.TodoRepository,
+        // @ts-expect-error - Dependency injection requires constructor return override
+        class {
+            constructor() {
+                return new MongoTodoRepository(dependencyContainer.resolve(DependencyToken.Database));
+            }
+        }
+    );
+
+    dependencyContainer.registerSingleton(
+        DependencyToken.TodoService,
+        // @ts-expect-error - Dependency injection requires constructor return override
+        class {
+            constructor() {
+                return new TodoService(
+                    dependencyContainer.resolve(DependencyToken.TodoRepository),
+                    dependencyContainer.resolve(DependencyToken.IdGenerator),
+                    dependencyContainer.resolve(DependencyToken.Logger)
+                );
+            }
+        }
+    );
+
+    // Label services
+    dependencyContainer.registerSingleton(
+        DependencyToken.LabelRepository,
+        // @ts-expect-error - Dependency injection requires constructor return override
+        class {
+            constructor() {
+                return new MongoLabelRepository(dependencyContainer.resolve(DependencyToken.Database));
+            }
+        }
+    );
+
+    dependencyContainer.registerSingleton(
+        DependencyToken.LabelService,
+        // @ts-expect-error - Dependency injection requires constructor return override
+        class {
+            constructor() {
+                return new LabelService(
+                    dependencyContainer.resolve(DependencyToken.LabelRepository),
+                    dependencyContainer.resolve(DependencyToken.TodoRepository),
+                    dependencyContainer.resolve(DependencyToken.IdGenerator),
+                    dependencyContainer.resolve(DependencyToken.Logger)
                 );
             }
         }
