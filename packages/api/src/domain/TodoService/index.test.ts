@@ -5,19 +5,34 @@ import { TodoService } from './index';
 class MockRepo {
     store = new Map<string, Todo>();
     cleared: Array<{ labelId: string; ownerId: string }> = [];
-    async insert(t: Todo) { this.store.set(t.id, t); return t; }
-    async getById(id: string) { return this.store.get(id) ?? null; }
+    async insert(t: Todo) {
+        this.store.set(t.id, t);
+        return t;
+    }
+    async getById(id: string) {
+        return this.store.get(id) ?? null;
+    }
     async findByOwnerId(ownerId: string) {
         return [...this.store.values()].filter((t) => t.ownerId === ownerId);
     }
-    async update(id: string, t: Todo) { this.store.set(id, t); return t; }
-    async deleteById(id: string) { this.store.delete(id); }
-    async clearLabel(labelId: string, ownerId: string) { this.cleared.push({ labelId, ownerId }); }
+    async update(id: string, t: Todo) {
+        this.store.set(id, t);
+        return t;
+    }
+    async deleteById(id: string) {
+        this.store.delete(id);
+    }
+    async clearLabel(labelId: string, ownerId: string) {
+        this.cleared.push({ labelId, ownerId });
+    }
 }
 
 class MockIds {
     private n = 0;
-    generate() { this.n += 1; return `id-${this.n}`; }
+    generate() {
+        this.n += 1;
+        return `id-${this.n}`;
+    }
 }
 
 describe('TodoService', () => {

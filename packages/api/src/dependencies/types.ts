@@ -62,4 +62,5 @@ export enum CollectionNames {
     List = 'list',
     Recipe = 'recipe',
     Todo = 'todo',
+    Label = 'label',
 }

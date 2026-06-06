@@ -67,9 +67,7 @@ export class TodoService {
 
         if (todo.recurrence && date) {
             const current = todo.completedDates ?? [];
-            const completedDates = current.includes(date)
-                ? current.filter((d) => d !== date)
-                : [...current, date];
+            const completedDates = current.includes(date) ? current.filter((d) => d !== date) : [...current, date];
             return this.repo.update(todoId, { ...todo, completedDates });
         }
 

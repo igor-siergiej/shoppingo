@@ -30,7 +30,7 @@ class FakeCollection {
     async deleteOne(q: { id: string }) {
         this.docs = this.docs.filter((d) => d.id !== q.id);
     }
-    async updateMany(q: { labelId: string; ownerId: string }, update: { $unset: { labelId: '' } }) {
+    async updateMany(q: { labelId: string; ownerId: string }, _update: { $unset: { labelId: '' } }) {
         for (const d of this.docs) {
             if (d.labelId === q.labelId && d.ownerId === q.ownerId) {
                 delete (d as Partial<Todo>).labelId;
