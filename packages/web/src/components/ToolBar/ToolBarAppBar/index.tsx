@@ -1,4 +1,4 @@
-import { ArrowLeft, BookOpen, CheckCheck, Menu, ShoppingCart, Trash2 } from 'lucide-react';
+import { ArrowLeft, BookOpen, Calendar, CheckCheck, Menu, ShoppingCart, Trash2 } from 'lucide-react';
 import { forwardRef, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ToolBarButton } from '../ToolBarButton';
@@ -8,6 +8,7 @@ interface ToolBarAppBarProps {
     isListsPage: boolean;
     isRecipesPage?: boolean;
     isRecipeDetailPage?: boolean;
+    isCalendarPage?: boolean;
     onGoBack?: () => void;
     onClearSelected?: () => void;
     onRemoveAll?: () => void;
@@ -20,6 +21,7 @@ interface ToolBarAppBarProps {
     recipeDrawer?: ReactNode;
     ingredientDrawer?: ReactNode;
     recipePickerDrawer?: ReactNode;
+    todoDrawer?: ReactNode;
 }
 
 export const ToolBarAppBar = forwardRef<HTMLDivElement, ToolBarAppBarProps>(
@@ -29,6 +31,7 @@ export const ToolBarAppBar = forwardRef<HTMLDivElement, ToolBarAppBarProps>(
             isListsPage,
             isRecipesPage,
             isRecipeDetailPage,
+            isCalendarPage,
             onGoBack,
             onClearSelected,
             onRemoveAll,
@@ -41,6 +44,7 @@ export const ToolBarAppBar = forwardRef<HTMLDivElement, ToolBarAppBarProps>(
             recipeDrawer,
             ingredientDrawer,
             recipePickerDrawer,
+            todoDrawer,
         },
         ref
     ) => {
@@ -57,65 +61,65 @@ export const ToolBarAppBar = forwardRef<HTMLDivElement, ToolBarAppBarProps>(
         const showBackButton = isItemsPage || isRecipeDetailPage;
 
         return (
-            <div ref={ref} className="grid items-center py-2.5 px-3" style={{ gridTemplateColumns: '1fr auto 1fr' }}>
-                {/* Left side - Navigation buttons */}
-                <div className="flex items-center gap-4 min-w-0">
-                    {showBackButton ? (
-                        <ToolBarButton icon={ArrowLeft} title="Go back" onClick={handleGoBack} />
-                    ) : (
-                        <>
-                            <ToolBarButton
-                                icon={ShoppingCart}
-                                title="Shopping lists"
-                                onClick={() => navigate('/')}
-                                active={isListsPage}
-                            />
-                            <ToolBarButton
-                                icon={BookOpen}
-                                title="Recipes"
-                                onClick={() => navigate('/recipes')}
-                                active={isRecipesPage}
-                            />
-                        </>
-                    )}
-                    {isItemsPage && recipePickerDrawer}
-                </div>
-
-                {/* Center - Add button */}
-                <div className="flex justify-center gap-2">
-                    {isItemsPage && itemDrawer}
-                    {isListsPage && listDrawer}
-                    {isRecipesPage && recipeDrawer}
-                    {isRecipeDetailPage && ingredientDrawer}
-                </div>
-
-                {/* Right side - Menu and action buttons */}
-                <div className="flex items-center gap-2 justify-end min-w-0">
-                    {onClearSelected && (
+            <div ref={ref} className="flex w-full items-center justify-around py-2.5 px-3">
+                {/* Left: back or primary nav */}
+                {showBackButton ? (
+                    <ToolBarButton icon={ArrowLeft} title="Go back" onClick={handleGoBack} />
+                ) : (
+                    <>
                         <ToolBarButton
-                            icon={CheckCheck}
-                            title="Clear selected items"
-                            onClick={onClearSelected}
-                            disabled={disableClearSelected}
+                            icon={ShoppingCart}
+                            title="Shopping lists"
+                            onClick={() => navigate('/')}
+                            active={isListsPage}
                         />
-                    )}
-
-                    {onRemoveAll && (
                         <ToolBarButton
-                            icon={Trash2}
-                            title="Remove all items"
-                            onClick={onRemoveAll}
-                            disabled={disableClearAll}
-                            variant="destructive"
+                            icon={BookOpen}
+                            title="Recipes"
+                            onClick={() => navigate('/recipes')}
+                            active={isRecipesPage}
                         />
-                    )}
+                    </>
+                )}
 
-                    {isRecipeDetailPage && onToggleSelectMode && (
-                        <ToolBarButton icon={ShoppingCart} title="Add to shopping list" onClick={onToggleSelectMode} />
-                    )}
+                {/* Center: context-aware add */}
+                {isItemsPage && itemDrawer}
+                {isListsPage && listDrawer}
+                {isRecipesPage && recipeDrawer}
+                {isRecipeDetailPage && ingredientDrawer}
+                {isCalendarPage && todoDrawer}
+                {isItemsPage && recipePickerDrawer}
 
-                    <ToolBarButton icon={Menu} title="Menu" onClick={onMenuClick} />
-                </div>
+                {/* Calendar nav — right of the + */}
+                <ToolBarButton
+                    icon={Calendar}
+                    title="Calendar"
+                    onClick={() => navigate('/calendar')}
+                    active={isCalendarPage}
+                />
+
+                {/* Right: contextual actions + menu */}
+                {onClearSelected && (
+                    <ToolBarButton
+                        icon={CheckCheck}
+                        title="Clear selected items"
+                        onClick={onClearSelected}
+                        disabled={disableClearSelected}
+                    />
+                )}
+                {onRemoveAll && (
+                    <ToolBarButton
+                        icon={Trash2}
+                        title="Remove all items"
+                        onClick={onRemoveAll}
+                        disabled={disableClearAll}
+                        variant="destructive"
+                    />
+                )}
+                {isRecipeDetailPage && onToggleSelectMode && (
+                    <ToolBarButton icon={ShoppingCart} title="Add to shopping list" onClick={onToggleSelectMode} />
+                )}
+                <ToolBarButton icon={Menu} title="Menu" onClick={onMenuClick} />
             </div>
         );
     }
