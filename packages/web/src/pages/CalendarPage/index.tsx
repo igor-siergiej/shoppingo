@@ -2,15 +2,15 @@ import { addMonths, endOfMonth, format, startOfMonth } from 'date-fns';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import type { CreateTodoBody } from '../../api';
-import { type DayTodoItem, DayTodoList } from '../../components/Calendar/DayTodoList';
+import { DayTodoList } from '../../components/Calendar/DayTodoList';
 import { InboxDrawer } from '../../components/Calendar/InboxDrawer';
 import { LabelFilter } from '../../components/Calendar/LabelFilter';
-import { dayKey, MonthGrid } from '../../components/Calendar/MonthGrid';
+import { MonthGrid } from '../../components/Calendar/MonthGrid';
 import ToolBar from '../../components/ToolBar';
 import { Button } from '../../components/ui/button';
 import { useLabels } from '../../hooks/useLabels';
 import { useTodos } from '../../hooks/useTodos';
-import { expandOccurrences, isoDay } from '../../utils/recurrence';
+import { buildCalendarDayData } from '../../utils/calendar';
 
 const CalendarPage = () => {
     const { todos, createTodo, updateTodo, completeTodo } = useTodos();
@@ -34,29 +34,7 @@ const CalendarPage = () => {
     const { dotsByDay, selectedItems } = useMemo(() => {
         const rangeStart = startOfMonth(month);
         const rangeEnd = endOfMonth(month);
-        const dots: Record<string, string[]> = {};
-        const items: DayTodoItem[] = [];
-        const selectedKey = dayKey(selectedDay);
-
-        for (const todo of visible) {
-            const color = todo.labelId ? labelColor.get(todo.labelId) : undefined;
-            for (const occ of expandOccurrences(todo, rangeStart, rangeEnd)) {
-                const key = dayKey(occ.date);
-                if (!dots[key]) dots[key] = [];
-                dots[key].push(color ?? '#3b82f6');
-                if (key === selectedKey) {
-                    items.push({
-                        todoId: todo.id,
-                        title: todo.title,
-                        time: todo.time,
-                        done: occ.done,
-                        labelColor: color,
-                        occurrenceDay: isoDay(occ.date),
-                    });
-                }
-            }
-        }
-        return { dotsByDay: dots, selectedItems: items };
+        return buildCalendarDayData(visible, month, selectedDay, rangeStart, rangeEnd, labelColor);
     }, [visible, month, selectedDay, labelColor]);
 
     const undated = useMemo(() => todos.filter((t) => !t.dueDate), [todos]);

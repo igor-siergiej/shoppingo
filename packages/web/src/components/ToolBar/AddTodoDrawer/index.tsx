@@ -20,6 +20,22 @@ import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
 import { RippleButton } from '../../../components/ui/ripple';
 
+interface BuildTodoBodyArgs {
+    title: string;
+    dueDate?: Date;
+    time?: string;
+    labelId?: string;
+    recurrence?: Recurrence;
+}
+
+const buildTodoBody = ({ title, dueDate, time, labelId, recurrence }: BuildTodoBodyArgs): CreateTodoBody => ({
+    title,
+    ...(dueDate !== undefined && { dueDate }),
+    ...(time !== undefined && { time }),
+    ...(labelId !== undefined && { labelId }),
+    ...(recurrence !== undefined && { recurrence }),
+});
+
 export interface AddTodoDrawerProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
@@ -60,13 +76,7 @@ export const AddTodoDrawer = ({ open, onOpenChange, onAdd, labels, prefillDate }
         setIsLoading(true);
         setError('');
         try {
-            await onAdd({
-                title: trimmed,
-                ...(dueDate !== undefined && { dueDate }),
-                ...(time !== undefined && { time }),
-                ...(labelId !== undefined && { labelId }),
-                ...(recurrence !== undefined && { recurrence }),
-            });
+            await onAdd(buildTodoBody({ title: trimmed, dueDate, time, labelId, recurrence }));
             reset();
             onOpenChange(false);
         } catch (err) {

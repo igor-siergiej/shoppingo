@@ -19,7 +19,53 @@ export interface MonthGridProps {
     onDropTodoOnDay: (todoId: string, day: Date) => void;
 }
 
+interface DayCellProps {
+    day: Date;
+    dots: string[];
+    selected: boolean;
+    inMonth: boolean;
+    onSelect: () => void;
+    onDrop: (id: string) => void;
+}
+
 const WEEKDAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+
+const DayCell = ({ day, dots, selected, inMonth, onSelect, onDrop }: DayCellProps) => {
+    const key = dayKey(day);
+    const colorClass = inMonth ? 'text-foreground' : 'text-muted-foreground/40';
+    const bgClass = selected ? 'bg-primary text-primary-foreground' : 'bg-muted/40';
+
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        const id = e.dataTransfer.getData('text/plain') || e.dataTransfer.getData('todoId');
+        if (id) onDrop(id);
+    };
+
+    return (
+        <button
+            type="button"
+            key={key}
+            data-testid={`day-${key}`}
+            onClick={onSelect}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={handleDrop}
+            className={`aspect-square rounded-lg flex flex-col items-center justify-center text-sm relative ${colorClass} ${bgClass}`}
+        >
+            <span>{day.getDate()}</span>
+            {dots.length > 0 && (
+                <span className="flex gap-0.5 mt-0.5">
+                    {dots.slice(0, 3).map((color, i) => (
+                        <span
+                            key={`${key}-dot-${i}-${color}`}
+                            className="h-1.5 w-1.5 rounded-full"
+                            style={{ backgroundColor: selected ? '#fff' : color }}
+                        />
+                    ))}
+                </span>
+            )}
+        </button>
+    );
+};
 
 export const MonthGrid = ({ month, dotsByDay, selectedDay, onSelectDay, onDropTodoOnDay }: MonthGridProps) => {
     const gridStart = startOfWeek(startOfMonth(month), { weekStartsOn: 1 });
@@ -38,40 +84,16 @@ export const MonthGrid = ({ month, dotsByDay, selectedDay, onSelectDay, onDropTo
             <div className="grid grid-cols-7 gap-1">
                 {days.map((day) => {
                     const key = dayKey(day);
-                    const dots = dotsByDay[key] ?? [];
-                    const inMonth = isSameMonth(day, month);
-                    const selected = selectedDay ? isSameDay(day, selectedDay) : false;
                     return (
-                        <button
-                            type="button"
+                        <DayCell
                             key={key}
-                            data-testid={`day-${key}`}
-                            onClick={() => onSelectDay(day)}
-                            onDragOver={(e) => e.preventDefault()}
-                            onDrop={(e) => {
-                                e.preventDefault();
-                                const id = e.dataTransfer.getData('text/plain') || e.dataTransfer.getData('todoId');
-                                if (id) onDropTodoOnDay(id, day);
-                            }}
-                            className={[
-                                'aspect-square rounded-lg flex flex-col items-center justify-center text-sm relative',
-                                inMonth ? 'text-foreground' : 'text-muted-foreground/40',
-                                selected ? 'bg-primary text-primary-foreground' : 'bg-muted/40',
-                            ].join(' ')}
-                        >
-                            <span>{day.getDate()}</span>
-                            {dots.length > 0 && (
-                                <span className="flex gap-0.5 mt-0.5">
-                                    {dots.slice(0, 3).map((color, i) => (
-                                        <span
-                                            key={`${key}-dot-${i}-${color}`}
-                                            className="h-1.5 w-1.5 rounded-full"
-                                            style={{ backgroundColor: selected ? '#fff' : color }}
-                                        />
-                                    ))}
-                                </span>
-                            )}
-                        </button>
+                            day={day}
+                            dots={dotsByDay[key] ?? []}
+                            selected={selectedDay ? isSameDay(day, selectedDay) : false}
+                            inMonth={isSameMonth(day, month)}
+                            onSelect={() => onSelectDay(day)}
+                            onDrop={(id) => onDropTodoOnDay(id, day)}
+                        />
                     );
                 })}
             </div>
