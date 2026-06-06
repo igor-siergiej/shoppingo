@@ -14,6 +14,7 @@ export const InboxDrawer = ({ todos }: InboxDrawerProps) => {
             <div className="mx-auto max-w-[500px] rounded-t-xl border bg-background shadow-lg">
                 <button
                     type="button"
+                    data-testid="inbox-toggle"
                     className="flex w-full items-center justify-between px-4 py-2"
                     onClick={() => setOpen((v) => !v)}
                 >
@@ -31,6 +32,8 @@ export const InboxDrawer = ({ todos }: InboxDrawerProps) => {
                         {todos.map((todo) => (
                             <li
                                 key={todo.id}
+                                data-testid={`inbox-item-${todo.id}`}
+                                data-todo-title={todo.title}
                                 draggable
                                 onDragStart={(e) => {
                                     e.dataTransfer.setData('text/plain', todo.id);

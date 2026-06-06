@@ -45,6 +45,7 @@ export const MonthGrid = ({ month, dotsByDay, selectedDay, onSelectDay, onDropTo
                         <button
                             type="button"
                             key={key}
+                            data-testid={`day-${key}`}
                             onClick={() => onSelectDay(day)}
                             onDragOver={(e) => e.preventDefault()}
                             onDrop={(e) => {

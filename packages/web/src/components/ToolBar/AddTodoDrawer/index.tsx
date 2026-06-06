@@ -86,6 +86,7 @@ export const AddTodoDrawer = ({ open, onOpenChange, onAdd, labels, prefillDate }
             <DrawerTrigger asChild>
                 <RippleButton
                     size="icon"
+                    data-testid="add-todo-trigger"
                     className="h-12 w-12 rounded-full border-2 border-primary/20 hover:border-primary/40 transition-colors"
                 >
                     <Plus className="size-5" />
