@@ -105,7 +105,7 @@ const CalendarPage = () => {
                     onDropTodoOnDay={handleDropOnDay}
                 />
 
-                <div className="mt-3">
+                <div className="mt-3 pb-44">
                     <h3 className="text-sm font-medium text-muted-foreground">{format(selectedDay, 'EEE d MMMM')}</h3>
                     <DayTodoList items={selectedItems} labels={labels} onToggle={handleToggle} />
                 </div>

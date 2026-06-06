@@ -37,6 +37,16 @@ export const DueDateField = ({ value, onChange, captionLayout }: DueDateFieldPro
                     </div>
                 </PopoverContent>
             </Popover>
+            {value && (
+                <button
+                    type="button"
+                    aria-label="Clear due date"
+                    className="text-xs text-muted-foreground underline mt-1"
+                    onClick={() => onChange(undefined)}
+                >
+                    Clear due date
+                </button>
+            )}
         </div>
     );
 };
