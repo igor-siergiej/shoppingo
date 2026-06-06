@@ -1,16 +1,16 @@
 import type { Context } from 'koa';
 
-export interface AuthUser {
+interface AuthUser {
     id: string;
     username: string;
 }
 
-export const getAuthenticatedUser = (ctx: Context): AuthUser | null => {
+const getAuthenticatedUser = (ctx: Context): AuthUser | null => {
     const user = ctx.state.user as AuthUser | undefined;
     return user?.id ? user : null;
 };
 
-export const failResponse = (ctx: Context, error: unknown): void => {
+const failResponse = (ctx: Context, error: unknown): void => {
     const err = error as { status?: number; message?: string };
     ctx.status = err.status ?? 500;
     ctx.body = { error: err.message ?? 'Internal Server Error' };
