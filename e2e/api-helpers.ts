@@ -66,3 +66,29 @@ export async function apiCreateRecipe(
     if (!res.ok) throw new Error(`apiCreateRecipe failed: ${await res.text()}`);
     return res.json() as Promise<{ id: string; title: string; ingredients: Array<{ id: string; name: string }> }>;
 }
+
+export async function apiCreateTodo(body: {
+    title: string;
+    dueDate?: string;
+    time?: string;
+    labelId?: string;
+    recurrence?: { freq: string; interval: number; until?: string };
+}) {
+    const res = await fetch(`${API_BASE}/api/todos`, {
+        method: 'PUT',
+        headers: authHeaders,
+        body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error(`apiCreateTodo failed: ${await res.text()}`);
+    return res.json() as Promise<{ id: string; title: string }>;
+}
+
+export async function apiCreateLabel(body: { name: string; color: string }) {
+    const res = await fetch(`${API_BASE}/api/labels`, {
+        method: 'PUT',
+        headers: authHeaders,
+        body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error(`apiCreateLabel failed: ${await res.text()}`);
+    return res.json() as Promise<{ id: string; name: string; color: string }>;
+}
