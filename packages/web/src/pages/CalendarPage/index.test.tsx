@@ -5,6 +5,9 @@ import CalendarPage from './index';
 
 // ToolBar pulls in auth/user/router providers; stub it for this unit test.
 vi.mock('../../components/ToolBar', () => ({ default: () => null }));
+vi.mock('../../contexts/PullToRefreshContext', () => ({
+    usePullToRefreshContext: () => ({ registerRefresh: () => () => {} }),
+}));
 vi.mock('../../hooks/useTodos', () => ({
     useTodos: () => ({
         todos: [
@@ -23,10 +26,12 @@ vi.mock('../../hooks/useTodos', () => ({
         createTodo: vi.fn(),
         updateTodo: vi.fn(),
         completeTodo: vi.fn(),
+        deleteTodo: vi.fn(),
+        refetch: vi.fn(),
     }),
 }));
 vi.mock('../../hooks/useLabels', () => ({
-    useLabels: () => ({ labels: [], isLoading: false }),
+    useLabels: () => ({ labels: [], isLoading: false, refetch: vi.fn() }),
 }));
 
 describe('CalendarPage', () => {

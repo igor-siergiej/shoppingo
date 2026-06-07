@@ -103,11 +103,11 @@ export const AddTodoDrawer = ({ open, onOpenChange, onAdd, labels, prefillDate }
                 </RippleButton>
             </DrawerTrigger>
             <DrawerContent>
-                <div className="w-full sm:mx-auto sm:max-w-[400px]">
-                    <DrawerHeader>
+                <div className="flex w-full flex-col max-h-[90vh] sm:mx-auto sm:max-w-[400px]">
+                    <DrawerHeader className="flex-none">
                         <DrawerTitle>Add Todo</DrawerTitle>
                     </DrawerHeader>
-                    <div className="p-4 pb-0 space-y-4">
+                    <div className="flex-1 overflow-y-auto p-4 pb-0 space-y-4">
                         <div className="space-y-2">
                             <Label htmlFor={titleId}>Title</Label>
                             <Input
@@ -133,7 +133,7 @@ export const AddTodoDrawer = ({ open, onOpenChange, onAdd, labels, prefillDate }
                         <LabelSelect labels={labels} value={labelId} onChange={setLabelId} />
                         <RecurrenceField value={recurrence} onChange={setRecurrence} />
                     </div>
-                    <DrawerFooter>
+                    <DrawerFooter className="flex-none">
                         <Button onClick={handleSubmit} disabled={isLoading}>
                             Add Todo
                         </Button>

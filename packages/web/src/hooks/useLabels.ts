@@ -9,7 +9,7 @@ export const useLabels = () => {
         queryClient.invalidateQueries('todos');
     };
 
-    const { data, isLoading } = useQuery<Label[]>(getLabelsQuery());
+    const { data, isLoading, refetch } = useQuery<Label[]>(getLabelsQuery());
 
     const createMutation = useMutation((body: { name: string; color: string }) => apiCreate(body), {
         onSuccess: invalidate,
@@ -23,6 +23,7 @@ export const useLabels = () => {
     return {
         labels: data ?? [],
         isLoading,
+        refetch,
         createLabel: (body: { name: string; color: string }) => createMutation.mutateAsync(body),
         updateLabel: (id: string, body: { name?: string; color?: string }) => updateMutation.mutateAsync({ id, body }),
         deleteLabel: (id: string) => deleteMutation.mutateAsync(id),
