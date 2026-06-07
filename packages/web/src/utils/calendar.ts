@@ -1,4 +1,5 @@
 import type { Todo } from '@shoppingo/types';
+import { addDays } from 'date-fns';
 import type { DayTodoItem } from '../components/Calendar/DayTodoList';
 import { dayKey } from '../components/Calendar/MonthGrid';
 import { expandOccurrences, isoDay } from './recurrence';
@@ -57,4 +58,34 @@ export const buildCalendarDayData = (
     }
 
     return { dotsByDay: dots, selectedItems: items };
+};
+
+export interface AgendaDay {
+    day: Date;
+    items: DayTodoItem[];
+}
+
+const collectWeekTodo = (
+    todo: Todo,
+    rangeStart: Date,
+    rangeEnd: Date,
+    byDay: Map<string, DayTodoItem[]>,
+    labelColor: Map<string, string>
+): void => {
+    const color = todo.labelId ? labelColor.get(todo.labelId) : undefined;
+    for (const occ of expandOccurrences(todo, rangeStart, rangeEnd)) {
+        const bucket = byDay.get(dayKey(occ.date));
+        if (bucket) bucket.push(toSelectedItem(todo, color, occ.date, occ.done));
+    }
+};
+
+export const buildWeekAgenda = (visible: Todo[], start: Date, labelColor: Map<string, string>): AgendaDay[] => {
+    const days = Array.from({ length: 7 }, (_, i) => addDays(start, i));
+    const byDay = new Map<string, DayTodoItem[]>(days.map((d) => [dayKey(d), []]));
+
+    for (const todo of visible) {
+        collectWeekTodo(todo, days[0], days[6], byDay, labelColor);
+    }
+
+    return days.map((day) => ({ day, items: byDay.get(dayKey(day)) ?? [] }));
 };
