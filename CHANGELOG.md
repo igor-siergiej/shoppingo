@@ -1,3 +1,10 @@
+# [1.44.0](https://github.com/igor-siergiej/shoppingo/compare/v1.43.0...v1.44.0) (2026-06-07)
+
+
+### Features
+
+* **web:** calendar UX refinements ([#84](https://github.com/igor-siergiej/shoppingo/issues/84)) ([589ad2f](https://github.com/igor-siergiej/shoppingo/commit/589ad2f8af81d9ba73ee401e74f830df7703e998))
+
 # [1.43.0](https://github.com/igor-siergiej/shoppingo/compare/v1.42.0...v1.43.0) (2026-06-06)
 
 
