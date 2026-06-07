@@ -1,3 +1,10 @@
+## [1.44.1](https://github.com/igor-siergiej/shoppingo/compare/v1.44.0...v1.44.1) (2026-06-07)
+
+
+### Bug Fixes
+
+* **web:** make add todo drawer scrollable on mobile ([#85](https://github.com/igor-siergiej/shoppingo/issues/85)) ([2c61060](https://github.com/igor-siergiej/shoppingo/commit/2c61060073421c75b7ae197ee96baf0f0c1f0e50))
+
 # [1.44.0](https://github.com/igor-siergiej/shoppingo/compare/v1.43.0...v1.44.0) (2026-06-07)
 
 
