@@ -103,7 +103,7 @@ export const AddTodoDrawer = ({ open, onOpenChange, onAdd, labels, prefillDate }
                 </RippleButton>
             </DrawerTrigger>
             <DrawerContent>
-                <div className="flex w-full flex-col max-h-[90vh] sm:mx-auto sm:max-w-[400px]">
+                <div className="flex min-h-0 w-full flex-1 flex-col sm:mx-auto sm:max-w-[400px]">
                     <DrawerHeader className="flex-none">
                         <DrawerTitle>Add Todo</DrawerTitle>
                     </DrawerHeader>
