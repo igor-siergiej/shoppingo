@@ -15,7 +15,8 @@
     "format": "biome format --write .",
     "test:e2e": "dotenv -e .env -- playwright test",
     "test:e2e:ui": "dotenv -e .env -- playwright test --ui",
-    "audit": "bash scripts/run-fallow.sh"
+    "audit": "bash scripts/run-fallow.sh",
+    "prepare": "husky"
   },
   "workspaces": [
     "packages/*"
@@ -35,6 +36,7 @@
     "@types/node": "^25.8.0",
     "dotenv": "^16",
     "dotenv-cli": "^10.0.0",
+    "husky": "^9.1.7",
     "mongodb": "^7.2.0",
     "semantic-release": "^24.2.0",
     "tsup": "^8.5.0",

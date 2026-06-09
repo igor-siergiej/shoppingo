@@ -27,4 +27,4 @@ if [ ! -x "$BIN" ]; then
     chmod +x "$BIN"
 fi
 
-exec "$BIN" audit --gate new-only "$@"
+exec "$BIN" audit --gate "${FALLOW_GATE:-new-only}" "$@"
