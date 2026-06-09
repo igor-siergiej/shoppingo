@@ -111,20 +111,34 @@ test.describe('Calendar page', () => {
         await expect(tomorrowItem.locator('.line-through')).not.toBeVisible();
     });
 
-    test('labels: assigned todo shows when filter chip active', async ({ authenticatedPage }) => {
-        // Label assignment is no longer available in the add-todo drawer, so seed
-        // the label + labelled todo via the API and verify the filter chip flow.
-        const label = await apiCreateLabel({ name: 'Work', color: '#ff0000' });
-        await apiCreateTodo({ title: 'Work Todo', dueDate: todayKey, labelId: label.id });
+    test('labels: filter chip dims non-matching todos and keeps matches visible', async ({ authenticatedPage }) => {
+        // Seed the label, then assign it through the add-todo drawer dropdown.
+        await apiCreateLabel({ name: 'Work', color: '#ff0000' });
 
         await authenticatedPage.goto('/calendar');
 
-        await expect(authenticatedPage.getByText('Work Todo')).toBeVisible();
+        // Labelled todo (due date prefills to the selected day = today).
+        await authenticatedPage.getByTestId('add-todo-trigger').click();
+        await authenticatedPage.getByLabel('Title').fill('Work Todo');
+        await authenticatedPage.getByRole('combobox').filter({ hasText: 'No label' }).click();
+        await authenticatedPage.getByRole('option', { name: 'Work' }).click();
+        await authenticatedPage.getByRole('button', { name: 'Add Todo' }).click();
 
-        // Click the label filter chip
+        // Unlabelled todo.
+        await authenticatedPage.getByTestId('add-todo-trigger').click();
+        await authenticatedPage.getByLabel('Title').fill('Plain Todo');
+        await authenticatedPage.getByRole('button', { name: 'Add Todo' }).click();
+
+        await expect(authenticatedPage.getByText('Work Todo')).toBeVisible();
+        await expect(authenticatedPage.getByText('Plain Todo')).toBeVisible();
+
+        // Activate the label filter chip.
         await authenticatedPage.getByRole('button', { name: 'Work' }).click();
 
-        // Todo still visible with filter active
+        // Both stay visible; only the non-matching todo is dimmed.
         await expect(authenticatedPage.getByText('Work Todo')).toBeVisible();
+        await expect(authenticatedPage.getByText('Plain Todo')).toBeVisible();
+        await expect(authenticatedPage.locator('li[data-todo-title="Plain Todo"] .opacity-40')).toBeVisible();
+        await expect(authenticatedPage.locator('li[data-todo-title="Work Todo"] .opacity-40')).toHaveCount(0);
     });
 });

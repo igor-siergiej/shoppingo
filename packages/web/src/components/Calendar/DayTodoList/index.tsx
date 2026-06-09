@@ -8,6 +8,7 @@ export interface DayTodoItem {
     time?: string;
     done: boolean;
     labelColor?: string;
+    dimmed?: boolean;
     occurrenceDay: string; // dayKey of the occurrence
 }
 
@@ -27,7 +28,9 @@ export const DayTodoList = ({ items, onToggle, onDelete }: DayTodoListProps) => 
             {items.map((item) => (
                 <li key={`${item.todoId}-${item.occurrenceDay}`} data-todo-title={item.title}>
                     <SwipeableRow onDelete={() => onDelete(item.todoId)}>
-                        <div className="flex items-center gap-3 rounded-lg bg-muted/40 px-3 py-2">
+                        <div
+                            className={`flex items-center gap-3 rounded-lg bg-muted/40 px-3 py-2 transition-opacity ${item.dimmed ? 'opacity-40' : ''}`}
+                        >
                             <span
                                 className="w-1 self-stretch rounded"
                                 style={{ backgroundColor: item.labelColor ?? 'transparent' }}

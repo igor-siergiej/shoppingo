@@ -26,6 +26,7 @@ interface ToolBarProps {
     onAddItem?: (name: string, quantity?: number, unit?: string) => Promise<void>;
     onAddIngredient?: (name: string, quantity?: number, unit?: string) => Promise<void>;
     onAddTodo?: (body: import('../../api').CreateTodoBody) => Promise<void>;
+    labels?: import('@shoppingo/types').Label[];
     prefillTodoDate?: Date;
     onAddRecipe?: (
         title: string,
@@ -76,6 +77,7 @@ const ToolBar = ({
     disableClearSelected = false,
     disableClearAll = false,
     onAddTodo,
+    labels,
     prefillTodoDate,
 }: ToolBarProps) => {
     const location = useLocation();
@@ -236,6 +238,7 @@ const ToolBar = ({
                                             open={isAddTodoDrawerOpen}
                                             onOpenChange={setIsAddTodoDrawerOpen}
                                             onAdd={onAddTodo}
+                                            labels={labels ?? []}
                                             prefillDate={prefillTodoDate}
                                         />
                                     ) : undefined

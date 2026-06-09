@@ -1,8 +1,9 @@
-import type { Recurrence } from '@shoppingo/types';
+import type { Label as LabelType, Recurrence } from '@shoppingo/types';
 import { Plus } from 'lucide-react';
 import { useEffect, useId, useState } from 'react';
 import type { CreateTodoBody } from '../../../api';
 import { DueDateField } from '../../../components/DueDateField';
+import { LabelSelect } from '../../../components/LabelSelect';
 import { RecurrenceField } from '../../../components/RecurrenceField';
 import { TimeField } from '../../../components/TimeField';
 import { Button } from '../../../components/ui/button';
@@ -23,6 +24,7 @@ interface BuildTodoBodyArgs {
     title: string;
     dueDate?: Date;
     time?: string;
+    labelId?: string;
     recurrence?: Recurrence;
 }
 
@@ -38,14 +40,16 @@ export interface AddTodoDrawerProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     onAdd: (body: CreateTodoBody) => Promise<void>;
+    labels: LabelType[];
     prefillDate?: Date;
 }
 
-export const AddTodoDrawer = ({ open, onOpenChange, onAdd, prefillDate }: AddTodoDrawerProps) => {
+export const AddTodoDrawer = ({ open, onOpenChange, onAdd, labels, prefillDate }: AddTodoDrawerProps) => {
     const titleId = useId();
     const [title, setTitle] = useState('');
     const [dueDate, setDueDate] = useState<Date | undefined>(prefillDate);
     const [time, setTime] = useState<string | undefined>(undefined);
+    const [labelId, setLabelId] = useState<string | undefined>(undefined);
     const [recurrence, setRecurrence] = useState<Recurrence | undefined>(undefined);
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -58,6 +62,7 @@ export const AddTodoDrawer = ({ open, onOpenChange, onAdd, prefillDate }: AddTod
         setTitle('');
         setDueDate(prefillDate);
         setTime(undefined);
+        setLabelId(undefined);
         setRecurrence(undefined);
         setError('');
     };
@@ -71,7 +76,7 @@ export const AddTodoDrawer = ({ open, onOpenChange, onAdd, prefillDate }: AddTod
         setIsLoading(true);
         setError('');
         try {
-            await onAdd(buildTodoBody({ title: trimmed, dueDate, time, recurrence }));
+            await onAdd(buildTodoBody({ title: trimmed, dueDate, time, labelId, recurrence }));
             reset();
             onOpenChange(false);
         } catch (err) {
@@ -125,6 +130,7 @@ export const AddTodoDrawer = ({ open, onOpenChange, onAdd, prefillDate }: AddTod
                         </div>
                         <DueDateField value={dueDate} onChange={setDueDate} captionLayout="dropdown" />
                         <TimeField value={time} onChange={setTime} />
+                        <LabelSelect labels={labels} value={labelId} onChange={setLabelId} />
                         <RecurrenceField value={recurrence} onChange={setRecurrence} />
                     </div>
                     <DrawerFooter className="flex-none">
