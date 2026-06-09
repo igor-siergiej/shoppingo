@@ -1,13 +1,8 @@
 import type { Todo } from '@shoppingo/types';
 import { addDays } from 'date-fns';
 import type { DayTodoItem } from '../components/Calendar/DayTodoList';
-import { dayKey } from '../components/Calendar/MonthGrid';
+import { type DayDot, dayKey } from '../components/Calendar/MonthGrid';
 import { expandOccurrences, isoDay } from './recurrence';
-
-export interface DayDot {
-    color: string;
-    dimmed: boolean;
-}
 
 interface CalendarDayData {
     dotsByDay: Record<string, DayDot[]>;
