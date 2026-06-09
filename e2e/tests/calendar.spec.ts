@@ -140,5 +140,11 @@ test.describe('Calendar page', () => {
         await expect(authenticatedPage.getByText('Plain Todo')).toBeVisible();
         await expect(authenticatedPage.locator('li[data-todo-title="Plain Todo"] .opacity-40')).toBeVisible();
         await expect(authenticatedPage.locator('li[data-todo-title="Work Todo"] .opacity-40')).toHaveCount(0);
+
+        // Month-grid dots for today: two dots, exactly one dimmed.
+        const todayCell = authenticatedPage.getByTestId(`day-${todayKey}`);
+        await expect(todayCell.getByTestId('day-dot')).toHaveCount(2);
+        await expect(todayCell.locator('[data-testid="day-dot"][data-dimmed="true"]')).toHaveCount(1);
+        await expect(todayCell.locator('[data-testid="day-dot"][data-dimmed="false"]')).toHaveCount(1);
     });
 });

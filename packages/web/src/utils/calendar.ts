@@ -4,8 +4,13 @@ import type { DayTodoItem } from '../components/Calendar/DayTodoList';
 import { dayKey } from '../components/Calendar/MonthGrid';
 import { expandOccurrences, isoDay } from './recurrence';
 
+export interface DayDot {
+    color: string;
+    dimmed: boolean;
+}
+
 interface CalendarDayData {
-    dotsByDay: Record<string, string[]>;
+    dotsByDay: Record<string, DayDot[]>;
     selectedItems: DayTodoItem[];
 }
 
@@ -17,9 +22,14 @@ export interface LabelContext {
 const isDimmed = (todo: Todo, activeLabels: Set<string>): boolean =>
     activeLabels.size > 0 && !(todo.labelId !== undefined && activeLabels.has(todo.labelId));
 
-const addOccurrenceToDots = (dots: Record<string, string[]>, key: string, color: string | undefined): void => {
+const addOccurrenceToDots = (
+    dots: Record<string, DayDot[]>,
+    key: string,
+    color: string | undefined,
+    dimmed: boolean
+): void => {
     if (!dots[key]) dots[key] = [];
-    dots[key].push(color ?? '#3b82f6');
+    dots[key].push({ color: color ?? '#3b82f6', dimmed });
 };
 
 interface CollectCtx {
@@ -28,7 +38,7 @@ interface CollectCtx {
     rangeEnd: Date;
     labelColor: Map<string, string>;
     activeLabels: Set<string>;
-    dots: Record<string, string[]>;
+    dots: Record<string, DayDot[]>;
     items: DayTodoItem[];
 }
 
@@ -37,7 +47,7 @@ const collectTodo = (todo: Todo, ctx: CollectCtx): void => {
     const dimmed = isDimmed(todo, ctx.activeLabels);
     for (const occ of expandOccurrences(todo, ctx.rangeStart, ctx.rangeEnd)) {
         const key = dayKey(occ.date);
-        addOccurrenceToDots(ctx.dots, key, color);
+        addOccurrenceToDots(ctx.dots, key, color, dimmed);
         if (key === ctx.selectedKey) ctx.items.push(toSelectedItem(todo, color, occ.date, occ.done, dimmed));
     }
 };
@@ -66,7 +76,7 @@ export const buildCalendarDayData = (
     rangeEnd: Date,
     { labelColor, activeLabels }: LabelContext
 ): CalendarDayData => {
-    const dots: Record<string, string[]> = {};
+    const dots: Record<string, DayDot[]> = {};
     const items: DayTodoItem[] = [];
     const ctx: CollectCtx = {
         selectedKey: dayKey(selectedDay),

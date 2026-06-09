@@ -1,6 +1,7 @@
 import type { Todo } from '@shoppingo/types';
 import { endOfMonth, startOfMonth } from 'date-fns';
 import { describe, expect, it } from 'vitest';
+import { dayKey } from '../components/Calendar/MonthGrid';
 import { buildCalendarDayData } from './calendar';
 
 const today = new Date();
@@ -31,5 +32,13 @@ describe('buildCalendarDayData dimming', () => {
     it('keeps all todos in the result when filtering (grey-out, not hide)', () => {
         const { selectedItems } = build([todo('a', 'L1'), todo('b')], ['L1']);
         expect(selectedItems).toHaveLength(2);
+    });
+
+    it('dims month-grid dots for non-matching todos', () => {
+        const { dotsByDay } = build([todo('a', 'L1'), todo('b')], ['L1']);
+        const dots = dotsByDay[dayKey(today)];
+        expect(dots).toHaveLength(2);
+        expect(dots.some((d) => d.dimmed === false)).toBe(true);
+        expect(dots.some((d) => d.dimmed === true)).toBe(true);
     });
 });
