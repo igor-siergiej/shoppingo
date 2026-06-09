@@ -133,7 +133,7 @@ const CalendarPage = () => {
 
             <InboxDrawer todos={undated} onDelete={handleDelete} />
 
-            <ToolBar onAddTodo={handleAddTodo} labels={labels} prefillTodoDate={selectedDay} />
+            <ToolBar onAddTodo={handleAddTodo} prefillTodoDate={selectedDay} />
         </>
     );
 };
