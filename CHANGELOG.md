@@ -1,3 +1,10 @@
+# [1.45.0](https://github.com/igor-siergiej/shoppingo/compare/v1.44.1...v1.45.0) (2026-06-09)
+
+
+### Features
+
+* **web:** label filter grey-out + drawer feedback ([#86](https://github.com/igor-siergiej/shoppingo/issues/86)) ([ae6dd0a](https://github.com/igor-siergiej/shoppingo/commit/ae6dd0a14a84e637f9048079983b91f7a7461bf1))
+
 ## [1.44.1](https://github.com/igor-siergiej/shoppingo/compare/v1.44.0...v1.44.1) (2026-06-07)
 
 
