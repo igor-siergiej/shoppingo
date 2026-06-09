@@ -15,7 +15,7 @@
     "format": "biome format --write .",
     "test:e2e": "dotenv -e .env -- playwright test",
     "test:e2e:ui": "dotenv -e .env -- playwright test --ui",
-    "audit": "bash scripts/run-fallow.sh",
+    "audit": "fallow-audit",
     "prepare": "husky"
   },
   "workspaces": [
@@ -26,6 +26,7 @@
     "@commitlint/cli": "^20.1.0",
     "@commitlint/config-conventional": "^20.0.0",
     "@imapps/biome-config": "0.5.1",
+    "@imapps/dev-scripts": "0.1.0",
     "@playwright/test": "^1.60.0",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/commit-analyzer": "^13.0.0",

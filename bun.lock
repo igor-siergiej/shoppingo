@@ -9,6 +9,7 @@
         "@commitlint/cli": "^20.1.0",
         "@commitlint/config-conventional": "^20.0.0",
         "@imapps/biome-config": "0.5.1",
+        "@imapps/dev-scripts": "0.1.0",
         "@playwright/test": "^1.60.0",
         "@semantic-release/changelog": "^6.0.3",
         "@semantic-release/commit-analyzer": "^13.0.0",
@@ -457,6 +458,8 @@
     "@imapps/api-utils": ["@imapps/api-utils@0.5.1", "", { "dependencies": { "minio": "^8.0.0", "mongodb": "^6.19.0" } }, "sha512-Uy1bVNsgkDPKhZXjAl4eL1VnRafJACSwsXYUKWfu9nzmsQHAX4OMauXarj/tzCJcOchhu/UWEPd/fMYbYyZNzg=="],
 
     "@imapps/biome-config": ["@imapps/biome-config@0.5.1", "", { "peerDependencies": { "@biomejs/biome": "^2.0.0" } }, "sha512-SrGHvSi7HvXDyiPdc5o4e2sLtOfXawtpm56vO+bbtcI+MiILUG91ylNsHEeftJSM0iOUEqZSEwvJvWgwjbCocw=="],
+
+    "@imapps/dev-scripts": ["@imapps/dev-scripts@0.1.0", "", { "bin": { "fallow-audit": "bin/fallow-audit.sh" } }, "sha512-FpacCF4XlHTFF/5BmjQWBxrn1sIZCKvZkkJgJqaCw6s8V0WAjOmc0MIb8UQpFNXgxNmHStIvXrOSAf+frreeGA=="],
 
     "@imapps/web-utils": ["@imapps/web-utils@0.5.1", "", { "peerDependencies": { "react": ">=18.0.0", "react-router-dom": ">=6.0.0" } }, "sha512-f8TwIKq06onX5pn8jIFmu6vu3Wqhf/M6kMaLEMUgfdxsCpXBUDgKIFRdaCM4oZ0vjTSH6Ru+pf6ZYToTb+qdVg=="],
 
