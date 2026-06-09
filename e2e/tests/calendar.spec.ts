@@ -1,4 +1,4 @@
-import { apiCreateTodo } from '../api-helpers';
+import { apiCreateLabel, apiCreateTodo } from '../api-helpers';
 import { expect, test } from '../fixtures';
 
 function isoDay(d: Date): string {
@@ -111,29 +111,13 @@ test.describe('Calendar page', () => {
         await expect(tomorrowItem.locator('.line-through')).not.toBeVisible();
     });
 
-    test('labels: create label, assign to todo, filter chip shows todo', async ({ authenticatedPage }) => {
+    test('labels: assigned todo shows when filter chip active', async ({ authenticatedPage }) => {
+        // Label assignment is no longer available in the add-todo drawer, so seed
+        // the label + labelled todo via the API and verify the filter chip flow.
+        const label = await apiCreateLabel({ name: 'Work', color: '#ff0000' });
+        await apiCreateTodo({ title: 'Work Todo', dueDate: todayKey, labelId: label.id });
+
         await authenticatedPage.goto('/calendar');
-
-        // Open Menu → Manage Labels
-        await authenticatedPage.getByRole('button', { name: 'Menu' }).click();
-        await authenticatedPage.getByRole('button', { name: 'Manage Labels' }).click();
-
-        // Create a label
-        await authenticatedPage.getByPlaceholder('Label name').fill('Work');
-        await authenticatedPage.getByRole('button', { name: 'Add' }).click();
-
-        // Close drawer by pressing Escape
-        await authenticatedPage.keyboard.press('Escape');
-
-        // Create a todo and assign the new label
-        await authenticatedPage.getByTestId('add-todo-trigger').click();
-        await authenticatedPage.getByLabel('Title').fill('Work Todo');
-
-        // Select the label via the LabelSelect
-        await authenticatedPage.getByRole('combobox').filter({ hasText: 'No label' }).click();
-        await authenticatedPage.getByRole('option', { name: 'Work' }).click();
-
-        await authenticatedPage.getByRole('button', { name: 'Add Todo' }).click();
 
         await expect(authenticatedPage.getByText('Work Todo')).toBeVisible();
 

@@ -129,7 +129,7 @@ export const AddTodoDrawer = ({ open, onOpenChange, onAdd, prefillDate }: AddTod
                     </div>
                     <DrawerFooter className="flex-none">
                         <Button onClick={handleSubmit} disabled={isLoading}>
-                            Add Todo
+                            {isLoading ? 'Adding…' : 'Add Todo'}
                         </Button>
                         <DrawerClose asChild>
                             <Button variant="outline" onClick={handleCancel}>
