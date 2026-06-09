@@ -27,3 +27,6 @@ coverage/
 playwright-report/
 test-results/
 .auth/
+
+# fallow audit binary (downloaded on demand by scripts/run-fallow.sh)
+.tooling/

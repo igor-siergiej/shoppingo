@@ -56,9 +56,9 @@ const toSelectedItem = (
 ): DayTodoItem => ({
     todoId: todo.id,
     title: todo.title,
-    time: todo.time,
+    time: todo.time ?? 'all day',
     done,
-    labelColor: color,
+    labelColor: color ?? 'transparent',
     dimmed,
     occurrenceDay: isoDay(occDate),
 });
