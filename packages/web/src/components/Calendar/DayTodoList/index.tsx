@@ -8,6 +8,7 @@ export interface DayTodoItem {
     time?: string;
     done: boolean;
     labelColor?: string;
+    dimmed?: boolean;
     occurrenceDay: string; // dayKey of the occurrence
 }
 
@@ -18,6 +19,29 @@ export interface DayTodoListProps {
     onDelete: (todoId: string) => void;
 }
 
+interface DayTodoRowProps {
+    item: DayTodoItem;
+    onToggle: (todoId: string, occurrenceDay: string) => void;
+    onDelete: (todoId: string) => void;
+}
+
+const DayTodoRow = ({ item, onToggle, onDelete }: DayTodoRowProps) => {
+    const rowClass = `flex items-center gap-3 rounded-lg bg-muted/40 px-3 py-2 transition-opacity ${item.dimmed ? 'opacity-40' : ''}`;
+    const titleClass = item.done ? 'line-through text-muted-foreground' : '';
+    return (
+        <li data-todo-title={item.title}>
+            <SwipeableRow onDelete={() => onDelete(item.todoId)}>
+                <div className={rowClass}>
+                    <span className="w-1 self-stretch rounded" style={{ backgroundColor: item.labelColor }} />
+                    <Checkbox checked={item.done} onCheckedChange={() => onToggle(item.todoId, item.occurrenceDay)} />
+                    <span className="text-xs text-muted-foreground w-12">{item.time}</span>
+                    <span className={titleClass}>{item.title}</span>
+                </div>
+            </SwipeableRow>
+        </li>
+    );
+};
+
 export const DayTodoList = ({ items, onToggle, onDelete }: DayTodoListProps) => {
     if (items.length === 0) {
         return <p className="text-sm text-muted-foreground py-4 text-center">No todos for this day</p>;
@@ -25,22 +49,12 @@ export const DayTodoList = ({ items, onToggle, onDelete }: DayTodoListProps) => 
     return (
         <ul className="space-y-2 py-2">
             {items.map((item) => (
-                <li key={`${item.todoId}-${item.occurrenceDay}`} data-todo-title={item.title}>
-                    <SwipeableRow onDelete={() => onDelete(item.todoId)}>
-                        <div className="flex items-center gap-3 rounded-lg bg-muted/40 px-3 py-2">
-                            <span
-                                className="w-1 self-stretch rounded"
-                                style={{ backgroundColor: item.labelColor ?? 'transparent' }}
-                            />
-                            <Checkbox
-                                checked={item.done}
-                                onCheckedChange={() => onToggle(item.todoId, item.occurrenceDay)}
-                            />
-                            <span className="text-xs text-muted-foreground w-12">{item.time ?? 'all day'}</span>
-                            <span className={item.done ? 'line-through text-muted-foreground' : ''}>{item.title}</span>
-                        </div>
-                    </SwipeableRow>
-                </li>
+                <DayTodoRow
+                    key={`${item.todoId}-${item.occurrenceDay}`}
+                    item={item}
+                    onToggle={onToggle}
+                    onDelete={onDelete}
+                />
             ))}
         </ul>
     );

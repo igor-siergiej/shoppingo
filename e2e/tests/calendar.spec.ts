@@ -1,4 +1,4 @@
-import { apiCreateTodo } from '../api-helpers';
+import { apiCreateLabel, apiCreateTodo } from '../api-helpers';
 import { expect, test } from '../fixtures';
 
 function isoDay(d: Date): string {
@@ -111,36 +111,40 @@ test.describe('Calendar page', () => {
         await expect(tomorrowItem.locator('.line-through')).not.toBeVisible();
     });
 
-    test('labels: create label, assign to todo, filter chip shows todo', async ({ authenticatedPage }) => {
+    test('labels: filter chip dims non-matching todos and keeps matches visible', async ({ authenticatedPage }) => {
+        // Seed the label, then assign it through the add-todo drawer dropdown.
+        await apiCreateLabel({ name: 'Work', color: '#ff0000' });
+
         await authenticatedPage.goto('/calendar');
 
-        // Open Menu → Manage Labels
-        await authenticatedPage.getByRole('button', { name: 'Menu' }).click();
-        await authenticatedPage.getByRole('button', { name: 'Manage Labels' }).click();
-
-        // Create a label
-        await authenticatedPage.getByPlaceholder('Label name').fill('Work');
-        await authenticatedPage.getByRole('button', { name: 'Add' }).click();
-
-        // Close drawer by pressing Escape
-        await authenticatedPage.keyboard.press('Escape');
-
-        // Create a todo and assign the new label
+        // Labelled todo (due date prefills to the selected day = today).
         await authenticatedPage.getByTestId('add-todo-trigger').click();
         await authenticatedPage.getByLabel('Title').fill('Work Todo');
-
-        // Select the label via the LabelSelect
         await authenticatedPage.getByRole('combobox').filter({ hasText: 'No label' }).click();
         await authenticatedPage.getByRole('option', { name: 'Work' }).click();
+        await authenticatedPage.getByRole('button', { name: 'Add Todo' }).click();
 
+        // Unlabelled todo.
+        await authenticatedPage.getByTestId('add-todo-trigger').click();
+        await authenticatedPage.getByLabel('Title').fill('Plain Todo');
         await authenticatedPage.getByRole('button', { name: 'Add Todo' }).click();
 
         await expect(authenticatedPage.getByText('Work Todo')).toBeVisible();
+        await expect(authenticatedPage.getByText('Plain Todo')).toBeVisible();
 
-        // Click the label filter chip
+        // Activate the label filter chip.
         await authenticatedPage.getByRole('button', { name: 'Work' }).click();
 
-        // Todo still visible with filter active
+        // Both stay visible; only the non-matching todo is dimmed.
         await expect(authenticatedPage.getByText('Work Todo')).toBeVisible();
+        await expect(authenticatedPage.getByText('Plain Todo')).toBeVisible();
+        await expect(authenticatedPage.locator('li[data-todo-title="Plain Todo"] .opacity-40')).toBeVisible();
+        await expect(authenticatedPage.locator('li[data-todo-title="Work Todo"] .opacity-40')).toHaveCount(0);
+
+        // Month-grid dots for today: two dots, exactly one dimmed.
+        const todayCell = authenticatedPage.getByTestId(`day-${todayKey}`);
+        await expect(todayCell.getByTestId('day-dot')).toHaveCount(2);
+        await expect(todayCell.locator('[data-testid="day-dot"][data-dimmed="true"]')).toHaveCount(1);
+        await expect(todayCell.locator('[data-testid="day-dot"][data-dimmed="false"]')).toHaveCount(1);
     });
 });

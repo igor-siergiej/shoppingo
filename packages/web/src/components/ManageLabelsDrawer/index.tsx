@@ -16,13 +16,19 @@ export const ManageLabelsDrawer = ({ open, onOpenChange }: ManageLabelsDrawerPro
     const { labels, createLabel, deleteLabel } = useLabels();
     const [name, setName] = useState('');
     const [color, setColor] = useState(DEFAULT_COLOR);
+    const [isCreating, setIsCreating] = useState(false);
 
     const handleCreate = async () => {
         const trimmed = name.trim();
-        if (!trimmed) return;
-        await createLabel({ name: trimmed, color });
-        setName('');
-        setColor(DEFAULT_COLOR);
+        if (!trimmed || isCreating) return;
+        setIsCreating(true);
+        try {
+            await createLabel({ name: trimmed, color });
+            setName('');
+            setColor(DEFAULT_COLOR);
+        } finally {
+            setIsCreating(false);
+        }
     };
 
     return (
@@ -34,6 +40,9 @@ export const ManageLabelsDrawer = ({ open, onOpenChange }: ManageLabelsDrawerPro
                         <DrawerDescription>Create and remove calendar labels</DrawerDescription>
                     </DrawerHeader>
                     <div className="flex-1 overflow-y-auto px-4 space-y-2">
+                        {labels.length === 0 && (
+                            <p className="py-8 text-center text-sm text-muted-foreground">No labels yet</p>
+                        )}
                         {labels.map((label) => (
                             <div key={label.id} className="flex items-center gap-3 rounded-lg bg-muted/40 px-3 py-2">
                                 <span className="h-4 w-4 rounded-full" style={{ backgroundColor: label.color }} />
@@ -62,7 +71,9 @@ export const ManageLabelsDrawer = ({ open, onOpenChange }: ManageLabelsDrawerPro
                                     if (e.key === 'Enter') void handleCreate();
                                 }}
                             />
-                            <Button onClick={handleCreate}>Add</Button>
+                            <Button onClick={handleCreate} disabled={!name.trim() || isCreating}>
+                                {isCreating ? 'Adding…' : 'Add'}
+                            </Button>
                         </div>
                     </DrawerFooter>
                 </div>

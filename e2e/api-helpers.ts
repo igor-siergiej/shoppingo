@@ -84,3 +84,6 @@ export const apiCreateTodo = (body: {
     labelId?: string;
     recurrence?: { freq: string; interval: number; until?: string };
 }) => apiPut<{ id: string; title: string }>('/api/todos', body);
+
+export const apiCreateLabel = (body: { name: string; color: string }) =>
+    apiPut<{ id: string; name: string; color: string }>('/api/labels', body);

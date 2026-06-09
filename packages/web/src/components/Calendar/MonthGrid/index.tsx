@@ -11,9 +11,14 @@ import {
 
 export const dayKey = (date: Date): string => format(date, 'yyyy-MM-dd');
 
+export interface DayDot {
+    color: string;
+    dimmed: boolean;
+}
+
 export interface MonthGridProps {
     month: Date;
-    dotsByDay: Record<string, string[]>; // dayKey -> array of hex colours
+    dotsByDay: Record<string, DayDot[]>; // dayKey -> dots
     selectedDay: Date | undefined;
     onSelectDay: (day: Date) => void;
     onDropTodoOnDay: (todoId: string, day: Date) => void;
@@ -21,7 +26,7 @@ export interface MonthGridProps {
 
 interface DayCellProps {
     day: Date;
-    dots: string[];
+    dots: DayDot[];
     selected: boolean;
     inMonth: boolean;
     onSelect: () => void;
@@ -54,11 +59,13 @@ const DayCell = ({ day, dots, selected, inMonth, onSelect, onDrop }: DayCellProp
             <span>{day.getDate()}</span>
             {dots.length > 0 && (
                 <span className="flex gap-0.5 mt-0.5">
-                    {dots.slice(0, 3).map((color, i) => (
+                    {dots.slice(0, 3).map((dot, i) => (
                         <span
-                            key={`${key}-dot-${i}-${color}`}
-                            className="h-1.5 w-1.5 rounded-full"
-                            style={{ backgroundColor: selected ? '#fff' : color }}
+                            key={`${key}-dot-${i}-${dot.color}`}
+                            data-testid="day-dot"
+                            data-dimmed={dot.dimmed}
+                            className={`h-1.5 w-1.5 rounded-full ${dot.dimmed ? 'opacity-30' : ''}`}
+                            style={{ backgroundColor: selected ? '#fff' : dot.color }}
                         />
                     ))}
                 </span>

@@ -41,17 +41,19 @@ const CalendarPage = () => {
         return map;
     }, [labels]);
 
-    const visible = useMemo(
-        () => (activeLabels.size === 0 ? todos : todos.filter((t) => t.labelId && activeLabels.has(t.labelId))),
-        [todos, activeLabels]
-    );
-
     const { dotsByDay, selectedItems } = useMemo(
-        () => buildCalendarDayData(visible, month, selectedDay, startOfMonth(month), endOfMonth(month), labelColor),
-        [visible, month, selectedDay, labelColor]
+        () =>
+            buildCalendarDayData(todos, month, selectedDay, startOfMonth(month), endOfMonth(month), {
+                labelColor,
+                activeLabels,
+            }),
+        [todos, month, selectedDay, labelColor, activeLabels]
     );
 
-    const weekDays = useMemo(() => buildWeekAgenda(visible, new Date(), labelColor), [visible, labelColor]);
+    const weekDays = useMemo(
+        () => buildWeekAgenda(todos, new Date(), { labelColor, activeLabels }),
+        [todos, labelColor, activeLabels]
+    );
 
     const undated = useMemo(() => todos.filter((t) => !t.dueDate), [todos]);
 
