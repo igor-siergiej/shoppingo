@@ -4,6 +4,11 @@ on:
   pull_request:
     branches: '*'
 
+# Cancel superseded runs when new commits are pushed to the same PR.
+concurrency:
+  group: pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -90,12 +95,15 @@ jobs:
           fetch-depth: 0
       # Full audit (dead-code + complexity + duplication) — informational only,
       # posts PR comments but never blocks merge.
+      # gate:all avoids the new-only base-snapshot pass that re-analyzes the
+      # base tree (cold-cache CI: ~9m -> ~1m). Audit is non-blocking, so
+      # new-vs-inherited attribution buys nothing.
       - uses: fallow-rs/fallow@v2
         with:
           command: audit
           comment: true
           review-comments: true
-          gate: new-only
+          gate: all
           fail-on-issues: false
       # Dead code is the only category that blocks merge. Run the analyzer
       # directly via bunx — the action's second invocation hangs in CI — and
