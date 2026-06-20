@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, it, vi } from 'bun:test';
-import type { Context } from 'koa';
 
 import * as imageHandlers from './index';
 
@@ -24,23 +23,37 @@ const mockLogger = {
     debug: vi.fn(),
 };
 
-const createMockContext = (overrides: Partial<Context> = {}): Context =>
-    ({
-        params: {},
-        set: vi.fn() as any,
-        status: 200,
-        body: {},
-        res: {
-            write: vi.fn(),
-            end: vi.fn(),
-        } as any,
-        ...overrides,
-    }) as Context;
-
 const mockBucketStore = {
     getHeadObject: vi.fn(),
     getObjectStream: vi.fn(),
     putObject: vi.fn(),
+};
+
+type HonoVars = { Variables: { user: { id: string; username: string } } };
+
+const createMockContext = (params: Record<string, string> = {}, user?: { id: string; username: string }) => {
+    const vars: Record<string, unknown> = {};
+    if (user) vars.user = user;
+
+    return {
+        req: {
+            param: (name: string) => params[name],
+            header: (_name: string): undefined => undefined,
+        },
+        header: vi.fn(),
+        json: vi.fn().mockImplementation(
+            (body: unknown, status: number): Response =>
+                new Response(JSON.stringify(body), {
+                    status,
+                    headers: { 'Content-Type': 'application/json' },
+                })
+        ),
+        body: vi.fn().mockImplementation((stream: unknown) => new Response(stream as BodyInit)),
+        get: (key: string) => vars[key],
+        set: (key: string, val: unknown) => {
+            vars[key] = val;
+        },
+    } as unknown as import('hono').Context<HonoVars>;
 };
 
 describe('ImageHandlers', () => {
@@ -56,184 +69,122 @@ describe('ImageHandlers', () => {
 
     describe('getImage', () => {
         it('should return image successfully', async () => {
-            const mockStream = {
+            const mockNodeStream = {
                 pipe: vi.fn(),
                 on: vi.fn(),
-            } as {
-                pipe: ReturnType<typeof vi.fn>;
-                on: ReturnType<typeof vi.fn>;
+                read: vi.fn(),
+                [Symbol.asyncIterator]: vi.fn(),
             };
 
-            const ctx = createMockContext({ params: { name: 'test-image' } });
+            const ctx = createMockContext({ name: 'test-image' });
 
             mockImageService.getImage.mockResolvedValue({
-                stream: mockStream,
+                stream: mockNodeStream,
                 contentType: 'image/webp',
                 cacheControl: 'public, max-age=31536000, immutable',
             });
 
-            mockStream.on.mockImplementation((event: string, callback: (...args: Array<any>) => void) => {
-                if (event === 'end') {
-                    setTimeout(() => callback(), 0);
-                }
-            });
-
-            await imageHandlers.getImage(ctx);
+            const response = await imageHandlers.getImage(ctx);
 
             expect(mockImageService.getImage).toHaveBeenCalledWith('test-image');
-            expect(ctx.set).toHaveBeenCalledWith('Content-Type', 'image/webp');
-            expect(ctx.set).toHaveBeenCalledWith('Cache-Control', 'public, max-age=31536000, immutable');
-            expect(ctx.status).toBe(200);
-        });
-
-        it('should handle stream piping correctly', async () => {
-            const mockStream = {
-                pipe: vi.fn(),
-                on: vi.fn(),
-            } as {
-                pipe: ReturnType<typeof vi.fn>;
-                on: ReturnType<typeof vi.fn>;
-            };
-
-            const ctx = createMockContext({ params: { name: 'test-image' } });
-
-            mockImageService.getImage.mockResolvedValue({
-                stream: mockStream,
-                contentType: 'image/png',
-                cacheControl: 'public, max-age=31536000, immutable',
-            });
-
-            mockStream.on.mockImplementation((event: string, callback: (...args: Array<any>) => void) => {
-                if (event === 'end') {
-                    setTimeout(() => callback(), 0);
-                }
-            });
-
-            await imageHandlers.getImage(ctx);
-
-            expect(mockStream.pipe).toHaveBeenCalledWith(ctx.res, { end: true });
-            expect(mockStream.on).toHaveBeenCalledWith('end', expect.any(Function));
-            expect(mockStream.on).toHaveBeenCalledWith('error', expect.any(Function));
+            expect(ctx.header).toHaveBeenCalledWith('Content-Type', 'image/webp');
+            expect(ctx.header).toHaveBeenCalledWith('Cache-Control', 'public, max-age=31536000, immutable');
+            expect(response).toBeDefined();
         });
 
         it('should handle service errors with status code', async () => {
-            const ctx = createMockContext({ params: { name: 'invalid-image' } });
+            const ctx = createMockContext({ name: 'invalid-image' });
 
             mockImageService.getImage.mockRejectedValue(Object.assign(new Error('Image not found'), { status: 404 }));
 
-            await imageHandlers.getImage(ctx);
+            const response = await imageHandlers.getImage(ctx);
 
-            expect(ctx.status).toBe(404);
-            expect(ctx.body).toEqual({ error: 'Image not found' });
+            expect(response.status).toBe(404);
+            expect(await response.json()).toEqual({ error: 'Image not found' });
         });
 
         it('should handle service errors without status code', async () => {
-            const ctx = createMockContext({ params: { name: 'test-image' } });
+            const ctx = createMockContext({ name: 'test-image' });
 
             mockImageService.getImage.mockRejectedValue(new Error('Internal error'));
 
-            await imageHandlers.getImage(ctx);
+            const response = await imageHandlers.getImage(ctx);
 
-            expect(ctx.status).toBe(500);
-            expect(ctx.body).toEqual({ error: 'Internal error' });
+            expect(response.status).toBe(500);
+            expect(await response.json()).toEqual({ error: 'Internal error' });
         });
 
         it('should handle service errors without message', async () => {
-            const ctx = createMockContext({ params: { name: 'test-image' } });
+            const ctx = createMockContext({ name: 'test-image' });
 
             mockImageService.getImage.mockRejectedValue({ status: 400 });
 
-            await imageHandlers.getImage(ctx);
+            const response = await imageHandlers.getImage(ctx);
 
-            expect(ctx.status).toBe(400);
-            expect(ctx.body).toEqual({ error: 'Internal Server Error' });
-        });
-
-        it('should handle stream errors', async () => {
-            const mockStream = {
-                pipe: vi.fn(),
-                on: vi.fn(),
-            } as {
-                pipe: ReturnType<typeof vi.fn>;
-                on: ReturnType<typeof vi.fn>;
-            };
-
-            const ctx = createMockContext({ params: { name: 'test-image' } });
-
-            mockImageService.getImage.mockResolvedValue({
-                stream: mockStream,
-                contentType: 'image/webp',
-                cacheControl: 'public, max-age=31536000, immutable',
-            });
-
-            const streamError = new Error('Stream error');
-
-            mockStream.on.mockImplementation((event: string, callback: (...args: Array<any>) => void) => {
-                if (event === 'error') {
-                    setTimeout(() => callback(streamError), 0);
-                }
-            });
-
-            await imageHandlers.getImage(ctx);
-
-            expect(ctx.status).toBe(500);
-            expect(ctx.body).toEqual({ error: 'Stream error' });
+            expect(response.status).toBe(400);
+            expect(await response.json()).toEqual({ error: 'Internal Server Error' });
         });
 
         describe('recipe-image/* keys', () => {
             it('returns image from bucket without calling ImageService', async () => {
-                const mockStream = { pipe: vi.fn(), on: vi.fn() };
+                const mockNodeStream = { pipe: vi.fn(), on: vi.fn() };
                 mockBucketStore.getHeadObject.mockResolvedValue({ metaData: { 'content-type': 'image/webp' } });
-                mockBucketStore.getObjectStream.mockResolvedValue(mockStream);
-                mockStream.on.mockImplementation((event: string, cb: () => void) => {
-                    if (event === 'end') setTimeout(cb, 0);
-                });
+                mockBucketStore.getObjectStream.mockResolvedValue(mockNodeStream);
 
-                const ctx = createMockContext({ params: { name: 'recipe-image/pasta' } });
-                await imageHandlers.getImage(ctx);
+                const ctx = createMockContext({ name: 'recipe-image/pasta' });
+                const response = await imageHandlers.getImage(ctx);
 
                 expect(mockImageService.getImage).not.toHaveBeenCalled();
-                expect(ctx.status).toBe(200);
-                expect(ctx.set).toHaveBeenCalledWith('Content-Type', 'image/webp');
+                expect(ctx.header).toHaveBeenCalledWith('Content-Type', 'image/webp');
+                expect(response).toBeDefined();
             });
 
             it('returns 404 when recipe image not in bucket', async () => {
                 mockBucketStore.getHeadObject.mockRejectedValue(new Error('Not found'));
 
-                const ctx = createMockContext({ params: { name: 'recipe-image/pasta' } });
-                await imageHandlers.getImage(ctx);
+                const ctx = createMockContext({ name: 'recipe-image/pasta' });
+                const response = await imageHandlers.getImage(ctx);
 
                 expect(mockImageService.getImage).not.toHaveBeenCalled();
-                expect(ctx.status).toBe(404);
+                expect(response.status).toBe(404);
             });
         });
 
-        it('should handle stream end event', async () => {
-            const mockStream = {
-                pipe: vi.fn(),
-                on: vi.fn(),
-            } as {
-                pipe: ReturnType<typeof vi.fn>;
-                on: ReturnType<typeof vi.fn>;
-            };
+        describe('recipe-upload/* keys', () => {
+            it('returns 401 when no authenticated user', async () => {
+                const ctx = createMockContext({ name: 'recipe-upload/user1/recipe1' });
+                const response = await imageHandlers.getImage(ctx);
 
-            const ctx = createMockContext({ params: { name: 'test-image' } });
-
-            mockImageService.getImage.mockResolvedValue({
-                stream: mockStream,
-                contentType: 'image/webp',
-                cacheControl: 'public, max-age=31536000, immutable',
+                expect(response.status).toBe(401);
             });
 
-            mockStream.on.mockImplementation((event: string, callback: (...args: Array<any>) => void) => {
-                if (event === 'end') {
-                    setTimeout(() => callback(), 0);
-                }
+            it('returns image from bucket for authenticated user', async () => {
+                const mockNodeStream = { pipe: vi.fn(), on: vi.fn() };
+                mockBucketStore.getHeadObject.mockResolvedValue({ metaData: { 'content-type': 'image/webp' } });
+                mockBucketStore.getObjectStream.mockResolvedValue(mockNodeStream);
+
+                const ctx = createMockContext(
+                    { name: 'recipe-upload/user1/recipe1' },
+                    { id: 'user1', username: 'alice' }
+                );
+                const response = await imageHandlers.getImage(ctx);
+
+                expect(ctx.header).toHaveBeenCalledWith('Content-Type', 'image/webp');
+                expect(response).toBeDefined();
             });
 
-            await imageHandlers.getImage(ctx);
+            it('returns 404 when stored image not found', async () => {
+                mockBucketStore.getHeadObject.mockResolvedValue(null);
 
-            expect(ctx.status).toBe(200);
+                const ctx = createMockContext(
+                    { name: 'recipe-upload/user1/recipe1' },
+                    { id: 'user1', username: 'alice' }
+                );
+                const response = await imageHandlers.getImage(ctx);
+
+                expect(response.status).toBe(404);
+                expect(await response.json()).toEqual({ error: 'Image not found' });
+            });
         });
     });
 });

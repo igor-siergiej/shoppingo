@@ -5,31 +5,29 @@ import { withAuth } from '../handlerUtils';
 
 const getTodoService = (): TodoService => dependencyContainer.resolve(DependencyToken.TodoService);
 
-export const getTodos = withAuth(async (ctx, user) => {
-    ctx.status = 200;
-    ctx.body = await getTodoService().getTodosByOwner(user.id);
+export const getTodos = withAuth(async (c, user) => {
+    return c.json(await getTodoService().getTodosByOwner(user.id), 200);
 });
 
-export const createTodo = withAuth(async (ctx, user) => {
-    ctx.status = 201;
-    ctx.body = await getTodoService().createTodo(user.id, ctx.request.body as CreateTodoInput);
+export const createTodo = withAuth(async (c, user) => {
+    const body = await c.req.json<CreateTodoInput>();
+    return c.json(await getTodoService().createTodo(user.id, body), 201);
 });
 
-export const updateTodo = withAuth(async (ctx, user) => {
-    const { id } = ctx.params as { id: string };
-    ctx.status = 200;
-    ctx.body = await getTodoService().updateTodo(id, user.id, ctx.request.body as UpdateTodoInput);
+export const updateTodo = withAuth(async (c, user) => {
+    const id = c.req.param('id');
+    const body = await c.req.json<UpdateTodoInput>();
+    return c.json(await getTodoService().updateTodo(id, user.id, body), 200);
 });
 
-export const deleteTodo = withAuth(async (ctx, user) => {
-    const { id } = ctx.params as { id: string };
+export const deleteTodo = withAuth(async (c, user) => {
+    const id = c.req.param('id');
     await getTodoService().deleteTodo(id, user.id);
-    ctx.status = 204;
+    return new Response(null, { status: 204 });
 });
 
-export const completeTodo = withAuth(async (ctx, user) => {
-    const { id } = ctx.params as { id: string };
-    const { date } = (ctx.request.body ?? {}) as { date?: string };
-    ctx.status = 200;
-    ctx.body = await getTodoService().toggleComplete(id, user.id, date);
+export const completeTodo = withAuth(async (c, user) => {
+    const id = c.req.param('id');
+    const body = await c.req.json<{ date?: string }>().catch(() => ({}) as { date?: string });
+    return c.json(await getTodoService().toggleComplete(id, user.id, body.date), 200);
 });

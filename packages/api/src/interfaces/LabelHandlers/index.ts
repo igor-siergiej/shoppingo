@@ -5,24 +5,23 @@ import { withAuth } from '../handlerUtils';
 
 const getLabelService = (): LabelService => dependencyContainer.resolve(DependencyToken.LabelService);
 
-export const getLabels = withAuth(async (ctx, user) => {
-    ctx.status = 200;
-    ctx.body = await getLabelService().getLabelsByOwner(user.id);
+export const getLabels = withAuth(async (c, user) => {
+    return c.json(await getLabelService().getLabelsByOwner(user.id), 200);
 });
 
-export const createLabel = withAuth(async (ctx, user) => {
-    ctx.status = 201;
-    ctx.body = await getLabelService().createLabel(user.id, ctx.request.body as CreateLabelInput);
+export const createLabel = withAuth(async (c, user) => {
+    const body = await c.req.json<CreateLabelInput>();
+    return c.json(await getLabelService().createLabel(user.id, body), 201);
 });
 
-export const updateLabel = withAuth(async (ctx, user) => {
-    const { id } = ctx.params as { id: string };
-    ctx.status = 200;
-    ctx.body = await getLabelService().updateLabel(id, user.id, ctx.request.body as UpdateLabelInput);
+export const updateLabel = withAuth(async (c, user) => {
+    const id = c.req.param('id');
+    const body = await c.req.json<UpdateLabelInput>();
+    return c.json(await getLabelService().updateLabel(id, user.id, body), 200);
 });
 
-export const deleteLabel = withAuth(async (ctx, user) => {
-    const { id } = ctx.params as { id: string };
+export const deleteLabel = withAuth(async (c, user) => {
+    const id = c.req.param('id');
     await getLabelService().deleteLabel(id, user.id);
-    ctx.status = 204;
+    return new Response(null, { status: 204 });
 });

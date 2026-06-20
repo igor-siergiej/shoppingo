@@ -1,33 +1,19 @@
-import type { Context } from 'koa';
+import type { Context } from 'hono';
 
-interface AuthUser {
-    id: string;
-    username: string;
-}
+export type AuthUser = { id: string; username: string };
+export type HonoVars = { Variables: { user: AuthUser } };
 
-const getAuthenticatedUser = (ctx: Context): AuthUser | null => {
-    const user = ctx.state.user as AuthUser | undefined;
+const getAuthenticatedUser = (c: Context<HonoVars>): AuthUser | null => {
+    const user = c.get('user');
     return user?.id ? user : null;
 };
 
-const failResponse = (ctx: Context, error: unknown): void => {
-    const err = error as { status?: number; message?: string };
-    ctx.status = err.status ?? 500;
-    ctx.body = { error: err.message ?? 'Internal Server Error' };
-};
-
 export const withAuth =
-    (handler: (ctx: Context, user: AuthUser) => Promise<void>) =>
-    async (ctx: Context): Promise<void> => {
-        const user = getAuthenticatedUser(ctx);
+    (handler: (c: Context<HonoVars>, user: AuthUser) => Promise<Response>) =>
+    async (c: Context<HonoVars>): Promise<Response> => {
+        const user = getAuthenticatedUser(c);
         if (!user) {
-            ctx.status = 401;
-            ctx.body = { error: 'Unauthorized' };
-            return;
+            return c.json({ error: 'Unauthorized' }, 401);
         }
-        try {
-            await handler(ctx, user);
-        } catch (error) {
-            failResponse(ctx, error);
-        }
+        return handler(c, user);
     };

@@ -4,6 +4,11 @@ on:
   pull_request:
     branches: '*'
 
+# Cancel superseded runs when new commits are pushed to the same PR.
+concurrency:
+  group: pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -78,22 +83,30 @@ jobs:
           path: playwright-report/
           retention-days: 7
 
-  fallow:
+  # Blocking merge gate: dead code only. Run the analyzer directly via bunx
+  # (the action hangs on a dead-code invocation). Analysis is <1s; the cost is
+  # bunx's cold npm fetch of fallow (~70s), so cache ~/.bun/install/cache keyed
+  # on the pinned version — cache hit drops the job to ~10s. Whole-repo (not
+  # PR-scoped) so reachability resolves against the full graph; PR-scoped
+  # discovery false-positives exports whose only consumer is an unchanged file.
+  # The slow informational `fallow audit` was dropped; run it locally.
+  fallow-deadcode:
     runs-on: ubuntu-latest
     needs: lint
     permissions:
       contents: read
-      pull-requests: write
     steps:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - uses: fallow-rs/fallow@v2
+      - uses: oven-sh/setup-bun@v2
         with:
-          command: audit
-          comment: true
-          review-comments: true
-          gate: new-only
+          bun-version: latest
+      - uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bunx-fallow-2.100.0
+      - run: bunx fallow@2.100.0 dead-code
 
   semgrep:
     if: github.actor != 'dependabot[bot]'
