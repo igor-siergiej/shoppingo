@@ -83,33 +83,22 @@ jobs:
           path: playwright-report/
           retention-days: 7
 
-  fallow:
+  # Blocking merge gate: dead code only. Fast (~1.5m). Run the analyzer
+  # directly via bunx — the fallow action hangs on a second invocation — and
+  # whole-repo (not PR-scoped) so reachability resolves against the full graph;
+  # PR-scoped discovery false-positives exports whose only consumer is an
+  # unchanged file. Non-zero exit on any unused code fails the job. The slow
+  # informational `fallow audit` (complexity/duplication via PR comments) was
+  # dropped — run `bunx fallow audit` locally for that report.
+  fallow-deadcode:
     runs-on: ubuntu-latest
     needs: lint
     permissions:
       contents: read
-      pull-requests: write
     steps:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      # Full audit (dead-code + complexity + duplication) — informational only,
-      # posts PR comments but never blocks merge.
-      # gate:all avoids the new-only base-snapshot pass that re-analyzes the
-      # base tree (cold-cache CI: ~9m -> ~1m). Audit is non-blocking, so
-      # new-vs-inherited attribution buys nothing.
-      - uses: fallow-rs/fallow@v2
-        with:
-          command: audit
-          comment: true
-          review-comments: true
-          gate: all
-          fail-on-issues: false
-      # Dead code is the only category that blocks merge. Run the analyzer
-      # directly via bunx — the action's second invocation hangs in CI — and
-      # whole-repo (not PR-scoped) so reachability resolves against the full
-      # graph; PR-scoped discovery false-positives exports whose only consumer
-      # is an unchanged file. Non-zero exit on any unused code fails the job.
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
