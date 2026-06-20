@@ -97,17 +97,15 @@ jobs:
           review-comments: true
           gate: new-only
           fail-on-issues: false
-      # Dead code is the only category that blocks merge. Run whole-repo
-      # (not PR-scoped) so reachability is resolved against the full graph —
-      # PR-scoped discovery false-positives exports whose only consumer is an
-      # unchanged file.
-      - uses: fallow-rs/fallow@v2
+      # Dead code is the only category that blocks merge. Run the analyzer
+      # directly via bunx — the action's second invocation hangs in CI — and
+      # whole-repo (not PR-scoped) so reachability resolves against the full
+      # graph; PR-scoped discovery false-positives exports whose only consumer
+      # is an unchanged file. Non-zero exit on any unused code fails the job.
+      - uses: oven-sh/setup-bun@v2
         with:
-          command: dead-code
-          fail-on-issues: true
-          auto-changed-since: false
-          comment: false
-          annotations: false
+          bun-version: latest
+      - run: bunx fallow@2.100.0 dead-code
 
   semgrep:
     if: github.actor != 'dependabot[bot]'
