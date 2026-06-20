@@ -1,9 +1,10 @@
-import { readFile } from 'node:fs/promises';
+import { APIError } from '@imapps/api-utils/hono';
 import type { Ingredient } from '@shoppingo/types';
-import type { Context } from 'koa';
+import type { Context } from 'hono';
 import { dependencyContainer } from '../../dependencies/container';
 import { DependencyToken } from '../../dependencies/types';
 import type { RecipeService } from '../../domain/RecipeService';
+import type { HonoVars } from '../handlerUtils';
 
 interface HttpError {
     status?: number;
@@ -14,17 +15,14 @@ const getRecipeService = (): RecipeService => dependencyContainer.resolve(Depend
 const getLogger = () => dependencyContainer.resolve(DependencyToken.Logger);
 const getBucketStore = () => dependencyContainer.resolve(DependencyToken.ImageStore);
 
-// Helper to extract authenticated user from context
-const getAuthenticatedUser = (ctx: Context): { id: string; username: string } | null => {
-    const user = ctx.state.user as { id: string; username: string } | undefined;
+const getAuthenticatedUser = (c: Context<HonoVars>): { id: string; username: string } | null => {
+    const user = c.get('user');
     return user?.id ? user : null;
 };
 
-// Helper to verify user has access to a recipe
 const verifyRecipeAccess = async (
     recipeId: string,
-    authenticatedUser: { id: string; username: string },
-    _ctx: Context
+    authenticatedUser: { id: string; username: string }
 ): Promise<boolean> => {
     try {
         const recipe = await getRecipeService().getRecipe(recipeId);
@@ -34,123 +32,75 @@ const verifyRecipeAccess = async (
     }
 };
 
-export const getRecipes = async (ctx: Context): Promise<void> => {
+export const getRecipes = async (c: Context<HonoVars>): Promise<Response> => {
     const logger = getLogger();
-    const authenticatedUser = getAuthenticatedUser(ctx);
+    const authenticatedUser = getAuthenticatedUser(c);
 
     if (!authenticatedUser) {
-        logger.warn('Unauthorized recipes access attempt', {
-            ip: ctx.ip,
-        });
-        ctx.status = 401;
-        ctx.body = { error: 'Unauthorized' };
-        return;
+        logger.warn('Unauthorized recipes access attempt', { ip: c.req.header('x-forwarded-for') });
+        return c.json({ error: 'Unauthorized' }, 401);
     }
 
     try {
         const recipes = await getRecipeService().getRecipesByUserId(authenticatedUser.id);
-
-        logger.info('API: Recipes retrieved', {
-            userId: authenticatedUser.id,
-            recipeCount: recipes.length,
-        });
-
-        ctx.status = 200;
-        ctx.body = recipes;
+        logger.info('API: Recipes retrieved', { userId: authenticatedUser.id, recipeCount: recipes.length });
+        return c.json(recipes, 200);
     } catch (error: unknown) {
         const err = error as { status?: number; message?: string };
-
-        logger.error('API: Failed to retrieve recipes', {
-            userId: authenticatedUser.id,
-            error: err.message,
-        });
-
-        ctx.status = err.status ?? 500;
-        ctx.body = { error: err.message ?? 'Internal Server Error' };
+        logger.error('API: Failed to retrieve recipes', { userId: authenticatedUser.id, error: err.message });
+        throw new APIError(err.message ?? 'Internal Server Error', err.status ?? 500);
     }
 };
 
-export const getRecipe = async (ctx: Context): Promise<void> => {
-    const { recipeId } = ctx.params as { recipeId: string };
+export const getRecipe = async (c: Context<HonoVars>): Promise<Response> => {
+    const recipeId = c.req.param('recipeId');
     const logger = getLogger();
-    const authenticatedUser = getAuthenticatedUser(ctx);
+    const authenticatedUser = getAuthenticatedUser(c);
 
     if (!authenticatedUser) {
-        logger.warn('Unauthorized recipe access attempt', {
-            recipeId,
-            ip: ctx.ip,
-        });
-        ctx.status = 401;
-        ctx.body = { error: 'Unauthorized' };
-        return;
+        logger.warn('Unauthorized recipe access attempt', { recipeId, ip: c.req.header('x-forwarded-for') });
+        return c.json({ error: 'Unauthorized' }, 401);
     }
 
     try {
-        // Verify user has access to this recipe
-        const hasAccess = await verifyRecipeAccess(recipeId, authenticatedUser, ctx);
+        const hasAccess = await verifyRecipeAccess(recipeId, authenticatedUser);
         if (!hasAccess) {
-            logger.warn('Unauthorized recipe access attempt', {
-                authenticatedUserId: authenticatedUser.id,
-                recipeId,
-            });
-            ctx.status = 403;
-            ctx.body = { error: 'Forbidden' };
-            return;
+            logger.warn('Unauthorized recipe access attempt', { authenticatedUserId: authenticatedUser.id, recipeId });
+            return c.json({ error: 'Forbidden' }, 403);
         }
 
         const recipe = await getRecipeService().getRecipe(recipeId);
-
-        logger.info('API: Recipe retrieved', {
-            userId: authenticatedUser.id,
-            recipeId,
-        });
-
-        ctx.status = 200;
-        ctx.body = recipe;
+        logger.info('API: Recipe retrieved', { userId: authenticatedUser.id, recipeId });
+        return c.json(recipe, 200);
     } catch (error: unknown) {
         const err = error as { status?: number; message?: string };
-
-        logger.error('API: Failed to retrieve recipe', {
-            userId: authenticatedUser.id,
-            recipeId,
-            error: err.message,
-        });
-
-        ctx.status = err.status ?? 500;
-        ctx.body = { error: err.message ?? 'Internal Server Error' };
+        logger.error('API: Failed to retrieve recipe', { userId: authenticatedUser.id, recipeId, error: err.message });
+        throw new APIError(err.message ?? 'Internal Server Error', err.status ?? 500);
     }
 };
 
-export const createRecipe = async (ctx: Context): Promise<void> => {
-    const { title, ingredients, link, instructions, selectedUsers } = ctx.request.body as {
+export const createRecipe = async (c: Context<HonoVars>): Promise<Response> => {
+    const { title, ingredients, link, instructions, selectedUsers } = await c.req.json<{
         title: string;
         ingredients: Ingredient[];
         link?: string;
         instructions?: string[];
         selectedUsers?: string[];
-    };
+    }>();
     const logger = getLogger();
-    const authenticatedUser = getAuthenticatedUser(ctx);
+    const authenticatedUser = getAuthenticatedUser(c);
 
     if (!authenticatedUser) {
-        logger.warn('Unauthorized recipe creation attempt', {
-            ip: ctx.ip,
-        });
-        ctx.status = 401;
-        ctx.body = { error: 'Unauthorized' };
-        return;
+        logger.warn('Unauthorized recipe creation attempt', { ip: c.req.header('x-forwarded-for') });
+        return c.json({ error: 'Unauthorized' }, 401);
     }
 
     if (!title || typeof title !== 'string' || title.trim() === '') {
-        ctx.status = 400;
-        ctx.body = { error: 'Title is required and must be a non-empty string' };
-        return;
+        return c.json({ error: 'Title is required and must be a non-empty string' }, 400);
     }
 
     if (!ingredients || !Array.isArray(ingredients)) {
-        ctx.status = 400;
-        ctx.body = { error: 'Ingredients is required and must be an array' };
-        return;
+        return c.json({ error: 'Ingredients is required and must be an array' }, 400);
     }
 
     try {
@@ -171,13 +121,11 @@ export const createRecipe = async (ctx: Context): Promise<void> => {
             ingredientCount: ingredients.length,
         });
 
-        ctx.status = 201;
-        ctx.body = recipe;
+        return c.json(recipe, 201);
     } catch (error: unknown) {
         const err = error instanceof Error ? error : new Error(String(error));
         const status = (error as HttpError)?.status ?? 500;
         const errorMessage = err.message || 'Internal Server Error';
-
         logger.error('API: Failed to create recipe', {
             userId: authenticatedUser.id,
             username: authenticatedUser.username,
@@ -185,44 +133,31 @@ export const createRecipe = async (ctx: Context): Promise<void> => {
             error: errorMessage,
             status,
         });
-
-        ctx.status = status;
-        ctx.body = { error: errorMessage };
+        throw new APIError(errorMessage, status);
     }
 };
 
-export const updateRecipe = async (ctx: Context): Promise<void> => {
-    const { recipeId } = ctx.params as { recipeId: string };
-    const { title, ingredients, link, instructions } = ctx.request.body as {
+export const updateRecipe = async (c: Context<HonoVars>): Promise<Response> => {
+    const recipeId = c.req.param('recipeId');
+    const { title, ingredients, link, instructions } = await c.req.json<{
         title: string;
         ingredients: Ingredient[];
         link?: string;
         instructions?: string[];
-    };
+    }>();
     const logger = getLogger();
-    const authenticatedUser = getAuthenticatedUser(ctx);
+    const authenticatedUser = getAuthenticatedUser(c);
 
     if (!authenticatedUser) {
-        logger.warn('Unauthorized recipe update attempt', {
-            recipeId,
-            ip: ctx.ip,
-        });
-        ctx.status = 401;
-        ctx.body = { error: 'Unauthorized' };
-        return;
+        logger.warn('Unauthorized recipe update attempt', { recipeId, ip: c.req.header('x-forwarded-for') });
+        return c.json({ error: 'Unauthorized' }, 401);
     }
 
     try {
-        // Verify user has access to this recipe
-        const hasAccess = await verifyRecipeAccess(recipeId, authenticatedUser, ctx);
+        const hasAccess = await verifyRecipeAccess(recipeId, authenticatedUser);
         if (!hasAccess) {
-            logger.warn('Unauthorized recipe update attempt', {
-                authenticatedUserId: authenticatedUser.id,
-                recipeId,
-            });
-            ctx.status = 403;
-            ctx.body = { error: 'Forbidden' };
-            return;
+            logger.warn('Unauthorized recipe update attempt', { authenticatedUserId: authenticatedUser.id, recipeId });
+            return c.json({ error: 'Forbidden' }, 403);
         }
 
         const recipe = await getRecipeService().updateRecipe(
@@ -234,117 +169,80 @@ export const updateRecipe = async (ctx: Context): Promise<void> => {
             instructions
         );
 
-        logger.info('API: Recipe updated', {
-            userId: authenticatedUser.id,
-            recipeId,
-            recipeTitle: title,
-        });
+        logger.info('API: Recipe updated', { userId: authenticatedUser.id, recipeId, recipeTitle: title });
 
-        ctx.status = 200;
-        ctx.body = recipe;
+        return c.json(recipe, 200);
     } catch (error: unknown) {
         const err = error instanceof Error ? error : new Error(String(error));
         const status = (error as HttpError)?.status ?? 500;
         const errorMessage = err.message || 'Internal Server Error';
-
         logger.error('API: Failed to update recipe', {
             userId: authenticatedUser.id,
             recipeId,
             error: errorMessage,
             status,
         });
-
-        ctx.status = status;
-        ctx.body = { error: errorMessage };
+        throw new APIError(errorMessage, status);
     }
 };
 
-export const deleteRecipe = async (ctx: Context): Promise<void> => {
-    const { recipeId } = ctx.params as { recipeId: string };
+export const deleteRecipe = async (c: Context<HonoVars>): Promise<Response> => {
+    const recipeId = c.req.param('recipeId');
     const logger = getLogger();
-    const authenticatedUser = getAuthenticatedUser(ctx);
+    const authenticatedUser = getAuthenticatedUser(c);
 
     if (!authenticatedUser) {
-        logger.warn('Unauthorized recipe deletion attempt', {
-            recipeId,
-            ip: ctx.ip,
-        });
-        ctx.status = 401;
-        ctx.body = { error: 'Unauthorized' };
-        return;
+        logger.warn('Unauthorized recipe deletion attempt', { recipeId, ip: c.req.header('x-forwarded-for') });
+        return c.json({ error: 'Unauthorized' }, 401);
     }
 
     try {
-        // Verify user has access to this recipe
-        const hasAccess = await verifyRecipeAccess(recipeId, authenticatedUser, ctx);
+        const hasAccess = await verifyRecipeAccess(recipeId, authenticatedUser);
         if (!hasAccess) {
             logger.warn('Unauthorized recipe deletion attempt', {
                 authenticatedUserId: authenticatedUser.id,
                 recipeId,
             });
-            ctx.status = 403;
-            ctx.body = { error: 'Forbidden' };
-            return;
+            return c.json({ error: 'Forbidden' }, 403);
         }
 
         await getRecipeService().deleteRecipe(recipeId, authenticatedUser.id);
-
-        logger.info('API: Recipe deleted', {
-            userId: authenticatedUser.id,
-            recipeId,
-        });
-
-        ctx.status = 204;
+        logger.info('API: Recipe deleted', { userId: authenticatedUser.id, recipeId });
+        return new Response(null, { status: 204 });
     } catch (error: unknown) {
         const err = error instanceof Error ? error : new Error(String(error));
         const status = (error as HttpError)?.status ?? 500;
         const errorMessage = err.message || 'Internal Server Error';
-
         logger.error('API: Failed to delete recipe', {
             userId: authenticatedUser.id,
             recipeId,
             error: errorMessage,
             status,
         });
-
-        ctx.status = status;
-        ctx.body = { error: errorMessage };
+        throw new APIError(errorMessage, status);
     }
 };
 
-export const addUserToRecipe = async (ctx: Context): Promise<void> => {
-    const { recipeId } = ctx.params as { recipeId: string };
-    const { user } = ctx.request.body as { user: { id: string; username: string } };
+export const addUserToRecipe = async (c: Context<HonoVars>): Promise<Response> => {
+    const recipeId = c.req.param('recipeId');
+    const { user } = await c.req.json<{ user: { id: string; username: string } }>();
     const logger = getLogger();
-    const authenticatedUser = getAuthenticatedUser(ctx);
+    const authenticatedUser = getAuthenticatedUser(c);
 
     if (!authenticatedUser) {
-        logger.warn('Unauthorized user addition attempt', {
-            recipeId,
-            ip: ctx.ip,
-        });
-        ctx.status = 401;
-        ctx.body = { error: 'Unauthorized' };
-        return;
+        logger.warn('Unauthorized user addition attempt', { recipeId, ip: c.req.header('x-forwarded-for') });
+        return c.json({ error: 'Unauthorized' }, 401);
     }
 
     if (!user || typeof user !== 'object' || !user.id || !user.username) {
-        ctx.status = 400;
-        ctx.body = { error: 'User object with id and username is required' };
-        return;
+        return c.json({ error: 'User object with id and username is required' }, 400);
     }
 
     try {
-        // Verify user has access to this recipe
-        const hasAccess = await verifyRecipeAccess(recipeId, authenticatedUser, ctx);
+        const hasAccess = await verifyRecipeAccess(recipeId, authenticatedUser);
         if (!hasAccess) {
-            logger.warn('Unauthorized user addition attempt', {
-                authenticatedUserId: authenticatedUser.id,
-                recipeId,
-            });
-            ctx.status = 403;
-            ctx.body = { error: 'Forbidden' };
-            return;
+            logger.warn('Unauthorized user addition attempt', { authenticatedUserId: authenticatedUser.id, recipeId });
+            return c.json({ error: 'Forbidden' }, 403);
         }
 
         const recipe = await getRecipeService().addUserToRecipe(recipeId, user, authenticatedUser.id);
@@ -357,13 +255,11 @@ export const addUserToRecipe = async (ctx: Context): Promise<void> => {
             addedUsername: user.username,
         });
 
-        ctx.status = 200;
-        ctx.body = recipe;
+        return c.json(recipe, 200);
     } catch (error: unknown) {
         const err = error instanceof Error ? error : new Error(String(error));
         const status = (error as HttpError)?.status ?? 500;
         const errorMessage = err.message || 'Internal Server Error';
-
         logger.error('API: Failed to add user to recipe', {
             userId: authenticatedUser.id,
             username: authenticatedUser.username,
@@ -372,40 +268,34 @@ export const addUserToRecipe = async (ctx: Context): Promise<void> => {
             error: errorMessage,
             status,
         });
-
-        ctx.status = status;
-        ctx.body = { error: errorMessage };
+        throw new APIError(errorMessage, status);
     }
 };
 
-export const removeUserFromRecipe = async (ctx: Context): Promise<void> => {
-    const { recipeId, targetUserId } = ctx.params as { recipeId: string; targetUserId: string };
+export const removeUserFromRecipe = async (c: Context<HonoVars>): Promise<Response> => {
+    const recipeId = c.req.param('recipeId');
+    const targetUserId = c.req.param('targetUserId');
     const logger = getLogger();
-    const authenticatedUser = getAuthenticatedUser(ctx);
+    const authenticatedUser = getAuthenticatedUser(c);
 
     if (!authenticatedUser) {
         logger.warn('Unauthorized user removal attempt', {
             recipeId,
             targetUserId,
-            ip: ctx.ip,
+            ip: c.req.header('x-forwarded-for'),
         });
-        ctx.status = 401;
-        ctx.body = { error: 'Unauthorized' };
-        return;
+        return c.json({ error: 'Unauthorized' }, 401);
     }
 
     try {
-        // Verify user has access to this recipe
-        const hasAccess = await verifyRecipeAccess(recipeId, authenticatedUser, ctx);
+        const hasAccess = await verifyRecipeAccess(recipeId, authenticatedUser);
         if (!hasAccess) {
             logger.warn('Unauthorized user removal attempt', {
                 authenticatedUserId: authenticatedUser.id,
                 recipeId,
                 targetUserId,
             });
-            ctx.status = 403;
-            ctx.body = { error: 'Forbidden' };
-            return;
+            return c.json({ error: 'Forbidden' }, 403);
         }
 
         const recipe = await getRecipeService().removeUserFromRecipe(recipeId, targetUserId, authenticatedUser.id);
@@ -417,13 +307,11 @@ export const removeUserFromRecipe = async (ctx: Context): Promise<void> => {
             removedUserId: targetUserId,
         });
 
-        ctx.status = 200;
-        ctx.body = recipe;
+        return c.json(recipe, 200);
     } catch (error: unknown) {
         const err = error instanceof Error ? error : new Error(String(error));
         const status = (error as HttpError)?.status ?? 500;
         const errorMessage = err.message || 'Internal Server Error';
-
         logger.error('API: Failed to remove user from recipe', {
             userId: authenticatedUser.id,
             username: authenticatedUser.username,
@@ -432,201 +320,145 @@ export const removeUserFromRecipe = async (ctx: Context): Promise<void> => {
             error: errorMessage,
             status,
         });
-
-        ctx.status = status;
-        ctx.body = { error: errorMessage };
+        throw new APIError(errorMessage, status);
     }
 };
 
-export const setCoverImageKey = async (ctx: Context): Promise<void> => {
-    const { recipeId } = ctx.params as { recipeId: string };
-    const { imageKey } = ctx.request.body as { imageKey: string };
+export const setCoverImageKey = async (c: Context<HonoVars>): Promise<Response> => {
+    const recipeId = c.req.param('recipeId');
+    const { imageKey } = await c.req.json<{ imageKey: string }>();
     const logger = getLogger();
-    const authenticatedUser = getAuthenticatedUser(ctx);
+    const authenticatedUser = getAuthenticatedUser(c);
 
     if (!authenticatedUser) {
-        logger.warn('Unauthorized cover image update attempt', {
-            recipeId,
-            ip: ctx.ip,
-        });
-        ctx.status = 401;
-        ctx.body = { error: 'Unauthorized' };
-        return;
+        logger.warn('Unauthorized cover image update attempt', { recipeId, ip: c.req.header('x-forwarded-for') });
+        return c.json({ error: 'Unauthorized' }, 401);
     }
 
     if (!imageKey || typeof imageKey !== 'string' || imageKey.trim() === '') {
-        ctx.status = 400;
-        ctx.body = { error: 'imageKey is required and must be a non-empty string' };
-        return;
+        return c.json({ error: 'imageKey is required and must be a non-empty string' }, 400);
     }
 
     try {
-        // Verify user has access to this recipe
-        const hasAccess = await verifyRecipeAccess(recipeId, authenticatedUser, ctx);
+        const hasAccess = await verifyRecipeAccess(recipeId, authenticatedUser);
         if (!hasAccess) {
             logger.warn('Unauthorized cover image update attempt', {
                 authenticatedUserId: authenticatedUser.id,
                 recipeId,
             });
-            ctx.status = 403;
-            ctx.body = { error: 'Forbidden' };
-            return;
+            return c.json({ error: 'Forbidden' }, 403);
         }
 
         const recipe = await getRecipeService().setCoverImageKey(recipeId, imageKey, authenticatedUser.id);
 
-        logger.info('API: Recipe cover image updated', {
-            userId: authenticatedUser.id,
-            recipeId,
-            imageKey,
-        });
+        logger.info('API: Recipe cover image updated', { userId: authenticatedUser.id, recipeId, imageKey });
 
-        ctx.status = 200;
-        ctx.body = recipe;
+        return c.json(recipe, 200);
     } catch (error: unknown) {
         const err = error instanceof Error ? error : new Error(String(error));
         const status = (error as HttpError)?.status ?? 500;
         const errorMessage = err.message || 'Internal Server Error';
-
         logger.error('API: Failed to set recipe cover image', {
             userId: authenticatedUser.id,
             recipeId,
             error: errorMessage,
             status,
         });
-
-        ctx.status = status;
-        ctx.body = { error: errorMessage };
+        throw new APIError(errorMessage, status);
     }
 };
 
-export const uploadRecipeImage = async (ctx: Context): Promise<void> => {
-    const { recipeId } = ctx.params as { recipeId: string };
+export const uploadRecipeImage = async (c: Context<HonoVars>): Promise<Response> => {
+    const recipeId = c.req.param('recipeId');
     const logger = getLogger();
-    const authenticatedUser = getAuthenticatedUser(ctx);
+    const authenticatedUser = getAuthenticatedUser(c);
 
     if (!authenticatedUser) {
-        logger.warn('Unauthorized recipe image upload attempt', {
-            recipeId,
-            ip: ctx.ip,
-        });
-        ctx.status = 401;
-        ctx.body = { error: 'Unauthorized' };
-        return;
+        logger.warn('Unauthorized recipe image upload attempt', { recipeId, ip: c.req.header('x-forwarded-for') });
+        return c.json({ error: 'Unauthorized' }, 401);
     }
 
     try {
-        // Verify user has access to this recipe
-        const hasAccess = await verifyRecipeAccess(recipeId, authenticatedUser, ctx);
+        const hasAccess = await verifyRecipeAccess(recipeId, authenticatedUser);
         if (!hasAccess) {
             logger.warn('Unauthorized recipe image upload attempt', {
                 authenticatedUserId: authenticatedUser.id,
                 recipeId,
             });
-            ctx.status = 403;
-            ctx.body = { error: 'Forbidden' };
-            return;
+            return c.json({ error: 'Forbidden' }, 403);
         }
 
-        // Get the uploaded file
-        const files = ctx.request.files as
-            | Record<string, { filepath: string; mimetype: string } | { filepath: string; mimetype: string }[]>
-            | undefined;
-        if (!files || !files.image) {
-            ctx.status = 400;
-            ctx.body = { error: 'No image file provided' };
-            return;
+        const body = await c.req.parseBody();
+        const imageFile = body.image;
+
+        if (!imageFile) {
+            return c.json({ error: 'No image file provided' }, 400);
         }
 
-        const imageFile = files.image;
-        const filePath = Array.isArray(imageFile) ? imageFile[0].filepath : imageFile.filepath;
-        const mimeType = Array.isArray(imageFile) ? imageFile[0].mimetype : imageFile.mimetype;
+        if (!(imageFile instanceof File)) {
+            return c.json({ error: 'No image file provided' }, 400);
+        }
 
-        // Validate image MIME type
+        const mimeType = imageFile.type;
         if (!mimeType?.startsWith('image/')) {
-            ctx.status = 400;
-            ctx.body = { error: 'File must be an image' };
-            return;
+            return c.json({ error: 'File must be an image' }, 400);
         }
 
-        // Read file buffer
-        const fileBuffer = await readFile(filePath);
-
+        const fileBuffer = Buffer.from(await imageFile.arrayBuffer());
         const imageKey = `recipe-upload/${authenticatedUser.id}/${recipeId}`;
 
-        // Store in MinIO
         const bucketStore = getBucketStore();
         await bucketStore.putObject(imageKey, fileBuffer, { contentType: mimeType });
 
-        // Update recipe with the image key
         const recipe = await getRecipeService().setCoverImageKey(recipeId, imageKey, authenticatedUser.id);
 
-        logger.info('API: Recipe image uploaded', {
-            userId: authenticatedUser.id,
-            recipeId,
-            imageKey,
-        });
+        logger.info('API: Recipe image uploaded', { userId: authenticatedUser.id, recipeId, imageKey });
 
-        ctx.status = 200;
-        ctx.body = { imageKey, recipe };
+        return c.json({ imageKey, recipe }, 200);
     } catch (error: unknown) {
         const err = error instanceof Error ? error : new Error(String(error));
         const status = (error as HttpError)?.status ?? 500;
         const errorMessage = err.message || 'Internal Server Error';
-
         logger.error('API: Failed to upload recipe image', {
             userId: authenticatedUser.id,
             recipeId,
             error: errorMessage,
             status,
         });
-
-        ctx.status = status;
-        ctx.body = { error: errorMessage };
+        throw new APIError(errorMessage, status);
     }
 };
 
-export const generateRecipeImage = async (ctx: Context): Promise<void> => {
-    const { recipeId } = ctx.params as { recipeId: string };
+export const generateRecipeImage = async (c: Context<HonoVars>): Promise<Response> => {
+    const recipeId = c.req.param('recipeId');
     const logger = getLogger();
-    const authenticatedUser = getAuthenticatedUser(ctx);
+    const authenticatedUser = getAuthenticatedUser(c);
 
     if (!authenticatedUser) {
-        ctx.status = 401;
-        ctx.body = { error: 'Unauthorized' };
-        return;
+        return c.json({ error: 'Unauthorized' }, 401);
     }
 
     try {
-        const hasAccess = await verifyRecipeAccess(recipeId, authenticatedUser, ctx);
+        const hasAccess = await verifyRecipeAccess(recipeId, authenticatedUser);
         if (!hasAccess) {
-            ctx.status = 403;
-            ctx.body = { error: 'Forbidden' };
-            return;
+            return c.json({ error: 'Forbidden' }, 403);
         }
 
         const recipe = await getRecipeService().regenerateImage(recipeId, authenticatedUser.id);
 
-        logger.info('API: Recipe image generated', {
-            userId: authenticatedUser.id,
-            recipeId,
-        });
+        logger.info('API: Recipe image generated', { userId: authenticatedUser.id, recipeId });
 
-        ctx.status = 200;
-        ctx.body = recipe;
+        return c.json(recipe, 200);
     } catch (error: unknown) {
         const err = error instanceof Error ? error : new Error(String(error));
         const status = (error as HttpError)?.status ?? 500;
         const errorMessage = err.message || 'Internal Server Error';
-
         logger.error('API: Failed to generate recipe image', {
             userId: authenticatedUser.id,
             recipeId,
             error: errorMessage,
             status,
         });
-
-        ctx.status = status;
-        ctx.body = { error: errorMessage };
+        throw new APIError(errorMessage, status);
     }
 };

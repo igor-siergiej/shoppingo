@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, it, vi } from 'bun:test';
-import type { Context } from 'koa';
 
 import { IpRateLimiter } from '../../infrastructure/rateLimit';
 
@@ -11,7 +10,6 @@ vi.mock('../../dependencies', () => ({
     dependencyContainer: mockDependencyContainer,
 }));
 
-// Spy on IpRateLimiter prototype so the instance created at module load time is intercepted
 const mockIsAllowed = vi.spyOn(IpRateLimiter.prototype, 'isAllowed');
 
 const mockLogger = {
@@ -23,38 +21,31 @@ const mockLogger = {
 
 import { receiveLogs } from './index';
 
-const createMockContext = (overrides: Partial<Context> = {}): Context => {
-    const ctx = {
-        ip: '127.0.0.1',
-        request: {
-            ip: '127.0.0.1',
-            body: {},
-        } as Context['request'],
-        response: { status: 200 } as Context['response'],
-        status: 200,
-        body: undefined,
-        ...overrides,
-    } as Context;
+const createMockContext = (overrides: { ip?: string; body?: unknown } = {}) => {
+    const ip = overrides.ip ?? '127.0.0.1';
+    const body = overrides.body ?? {};
 
-    Object.defineProperty(ctx, 'status', {
-        get: () => ctx.response.status,
-        set: (value) => {
-            ctx.response.status = value;
+    return {
+        req: {
+            header: (name: string) => {
+                if (name === 'x-forwarded-for') return ip;
+                return undefined;
+            },
+            json: vi.fn().mockResolvedValue(body),
+            raw: {
+                headers: {
+                    get: (_name: string): null => null,
+                },
+            },
         },
-        configurable: true,
-        enumerable: true,
-    });
-
-    Object.defineProperty(ctx, 'body', {
-        get: () => ctx.response.body,
-        set: (value) => {
-            ctx.response.body = value;
-        },
-        configurable: true,
-        enumerable: true,
-    });
-
-    return ctx;
+        json: vi.fn().mockImplementation(
+            (responseBody: unknown, status: number): Response =>
+                new Response(JSON.stringify(responseBody), {
+                    status,
+                    headers: { 'Content-Type': 'application/json' },
+                })
+        ),
+    } as unknown as import('hono').Context;
 };
 
 describe('LogHandlers', () => {
@@ -68,19 +59,16 @@ describe('LogHandlers', () => {
         describe('When a valid log is received', () => {
             it('should log the message and return 204', async () => {
                 const ctx = createMockContext({
-                    request: {
-                        ip: '127.0.0.1',
-                        body: { level: 'info', message: 'Test message' },
-                    } as Context['request'],
+                    body: { level: 'info', message: 'Test message' },
                 });
 
-                await receiveLogs(ctx);
+                const response = await receiveLogs(ctx);
 
                 expect(mockLogger.info).toHaveBeenCalledWith(
                     'Test message',
                     expect.objectContaining({ source: 'frontend' })
                 );
-                expect(ctx.response.status).toBe(204);
+                expect(response.status).toBe(204);
             });
 
             it('should support all valid log levels', async () => {
@@ -90,26 +78,20 @@ describe('LogHandlers', () => {
                     mockIsAllowed.mockReturnValue(true);
 
                     const ctx = createMockContext({
-                        request: {
-                            ip: '127.0.0.1',
-                            body: { level, message: `${level} message` },
-                        } as Context['request'],
+                        body: { level, message: `${level} message` },
                     });
 
-                    await receiveLogs(ctx);
+                    const response = await receiveLogs(ctx);
 
                     expect(mockLogger[level]).toHaveBeenCalledWith(`${level} message`, expect.any(Object));
-                    expect(ctx.response.status).toBe(204);
+                    expect(response.status).toBe(204);
                 }
             });
 
             it('should include clientIp in log context', async () => {
                 const ctx = createMockContext({
                     ip: '192.168.1.100',
-                    request: {
-                        ip: '192.168.1.100',
-                        body: { level: 'info', message: 'msg' },
-                    } as Context['request'],
+                    body: { level: 'info', message: 'msg' },
                 });
 
                 await receiveLogs(ctx);
@@ -122,16 +104,13 @@ describe('LogHandlers', () => {
 
             it('should include optional context fields', async () => {
                 const ctx = createMockContext({
-                    request: {
-                        ip: '127.0.0.1',
-                        body: {
-                            level: 'info',
-                            message: 'msg',
-                            context: { userId: 'u1' },
-                            userAgent: 'Mozilla',
-                            url: '/some/page',
-                        },
-                    } as Context['request'],
+                    body: {
+                        level: 'info',
+                        message: 'msg',
+                        context: { userId: 'u1' },
+                        userAgent: 'Mozilla',
+                        url: '/some/page',
+                    },
                 });
 
                 await receiveLogs(ctx);
@@ -148,26 +127,21 @@ describe('LogHandlers', () => {
                 mockIsAllowed.mockReturnValue(false);
 
                 const ctx = createMockContext({
-                    request: {
-                        ip: '127.0.0.1',
-                        body: { level: 'info', message: 'test' },
-                    } as Context['request'],
+                    body: { level: 'info', message: 'test' },
                 });
 
-                await receiveLogs(ctx);
+                const response = await receiveLogs(ctx);
 
-                expect(ctx.response.status).toBe(429);
-                expect(ctx.response.body).toEqual({ error: 'Rate limit exceeded' });
+                expect(response.status).toBe(429);
+                expect(await response.json()).toEqual({ error: 'Rate limit exceeded' });
             });
 
             it('should log a warning when rate limit is exceeded', async () => {
                 mockIsAllowed.mockReturnValue(false);
 
                 const ctx = createMockContext({
-                    request: {
-                        ip: '10.0.0.1',
-                        body: { level: 'info', message: 'test' },
-                    } as Context['request'],
+                    ip: '10.0.0.1',
+                    body: { level: 'info', message: 'test' },
                 });
 
                 await receiveLogs(ctx);
@@ -182,48 +156,39 @@ describe('LogHandlers', () => {
         describe('When level is missing', () => {
             it('should return 400', async () => {
                 const ctx = createMockContext({
-                    request: {
-                        ip: '127.0.0.1',
-                        body: { message: 'No level here' },
-                    } as Context['request'],
+                    body: { message: 'No level here' },
                 });
 
-                await receiveLogs(ctx);
+                const response = await receiveLogs(ctx);
 
-                expect(ctx.response.status).toBe(400);
-                expect(ctx.response.body).toEqual({ error: 'level and message are required' });
+                expect(response.status).toBe(400);
+                expect(await response.json()).toEqual({ error: 'level and message are required' });
             });
         });
 
         describe('When message is missing', () => {
             it('should return 400', async () => {
                 const ctx = createMockContext({
-                    request: {
-                        ip: '127.0.0.1',
-                        body: { level: 'info' },
-                    } as Context['request'],
+                    body: { level: 'info' },
                 });
 
-                await receiveLogs(ctx);
+                const response = await receiveLogs(ctx);
 
-                expect(ctx.response.status).toBe(400);
-                expect(ctx.response.body).toEqual({ error: 'level and message are required' });
+                expect(response.status).toBe(400);
+                expect(await response.json()).toEqual({ error: 'level and message are required' });
             });
         });
 
         describe('When an invalid log level is provided', () => {
             it('should return 400', async () => {
                 const ctx = createMockContext({
-                    request: {
-                        ip: '127.0.0.1',
-                        body: { level: 'verbose', message: 'test' },
-                    } as Context['request'],
+                    body: { level: 'verbose', message: 'test' },
                 });
 
-                await receiveLogs(ctx);
+                const response = await receiveLogs(ctx);
 
-                expect(ctx.response.status).toBe(400);
-                expect(ctx.response.body).toEqual({ error: 'Invalid log level' });
+                expect(response.status).toBe(400);
+                expect(await response.json()).toEqual({ error: 'Invalid log level' });
             });
         });
 
@@ -234,16 +199,13 @@ describe('LogHandlers', () => {
                 });
 
                 const ctx = createMockContext({
-                    request: {
-                        ip: '127.0.0.1',
-                        body: { level: 'info', message: 'test' },
-                    } as Context['request'],
+                    body: { level: 'info', message: 'test' },
                 });
 
-                await receiveLogs(ctx);
+                const response = await receiveLogs(ctx);
 
-                expect(ctx.response.status).toBe(500);
-                expect(ctx.response.body).toEqual({ error: 'Failed to process log' });
+                expect(response.status).toBe(500);
+                expect(await response.json()).toEqual({ error: 'Failed to process log' });
                 expect(mockLogger.error).toHaveBeenCalledWith('Failed to process frontend log', expect.any(Object));
             });
 
@@ -253,16 +215,13 @@ describe('LogHandlers', () => {
                 });
 
                 const ctx = createMockContext({
-                    request: {
-                        ip: '127.0.0.1',
-                        body: { level: 'debug', message: 'test' },
-                    } as Context['request'],
+                    body: { level: 'debug', message: 'test' },
                 });
 
-                await receiveLogs(ctx);
+                const response = await receiveLogs(ctx);
 
-                expect(ctx.response.status).toBe(500);
-                expect(ctx.response.body).toEqual({ error: 'Failed to process log' });
+                expect(response.status).toBe(500);
+                expect(await response.json()).toEqual({ error: 'Failed to process log' });
             });
 
             it('should return 500 when logger.warn throws', async () => {
@@ -271,16 +230,13 @@ describe('LogHandlers', () => {
                 });
 
                 const ctx = createMockContext({
-                    request: {
-                        ip: '127.0.0.1',
-                        body: { level: 'warn', message: 'test' },
-                    } as Context['request'],
+                    body: { level: 'warn', message: 'test' },
                 });
 
-                await receiveLogs(ctx);
+                const response = await receiveLogs(ctx);
 
-                expect(ctx.response.status).toBe(500);
-                expect(ctx.response.body).toEqual({ error: 'Failed to process log' });
+                expect(response.status).toBe(500);
+                expect(await response.json()).toEqual({ error: 'Failed to process log' });
             });
         });
     });

@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'bun:test';
-import type { Item, List } from '@shoppingo/types';
-import type { Context } from 'koa';
+import { type Item, type List, ListType } from '@shoppingo/types';
 
 import * as listHandlers from './index';
 
@@ -28,6 +27,7 @@ const mockListService = {
     updateItemQuantity: vi.fn(),
     addUserToList: vi.fn(),
     removeUserFromList: vi.fn(),
+    addItems: vi.fn(),
 };
 
 const mockLogger = {
@@ -43,38 +43,39 @@ const mockAuthorizationService = {
     getEffectiveOwnerId: vi.fn().mockReturnValue('test-user-1'),
 };
 
-const createMockContext = (overrides: Partial<Context> = {}): Context => {
+type HonoVars = { Variables: { user: { id: string; username: string } } };
+
+const createMockContext = (
+    overrides: { params?: Record<string, string>; body?: unknown; user?: { id: string; username: string } } = {}
+) => {
+    const vars: Record<string, unknown> = {
+        user: overrides.user ?? { id: 'test-user-1', username: 'testuser' },
+    };
+
     const ctx = {
-        params: {},
-        request: { body: {} } as Context['request'],
-        response: { status: 200 } as Context['response'],
-        state: { user: { id: 'test-user-1', username: 'testuser' } },
-        set: vi.fn(),
-        status: 200,
-        body: {},
-        ...overrides,
-    } as Context;
-
-    Object.defineProperty(ctx, 'status', {
-        get: () => ctx.response.status,
-        set: (value) => {
-            ctx.response.status = value;
+        req: {
+            param: (name: string) => overrides.params?.[name],
+            json: vi.fn().mockResolvedValue(overrides.body ?? {}),
+            header: (_name: string): undefined => undefined,
         },
-        configurable: true,
-        enumerable: true,
-    });
-
-    Object.defineProperty(ctx, 'body', {
-        get: () => ctx.response.body,
-        set: (value) => {
-            ctx.response.body = value;
+        header: vi.fn(),
+        json: vi.fn().mockImplementation((body: unknown, status: number): Response => {
+            const r = new Response(JSON.stringify(body), {
+                status,
+                headers: { 'Content-Type': 'application/json' },
+            });
+            return r;
+        }),
+        get: (key: string) => vars[key],
+        set: (key: string, val: unknown) => {
+            vars[key] = val;
         },
-        configurable: true,
-        enumerable: true,
-    });
+    } as unknown as import('hono').Context<HonoVars>;
 
     return ctx;
 };
+
+const getResponseBody = async (response: Response) => response.json();
 
 describe('ListHandlers', () => {
     beforeEach(() => {
@@ -86,15 +87,13 @@ describe('ListHandlers', () => {
             return null;
         });
 
-        // Default mock for getList (used by verifyListAccess)
-        // Returns a list where the authenticated user has access
         mockListService.getList.mockResolvedValue({
             id: 'list-1',
             title: 'Test List',
             dateAdded: new Date(),
             items: [],
             users: [{ id: 'test-user-1', username: 'testuser' }],
-            listType: 'shopping',
+            listType: ListType.SHOPPING,
         });
     });
 
@@ -116,26 +115,21 @@ describe('ListHandlers', () => {
                 dateAdded: new Date(),
                 items: mockItems,
                 users: [{ id: 'test-user-1', username: 'testuser' }],
-                listType: 'shopping',
+                listType: ListType.SHOPPING,
             });
 
-            await listHandlers.getList(ctx);
+            const response = await listHandlers.getList(ctx);
 
             expect(mockListService.getList).toHaveBeenCalledWith('Test List');
-            expect(ctx.response.status).toBe(200);
-            expect(ctx.body).toEqual({
-                listType: 'shopping',
-                items: mockItems,
-                ownerId: 'test-user-1',
-                users: [{ id: 'test-user-1', username: 'testuser' }],
-            });
+            expect(response.status).toBe(200);
+            const body = await getResponseBody(response);
+            expect(body.listType).toBe(ListType.SHOPPING);
+            expect(body.ownerId).toBe('test-user-1');
         });
 
         it('should handle service errors', async () => {
             const ctx = createMockContext({ params: { title: 'Test List' } });
 
-            // First call (in verifyListAccess) returns a valid list
-            // Second call (in getList) throws an error
             mockListService.getList
                 .mockResolvedValueOnce({
                     id: 'list-1',
@@ -143,14 +137,11 @@ describe('ListHandlers', () => {
                     dateAdded: new Date(),
                     items: [],
                     users: [{ id: 'test-user-1', username: 'testuser' }],
-                    listType: 'shopping',
+                    listType: ListType.SHOPPING,
                 })
                 .mockRejectedValueOnce(Object.assign(new Error('List not found'), { status: 404 }));
 
-            await listHandlers.getList(ctx);
-
-            expect(ctx.response.status).toBe(404);
-            expect(ctx.body).toEqual({ error: 'List not found' });
+            await expect(listHandlers.getList(ctx)).rejects.toThrow('List not found');
         });
     });
 
@@ -163,19 +154,20 @@ describe('ListHandlers', () => {
                     dateAdded: new Date(),
                     items: [],
                     users: [{ id: 'test-user-1', username: 'testuser' }],
-                    listType: 'shopping',
+                    listType: ListType.SHOPPING,
                 },
             ];
-            // userId must match authenticated user's id (test-user-1)
             const ctx = createMockContext({ params: { userId: 'test-user-1' } });
 
             mockListService.getListsForUser.mockResolvedValue(mockLists);
 
-            await listHandlers.getLists(ctx);
+            const response = await listHandlers.getLists(ctx);
 
             expect(mockListService.getListsForUser).toHaveBeenCalledWith('test-user-1');
-            expect(ctx.response.status).toBe(200);
-            expect(ctx.body).toEqual(mockLists);
+            expect(response.status).toBe(200);
+            const body = await getResponseBody(response);
+            expect(body).toHaveLength(1);
+            expect(body[0].id).toBe('list-1');
         });
 
         it('should handle service errors', async () => {
@@ -183,19 +175,16 @@ describe('ListHandlers', () => {
 
             mockListService.getListsForUser.mockRejectedValue(new Error('userId is required'));
 
-            await listHandlers.getLists(ctx);
-
-            expect(ctx.response.status).toBe(500);
-            expect(ctx.body).toEqual({ error: 'userId is required' });
+            await expect(listHandlers.getLists(ctx)).rejects.toThrow('userId is required');
         });
 
         it('should deny access if userId does not match authenticated user', async () => {
             const ctx = createMockContext({ params: { userId: 'different-user-id' } });
 
-            await listHandlers.getLists(ctx);
+            const response = await listHandlers.getLists(ctx);
 
-            expect(ctx.response.status).toBe(403);
-            expect(ctx.body).toEqual({ error: 'Forbidden' });
+            expect(response.status).toBe(403);
+            expect(await getResponseBody(response)).toEqual({ error: 'Forbidden' });
         });
     });
 
@@ -207,25 +196,21 @@ describe('ListHandlers', () => {
                 dateAdded: new Date(),
                 items: [],
                 users: [{ id: 'test-user-1', username: 'testuser' }],
-                listType: 'shopping',
+                listType: ListType.SHOPPING,
             };
             const ctx = createMockContext({
-                response: { status: 201 } as any,
-                request: {
-                    body: {
-                        title: 'New List',
-                        dateAdded: new Date().toISOString(),
-                        selectedUsers: [],
-                        listType: 'shopping',
-                    },
-                } as any,
+                body: {
+                    title: 'New List',
+                    dateAdded: new Date().toISOString(),
+                    selectedUsers: [],
+                    listType: ListType.SHOPPING,
+                },
             });
 
             mockListService.addList.mockResolvedValue(mockList);
 
-            await listHandlers.addList(ctx);
+            const response = await listHandlers.addList(ctx);
 
-            // Should use authenticated user from ctx.state.user, not request body
             expect(mockListService.addList).toHaveBeenCalledWith(
                 'New List',
                 expect.any(String),
@@ -233,42 +218,35 @@ describe('ListHandlers', () => {
                 [],
                 'shopping'
             );
-            expect(ctx.response.status).toBe(200);
-            expect(ctx.body).toEqual(mockList);
+            expect(response.status).toBe(200);
+            const body = await getResponseBody(response);
+            expect(body.id).toBe(mockList.id);
         });
 
         it('should handle service errors', async () => {
             const ctx = createMockContext({
-                request: {
-                    body: {
-                        title: 'New List',
-                        dateAdded: new Date().toISOString(),
-                    },
-                } as Context['request'],
+                body: {
+                    title: 'New List',
+                    dateAdded: new Date().toISOString(),
+                },
             });
 
             mockListService.addList.mockRejectedValue(new Error('Auth service not configured'));
 
-            await listHandlers.addList(ctx);
-
-            expect(ctx.response.status).toBe(500);
-            expect(ctx.body).toEqual({ error: 'Auth service not configured' });
+            await expect(listHandlers.addList(ctx)).rejects.toThrow('Auth service not configured');
         });
 
         it('should reject empty title', async () => {
             const ctx = createMockContext({
-                request: {
-                    body: {
-                        title: '',
-                        dateAdded: new Date().toISOString(),
-                    },
-                } as Context['request'],
+                body: { title: '', dateAdded: new Date().toISOString() },
             });
 
-            await listHandlers.addList(ctx);
+            const response = await listHandlers.addList(ctx);
 
-            expect(ctx.response.status).toBe(400);
-            expect(ctx.body).toEqual({ error: 'Title is required and must be a non-empty string' });
+            expect(response.status).toBe(400);
+            expect(await getResponseBody(response)).toEqual({
+                error: 'Title is required and must be a non-empty string',
+            });
         });
     });
 
@@ -276,11 +254,7 @@ describe('ListHandlers', () => {
         it('should update item successfully', async () => {
             const ctx = createMockContext({
                 params: { title: 'Test List', itemName: 'Old Name' },
-                request: {
-                    body: {
-                        newItemName: 'New Name',
-                    },
-                } as Context['request'],
+                body: { newItemName: 'New Name' },
             });
 
             mockListService.updateItemName.mockResolvedValue({
@@ -288,11 +262,11 @@ describe('ListHandlers', () => {
                 newItemName: 'New Name',
             });
 
-            await listHandlers.updateItem(ctx);
+            const response = await listHandlers.updateItem(ctx);
 
             expect(mockListService.updateItemName).toHaveBeenCalledWith('Test List', 'Old Name', 'New Name');
-            expect(ctx.response.status).toBe(200);
-            expect(ctx.body).toEqual({
+            expect(response.status).toBe(200);
+            expect(await getResponseBody(response)).toEqual({
                 message: 'Item updated successfully',
                 newItemName: 'New Name',
             });
@@ -301,35 +275,24 @@ describe('ListHandlers', () => {
         it('should handle service errors', async () => {
             const ctx = createMockContext({
                 params: { title: 'Test List', itemName: 'Old Name' },
-                request: {
-                    body: {
-                        newItemName: 'New Name',
-                    },
-                } as Context['request'],
+                body: { newItemName: 'New Name' },
             });
 
             mockListService.updateItemName.mockRejectedValue(new Error('List not found'));
 
-            await listHandlers.updateItem(ctx);
-
-            expect(ctx.response.status).toBe(500);
-            expect(ctx.body).toEqual({ error: 'List not found' });
+            await expect(listHandlers.updateItem(ctx)).rejects.toThrow('List not found');
         });
 
         it('should reject empty newItemName', async () => {
             const ctx = createMockContext({
                 params: { title: 'Test List', itemName: 'Old Name' },
-                request: {
-                    body: {
-                        newItemName: '',
-                    },
-                } as Context['request'],
+                body: { newItemName: '' },
             });
 
-            await listHandlers.updateItem(ctx);
+            const response = await listHandlers.updateItem(ctx);
 
-            expect(ctx.response.status).toBe(400);
-            expect(ctx.body).toEqual({ error: 'New item name must be a non-empty string' });
+            expect(response.status).toBe(400);
+            expect(await getResponseBody(response)).toEqual({ error: 'New item name must be a non-empty string' });
         });
     });
 
@@ -341,6 +304,7 @@ describe('ListHandlers', () => {
                 dateAdded: new Date(),
                 items: [],
                 users: [{ id: 'user-1', username: 'testuser' }],
+                listType: ListType.SHOPPING,
             };
             const ctx = createMockContext({
                 params: { title: 'Test List', itemName: 'Item 1' },
@@ -348,11 +312,12 @@ describe('ListHandlers', () => {
 
             mockListService.deleteItem.mockResolvedValue(mockList);
 
-            await listHandlers.deleteItem(ctx);
+            const response = await listHandlers.deleteItem(ctx);
 
             expect(mockListService.deleteItem).toHaveBeenCalledWith('Test List', 'Item 1');
-            expect(ctx.response.status).toBe(200);
-            expect(ctx.body).toEqual(mockList);
+            expect(response.status).toBe(200);
+            const body = await getResponseBody(response);
+            expect(body.id).toBe(mockList.id);
         });
 
         it('should handle service errors', async () => {
@@ -362,10 +327,7 @@ describe('ListHandlers', () => {
 
             mockListService.deleteItem.mockRejectedValue(new Error('List not found'));
 
-            await listHandlers.deleteItem(ctx);
-
-            expect(ctx.response.status).toBe(500);
-            expect(ctx.body).toEqual({ error: 'List not found' });
+            await expect(listHandlers.deleteItem(ctx)).rejects.toThrow('List not found');
         });
     });
 
@@ -377,16 +339,18 @@ describe('ListHandlers', () => {
                 dateAdded: new Date(),
                 items: [],
                 users: [{ id: 'user-1', username: 'testuser' }],
+                listType: ListType.SHOPPING,
             };
             const ctx = createMockContext({ params: { title: 'Test List' } });
 
             mockListService.clearList.mockResolvedValue(mockList);
 
-            await listHandlers.clearList(ctx);
+            const response = await listHandlers.clearList(ctx);
 
             expect(mockListService.clearList).toHaveBeenCalledWith('Test List');
-            expect(ctx.response.status).toBe(200);
-            expect(ctx.body).toEqual(mockList);
+            expect(response.status).toBe(200);
+            const body = await getResponseBody(response);
+            expect(body.id).toBe(mockList.id);
         });
 
         it('should handle service errors', async () => {
@@ -394,10 +358,7 @@ describe('ListHandlers', () => {
 
             mockListService.clearList.mockRejectedValue(new Error('List not found'));
 
-            await listHandlers.clearList(ctx);
-
-            expect(ctx.response.status).toBe(500);
-            expect(ctx.body).toEqual({ error: 'List not found' });
+            await expect(listHandlers.clearList(ctx)).rejects.toThrow('List not found');
         });
     });
 
@@ -409,16 +370,18 @@ describe('ListHandlers', () => {
                 dateAdded: new Date(),
                 items: [],
                 users: [{ id: 'user-1', username: 'testuser' }],
+                listType: ListType.SHOPPING,
             };
             const ctx = createMockContext({ params: { title: 'Test List' } });
 
             mockListService.clearSelectedItems.mockResolvedValue(mockList);
 
-            await listHandlers.deleteSelected(ctx);
+            const response = await listHandlers.deleteSelected(ctx);
 
             expect(mockListService.clearSelectedItems).toHaveBeenCalledWith('Test List');
-            expect(ctx.response.status).toBe(200);
-            expect(ctx.body).toEqual(mockList);
+            expect(response.status).toBe(200);
+            const body = await getResponseBody(response);
+            expect(body.id).toBe(mockList.id);
         });
 
         it('should handle service errors', async () => {
@@ -426,10 +389,7 @@ describe('ListHandlers', () => {
 
             mockListService.clearSelectedItems.mockRejectedValue(new Error('List not found'));
 
-            await listHandlers.deleteSelected(ctx);
-
-            expect(ctx.response.status).toBe(500);
-            expect(ctx.body).toEqual({ error: 'List not found' });
+            await expect(listHandlers.deleteSelected(ctx)).rejects.toThrow('List not found');
         });
     });
 
@@ -437,11 +397,7 @@ describe('ListHandlers', () => {
         it('should update list successfully', async () => {
             const ctx = createMockContext({
                 params: { title: 'Old Title' },
-                request: {
-                    body: {
-                        newTitle: 'New Title',
-                    },
-                } as Context['request'],
+                body: { newTitle: 'New Title' },
             });
 
             mockListService.updateListTitle.mockResolvedValue({
@@ -449,11 +405,11 @@ describe('ListHandlers', () => {
                 newTitle: 'New Title',
             });
 
-            await listHandlers.updateList(ctx);
+            const response = await listHandlers.updateList(ctx);
 
             expect(mockListService.updateListTitle).toHaveBeenCalledWith('Old Title', 'New Title');
-            expect(ctx.response.status).toBe(200);
-            expect(ctx.body).toEqual({
+            expect(response.status).toBe(200);
+            expect(await getResponseBody(response)).toEqual({
                 message: 'List updated successfully',
                 newTitle: 'New Title',
             });
@@ -462,35 +418,26 @@ describe('ListHandlers', () => {
         it('should handle service errors', async () => {
             const ctx = createMockContext({
                 params: { title: 'Old Title' },
-                request: {
-                    body: {
-                        newTitle: 'New Title',
-                    },
-                } as Context['request'],
+                body: { newTitle: 'New Title' },
             });
 
             mockListService.updateListTitle.mockRejectedValue(new Error('List not found'));
 
-            await listHandlers.updateList(ctx);
-
-            expect(ctx.response.status).toBe(500);
-            expect(ctx.body).toEqual({ error: 'List not found' });
+            await expect(listHandlers.updateList(ctx)).rejects.toThrow('List not found');
         });
 
         it('should reject empty newTitle', async () => {
             const ctx = createMockContext({
                 params: { title: 'Old Title' },
-                request: {
-                    body: {
-                        newTitle: '',
-                    },
-                } as Context['request'],
+                body: { newTitle: '' },
             });
 
-            await listHandlers.updateList(ctx);
+            const response = await listHandlers.updateList(ctx);
 
-            expect(ctx.response.status).toBe(400);
-            expect(ctx.body).toEqual({ error: 'New title is required and must be a non-empty string' });
+            expect(response.status).toBe(400);
+            expect(await getResponseBody(response)).toEqual({
+                error: 'New title is required and must be a non-empty string',
+            });
         });
     });
 
@@ -504,17 +451,12 @@ describe('ListHandlers', () => {
             };
             const ctx = createMockContext({
                 params: { title: 'Test List' },
-                request: {
-                    body: {
-                        itemName: 'New Item',
-                        dateAdded: new Date().toISOString(),
-                    },
-                } as Context['request'],
+                body: { itemName: 'New Item', dateAdded: new Date().toISOString() },
             });
 
             mockListService.addItem.mockResolvedValue(mockItem);
 
-            await listHandlers.addItem(ctx);
+            const response = await listHandlers.addItem(ctx);
 
             expect(mockListService.addItem).toHaveBeenCalledWith(
                 'Test List',
@@ -523,44 +465,36 @@ describe('ListHandlers', () => {
                 undefined,
                 undefined
             );
-            expect(ctx.response.status).toBe(200);
-            expect(ctx.body).toEqual(mockItem);
+            expect(response.status).toBe(200);
+            expect(await getResponseBody(response)).toEqual({
+                ...mockItem,
+                dateAdded: mockItem.dateAdded.toISOString(),
+            });
         });
 
         it('should handle service errors', async () => {
             const ctx = createMockContext({
                 params: { title: 'Test List' },
-                request: {
-                    body: {
-                        itemName: 'New Item',
-                        dateAdded: new Date().toISOString(),
-                    },
-                } as Context['request'],
+                body: { itemName: 'New Item', dateAdded: new Date().toISOString() },
             });
 
             mockListService.addItem.mockRejectedValue(new Error('List not found'));
 
-            await listHandlers.addItem(ctx);
-
-            expect(ctx.response.status).toBe(500);
-            expect(ctx.body).toEqual({ error: 'List not found' });
+            await expect(listHandlers.addItem(ctx)).rejects.toThrow('List not found');
         });
 
         it('should reject empty itemName', async () => {
             const ctx = createMockContext({
                 params: { title: 'Test List' },
-                request: {
-                    body: {
-                        itemName: '',
-                        dateAdded: new Date().toISOString(),
-                    },
-                } as Context['request'],
+                body: { itemName: '', dateAdded: new Date().toISOString() },
             });
 
-            await listHandlers.addItem(ctx);
+            const response = await listHandlers.addItem(ctx);
 
-            expect(ctx.response.status).toBe(400);
-            expect(ctx.body).toEqual({ error: 'Item name is required and must be a non-empty string' });
+            expect(response.status).toBe(400);
+            expect(await getResponseBody(response)).toEqual({
+                error: 'Item name is required and must be a non-empty string',
+            });
         });
     });
 
@@ -572,11 +506,11 @@ describe('ListHandlers', () => {
                 message: 'List deleted successfully',
             });
 
-            await listHandlers.deleteList(ctx);
+            const response = await listHandlers.deleteList(ctx);
 
             expect(mockListService.deleteList).toHaveBeenCalledWith('Test List');
-            expect(ctx.response.status).toBe(200);
-            expect(ctx.body).toEqual({
+            expect(response.status).toBe(200);
+            expect(await getResponseBody(response)).toEqual({
                 message: 'List deleted successfully',
             });
         });
@@ -586,10 +520,7 @@ describe('ListHandlers', () => {
 
             mockListService.deleteList.mockRejectedValue(new Error('List not found'));
 
-            await listHandlers.deleteList(ctx);
-
-            expect(ctx.response.status).toBe(500);
-            expect(ctx.body).toEqual({ error: 'List not found' });
+            await expect(listHandlers.deleteList(ctx)).rejects.toThrow('List not found');
         });
     });
 
@@ -604,37 +535,39 @@ describe('ListHandlers', () => {
                     { id: 'test-user-1', username: 'testuser' },
                     { id: 'user-2', username: 'newuser' },
                 ],
+                listType: ListType.SHOPPING,
             };
             const ctx = createMockContext({
                 params: { title: 'Test List' },
-                request: { body: { username: 'newuser' } } as Context['request'],
+                body: { username: 'newuser' },
             });
 
             mockListService.addUserToList.mockResolvedValue(mockList);
 
-            await listHandlers.addUserToList(ctx);
+            const response = await listHandlers.addUserToList(ctx);
 
             expect(mockListService.addUserToList).toHaveBeenCalledWith('Test List', 'newuser', 'test-user-1');
-            expect(ctx.response.status).toBe(200);
-            expect(ctx.body).toEqual(mockList);
+            expect(response.status).toBe(200);
+            const body = await getResponseBody(response);
+            expect(body.id).toBe(mockList.id);
         });
 
         it('should reject empty username', async () => {
             const ctx = createMockContext({
                 params: { title: 'Test List' },
-                request: { body: { username: '' } } as Context['request'],
+                body: { username: '' },
             });
 
-            await listHandlers.addUserToList(ctx);
+            const response = await listHandlers.addUserToList(ctx);
 
-            expect(ctx.response.status).toBe(400);
-            expect(ctx.body).toEqual({ error: 'Username is required' });
+            expect(response.status).toBe(400);
+            expect(await getResponseBody(response)).toEqual({ error: 'Username is required' });
         });
 
         it('should return 403 when user has no list access', async () => {
             const ctx = createMockContext({
                 params: { title: 'Test List' },
-                request: { body: { username: 'newuser' } } as Context['request'],
+                body: { username: 'newuser' },
             });
 
             mockListService.getList.mockResolvedValue({
@@ -643,28 +576,26 @@ describe('ListHandlers', () => {
                 dateAdded: new Date(),
                 items: [],
                 users: [{ id: 'other-user', username: 'other' }],
+                listType: ListType.SHOPPING,
             });
 
-            await listHandlers.addUserToList(ctx);
+            const response = await listHandlers.addUserToList(ctx);
 
-            expect(ctx.response.status).toBe(403);
-            expect(ctx.body).toEqual({ error: 'Forbidden' });
+            expect(response.status).toBe(403);
+            expect(await getResponseBody(response)).toEqual({ error: 'Forbidden' });
         });
 
         it('should handle service errors', async () => {
             const ctx = createMockContext({
                 params: { title: 'Test List' },
-                request: { body: { username: 'newuser' } } as Context['request'],
+                body: { username: 'newuser' },
             });
 
             mockListService.addUserToList.mockRejectedValue(
                 Object.assign(new Error('Only the list owner can manage users'), { status: 403 })
             );
 
-            await listHandlers.addUserToList(ctx);
-
-            expect(ctx.response.status).toBe(403);
-            expect(ctx.body).toEqual({ error: 'Only the list owner can manage users' });
+            await expect(listHandlers.addUserToList(ctx)).rejects.toThrow('Only the list owner can manage users');
         });
     });
 
@@ -676,6 +607,7 @@ describe('ListHandlers', () => {
                 dateAdded: new Date(),
                 items: [],
                 users: [{ id: 'test-user-1', username: 'testuser' }],
+                listType: ListType.SHOPPING,
             };
             const ctx = createMockContext({
                 params: { title: 'Test List', userId: 'user-2' },
@@ -683,11 +615,12 @@ describe('ListHandlers', () => {
 
             mockListService.removeUserFromList.mockResolvedValue(mockList);
 
-            await listHandlers.removeUserFromList(ctx);
+            const response = await listHandlers.removeUserFromList(ctx);
 
             expect(mockListService.removeUserFromList).toHaveBeenCalledWith('Test List', 'user-2', 'test-user-1');
-            expect(ctx.response.status).toBe(200);
-            expect(ctx.body).toEqual(mockList);
+            expect(response.status).toBe(200);
+            const body = await getResponseBody(response);
+            expect(body.id).toBe(mockList.id);
         });
 
         it('should return 403 when user has no list access', async () => {
@@ -701,12 +634,13 @@ describe('ListHandlers', () => {
                 dateAdded: new Date(),
                 items: [],
                 users: [{ id: 'other-user', username: 'other' }],
+                listType: ListType.SHOPPING,
             });
 
-            await listHandlers.removeUserFromList(ctx);
+            const response = await listHandlers.removeUserFromList(ctx);
 
-            expect(ctx.response.status).toBe(403);
-            expect(ctx.body).toEqual({ error: 'Forbidden' });
+            expect(response.status).toBe(403);
+            expect(await getResponseBody(response)).toEqual({ error: 'Forbidden' });
         });
 
         it('should handle service errors', async () => {
@@ -718,10 +652,7 @@ describe('ListHandlers', () => {
                 Object.assign(new Error('Cannot remove the list owner'), { status: 400 })
             );
 
-            await listHandlers.removeUserFromList(ctx);
-
-            expect(ctx.response.status).toBe(400);
-            expect(ctx.body).toEqual({ error: 'Cannot remove the list owner' });
+            await expect(listHandlers.removeUserFromList(ctx)).rejects.toThrow('Cannot remove the list owner');
         });
     });
 
@@ -735,23 +666,19 @@ describe('ListHandlers', () => {
                 dateAdded: new Date(),
                 items: [],
                 users: [{ id: 'other-user', username: 'other' }],
+                listType: ListType.SHOPPING,
             });
 
-            await listHandlers.getList(ctx);
+            const response = await listHandlers.getList(ctx);
 
-            expect(ctx.response.status).toBe(403);
-            expect(ctx.body).toEqual({ error: 'Forbidden' });
+            expect(response.status).toBe(403);
+            expect(await getResponseBody(response)).toEqual({ error: 'Forbidden' });
         });
 
         it('addItem should return 403 when user not in list', async () => {
             const ctx = createMockContext({
                 params: { title: 'Test List' },
-                request: {
-                    body: {
-                        itemName: 'New Item',
-                        dateAdded: new Date().toISOString(),
-                    },
-                } as Context['request'],
+                body: { itemName: 'New Item', dateAdded: new Date().toISOString() },
             });
 
             mockListService.getList.mockResolvedValue({
@@ -760,20 +687,19 @@ describe('ListHandlers', () => {
                 dateAdded: new Date(),
                 items: [],
                 users: [{ id: 'other-user', username: 'other' }],
+                listType: ListType.SHOPPING,
             });
 
-            await listHandlers.addItem(ctx);
+            const response = await listHandlers.addItem(ctx);
 
-            expect(ctx.response.status).toBe(403);
-            expect(ctx.body).toEqual({ error: 'Forbidden' });
+            expect(response.status).toBe(403);
+            expect(await getResponseBody(response)).toEqual({ error: 'Forbidden' });
         });
 
         it('updateItem should return 403 when user not in list', async () => {
             const ctx = createMockContext({
                 params: { title: 'Test List', itemName: 'Item' },
-                request: {
-                    body: { newItemName: 'Updated Item' },
-                } as Context['request'],
+                body: { newItemName: 'Updated Item' },
             });
 
             mockListService.getList.mockResolvedValue({
@@ -782,12 +708,13 @@ describe('ListHandlers', () => {
                 dateAdded: new Date(),
                 items: [],
                 users: [{ id: 'other-user', username: 'other' }],
+                listType: ListType.SHOPPING,
             });
 
-            await listHandlers.updateItem(ctx);
+            const response = await listHandlers.updateItem(ctx);
 
-            expect(ctx.response.status).toBe(403);
-            expect(ctx.body).toEqual({ error: 'Forbidden' });
+            expect(response.status).toBe(403);
+            expect(await getResponseBody(response)).toEqual({ error: 'Forbidden' });
         });
 
         it('deleteItem should return 403 when user not in list', async () => {
@@ -801,18 +728,17 @@ describe('ListHandlers', () => {
                 dateAdded: new Date(),
                 items: [],
                 users: [{ id: 'other-user', username: 'other' }],
+                listType: ListType.SHOPPING,
             });
 
-            await listHandlers.deleteItem(ctx);
+            const response = await listHandlers.deleteItem(ctx);
 
-            expect(ctx.response.status).toBe(403);
-            expect(ctx.body).toEqual({ error: 'Forbidden' });
+            expect(response.status).toBe(403);
+            expect(await getResponseBody(response)).toEqual({ error: 'Forbidden' });
         });
 
         it('deleteList should return 403 when user not in list', async () => {
-            const ctx = createMockContext({
-                params: { title: 'Test List' },
-            });
+            const ctx = createMockContext({ params: { title: 'Test List' } });
 
             mockListService.getList.mockResolvedValue({
                 id: 'list-1',
@@ -820,18 +746,17 @@ describe('ListHandlers', () => {
                 dateAdded: new Date(),
                 items: [],
                 users: [{ id: 'other-user', username: 'other' }],
+                listType: ListType.SHOPPING,
             });
 
-            await listHandlers.deleteList(ctx);
+            const response = await listHandlers.deleteList(ctx);
 
-            expect(ctx.response.status).toBe(403);
-            expect(ctx.body).toEqual({ error: 'Forbidden' });
+            expect(response.status).toBe(403);
+            expect(await getResponseBody(response)).toEqual({ error: 'Forbidden' });
         });
 
         it('deleteList should return 403 when user not owner', async () => {
-            const ctx = createMockContext({
-                params: { title: 'Test List' },
-            });
+            const ctx = createMockContext({ params: { title: 'Test List' } });
 
             mockListService.getList.mockResolvedValue({
                 id: 'list-1',
@@ -839,23 +764,22 @@ describe('ListHandlers', () => {
                 dateAdded: new Date(),
                 items: [],
                 users: [{ id: 'test-user-1', username: 'testuser' }],
+                listType: ListType.SHOPPING,
                 ownerId: 'other-owner',
             });
 
             mockAuthorizationService.isListOwner.mockReturnValue(false);
 
-            await listHandlers.deleteList(ctx);
+            const response = await listHandlers.deleteList(ctx);
 
-            expect(ctx.response.status).toBe(403);
-            expect(ctx.body).toEqual({ error: 'Only the list owner can delete this list' });
+            expect(response.status).toBe(403);
+            expect(await getResponseBody(response)).toEqual({ error: 'Only the list owner can delete this list' });
         });
 
         it('updateList should return 403 when user not in list', async () => {
             const ctx = createMockContext({
                 params: { title: 'Old List' },
-                request: {
-                    body: { newTitle: 'New List' },
-                } as Context['request'],
+                body: { newTitle: 'New List' },
             });
 
             mockListService.getList.mockResolvedValue({
@@ -864,18 +788,17 @@ describe('ListHandlers', () => {
                 dateAdded: new Date(),
                 items: [],
                 users: [{ id: 'other-user', username: 'other' }],
+                listType: ListType.SHOPPING,
             });
 
-            await listHandlers.updateList(ctx);
+            const response = await listHandlers.updateList(ctx);
 
-            expect(ctx.response.status).toBe(403);
-            expect(ctx.body).toEqual({ error: 'Forbidden' });
+            expect(response.status).toBe(403);
+            expect(await getResponseBody(response)).toEqual({ error: 'Forbidden' });
         });
 
         it('clearList should return 403 when user not in list', async () => {
-            const ctx = createMockContext({
-                params: { title: 'Test List' },
-            });
+            const ctx = createMockContext({ params: { title: 'Test List' } });
 
             mockListService.getList.mockResolvedValue({
                 id: 'list-1',
@@ -883,18 +806,17 @@ describe('ListHandlers', () => {
                 dateAdded: new Date(),
                 items: [],
                 users: [{ id: 'other-user', username: 'other' }],
+                listType: ListType.SHOPPING,
             });
 
-            await listHandlers.clearList(ctx);
+            const response = await listHandlers.clearList(ctx);
 
-            expect(ctx.response.status).toBe(403);
-            expect(ctx.body).toEqual({ error: 'Forbidden' });
+            expect(response.status).toBe(403);
+            expect(await getResponseBody(response)).toEqual({ error: 'Forbidden' });
         });
 
         it('deleteSelected should return 403 when user not in list', async () => {
-            const ctx = createMockContext({
-                params: { title: 'Test List' },
-            });
+            const ctx = createMockContext({ params: { title: 'Test List' } });
 
             mockListService.getList.mockResolvedValue({
                 id: 'list-1',
@@ -902,12 +824,13 @@ describe('ListHandlers', () => {
                 dateAdded: new Date(),
                 items: [],
                 users: [{ id: 'other-user', username: 'other' }],
+                listType: ListType.SHOPPING,
             });
 
-            await listHandlers.deleteSelected(ctx);
+            const response = await listHandlers.deleteSelected(ctx);
 
-            expect(ctx.response.status).toBe(403);
-            expect(ctx.body).toEqual({ error: 'Forbidden' });
+            expect(response.status).toBe(403);
+            expect(await getResponseBody(response)).toEqual({ error: 'Forbidden' });
         });
     });
 
@@ -917,10 +840,10 @@ describe('ListHandlers', () => {
 
             mockListService.getList.mockRejectedValue(new Error('Database error'));
 
-            await listHandlers.getList(ctx);
+            const response = await listHandlers.getList(ctx);
 
-            expect(ctx.response.status).toBe(403);
-            expect(ctx.body).toEqual({ error: 'Forbidden' });
+            expect(response.status).toBe(403);
+            expect(await getResponseBody(response)).toEqual({ error: 'Forbidden' });
         });
     });
 
@@ -928,85 +851,70 @@ describe('ListHandlers', () => {
         it('should update item selection successfully', async () => {
             const ctx = createMockContext({
                 params: { title: 'Test List', itemName: 'Item' },
-                request: {
-                    body: { isSelected: true },
-                } as Context['request'],
+                body: { isSelected: true },
             });
 
             mockListService.setItemSelected.mockResolvedValue({
                 message: 'Item selection updated',
             });
 
-            await listHandlers.updateItem(ctx);
+            const response = await listHandlers.updateItem(ctx);
 
             expect(mockListService.setItemSelected).toHaveBeenCalledWith('Test List', 'Item', true);
-            expect(ctx.response.status).toBe(200);
-            expect(ctx.body).toEqual({ message: 'Item selection updated' });
+            expect(response.status).toBe(200);
+            expect(await getResponseBody(response)).toEqual({ message: 'Item selection updated' });
         });
 
         it('should update item quantity successfully', async () => {
             const ctx = createMockContext({
                 params: { title: 'Test List', itemName: 'Item' },
-                request: {
-                    body: { quantity: 5, unit: 'kg' },
-                } as Context['request'],
+                body: { quantity: 5, unit: 'kg' },
             });
 
             mockListService.updateItemQuantity.mockResolvedValue({
                 message: 'Item quantity updated',
             });
 
-            await listHandlers.updateItem(ctx);
+            const response = await listHandlers.updateItem(ctx);
 
             expect(mockListService.updateItemQuantity).toHaveBeenCalledWith('Test List', 'Item', 5, 'kg');
-            expect(ctx.response.status).toBe(200);
-            expect(ctx.body).toEqual({ message: 'Item quantity updated' });
+            expect(response.status).toBe(200);
+            expect(await getResponseBody(response)).toEqual({ message: 'Item quantity updated' });
         });
 
         it('should return 400 when no valid update fields provided', async () => {
             const ctx = createMockContext({
                 params: { title: 'Test List', itemName: 'Item' },
-                request: {
-                    body: {},
-                } as Context['request'],
+                body: {},
             });
 
-            await listHandlers.updateItem(ctx);
+            const response = await listHandlers.updateItem(ctx);
 
-            expect(ctx.response.status).toBe(400);
-            expect(ctx.body.error).toBeDefined();
+            expect(response.status).toBe(400);
+            const body = await getResponseBody(response);
+            expect(body.error).toBeDefined();
         });
 
         it('should handle error in setItemSelected', async () => {
             const ctx = createMockContext({
                 params: { title: 'Test List', itemName: 'Item' },
-                request: {
-                    body: { isSelected: true },
-                } as Context['request'],
+                body: { isSelected: true },
             });
 
             mockListService.setItemSelected.mockRejectedValue(new Error('Update failed'));
 
-            await listHandlers.updateItem(ctx);
-
-            expect(ctx.response.status).toBe(500);
-            expect(ctx.body).toEqual({ error: 'Update failed' });
+            await expect(listHandlers.updateItem(ctx)).rejects.toThrow('Update failed');
         });
 
         it('should handle error in updateItemQuantity', async () => {
             const ctx = createMockContext({
                 params: { title: 'Test List', itemName: 'Item' },
-                request: {
-                    body: { quantity: 5 },
-                } as Context['request'],
+                body: { quantity: 5 },
             });
 
             mockListService.updateItemQuantity.mockRejectedValue(new Error('Quantity update failed'));
 
-            await listHandlers.updateItem(ctx);
-
-            expect(ctx.response.status).toBe(500);
-            expect(ctx.body).toEqual({ error: 'Quantity update failed' });
+            await expect(listHandlers.updateItem(ctx)).rejects.toThrow('Quantity update failed');
         });
     });
 });

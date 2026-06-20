@@ -1,25 +1,24 @@
-import type { Context } from 'koa';
+import { Readable } from 'node:stream';
+import type { Context } from 'hono';
 
 import { dependencyContainer } from '../../dependencies';
 import { DependencyToken } from '../../dependencies/types';
 import type { ImageService } from '../../domain/ImageService';
+import type { HonoVars } from '../handlerUtils';
 
 const getImageService = (): ImageService => dependencyContainer.resolve(DependencyToken.ImageService);
 const getBucketStore = () => dependencyContainer.resolve(DependencyToken.ImageStore);
 const getLogger = () => dependencyContainer.resolve(DependencyToken.Logger);
 
-export const getImage = async (ctx: Context) => {
-    const { name } = ctx.params as { name: string };
+export const getImage = async (c: Context<HonoVars>) => {
+    const name = c.req.param('name');
     const logger = getLogger();
 
     try {
         if (name.startsWith('recipe-upload/')) {
-            // Stored images require authentication
-            const user = ctx.state.user as { id: string; username: string } | undefined;
+            const user = c.get('user');
             if (!user?.id) {
-                ctx.status = 401;
-                ctx.body = { error: 'Unauthorized' };
-                return;
+                return c.json({ error: 'Unauthorized' }, 401);
             }
 
             const bucketStore = getBucketStore();
@@ -35,25 +34,15 @@ export const getImage = async (ctx: Context) => {
                     contentType,
                 });
 
-                ctx.set('Content-Type', contentType);
-                ctx.set('Cache-Control', 'public, max-age=31536000, immutable');
-                ctx.status = 200;
-
-                await new Promise((resolve, reject) => {
-                    stream.pipe(ctx.res, { end: true });
-                    stream.on('end', resolve);
-                    stream.on('error', reject);
-                });
-                return;
+                c.header('Content-Type', contentType);
+                c.header('Cache-Control', 'public, max-age=31536000, immutable');
+                return c.body(Readable.toWeb(stream as Readable) as unknown as ReadableStream);
             }
 
-            ctx.status = 404;
-            ctx.body = { error: 'Image not found' };
-            return;
+            return c.json({ error: 'Image not found' }, 404);
         }
 
         if (name.startsWith('recipe-image/')) {
-            // AI-generated recipe images: public, bucket only — no fallback generation
             const bucketStore = getBucketStore();
             try {
                 const head = await bucketStore.getHeadObject(name);
@@ -62,47 +51,25 @@ export const getImage = async (ctx: Context) => {
 
                 logger.info('API: Recipe AI image retrieved', { imageKey: name, contentType });
 
-                ctx.set('Content-Type', contentType);
-                ctx.set('Cache-Control', 'public, max-age=31536000, immutable');
-                ctx.status = 200;
-
-                await new Promise((resolve, reject) => {
-                    stream.pipe(ctx.res, { end: true });
-                    stream.on('end', resolve);
-                    stream.on('error', reject);
-                });
+                c.header('Content-Type', contentType);
+                c.header('Cache-Control', 'public, max-age=31536000, immutable');
+                return c.body(Readable.toWeb(stream as Readable) as unknown as ReadableStream);
             } catch {
-                ctx.status = 404;
-                ctx.body = { error: 'Image not found' };
+                return c.json({ error: 'Image not found' }, 404);
             }
-            return;
         }
 
-        // Shopping list AI images: public, with AI generation fallback
         const { stream, contentType, cacheControl } = await getImageService().getImage(name);
 
-        logger.info('API: AI image retrieved', {
-            itemName: name,
-            contentType,
-        });
+        logger.info('API: AI image retrieved', { itemName: name, contentType });
 
-        ctx.set('Content-Type', contentType);
-        ctx.set('Cache-Control', cacheControl);
-        ctx.status = 200;
-
-        await new Promise((resolve, reject) => {
-            stream.pipe(ctx.res, { end: true });
-            stream.on('end', resolve);
-            stream.on('error', reject);
-        });
+        c.header('Content-Type', contentType);
+        c.header('Cache-Control', cacheControl);
+        return c.body(Readable.toWeb(stream as Readable) as unknown as ReadableStream);
     } catch (error: unknown) {
         const err = error as { status?: number; message?: string };
 
-        logger.error('API: Failed to retrieve image', {
-            itemName: name,
-            error: err.message,
-        });
-        ctx.status = err.status ?? 500;
-        ctx.body = { error: err.message ?? 'Internal Server Error' };
+        logger.error('API: Failed to retrieve image', { itemName: name, error: err.message });
+        return c.json({ error: err.message ?? 'Internal Server Error' }, (err.status ?? 500) as 500);
     }
 };
