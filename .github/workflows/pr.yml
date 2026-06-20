@@ -97,11 +97,15 @@ jobs:
           review-comments: true
           gate: new-only
           fail-on-issues: false
-      # Dead code is the only category that blocks merge.
+      # Dead code is the only category that blocks merge. Run whole-repo
+      # (not PR-scoped) so reachability is resolved against the full graph —
+      # PR-scoped discovery false-positives exports whose only consumer is an
+      # unchanged file.
       - uses: fallow-rs/fallow@v2
         with:
           command: dead-code
           fail-on-issues: true
+          auto-changed-since: false
           comment: false
           annotations: false
 
