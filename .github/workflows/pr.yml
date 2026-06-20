@@ -88,12 +88,22 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
+      # Full audit (dead-code + complexity + duplication) — informational only,
+      # posts PR comments but never blocks merge.
       - uses: fallow-rs/fallow@v2
         with:
           command: audit
           comment: true
           review-comments: true
           gate: new-only
+          fail-on-issues: false
+      # Dead code is the only category that blocks merge.
+      - uses: fallow-rs/fallow@v2
+        with:
+          command: dead-code
+          fail-on-issues: true
+          comment: false
+          annotations: false
 
   semgrep:
     if: github.actor != 'dependabot[bot]'
