@@ -1,3 +1,10 @@
+# [1.46.0](https://github.com/igor-siergiej/shoppingo/compare/v1.45.0...v1.46.0) (2026-06-22)
+
+
+### Features
+
+* **web:** natural language date input + swipe-to-change calendar months ([#88](https://github.com/igor-siergiej/shoppingo/issues/88)) ([eeb9ecd](https://github.com/igor-siergiej/shoppingo/commit/eeb9ecd3d734f641d78e28336c9000a340a86c06))
+
 # [1.45.0](https://github.com/igor-siergiej/shoppingo/compare/v1.44.1...v1.45.0) (2026-06-09)
 
 
