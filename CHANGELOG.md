@@ -1,3 +1,10 @@
+# [1.47.0](https://github.com/igor-siergiej/shoppingo/compare/v1.46.0...v1.47.0) (2026-06-22)
+
+
+### Features
+
+* **recipes:** replace AI cover image with upload, revert back for free ([#89](https://github.com/igor-siergiej/shoppingo/issues/89)) ([6cf7fba](https://github.com/igor-siergiej/shoppingo/commit/6cf7fba560193c9a1e8ee0bb2aa57227f5a06798))
+
 # [1.46.0](https://github.com/igor-siergiej/shoppingo/compare/v1.45.0...v1.46.0) (2026-06-22)
 
 
