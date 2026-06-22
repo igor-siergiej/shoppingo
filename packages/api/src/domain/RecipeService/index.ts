@@ -278,12 +278,36 @@ export class RecipeService {
             Object.assign(error, { status: 403 });
             throw error;
         }
-        if (recipe.coverImageKey) {
+        // Generate at most once per recipe. If an AI image already exists, this is a no-op
+        // (no paid API call); reverting the cover to it is handled by revertToAiImage.
+        if (recipe.aiImageKey) {
             return recipe;
         }
         const key = await this.recipeImageService.generateRecipeImage(recipeId, recipe.title, recipe.ingredients);
-        await this.recipeRepository.setCoverImageKey(recipeId, key);
-        return this.getRecipe(recipeId);
+        recipe.aiImageKey = key;
+        recipe.coverImageKey = key;
+        return this.recipeRepository.update(recipeId, recipe);
+    }
+
+    /** Point the cover back at the already-generated AI image. No generation, no API cost. */
+    async revertToAiImage(recipeId: string, userId: string): Promise<Recipe> {
+        const recipe = await this.getRecipe(recipeId);
+        if (!this.authorizationService.isListOwner(recipe, userId)) {
+            const error = new Error('Only recipe owner can update image');
+            Object.assign(error, { status: 403 });
+            throw error;
+        }
+        // Backfill: legacy recipes stored the AI image under coverImageKey with no aiImageKey.
+        const aiKey =
+            recipe.aiImageKey ?? (recipe.coverImageKey?.startsWith('recipe-image/') ? recipe.coverImageKey : undefined);
+        if (!aiKey) {
+            const error = new Error('No AI image available to revert to');
+            Object.assign(error, { status: 400 });
+            throw error;
+        }
+        recipe.aiImageKey = aiKey;
+        recipe.coverImageKey = aiKey;
+        return this.recipeRepository.update(recipeId, recipe);
     }
 
     async setCoverImageKey(recipeId: string, coverImageKey: string, userId: string): Promise<Recipe> {
@@ -293,6 +317,11 @@ export class RecipeService {
                 const error = new Error('Only recipe owner can update image');
                 Object.assign(error, { status: 403 });
                 throw error;
+            }
+            // Preserve a legacy AI image key (stored only in coverImageKey) before it is overwritten,
+            // so the cover can later be reverted to it for free.
+            if (!recipe.aiImageKey && recipe.coverImageKey?.startsWith('recipe-image/')) {
+                recipe.aiImageKey = recipe.coverImageKey;
             }
             recipe.coverImageKey = coverImageKey;
             const updated = await this.recipeRepository.update(recipeId, recipe);

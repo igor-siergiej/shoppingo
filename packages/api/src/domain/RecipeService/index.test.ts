@@ -149,7 +149,7 @@ class MockRecipeImageService {
     async generateRecipeImage(recipeId: string, title: string, ingredients: Ingredient[]): Promise<string> {
         this.calls.push({ recipeId, title, ingredients });
         if (this.shouldReject) throw new Error('generation failed');
-        return `recipe-image/${title.trim().toLowerCase()}`;
+        return `recipe-image/${recipeId}`;
     }
 
     reset() {
@@ -165,7 +165,7 @@ beforeEach(() => {
 });
 
 describe('RecipeService.regenerateImage', () => {
-    it('generates image when coverImageKey is not set', async () => {
+    it('generates image and sets both cover and ai keys when no ai image exists', async () => {
         const svc = new RecipeService(repo as any, ids, undefined, undefined, mockImageService as any);
         const created = await svc.createRecipe('Pasta', [{ id: '1', name: 'flour' }], owner.id, owner);
 
@@ -173,18 +173,21 @@ describe('RecipeService.regenerateImage', () => {
 
         expect(mockImageService.calls.length).toBe(1);
         expect(mockImageService.calls[0].recipeId).toBe(created.id);
-        expect(result.coverImageKey).toBe('recipe-image/pasta');
+        expect(result.coverImageKey).toBe(`recipe-image/${created.id}`);
+        expect(result.aiImageKey).toBe(`recipe-image/${created.id}`);
     });
 
-    it('returns existing recipe without generating when coverImageKey already set', async () => {
+    it('does not generate again once an ai image exists (no API cost)', async () => {
         const svc = new RecipeService(repo as any, ids, undefined, undefined, mockImageService as any);
         const created = await svc.createRecipe('Pasta', [], owner.id, owner);
-        await svc.setCoverImageKey(created.id, 'existing-key', owner.id);
+        await svc.regenerateImage(created.id, owner.id); // first gen
+        // user replaced cover with an upload
+        await svc.setCoverImageKey(created.id, 'recipe-upload/u/r/1', owner.id);
 
         const result = await svc.regenerateImage(created.id, owner.id);
 
-        expect(mockImageService.calls.length).toBe(0);
-        expect(result.coverImageKey).toBe('existing-key');
+        expect(mockImageService.calls.length).toBe(1); // still just the one generation
+        expect(result.coverImageKey).toBe('recipe-upload/u/r/1'); // unchanged
     });
 
     it('throws 503 when image service not configured', async () => {
@@ -199,6 +202,47 @@ describe('RecipeService.regenerateImage', () => {
         const created = await svc.createRecipe('Pasta', [], owner.id, owner);
 
         await expect(svc.regenerateImage(created.id, 'other-user')).rejects.toMatchObject({ status: 403 });
+    });
+});
+
+describe('RecipeService.revertToAiImage', () => {
+    it('points cover back at the ai image without generating', async () => {
+        const svc = new RecipeService(repo as any, ids, undefined, undefined, mockImageService as any);
+        const created = await svc.createRecipe('Pasta', [], owner.id, owner);
+        await svc.regenerateImage(created.id, owner.id);
+        await svc.setCoverImageKey(created.id, 'recipe-upload/u/r/1', owner.id);
+
+        const result = await svc.revertToAiImage(created.id, owner.id);
+
+        expect(mockImageService.calls.length).toBe(1); // no extra generation
+        expect(result.coverImageKey).toBe(`recipe-image/${created.id}`);
+    });
+
+    it('backfills ai key from a legacy recipe-image cover key', async () => {
+        const svc = new RecipeService(repo as any, ids, undefined, undefined, mockImageService as any);
+        const created = await svc.createRecipe('Pasta', [], owner.id, owner);
+        await svc.setCoverImageKey(created.id, 'recipe-image/legacy-key', owner.id); // no aiImageKey
+        await svc.setCoverImageKey(created.id, 'recipe-upload/u/r/1', owner.id);
+
+        const result = await svc.revertToAiImage(created.id, owner.id);
+
+        expect(result.coverImageKey).toBe('recipe-image/legacy-key');
+        expect(result.aiImageKey).toBe('recipe-image/legacy-key');
+    });
+
+    it('throws 400 when there is no ai image to revert to', async () => {
+        const svc = new RecipeService(repo as any, ids, undefined, undefined, mockImageService as any);
+        const created = await svc.createRecipe('Pasta', [], owner.id, owner);
+        await svc.setCoverImageKey(created.id, 'recipe-upload/u/r/1', owner.id);
+
+        await expect(svc.revertToAiImage(created.id, owner.id)).rejects.toMatchObject({ status: 400 });
+    });
+
+    it('throws 403 when a non-owner tries to revert', async () => {
+        const svc = new RecipeService(repo as any, ids, undefined, undefined, mockImageService as any);
+        const created = await svc.createRecipe('Pasta', [], owner.id, owner);
+
+        await expect(svc.revertToAiImage(created.id, 'other-user')).rejects.toMatchObject({ status: 403 });
     });
 });
 

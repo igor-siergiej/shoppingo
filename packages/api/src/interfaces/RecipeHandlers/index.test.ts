@@ -25,6 +25,7 @@ const mockRecipeService = {
     removeUserFromRecipe: vi.fn(),
     setCoverImageKey: vi.fn(),
     regenerateImage: vi.fn(),
+    revertToAiImage: vi.fn(),
 };
 
 const mockLogger = {
@@ -434,6 +435,43 @@ describe('RecipeHandlers', () => {
                 body: { imageKey: 'some-key' },
             });
             await expect(recipeHandlers.setCoverImageKey(ctx)).rejects.toThrow('fail');
+        });
+    });
+
+    describe('revertRecipeImage', () => {
+        it('returns 401 when no authenticated user', async () => {
+            const ctx = createMockContext({ params: { recipeId: 'recipe-1' }, user: undefined });
+            const response = await recipeHandlers.revertRecipeImage(ctx);
+            expect(response.status).toBe(401);
+        });
+
+        it('returns 403 when user not in recipe', async () => {
+            mockRecipeService.getRecipe.mockResolvedValue({
+                ...baseRecipe,
+                users: [{ id: 'other-user', username: 'other' }],
+            });
+            const ctx = createMockContext({ params: { recipeId: 'recipe-1' } });
+            const response = await recipeHandlers.revertRecipeImage(ctx);
+            expect(response.status).toBe(403);
+        });
+
+        it('reverts to ai image successfully', async () => {
+            mockRecipeService.revertToAiImage.mockResolvedValue({
+                ...baseRecipe,
+                coverImageKey: 'recipe-image/recipe-1',
+                aiImageKey: 'recipe-image/recipe-1',
+            });
+            const ctx = createMockContext({ params: { recipeId: 'recipe-1' } });
+            const response = await recipeHandlers.revertRecipeImage(ctx);
+            expect(response.status).toBe(200);
+        });
+
+        it('propagates service failure (e.g. no ai image)', async () => {
+            mockRecipeService.revertToAiImage.mockRejectedValue(
+                Object.assign(new Error('No AI image available to revert to'), { status: 400 })
+            );
+            const ctx = createMockContext({ params: { recipeId: 'recipe-1' } });
+            await expect(recipeHandlers.revertRecipeImage(ctx)).rejects.toThrow('No AI image available');
         });
     });
 

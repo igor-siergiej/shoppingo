@@ -16,7 +16,8 @@ export class RecipeImageService {
         ingredients: Ingredient[],
         force = false
     ): Promise<string> {
-        const key = `recipe-image/${title.trim().toLowerCase()}`;
+        // Keyed by recipe id so each recipe owns a unique, immutable AI image (no cross-recipe sharing).
+        const key = `recipe-image/${recipeId}`;
 
         if (!force) {
             try {

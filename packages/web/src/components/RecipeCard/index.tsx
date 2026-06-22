@@ -1,10 +1,8 @@
-import { getStorageItem } from '@imapps/web-utils';
 import type { Recipe } from '@shoppingo/types';
 import { ImageOff } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
 import { Card, CardContent } from '../../components/ui/card';
 import { Skeleton } from '../../components/ui/skeleton';
-import { getAuthConfig } from '../../config/auth';
+import { useAuthedImage } from '../../hooks/useAuthedImage';
 
 interface RecipeCardProps {
     recipe: Recipe;
@@ -12,51 +10,7 @@ interface RecipeCardProps {
 }
 
 export const RecipeCard = ({ recipe, onClick }: RecipeCardProps) => {
-    const [imageUrl, setImageUrl] = useState<string | null>(null);
-    const [hasImageError, setHasImageError] = useState(false);
-    const objectUrlRef = useRef<string | null>(null);
-
-    useEffect(() => {
-        if (!recipe.coverImageKey) return;
-
-        const fetchImage = async () => {
-            try {
-                const authConfig = getAuthConfig();
-                const token = getStorageItem(
-                    authConfig.accessTokenKey || 'accessToken',
-                    authConfig.storageType || 'localStorage'
-                );
-
-                const headers: Record<string, string> = {};
-                if (token) {
-                    headers.Authorization = `Bearer ${token}`;
-                }
-
-                const response = await fetch(`/api/image/${encodeURIComponent(recipe.coverImageKey)}`, {
-                    headers,
-                });
-                if (!response.ok) {
-                    setHasImageError(true);
-                    return;
-                }
-                const blob = await response.blob();
-                const url = URL.createObjectURL(blob);
-                objectUrlRef.current = url;
-                setImageUrl(url);
-            } catch {
-                setHasImageError(true);
-            }
-        };
-
-        fetchImage();
-
-        return () => {
-            if (objectUrlRef.current) {
-                URL.revokeObjectURL(objectUrlRef.current);
-                objectUrlRef.current = null;
-            }
-        };
-    }, [recipe.coverImageKey]);
+    const { imageUrl, hasError: hasImageError } = useAuthedImage(recipe.coverImageKey);
 
     const ingredientCount = recipe.ingredients?.length ?? 0;
     const ingredientLabel = ingredientCount === 1 ? 'ingredient' : 'ingredients';

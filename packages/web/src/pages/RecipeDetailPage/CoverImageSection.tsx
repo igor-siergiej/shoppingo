@@ -1,12 +1,11 @@
-import { getStorageItem } from '@imapps/web-utils';
 import type { Recipe } from '@shoppingo/types';
-import { ImageIcon, ImageOff } from 'lucide-react';
-import { useEffect, useId, useRef, useState } from 'react';
+import { ImageIcon, ImageOff, Sparkles } from 'lucide-react';
+import { useId, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { uploadRecipeImage } from '../../api';
+import { revertRecipeAiImage, uploadRecipeImage } from '../../api';
 import { Button } from '../../components/ui/button';
 import { Skeleton } from '../../components/ui/skeleton';
-import { getAuthConfig } from '../../config/auth';
+import { useAuthedImage } from '../../hooks/useAuthedImage';
 
 interface CoverImageSectionProps {
     recipe: Recipe;
@@ -14,126 +13,134 @@ interface CoverImageSectionProps {
     onImageChange?: () => void;
 }
 
-export const CoverImageSection = ({ recipe, isOwner = false, onImageChange }: CoverImageSectionProps) => {
+const successToast = { style: { backgroundColor: '#10b981', color: '#ffffff' } };
+const errorToast = { style: { backgroundColor: '#ef4444', color: '#ffffff' } };
+
+const useImageAction = (onImageChange?: () => void) => {
+    const [isBusy, setIsBusy] = useState(false);
+
+    const run = async (action: () => Promise<unknown>, success: string, fallbackError: string) => {
+        setIsBusy(true);
+        try {
+            await action();
+            toast.success(success, successToast);
+            onImageChange?.();
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : fallbackError, errorToast);
+        } finally {
+            setIsBusy(false);
+        }
+    };
+
+    return { isBusy, run };
+};
+
+const CoverImagePreview = ({
+    imageUrl,
+    showSkeleton,
+    hasError,
+    alt,
+}: {
+    imageUrl: string | null;
+    showSkeleton: boolean;
+    hasError: boolean;
+    alt: string;
+}) => {
+    if (hasError) {
+        return (
+            <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
+                <ImageOff className="h-8 w-8" />
+                <p className="text-sm">Failed to load image</p>
+            </div>
+        );
+    }
+    if (imageUrl) {
+        return <img src={imageUrl} alt={alt} className="h-full w-full object-cover" />;
+    }
+    if (showSkeleton) {
+        return <Skeleton className="absolute inset-0 h-full w-full rounded-none" />;
+    }
+    return null;
+};
+
+type ImageAction = ReturnType<typeof useImageAction>;
+
+const RevertButton = ({ recipe, isBusy, run }: { recipe: Recipe } & ImageAction) => {
+    if (!recipe.aiImageKey || recipe.coverImageKey === recipe.aiImageKey) return null;
+    return (
+        <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            disabled={isBusy}
+            onClick={() => run(() => revertRecipeAiImage(recipe.id), 'Reverted to AI image', 'Failed to revert image')}
+        >
+            <Sparkles className="h-4 w-4 mr-1" />
+            Use AI image
+        </Button>
+    );
+};
+
+const UploadButton = ({ recipe, isBusy, run }: { recipe: Recipe } & ImageAction) => {
     const fileInputId = useId();
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const imageUrlRef = useRef<string | null>(null);
-    const [imageUrl, setImageUrl] = useState<string | null>(null);
-    const [isLoadingImage, setIsLoadingImage] = useState(true);
-    const [hasImageError, setHasImageError] = useState(false);
-    const [isUploading, setIsUploading] = useState(false);
-
-    useEffect(() => {
-        if (!recipe.coverImageKey) {
-            setIsLoadingImage(false);
-            return;
-        }
-
-        setIsLoadingImage(true);
-
-        const fetchImage = async () => {
-            try {
-                const authConfig = getAuthConfig();
-                const token = getStorageItem(
-                    authConfig.accessTokenKey || 'accessToken',
-                    authConfig.storageType || 'localStorage'
-                );
-
-                const headers: Record<string, string> = {};
-                if (token) {
-                    headers.Authorization = `Bearer ${token}`;
-                }
-
-                const response = await fetch(`/api/image/${encodeURIComponent(recipe.coverImageKey)}`, {
-                    headers,
-                });
-                if (!response.ok) {
-                    setHasImageError(true);
-                    return;
-                }
-                const blob = await response.blob();
-                const url = URL.createObjectURL(blob);
-                imageUrlRef.current = url;
-                setImageUrl(url);
-                setHasImageError(false);
-            } catch {
-                setHasImageError(true);
-            } finally {
-                setIsLoadingImage(false);
-            }
-        };
-
-        fetchImage();
-
-        return () => {
-            if (imageUrlRef.current) {
-                URL.revokeObjectURL(imageUrlRef.current);
-                imageUrlRef.current = null;
-            }
-        };
-    }, [recipe.coverImageKey]);
 
     const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
-
-        setIsUploading(true);
-        try {
-            await uploadRecipeImage(recipe.id, file);
-            toast.success('Image uploaded successfully', { style: { backgroundColor: '#10b981', color: '#ffffff' } });
-            // Refresh the image by triggering onImageChange
-            if (onImageChange) {
-                onImageChange();
-            }
-        } catch (err) {
-            const message = err instanceof Error ? err.message : 'Failed to upload image';
-            toast.error(message, { style: { backgroundColor: '#ef4444', color: '#ffffff' } });
-        } finally {
-            setIsUploading(false);
-            if (fileInputRef.current) fileInputRef.current.value = '';
-        }
+        await run(() => uploadRecipeImage(recipe.id, file), 'Image uploaded successfully', 'Failed to upload image');
     };
 
     return (
+        <>
+            <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageSelect}
+                onClick={(e) => {
+                    (e.currentTarget as HTMLInputElement).value = '';
+                }}
+                disabled={isBusy}
+                className="hidden"
+                id={fileInputId}
+            />
+            <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                disabled={isBusy}
+                onClick={() => fileInputRef.current?.click()}
+            >
+                <ImageIcon className="h-4 w-4 mr-1" />
+                {recipe.coverImageKey ? 'Replace' : 'Upload'}
+            </Button>
+        </>
+    );
+};
+
+const OwnerControls = ({ recipe, onImageChange }: { recipe: Recipe; onImageChange?: () => void }) => {
+    const action = useImageAction(onImageChange);
+    return (
+        <div className="absolute bottom-3 right-3 z-10 flex gap-2">
+            <RevertButton recipe={recipe} {...action} />
+            <UploadButton recipe={recipe} {...action} />
+        </div>
+    );
+};
+
+export const CoverImageSection = ({ recipe, isOwner = false, onImageChange }: CoverImageSectionProps) => {
+    const { imageUrl, isLoading, hasError } = useAuthedImage(recipe.coverImageKey);
+
+    return (
         <div className="relative h-64 w-full rounded-md overflow-hidden bg-muted border flex items-center justify-center">
-            {imageUrl && !hasImageError && (
-                <img src={imageUrl} alt={recipe.title} className="h-full w-full object-cover" />
-            )}
-
-            {(isLoadingImage || !recipe.coverImageKey) && !imageUrl && !hasImageError && (
-                <Skeleton className="absolute inset-0 h-full w-full rounded-none" />
-            )}
-
-            {hasImageError && (
-                <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
-                    <ImageOff className="h-8 w-8" />
-                    <p className="text-sm">Failed to load image</p>
-                </div>
-            )}
-
-            {!recipe.coverImageKey && isOwner && (
-                <div className="absolute bottom-3 right-3 z-10">
-                    <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageSelect}
-                        disabled={isUploading}
-                        className="hidden"
-                        id={fileInputId}
-                    />
-                    <Button
-                        type="button"
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={isUploading}
-                    >
-                        <ImageIcon className="h-4 w-4 mr-1" />
-                        Upload
-                    </Button>
-                </div>
-            )}
+            <CoverImagePreview
+                imageUrl={imageUrl}
+                showSkeleton={isLoading || !recipe.coverImageKey}
+                hasError={hasError}
+                alt={recipe.title}
+            />
+            {isOwner && <OwnerControls recipe={recipe} onImageChange={onImageChange} />}
         </div>
     );
 };

@@ -105,7 +105,7 @@ describe('RecipeImageService', () => {
 
             const key = await service.generateRecipeImage('rec-1', 'Lemon Chicken', ingredients);
 
-            expect(key).toBe('recipe-image/lemon chicken');
+            expect(key).toBe('recipe-image/rec-1');
             expect(mockGenerator.calls.length).toBe(0);
             expect(mockStore.calls.putObject.length).toBe(0);
         });
@@ -115,12 +115,12 @@ describe('RecipeImageService', () => {
 
             const key = await service.generateRecipeImage('rec-2', 'Lemon Chicken', ingredients);
 
-            expect(key).toBe('recipe-image/lemon chicken');
+            expect(key).toBe('recipe-image/rec-2');
             expect(mockGenerator.calls.length).toBe(1);
             expect(mockGenerator.calls[0][0]).toBe(
                 'Appetising food photography of Lemon Chicken, featuring chicken, garlic, lemon, soft natural lighting, shallow depth of field, served on a wooden table, no text, no watermark.'
             );
-            expect(mockStore.calls.putObject[0][0]).toBe('recipe-image/lemon chicken');
+            expect(mockStore.calls.putObject[0][0]).toBe('recipe-image/rec-2');
         });
 
         it('builds prompt with no ingredient clause when ingredients empty', async () => {
@@ -161,7 +161,7 @@ describe('RecipeImageService', () => {
 
             const key = await serviceNoLogger.generateRecipeImage('rec-6', 'Title', ingredients);
 
-            expect(key).toBe('recipe-image/title');
+            expect(key).toBe('recipe-image/rec-6');
         });
     });
 });
