@@ -110,6 +110,7 @@ const CalendarPage = () => {
                             selectedDay={selectedDay}
                             onSelectDay={setSelectedDay}
                             onDropTodoOnDay={handleDropOnDay}
+                            onChangeMonth={(dir) => setMonth((m) => addMonths(m, dir))}
                         />
                     )}
                 </div>

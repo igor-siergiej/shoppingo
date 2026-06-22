@@ -66,6 +66,29 @@ describe('DueDateField', () => {
         expect(svg).toBeInTheDocument();
     });
 
+    it('parses natural language input and commits on Enter', async () => {
+        const user = userEvent.setup();
+        render(<DueDateField value={undefined} onChange={mockOnChange} />);
+
+        await user.click(screen.getByRole('button', { name: /pick a date/i }));
+        const input = screen.getByLabelText('Natural language date');
+        await user.type(input, 'tomorrow');
+
+        expect(screen.getByTestId('nl-date-preview')).toHaveTextContent('→');
+
+        await user.keyboard('{Enter}');
+        expect(mockOnChange).toHaveBeenCalledWith(expect.any(Date));
+    });
+
+    it('shows unrecognized hint for garbage input', async () => {
+        const user = userEvent.setup();
+        render(<DueDateField value={undefined} onChange={mockOnChange} />);
+
+        await user.click(screen.getByRole('button', { name: /pick a date/i }));
+        await user.type(screen.getByLabelText('Natural language date'), 'zzzz');
+        expect(screen.getByTestId('nl-date-preview')).toHaveTextContent('Unrecognized date');
+    });
+
     it('uses captionLayout prop when provided', () => {
         const { container } = render(
             <DueDateField value={undefined} onChange={mockOnChange} captionLayout="dropdown" />

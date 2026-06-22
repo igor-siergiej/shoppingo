@@ -8,8 +8,19 @@ import {
     startOfMonth,
     startOfWeek,
 } from 'date-fns';
+import { motion, type PanInfo } from 'motion/react';
 
 export const dayKey = (date: Date): string => format(date, 'yyyy-MM-dd');
+
+const SWIPE_THRESHOLD = 50;
+
+// Combine drag distance with a fraction of fling velocity so a fast short flick still pages.
+const resolveMonthSwipe = (offsetX: number, velocityX: number): -1 | 0 | 1 => {
+    const effective = offsetX + velocityX / 8;
+    if (effective < -SWIPE_THRESHOLD) return 1; // swipe left -> next month
+    if (effective > SWIPE_THRESHOLD) return -1; // swipe right -> prev month
+    return 0;
+};
 
 export interface DayDot {
     color: string;
@@ -22,6 +33,7 @@ export interface MonthGridProps {
     selectedDay: Date | undefined;
     onSelectDay: (day: Date) => void;
     onDropTodoOnDay: (todoId: string, day: Date) => void;
+    onChangeMonth?: (direction: -1 | 1) => void;
 }
 
 interface DayCellProps {
@@ -74,10 +86,22 @@ const DayCell = ({ day, dots, selected, inMonth, onSelect, onDrop }: DayCellProp
     );
 };
 
-export const MonthGrid = ({ month, dotsByDay, selectedDay, onSelectDay, onDropTodoOnDay }: MonthGridProps) => {
+export const MonthGrid = ({
+    month,
+    dotsByDay,
+    selectedDay,
+    onSelectDay,
+    onDropTodoOnDay,
+    onChangeMonth,
+}: MonthGridProps) => {
     const gridStart = startOfWeek(startOfMonth(month), { weekStartsOn: 1 });
     const gridEnd = endOfWeek(endOfMonth(month), { weekStartsOn: 1 });
     const days = eachDayOfInterval({ start: gridStart, end: gridEnd });
+
+    const handleDragEnd = (_e: unknown, info: PanInfo) => {
+        const direction = resolveMonthSwipe(info.offset.x, info.velocity.x);
+        if (direction !== 0) onChangeMonth?.(direction);
+    };
 
     return (
         <div>
@@ -88,7 +112,17 @@ export const MonthGrid = ({ month, dotsByDay, selectedDay, onSelectDay, onDropTo
                     </div>
                 ))}
             </div>
-            <div className="grid grid-cols-7 gap-1">
+            <motion.div
+                key={format(month, 'yyyy-MM')}
+                drag={onChangeMonth ? 'x' : false}
+                dragSnapToOrigin
+                dragElastic={0.2}
+                dragMomentum={false}
+                onDragEnd={handleDragEnd}
+                initial={{ opacity: 0.6 }}
+                animate={{ opacity: 1 }}
+                className="grid grid-cols-7 gap-1 touch-pan-y"
+            >
                 {days.map((day) => {
                     const key = dayKey(day);
                     return (
@@ -103,7 +137,7 @@ export const MonthGrid = ({ month, dotsByDay, selectedDay, onSelectDay, onDropTo
                         />
                     );
                 })}
-            </div>
+            </motion.div>
         </div>
     );
 };
