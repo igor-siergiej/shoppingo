@@ -30,6 +30,7 @@ import {
     updateRecipe,
     uploadRecipeImage,
 } from '../interfaces/RecipeHandlers';
+import { getVapidPublicKey, subscribe, unsubscribe } from '../interfaces/PushHandlers';
 import { completeTodo, createTodo, deleteTodo, getTodos, updateTodo } from '../interfaces/TodoHandlers';
 import { authenticate } from '../middleware/auth';
 
@@ -96,6 +97,10 @@ export const createRoutes = (): Hono<Vars> => {
     router.put('/api/labels', authenticate, createLabel);
     router.post('/api/labels/:id', authenticate, updateLabel);
     router.delete('/api/labels/:id', authenticate, deleteLabel);
+
+    router.get('/api/push/vapid-public-key', getVapidPublicKey);
+    router.post('/api/push/subscribe', authenticate, subscribe);
+    router.delete('/api/push/subscribe', authenticate, unsubscribe);
 
     return router;
 };
