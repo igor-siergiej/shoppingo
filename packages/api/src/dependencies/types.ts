@@ -1,5 +1,5 @@
 import type { Logger, MongoDbConnection, ObjectStoreConnection } from '@imapps/api-utils';
-import type { Label, List, Recipe, Todo } from '@shoppingo/types';
+import type { Label, List, PushSubscription, Recipe, Todo } from '@shoppingo/types';
 
 import type { AuthorizationService } from '../domain/AuthorizationService';
 import type { IdGenerator } from '../domain/IdGenerator';
@@ -15,7 +15,10 @@ import type { RecipeRepository } from '../domain/RecipeRepository';
 import type { RecipeService } from '../domain/RecipeService';
 import type { TodoRepository } from '../domain/TodoRepository';
 import type { TodoService } from '../domain/TodoService';
+import type { NotificationService } from '../domain/NotificationService';
+import type { PushSubscriptionRepository } from '../domain/PushSubscriptionRepository';
 import type { RecipeHandlers } from '../interfaces/RecipeHandlers';
+import type { WebPushSender } from '../infrastructure/WebPushSender';
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 export type Collections = {
@@ -23,6 +26,7 @@ export type Collections = {
     [CollectionNames.Recipe]: Recipe;
     [CollectionNames.Todo]: Todo;
     [CollectionNames.Label]: Label;
+    [CollectionNames.PushSubscription]: PushSubscription;
 };
 
 export enum DependencyToken {
@@ -46,6 +50,9 @@ export enum DependencyToken {
     TodoService = 'TodoService',
     LabelRepository = 'LabelRepository',
     LabelService = 'LabelService',
+    PushSubscriptionRepository = 'PushSubscriptionRepository',
+    WebPushSender = 'WebPushSender',
+    NotificationService = 'NotificationService',
 }
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
@@ -70,6 +77,9 @@ export type Dependencies = {
     [DependencyToken.TodoService]: TodoService;
     [DependencyToken.LabelRepository]: LabelRepository;
     [DependencyToken.LabelService]: LabelService;
+    [DependencyToken.PushSubscriptionRepository]: PushSubscriptionRepository;
+    [DependencyToken.WebPushSender]: WebPushSender;
+    [DependencyToken.NotificationService]: NotificationService;
 };
 
 export enum CollectionNames {
@@ -77,4 +87,5 @@ export enum CollectionNames {
     Recipe = 'recipe',
     Todo = 'todo',
     Label = 'label',
+    PushSubscription = 'pushSubscription',
 }
