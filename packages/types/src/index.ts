@@ -49,6 +49,8 @@ export interface Recipe {
     title: string;
     ingredients: Ingredient[];
     coverImageKey?: string;
+    /** The AI-generated image key, generated once and kept so the cover can revert to it for free. */
+    aiImageKey?: string;
     users: User[];
     ownerId?: string;
     dateAdded: Date;
@@ -61,6 +63,7 @@ export interface RecipeResponse {
     title: string;
     ingredients: Ingredient[];
     coverImageKey?: string;
+    aiImageKey?: string;
     users: Array<{ username: string }>;
     ownerId?: string;
     dateAdded: Date;

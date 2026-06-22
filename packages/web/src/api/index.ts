@@ -303,6 +303,14 @@ export const generateRecipeAiImage = async (recipeId: string): Promise<Recipe> =
     });
 };
 
+export const revertRecipeAiImage = async (recipeId: string): Promise<Recipe> => {
+    return await makeRequest({
+        pathname: `/api/recipes/${encodeURIComponent(recipeId)}/image/revert`,
+        method: MethodType.POST,
+        operationString: 'revert recipe ai image',
+    });
+};
+
 export const uploadRecipeImage = async (recipeId: string, file: File): Promise<{ imageKey: string }> => {
     const formData = new FormData();
     formData.append('image', file);

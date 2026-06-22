@@ -1,5 +1,5 @@
 import { APIError } from '@imapps/api-utils/hono';
-import type { Ingredient } from '@shoppingo/types';
+import type { Ingredient, Recipe } from '@shoppingo/types';
 import type { Context } from 'hono';
 import { dependencyContainer } from '../../dependencies/container';
 import { DependencyToken } from '../../dependencies/types';
@@ -18,6 +18,15 @@ const getBucketStore = () => dependencyContainer.resolve(DependencyToken.ImageSt
 const getAuthenticatedUser = (c: Context<HonoVars>): { id: string; username: string } | null => {
     const user = c.get('user');
     return user?.id ? user : null;
+};
+
+/** Normalise an unknown error, log it, and rethrow as an APIError. */
+const failWithApiError = (error: unknown, logMessage: string, fields: Record<string, unknown>): never => {
+    const e = (error ?? {}) as { message?: string; status?: number };
+    const message = e.message || 'Internal Server Error';
+    const status = e.status ?? 500;
+    getLogger().error(logMessage, { ...fields, error: message, status });
+    throw new APIError(message, status);
 };
 
 const verifyRecipeAccess = async (
@@ -405,7 +414,8 @@ export const uploadRecipeImage = async (c: Context<HonoVars>): Promise<Response>
         }
 
         const fileBuffer = Buffer.from(await imageFile.arrayBuffer());
-        const imageKey = `recipe-upload/${authenticatedUser.id}/${recipeId}`;
+        // Versioned key so each upload is a distinct, immutable URL (avoids stale browser cache).
+        const imageKey = `recipe-upload/${authenticatedUser.id}/${recipeId}/${Date.now()}`;
 
         const bucketStore = getBucketStore();
         await bucketStore.putObject(imageKey, fileBuffer, { contentType: mimeType });
@@ -429,7 +439,13 @@ export const uploadRecipeImage = async (c: Context<HonoVars>): Promise<Response>
     }
 };
 
-export const generateRecipeImage = async (c: Context<HonoVars>): Promise<Response> => {
+// Shared scaffolding for image actions that only need auth + access check around a single service call.
+const handleRecipeImageAction = async (
+    c: Context<HonoVars>,
+    failVerb: string,
+    successLog: string,
+    action: (recipeId: string, user: { id: string; username: string }) => Promise<Recipe>
+): Promise<Response> => {
     const recipeId = c.req.param('recipeId');
     const logger = getLogger();
     const authenticatedUser = getAuthenticatedUser(c);
@@ -444,21 +460,22 @@ export const generateRecipeImage = async (c: Context<HonoVars>): Promise<Respons
             return c.json({ error: 'Forbidden' }, 403);
         }
 
-        const recipe = await getRecipeService().regenerateImage(recipeId, authenticatedUser.id);
+        const recipe = await action(recipeId, authenticatedUser);
 
-        logger.info('API: Recipe image generated', { userId: authenticatedUser.id, recipeId });
+        logger.info(`API: ${successLog}`, { userId: authenticatedUser.id, recipeId });
 
         return c.json(recipe, 200);
     } catch (error: unknown) {
-        const err = error instanceof Error ? error : new Error(String(error));
-        const status = (error as HttpError)?.status ?? 500;
-        const errorMessage = err.message || 'Internal Server Error';
-        logger.error('API: Failed to generate recipe image', {
-            userId: authenticatedUser.id,
-            recipeId,
-            error: errorMessage,
-            status,
-        });
-        throw new APIError(errorMessage, status);
+        return failWithApiError(error, `API: Failed to ${failVerb}`, { userId: authenticatedUser.id, recipeId });
     }
 };
+
+export const revertRecipeImage = (c: Context<HonoVars>): Promise<Response> =>
+    handleRecipeImageAction(c, 'revert recipe image', 'Recipe cover reverted to AI image', (recipeId, user) =>
+        getRecipeService().revertToAiImage(recipeId, user.id)
+    );
+
+export const generateRecipeImage = (c: Context<HonoVars>): Promise<Response> =>
+    handleRecipeImageAction(c, 'generate recipe image', 'Recipe image generated', (recipeId, user) =>
+        getRecipeService().regenerateImage(recipeId, user.id)
+    );
