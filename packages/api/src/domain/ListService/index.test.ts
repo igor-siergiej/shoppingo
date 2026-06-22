@@ -1,5 +1,6 @@
-import { beforeEach, describe, expect, it } from 'bun:test';
+import { beforeEach, describe, expect, it, mock } from 'bun:test';
 import type { Item, List, User } from '@shoppingo/types';
+import { ListType } from '@shoppingo/types';
 
 import type { IdGenerator } from '../IdGenerator';
 import type { ListRepository } from '../ListRepository';
@@ -1074,5 +1075,38 @@ describe('ListService', () => {
                 expect(breadItem?.unit).toBeUndefined();
             });
         });
+    });
+});
+
+describe('ListService notifications', () => {
+    it('notifies members when an item is added', async () => {
+        const list = {
+            id: 'l1',
+            title: 'Groceries',
+            dateAdded: new Date(),
+            items: [],
+            users: [
+                { id: 'u1', username: 'owner' },
+                { id: 'u2', username: 'member' },
+            ],
+            listType: ListType.SHOPPING,
+            ownerId: 'u1',
+        };
+        const repo = {
+            getByTitle: async () => list,
+            pushItem: async () => {},
+        } as never;
+        const idGenerator = { generate: () => 'i1' } as never;
+        const notify = { notifyItemAdded: mock(async () => {}), notifyItemsAdded: mock(async () => {}) };
+
+        const service = new ListService(repo, idGenerator, undefined, undefined, undefined, notify as never);
+        await service.addItem('Groceries', 'Milk', new Date(), undefined, undefined, {
+            id: 'u1',
+            username: 'owner',
+        });
+
+        // fan-out is fire-and-forget — allow the microtask queue to drain
+        await Promise.resolve();
+        expect(notify.notifyItemAdded).toHaveBeenCalledTimes(1);
     });
 });

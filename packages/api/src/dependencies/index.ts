@@ -6,6 +6,7 @@ import { AuthorizationService } from '../domain/AuthorizationService';
 import { ImageService } from '../domain/ImageService';
 import { LabelService } from '../domain/LabelService';
 import { ListService } from '../domain/ListService';
+import { NotificationService } from '../domain/NotificationService';
 import { RecipeImageService } from '../domain/RecipeImageService';
 import { RecipeService } from '../domain/RecipeService';
 import { TodoService } from '../domain/TodoService';
@@ -13,10 +14,12 @@ import { HttpAuthClient } from '../infrastructure/AuthClient';
 import { BucketStore } from '../infrastructure/BucketStore';
 import { MongoLabelRepository } from '../infrastructure/MongoLabelRepository';
 import { MongoListRepository } from '../infrastructure/MongoListRepository';
+import { MongoPushSubscriptionRepository } from '../infrastructure/MongoPushSubscriptionRepository';
 import { MongoRecipeRepository } from '../infrastructure/MongoRecipeRepository';
 import { MongoTodoRepository } from '../infrastructure/MongoTodoRepository';
 import { OpenAIImageGenerator } from '../infrastructure/OpenAIImageGenerator';
 import { UuidGenerator } from '../infrastructure/UuidGenerator';
+import { WebPushSender } from '../infrastructure/WebPushSender';
 import * as RecipeHandlers from '../interfaces/RecipeHandlers';
 import { dependencyContainer } from './container';
 import { DependencyToken } from './types';
@@ -44,6 +47,45 @@ export const registerDepdendencies = () => {
     );
 
     dependencyContainer.registerSingleton(
+        DependencyToken.PushSubscriptionRepository,
+        // @ts-expect-error - Dependency injection requires constructor return override
+        class {
+            constructor() {
+                return new MongoPushSubscriptionRepository(dependencyContainer.resolve(DependencyToken.Database));
+            }
+        }
+    );
+
+    dependencyContainer.registerSingleton(
+        DependencyToken.WebPushSender,
+        // @ts-expect-error - Dependency injection requires constructor return override
+        class {
+            constructor() {
+                return new WebPushSender(
+                    config.get('vapidPublicKey'),
+                    config.get('vapidPrivateKey'),
+                    config.get('vapidSubject'),
+                    dependencyContainer.resolve(DependencyToken.Logger)
+                );
+            }
+        }
+    );
+
+    dependencyContainer.registerSingleton(
+        DependencyToken.NotificationService,
+        // @ts-expect-error - Dependency injection requires constructor return override
+        class {
+            constructor() {
+                return new NotificationService(
+                    dependencyContainer.resolve(DependencyToken.PushSubscriptionRepository),
+                    dependencyContainer.resolve(DependencyToken.WebPushSender),
+                    dependencyContainer.resolve(DependencyToken.Logger)
+                );
+            }
+        }
+    );
+
+    dependencyContainer.registerSingleton(
         DependencyToken.ListService,
         // @ts-expect-error - Dependency injection requires constructor return override
         class {
@@ -53,7 +95,8 @@ export const registerDepdendencies = () => {
                     dependencyContainer.resolve(DependencyToken.IdGenerator),
                     dependencyContainer.resolve(DependencyToken.AuthClient),
                     dependencyContainer.resolve(DependencyToken.Logger),
-                    dependencyContainer.resolve(DependencyToken.AuthorizationService)
+                    dependencyContainer.resolve(DependencyToken.AuthorizationService),
+                    dependencyContainer.resolve(DependencyToken.NotificationService)
                 );
             }
         }

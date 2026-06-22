@@ -197,7 +197,7 @@ export const addItem = async (c: Context<HonoVars>) => {
             return c.json({ error: 'Forbidden' }, 403);
         }
 
-        const item = await getListService().addItem(title, itemName, dateAdded, quantity, unit);
+        const item = await getListService().addItem(title, itemName, dateAdded, quantity, unit, authenticatedUser);
 
         logger.info('API: Item added to list', {
             listTitle: title,
@@ -545,7 +545,7 @@ export const addItems = async (c: Context<HonoVars>) => {
     }
 
     try {
-        const result = await getListService().addItems(title, items, authenticatedUser.id);
+        const result = await getListService().addItems(title, items, authenticatedUser.id, authenticatedUser);
 
         logger.info('API: Items bulk added to list', {
             listTitle: title,

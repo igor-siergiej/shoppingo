@@ -463,7 +463,8 @@ describe('ListHandlers', () => {
                 'New Item',
                 expect.any(String),
                 undefined,
-                undefined
+                undefined,
+                { id: 'test-user-1', username: 'testuser' }
             );
             expect(response.status).toBe(200);
             expect(await getResponseBody(response)).toEqual({
