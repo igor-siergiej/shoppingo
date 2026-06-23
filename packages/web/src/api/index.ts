@@ -437,3 +437,32 @@ const generateTimestamp = (now: Date): string => {
 
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 };
+
+export const getVapidPublicKey = async (): Promise<{ publicKey: string | null }> => {
+    return await makeRequest({
+        pathname: '/api/push/vapid-public-key',
+        method: MethodType.GET,
+        operationString: 'get vapid public key',
+    });
+};
+
+export const subscribeToPush = async (subscription: {
+    endpoint: string;
+    keys: { p256dh: string; auth: string };
+}): Promise<void> => {
+    return await makeRequest({
+        pathname: '/api/push/subscribe',
+        method: MethodType.POST,
+        operationString: 'subscribe to push',
+        body: JSON.stringify(subscription),
+    });
+};
+
+export const unsubscribeFromPush = async (endpoint: string): Promise<void> => {
+    return await makeRequest({
+        pathname: '/api/push/subscribe',
+        method: MethodType.DELETE,
+        operationString: 'unsubscribe from push',
+        body: JSON.stringify({ endpoint }),
+    });
+};
