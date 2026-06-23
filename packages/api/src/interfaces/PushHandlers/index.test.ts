@@ -26,9 +26,7 @@ const mockWebPushSender = {
 
 type HonoVars = { Variables: { user: { id: string; username: string } } };
 
-const createMockContext = (
-    overrides: { body?: unknown; user?: { id: string; username: string } } = {}
-) => {
+const createMockContext = (overrides: { body?: unknown; user?: { id: string; username: string } } = {}) => {
     const vars: Record<string, unknown> = {
         user: overrides.user ?? { id: 'u1', username: 'owner' },
     };

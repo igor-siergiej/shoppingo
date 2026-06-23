@@ -41,7 +41,7 @@ describe('usePushNotifications', () => {
             permission: 'default',
             requestPermission: vi.fn(async () => 'granted'),
         });
-        vi.stubGlobal('PushManager', function () {});
+        vi.stubGlobal('PushManager', () => {});
     });
 
     it('reports support and an unsubscribed initial state', async () => {

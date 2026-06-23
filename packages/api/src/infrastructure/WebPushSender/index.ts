@@ -32,10 +32,7 @@ export class WebPushSender {
         }
 
         try {
-            await webpush.sendNotification(
-                { endpoint: sub.endpoint, keys: sub.keys },
-                payload
-            );
+            await webpush.sendNotification({ endpoint: sub.endpoint, keys: sub.keys }, payload);
             return 'ok';
         } catch (error) {
             const statusCode = (error as { statusCode?: number }).statusCode;

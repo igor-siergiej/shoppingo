@@ -18,6 +18,7 @@ import {
     updateList,
 } from '../interfaces/ListHandlers';
 import { receiveLogs } from '../interfaces/LogHandlers';
+import { getVapidPublicKey, subscribe, unsubscribe } from '../interfaces/PushHandlers';
 import {
     addUserToRecipe,
     createRecipe,
@@ -30,7 +31,6 @@ import {
     updateRecipe,
     uploadRecipeImage,
 } from '../interfaces/RecipeHandlers';
-import { getVapidPublicKey, subscribe, unsubscribe } from '../interfaces/PushHandlers';
 import { completeTodo, createTodo, deleteTodo, getTodos, updateTodo } from '../interfaces/TodoHandlers';
 import { authenticate } from '../middleware/auth';
 
