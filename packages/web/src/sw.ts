@@ -49,17 +49,22 @@ self.addEventListener('notificationclick', (event: NotificationEvent) => {
     const targetUrl = (event.notification.data as { url?: string })?.url ?? '/';
 
     event.waitUntil(
-        self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+        self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(async (clientList) => {
             for (const client of clientList) {
                 if ('focus' in client) {
-                    void client.focus();
-                    if ('navigate' in client) {
-                        void (client as WindowClient).navigate(targetUrl);
+                    try {
+                        if ('navigate' in client) {
+                            await (client as WindowClient).navigate(targetUrl);
+                        }
+                        await client.focus();
+                        return;
+                    } catch {
+                        // Focus/navigate failed (e.g. uncontrolled window) — fall through to open a new one.
+                        break;
                     }
-                    return;
                 }
             }
-            return self.clients.openWindow(targetUrl);
+            await self.clients.openWindow(targetUrl);
         })
     );
 });
