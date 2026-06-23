@@ -20,6 +20,17 @@ vi.mock('../../../hooks/usePWA', () => ({
     }),
 }));
 
+vi.mock('../../../hooks/usePushNotifications', () => ({
+    usePushNotifications: () => ({
+        isSupported: true,
+        permission: 'default',
+        isSubscribed: false,
+        isBusy: false,
+        subscribe: vi.fn(),
+        unsubscribe: vi.fn(),
+    }),
+}));
+
 describe('HamburgerMenu', () => {
     const mockOnManageUsers = vi.fn();
     const mockOnClose = vi.fn();
@@ -144,6 +155,11 @@ describe('HamburgerMenu', () => {
         await user.click(logoutButton);
 
         expect(mockOnLogout).toHaveBeenCalled();
+    });
+
+    it('renders the notifications toggle when push is supported', () => {
+        render(<HamburgerMenu onManageUsers={() => {}} onClose={() => {}} onLogout={() => {}} />);
+        expect(screen.getByText(/notifications/i)).toBeInTheDocument();
     });
 
     it('has proper button variants', () => {
