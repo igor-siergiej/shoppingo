@@ -5,6 +5,7 @@ import { ListType as ListTypeEnum } from '@shoppingo/types';
 import { AuthorizationService } from '../AuthorizationService';
 import type { IdGenerator } from '../IdGenerator';
 import type { ListRepository } from '../ListRepository';
+import type { NotificationService } from '../NotificationService';
 import type { AuthClient } from './types';
 
 export class ListService {
@@ -15,7 +16,8 @@ export class ListService {
         private readonly idGenerator: IdGenerator,
         private readonly auth?: AuthClient,
         private readonly logger?: Logger,
-        authorizationService?: AuthorizationService
+        authorizationService?: AuthorizationService,
+        private readonly notificationService?: NotificationService
     ) {
         this.authorizationService = authorizationService ?? new AuthorizationService();
     }
@@ -163,7 +165,7 @@ export class ListService {
         }
     }
 
-    async addItem(title: string, itemName: string, dateAdded: Date, quantity?: number, unit?: string) {
+    async addItem(title: string, itemName: string, dateAdded: Date, quantity?: number, unit?: string, actor?: User) {
         try {
             const list = await this.repo.getByTitle(title);
 
@@ -195,6 +197,10 @@ export class ListService {
                 quantity,
                 unit,
             });
+
+            if (actor) {
+                void this.notificationService?.notifyItemAdded(list, item, actor);
+            }
 
             return item;
         } catch (error) {
@@ -545,7 +551,8 @@ export class ListService {
     async addItems(
         title: string,
         rawItems: Array<{ itemName: string; quantity?: number; unit?: string; dateAdded: Date }>,
-        userId: string
+        userId: string,
+        actor?: User
     ): Promise<{ added: number; skipped: number }> {
         try {
             const list = await this.repo.getByTitle(title);
@@ -589,6 +596,14 @@ export class ListService {
                 addedCount: newItems.length,
                 skippedCount: skipped,
             });
+
+            if (actor && newItems.length > 0) {
+                void this.notificationService?.notifyItemsAdded(
+                    list,
+                    newItems.map((i) => i.name),
+                    actor
+                );
+            }
 
             return { added: newItems.length, skipped };
         } catch (error) {

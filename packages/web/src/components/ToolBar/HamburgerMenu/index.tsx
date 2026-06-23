@@ -1,9 +1,10 @@
-import { Download, Loader2, LogOut, Moon, RefreshCw, Sun, Tag, Users } from 'lucide-react';
+import { Bell, Download, Loader2, LogOut, Moon, RefreshCw, Sun, Tag, Users } from 'lucide-react';
 import { motion } from 'motion/react';
 import type { ReactNode } from 'react';
 import { Button } from '../../../components/ui/button';
 import { Switch } from '../../../components/ui/switch';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { usePushNotifications } from '../../../hooks/usePushNotifications';
 import { usePWA } from '../../../hooks/usePWA';
 
 export interface HamburgerMenuProps {
@@ -51,6 +52,31 @@ const ThemeToggle = () => {
                 <span className="text-sm font-medium">{isDark ? 'Dark Mode' : 'Light Mode'}</span>
             </div>
             <Switch checked={isDark} onCheckedChange={toggleTheme} />
+        </button>
+    );
+};
+
+const NotificationToggle = () => {
+    const { isSupported, isSubscribed, isBusy, subscribe, unsubscribe } = usePushNotifications();
+    if (!isSupported) return null;
+
+    const handleToggle = () => {
+        if (isBusy) return;
+        void (isSubscribed ? unsubscribe() : subscribe());
+    };
+
+    return (
+        <button
+            type="button"
+            onClick={handleToggle}
+            disabled={isBusy}
+            className="flex items-center justify-between w-full px-4 py-2.5 rounded-lg transition-colors duration-200 hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-95 disabled:opacity-50"
+        >
+            <div className="flex items-center gap-3">
+                <Bell className="h-4 w-4 text-slate-600" />
+                <span className="text-sm font-medium">Notifications</span>
+            </div>
+            <Switch checked={isSubscribed} onCheckedChange={handleToggle} disabled={isBusy} />
         </button>
     );
 };
@@ -141,6 +167,10 @@ export const HamburgerMenu = ({
 
             <MenuItem delay={isOwner ? 0.1 : 0.05}>
                 <ThemeToggle />
+            </MenuItem>
+
+            <MenuItem delay={0.1}>
+                <NotificationToggle />
             </MenuItem>
 
             <MenuItem delay={0.1}>

@@ -18,6 +18,7 @@ import {
     updateList,
 } from '../interfaces/ListHandlers';
 import { receiveLogs } from '../interfaces/LogHandlers';
+import { getVapidPublicKey, subscribe, unsubscribe } from '../interfaces/PushHandlers';
 import {
     addUserToRecipe,
     createRecipe,
@@ -98,6 +99,10 @@ export const createRoutes = (): Hono<Vars> => {
     router.put('/api/labels', authenticate, createLabel);
     router.post('/api/labels/:id', authenticate, updateLabel);
     router.delete('/api/labels/:id', authenticate, deleteLabel);
+
+    router.get('/api/push/vapid-public-key', getVapidPublicKey);
+    router.post('/api/push/subscribe', authenticate, subscribe);
+    router.delete('/api/push/subscribe', authenticate, unsubscribe);
 
     return router;
 };

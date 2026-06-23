@@ -14,30 +14,14 @@ export default defineConfig(({ mode }) => {
         plugins: [
             react(),
             VitePWA({
+                strategies: 'injectManifest',
+                srcDir: 'src',
+                filename: 'sw.ts',
                 registerType: 'prompt',
                 injectRegister: 'auto',
                 selfDestroying: false,
-                workbox: {
-                    clientsClaim: true,
-                    cacheId: `shoppingo-v${appVersion}`,
+                injectManifest: {
                     globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest}'],
-                    runtimeCaching: [
-                        {
-                            urlPattern: ({ url }) => url.pathname.startsWith('/api/'),
-                            handler: 'NetworkFirst',
-                            options: {
-                                cacheName: 'api-cache',
-                                networkTimeoutSeconds: 2,
-                            },
-                        },
-                        {
-                            urlPattern: /^\/config\.json$/,
-                            handler: 'NetworkFirst',
-                            options: {
-                                cacheName: 'config-cache',
-                            },
-                        },
-                    ],
                 },
                 manifest: {
                     name: 'Shoppingo',

@@ -100,3 +100,14 @@ export interface Label {
 }
 
 export interface LabelResponse extends Label {}
+
+export interface PushSubscription {
+    /** Push service endpoint URL — unique per browser/device. Used as the document id. */
+    endpoint: string;
+    userId: string;
+    keys: {
+        p256dh: string;
+        auth: string;
+    };
+    dateAdded: Date;
+}

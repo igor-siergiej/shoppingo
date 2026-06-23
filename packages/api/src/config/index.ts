@@ -12,6 +12,9 @@ const schema = {
     bucketAccessKey: { parser: parsers.string, from: 'BUCKET_ACCESS_KEY' },
     bucketSecretKey: { parser: parsers.string, from: 'BUCKET_SECRET_KEY' },
     bucketEndpoint: { parser: parsers.string, from: 'BUCKET_ENDPOINT' },
+    vapidPublicKey: { parser: parsers.string, from: 'VAPID_PUBLIC_KEY', optional: true },
+    vapidPrivateKey: { parser: parsers.string, from: 'VAPID_PRIVATE_KEY', optional: true },
+    vapidSubject: { parser: parsers.string, from: 'VAPID_SUBJECT', optional: true },
 } as const;
 
 export const config = new ConfigService(schema);
