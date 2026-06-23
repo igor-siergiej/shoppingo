@@ -1,3 +1,10 @@
+# [1.48.0](https://github.com/igor-siergiej/shoppingo/compare/v1.47.1...v1.48.0) (2026-06-23)
+
+
+### Features
+
+* Web Push notifications for shared lists ([#91](https://github.com/igor-siergiej/shoppingo/issues/91)) ([eb9cd40](https://github.com/igor-siergiej/shoppingo/commit/eb9cd405163b155b708eeffab2dec666f69635ec))
+
 ## [1.47.1](https://github.com/igor-siergiej/shoppingo/compare/v1.47.0...v1.47.1) (2026-06-23)
 
 
