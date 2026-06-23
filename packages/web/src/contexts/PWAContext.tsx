@@ -1,7 +1,11 @@
 import { useRegisterSW } from 'virtual:pwa-register/react';
+import { RefreshCw } from 'lucide-react';
 import type React from 'react';
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
+
+const UPDATE_NOTIFIED_KEY = 'pwa-update-notified-at';
+const UPDATE_SNOOZE_MS = 24 * 60 * 60 * 1000;
 
 interface BeforeInstallPromptEvent extends Event {
     prompt: () => Promise<void>;
@@ -41,6 +45,7 @@ export const PWAProvider: React.FC<PWAProviderProps> = ({ children }) => {
     const [canInstall, setCanInstall] = useState(false);
     const [isInstalled, setIsInstalled] = useState(false);
     const [hasUpdate, setHasUpdate] = useState(false);
+    const [shouldShowUpdateToast, setShouldShowUpdateToast] = useState(false);
     const [isUpdating, setIsUpdating] = useState(false);
     const [isCheckingForUpdate, setIsCheckingForUpdate] = useState(false);
     const toastIdRef = useRef<string | number | null>(null);
@@ -69,6 +74,10 @@ export const PWAProvider: React.FC<PWAProviderProps> = ({ children }) => {
         onRegisterError() {},
         onNeedRefresh() {
             setHasUpdate(true);
+            const lastNotified = localStorage.getItem(UPDATE_NOTIFIED_KEY);
+            if (!lastNotified || Date.now() - Number(lastNotified) > UPDATE_SNOOZE_MS) {
+                setShouldShowUpdateToast(true);
+            }
         },
         onOfflineReady() {},
     });
@@ -85,6 +94,7 @@ export const PWAProvider: React.FC<PWAProviderProps> = ({ children }) => {
     }, [isCheckingForUpdate]);
 
     const updateApp = useCallback(() => {
+        localStorage.removeItem(UPDATE_NOTIFIED_KEY);
         if (toastIdRef.current !== null) {
             toast.dismiss(toastIdRef.current);
             toastIdRef.current = null;
@@ -94,7 +104,9 @@ export const PWAProvider: React.FC<PWAProviderProps> = ({ children }) => {
     }, [updateServiceWorker]);
 
     useEffect(() => {
-        if (!hasUpdate) return;
+        if (!shouldShowUpdateToast) return;
+
+        localStorage.setItem(UPDATE_NOTIFIED_KEY, Date.now().toString());
 
         if (toastIdRef.current !== null) {
             toast.dismiss(toastIdRef.current);
@@ -102,12 +114,13 @@ export const PWAProvider: React.FC<PWAProviderProps> = ({ children }) => {
 
         toastIdRef.current = toast('A new version is available', {
             duration: Number.POSITIVE_INFINITY,
+            icon: <RefreshCw className="h-4 w-4" />,
             action: {
                 label: 'Update',
                 onClick: updateApp,
             },
         });
-    }, [hasUpdate, updateApp]);
+    }, [shouldShowUpdateToast, updateApp]);
 
     useEffect(() => {
         const isStandalone =
