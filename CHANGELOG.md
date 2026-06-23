@@ -1,3 +1,10 @@
+## [1.47.1](https://github.com/igor-siergiej/shoppingo/compare/v1.47.0...v1.47.1) (2026-06-23)
+
+
+### Bug Fixes
+
+* **pwa:** suppress repeated update toast for same pending SW version ([#90](https://github.com/igor-siergiej/shoppingo/issues/90)) ([8827334](https://github.com/igor-siergiej/shoppingo/commit/8827334b1e9502b5cec6f5b21d54f4fa138a525a))
+
 # [1.47.0](https://github.com/igor-siergiej/shoppingo/compare/v1.46.0...v1.47.0) (2026-06-22)
 
 
