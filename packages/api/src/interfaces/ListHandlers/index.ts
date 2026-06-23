@@ -62,20 +62,42 @@ const resolveItemOperation = (body: {
     return null;
 };
 
+const ensureListAccess = async (
+    c: Context<HonoVars>,
+    title: string,
+    authenticatedUser: { id: string; username: string },
+    logger: ReturnType<typeof getLogger>
+): Promise<Response | null> => {
+    const hasAccess = await verifyListAccess(title, authenticatedUser);
+    if (!hasAccess) {
+        logger.warn('Unauthorized list access attempt', {
+            authenticatedUserId: authenticatedUser.id,
+            listTitle: title,
+        });
+        return c.json({ error: 'Forbidden' }, 403);
+    }
+    return null;
+};
+
+const failWith = (
+    error: unknown,
+    logger: ReturnType<typeof getLogger>,
+    message: string,
+    meta: Record<string, unknown>
+): never => {
+    const err = error as { status?: number; message?: string };
+    logger.error(message, { ...meta, error: err.message });
+    throw new APIError(err.message ?? 'Internal Server Error', err.status ?? 500);
+};
+
 export const getList = async (c: Context<HonoVars>) => {
     const title = c.req.param('title');
     const logger = getLogger();
     const authenticatedUser = c.get('user');
 
     try {
-        const hasAccess = await verifyListAccess(title, authenticatedUser);
-        if (!hasAccess) {
-            logger.warn('Unauthorized list access attempt', {
-                authenticatedUserId: authenticatedUser.id,
-                listTitle: title,
-            });
-            return c.json({ error: 'Forbidden' }, 403);
-        }
+        const denied = await ensureListAccess(c, title, authenticatedUser, logger);
+        if (denied) return denied;
 
         const list = await getListService().getList(title);
         const effectiveOwnerId = getAuthorizationService().getEffectiveOwnerId(list);
@@ -97,9 +119,7 @@ export const getList = async (c: Context<HonoVars>) => {
             200
         );
     } catch (error: unknown) {
-        const err = error as { status?: number; message?: string };
-        logger.error('API: Failed to retrieve list items', { listTitle: title, error: err.message });
-        throw new APIError(err.message ?? 'Internal Server Error', err.status ?? 500);
+        return failWith(error, logger, 'API: Failed to retrieve list items', { listTitle: title });
     }
 };
 
@@ -121,9 +141,7 @@ export const getLists = async (c: Context<HonoVars>) => {
         logger.info('User accessed their lists', { userId, listCount: lists.length });
         return c.json(lists, 200);
     } catch (error: unknown) {
-        const err = error as { status?: number; message?: string };
-        logger.error('Failed to get lists for user', { userId, error: err.message });
-        throw new APIError(err.message ?? 'Internal Server Error', err.status ?? 500);
+        return failWith(error, logger, 'Failed to get lists for user', { userId });
     }
 };
 
@@ -161,14 +179,11 @@ export const addList = async (c: Context<HonoVars>) => {
 
         return c.json(list, 200);
     } catch (error: unknown) {
-        const err = error as { status?: number; message?: string };
-        logger.error('API: Failed to create list', {
+        return failWith(error, logger, 'API: Failed to create list', {
             userId: authenticatedUser.id,
             username: authenticatedUser.username,
             listTitle: title,
-            error: err.message,
         });
-        throw new APIError(err.message ?? 'Internal Server Error', err.status ?? 500);
     }
 };
 
@@ -188,14 +203,8 @@ export const addItem = async (c: Context<HonoVars>) => {
     }
 
     try {
-        const hasAccess = await verifyListAccess(title, authenticatedUser);
-        if (!hasAccess) {
-            logger.warn('Unauthorized list access attempt', {
-                authenticatedUserId: authenticatedUser.id,
-                listTitle: title,
-            });
-            return c.json({ error: 'Forbidden' }, 403);
-        }
+        const denied = await ensureListAccess(c, title, authenticatedUser, logger);
+        if (denied) return denied;
 
         const item = await getListService().addItem(title, itemName, dateAdded, quantity, unit, authenticatedUser);
 
@@ -209,9 +218,7 @@ export const addItem = async (c: Context<HonoVars>) => {
 
         return c.json(item, 200);
     } catch (error: unknown) {
-        const err = error as { status?: number; message?: string };
-        logger.error('API: Failed to add item to list', { listTitle: title, itemName, error: err.message });
-        throw new APIError(err.message ?? 'Internal Server Error', err.status ?? 500);
+        return failWith(error, logger, 'API: Failed to add item to list', { listTitle: title, itemName });
     }
 };
 
@@ -228,14 +235,8 @@ export const updateItem = async (c: Context<HonoVars>) => {
     const authenticatedUser = c.get('user');
 
     try {
-        const hasAccess = await verifyListAccess(title, authenticatedUser);
-        if (!hasAccess) {
-            logger.warn('Unauthorized list access attempt', {
-                authenticatedUserId: authenticatedUser.id,
-                listTitle: title,
-            });
-            return c.json({ error: 'Forbidden' }, 403);
-        }
+        const denied = await ensureListAccess(c, title, authenticatedUser, logger);
+        if (denied) return denied;
 
         if (requestBody.newItemName !== undefined) {
             if (typeof requestBody.newItemName !== 'string' || requestBody.newItemName.trim() === '') {
@@ -264,9 +265,7 @@ export const updateItem = async (c: Context<HonoVars>) => {
         });
         return c.json(result, 200);
     } catch (error: unknown) {
-        const err = error as { status?: number; message?: string };
-        logger.error('API: Failed to update item', { listTitle: title, itemName, error: err.message });
-        throw new APIError(err.message ?? 'Internal Server Error', err.status ?? 500);
+        return failWith(error, logger, 'API: Failed to update item', { listTitle: title, itemName });
     }
 };
 
@@ -277,14 +276,8 @@ export const deleteItem = async (c: Context<HonoVars>) => {
     const authenticatedUser = c.get('user');
 
     try {
-        const hasAccess = await verifyListAccess(title, authenticatedUser);
-        if (!hasAccess) {
-            logger.warn('Unauthorized list access attempt', {
-                authenticatedUserId: authenticatedUser.id,
-                listTitle: title,
-            });
-            return c.json({ error: 'Forbidden' }, 403);
-        }
+        const denied = await ensureListAccess(c, title, authenticatedUser, logger);
+        if (denied) return denied;
 
         const list = await getListService().deleteItem(title, itemName);
 
@@ -296,9 +289,7 @@ export const deleteItem = async (c: Context<HonoVars>) => {
 
         return c.json(list, 200);
     } catch (error: unknown) {
-        const err = error as { status?: number; message?: string };
-        logger.error('API: Failed to delete item', { listTitle: title, itemName, error: err.message });
-        throw new APIError(err.message ?? 'Internal Server Error', err.status ?? 500);
+        return failWith(error, logger, 'API: Failed to delete item', { listTitle: title, itemName });
     }
 };
 
@@ -308,14 +299,8 @@ export const deleteList = async (c: Context<HonoVars>) => {
     const authenticatedUser = c.get('user');
 
     try {
-        const hasAccess = await verifyListAccess(title, authenticatedUser);
-        if (!hasAccess) {
-            logger.warn('Unauthorized list access attempt', {
-                authenticatedUserId: authenticatedUser.id,
-                listTitle: title,
-            });
-            return c.json({ error: 'Forbidden' }, 403);
-        }
+        const denied = await ensureListAccess(c, title, authenticatedUser, logger);
+        if (denied) return denied;
 
         const list = await getListService().getList(title);
 
@@ -333,9 +318,7 @@ export const deleteList = async (c: Context<HonoVars>) => {
 
         return c.json(result, 200);
     } catch (error: unknown) {
-        const err = error as { status?: number; message?: string };
-        logger.error('API: Failed to delete list', { listTitle: title, error: err.message });
-        throw new APIError(err.message ?? 'Internal Server Error', err.status ?? 500);
+        return failWith(error, logger, 'API: Failed to delete list', { listTitle: title });
     }
 };
 
@@ -346,14 +329,8 @@ export const updateList = async (c: Context<HonoVars>) => {
     const authenticatedUser = c.get('user');
 
     try {
-        const hasAccess = await verifyListAccess(title, authenticatedUser);
-        if (!hasAccess) {
-            logger.warn('Unauthorized list access attempt', {
-                authenticatedUserId: authenticatedUser.id,
-                listTitle: title,
-            });
-            return c.json({ error: 'Forbidden' }, 403);
-        }
+        const denied = await ensureListAccess(c, title, authenticatedUser, logger);
+        if (denied) return denied;
 
         if (!newTitle || typeof newTitle !== 'string' || newTitle.trim() === '') {
             return c.json({ error: 'New title is required and must be a non-empty string' }, 400);
@@ -365,9 +342,7 @@ export const updateList = async (c: Context<HonoVars>) => {
 
         return c.json(result, 200);
     } catch (error: unknown) {
-        const err = error as { status?: number; message?: string };
-        logger.error('API: Failed to update list title', { oldTitle: title, newTitle, error: err.message });
-        throw new APIError(err.message ?? 'Internal Server Error', err.status ?? 500);
+        return failWith(error, logger, 'API: Failed to update list title', { oldTitle: title, newTitle });
     }
 };
 
@@ -377,14 +352,8 @@ export const clearList = async (c: Context<HonoVars>) => {
     const authenticatedUser = c.get('user');
 
     try {
-        const hasAccess = await verifyListAccess(title, authenticatedUser);
-        if (!hasAccess) {
-            logger.warn('Unauthorized list access attempt', {
-                authenticatedUserId: authenticatedUser.id,
-                listTitle: title,
-            });
-            return c.json({ error: 'Forbidden' }, 403);
-        }
+        const denied = await ensureListAccess(c, title, authenticatedUser, logger);
+        if (denied) return denied;
 
         const list = await getListService().clearList(title);
 
@@ -395,9 +364,7 @@ export const clearList = async (c: Context<HonoVars>) => {
 
         return c.json(list, 200);
     } catch (error: unknown) {
-        const err = error as { status?: number; message?: string };
-        logger.error('API: Failed to clear list', { listTitle: title, error: err.message });
-        throw new APIError(err.message ?? 'Internal Server Error', err.status ?? 500);
+        return failWith(error, logger, 'API: Failed to clear list', { listTitle: title });
     }
 };
 
@@ -407,14 +374,8 @@ export const deleteSelected = async (c: Context<HonoVars>) => {
     const authenticatedUser = c.get('user');
 
     try {
-        const hasAccess = await verifyListAccess(title, authenticatedUser);
-        if (!hasAccess) {
-            logger.warn('Unauthorized list access attempt', {
-                authenticatedUserId: authenticatedUser.id,
-                listTitle: title,
-            });
-            return c.json({ error: 'Forbidden' }, 403);
-        }
+        const denied = await ensureListAccess(c, title, authenticatedUser, logger);
+        if (denied) return denied;
 
         const list = await getListService().clearSelectedItems(title);
 
@@ -425,9 +386,7 @@ export const deleteSelected = async (c: Context<HonoVars>) => {
 
         return c.json(list, 200);
     } catch (error: unknown) {
-        const err = error as { status?: number; message?: string };
-        logger.error('API: Failed to clear selected items', { listTitle: title, error: err.message });
-        throw new APIError(err.message ?? 'Internal Server Error', err.status ?? 500);
+        return failWith(error, logger, 'API: Failed to clear selected items', { listTitle: title });
     }
 };
 
@@ -441,14 +400,8 @@ export const addUserToList = async (c: Context<HonoVars>) => {
         return c.json({ error: 'Username is required' }, 400);
     }
 
-    const hasAccess = await verifyListAccess(title, authenticatedUser);
-    if (!hasAccess) {
-        logger.warn('Unauthorized list access attempt', {
-            authenticatedUserId: authenticatedUser.id,
-            listTitle: title,
-        });
-        return c.json({ error: 'Forbidden' }, 403);
-    }
+    const denied = await ensureListAccess(c, title, authenticatedUser, logger);
+    if (denied) return denied;
 
     try {
         const list = await getListService().addUserToList(title, username.trim(), authenticatedUser.id);
@@ -485,14 +438,8 @@ export const removeUserFromList = async (c: Context<HonoVars>) => {
     const authenticatedUser = c.get('user');
     const logger = getLogger();
 
-    const hasAccess = await verifyListAccess(title, authenticatedUser);
-    if (!hasAccess) {
-        logger.warn('Unauthorized list access attempt', {
-            authenticatedUserId: authenticatedUser.id,
-            listTitle: title,
-        });
-        return c.json({ error: 'Forbidden' }, 403);
-    }
+    const denied = await ensureListAccess(c, title, authenticatedUser, logger);
+    if (denied) return denied;
 
     try {
         const list = await getListService().removeUserFromList(title, userId, authenticatedUser.id);
@@ -535,14 +482,8 @@ export const addItems = async (c: Context<HonoVars>) => {
         return c.json({ error: 'Items array is required and must not be empty' }, 400);
     }
 
-    const hasAccess = await verifyListAccess(title, authenticatedUser);
-    if (!hasAccess) {
-        logger.warn('Unauthorized list access attempt', {
-            authenticatedUserId: authenticatedUser.id,
-            listTitle: title,
-        });
-        return c.json({ error: 'Forbidden' }, 403);
-    }
+    const denied = await ensureListAccess(c, title, authenticatedUser, logger);
+    if (denied) return denied;
 
     try {
         const result = await getListService().addItems(title, items, authenticatedUser.id, authenticatedUser);
@@ -557,13 +498,10 @@ export const addItems = async (c: Context<HonoVars>) => {
 
         return c.json(result, 200);
     } catch (error: unknown) {
-        const err = error as { status?: number; message?: string };
-        logger.error('API: Failed to add items to list', {
+        return failWith(error, logger, 'API: Failed to add items to list', {
             listTitle: title,
             userId: authenticatedUser.id,
             username: authenticatedUser.username,
-            error: err.message,
         });
-        throw new APIError(err.message ?? 'Internal Server Error', err.status ?? 500);
     }
 };
