@@ -1,4 +1,5 @@
 import { useRegisterSW } from 'virtual:pwa-register/react';
+import { RefreshCw } from 'lucide-react';
 import type React from 'react';
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
@@ -113,6 +114,7 @@ export const PWAProvider: React.FC<PWAProviderProps> = ({ children }) => {
 
         toastIdRef.current = toast('A new version is available', {
             duration: Number.POSITIVE_INFINITY,
+            icon: <RefreshCw className="h-4 w-4" />,
             action: {
                 label: 'Update',
                 onClick: updateApp,
