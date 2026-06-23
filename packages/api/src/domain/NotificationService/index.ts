@@ -25,6 +25,15 @@ export const formatAddedBody = (username: string, names: string[]): string => {
     return extra > 0 ? `${username} added ${shown} and ${extra} more` : `${username} added ${shown}`;
 };
 
+/**
+ * Coalesces rapid list adds into a single push notification.
+ *
+ * The debounce buffer is in-memory and per-process: it assumes a SINGLE API replica.
+ * With more than one replica, adds routed to different pods coalesce independently, so
+ * recipients may receive one notification per pod rather than one combined notification.
+ * Pending (un-flushed) batches are also dropped on process shutdown. Revisit with a shared
+ * store (e.g. Redis) or sticky routing if the API is ever scaled out.
+ */
 export class NotificationService {
     /** Pending adds keyed by `${list.id}:${actor.id}`, flushed as one notification after the debounce. */
     private readonly buffers = new Map<string, AddBuffer>();
