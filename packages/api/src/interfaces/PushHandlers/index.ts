@@ -11,6 +11,14 @@ const getRepo = (): PushSubscriptionRepository =>
     dependencyContainer.resolve(DependencyToken.PushSubscriptionRepository);
 const getLogger = () => dependencyContainer.resolve(DependencyToken.Logger);
 
+const hasValidKeys = (keys?: { p256dh?: string; auth?: string }): keys is { p256dh: string; auth: string } =>
+    Boolean(keys?.p256dh && keys?.auth);
+
+const throwApiError = (error: unknown): never => {
+    const err = error as { status?: number; message?: string };
+    throw new APIError(err.message ?? 'Internal Server Error', err.status ?? 500);
+};
+
 export const getVapidPublicKey = async (c: Context<HonoVars>) => {
     const publicKey = config.get('vapidPublicKey') ?? null;
     return c.json({ publicKey }, 200);
@@ -21,24 +29,24 @@ export const subscribe = async (c: Context<HonoVars>) => {
     const logger = getLogger();
     const body = await c.req.json<{ endpoint?: string; keys?: { p256dh: string; auth: string } }>();
 
-    if (!body?.endpoint || !body.keys?.p256dh || !body.keys?.auth) {
+    if (!body?.endpoint || !hasValidKeys(body.keys)) {
         return c.json({ error: 'endpoint and keys (p256dh, auth) are required' }, 400);
     }
 
+    const sub: PushSubscription = {
+        endpoint: body.endpoint,
+        userId: user.id,
+        keys: body.keys,
+        dateAdded: new Date(),
+    };
+
     try {
-        const sub: PushSubscription = {
-            endpoint: body.endpoint,
-            userId: user.id,
-            keys: body.keys,
-            dateAdded: new Date(),
-        };
         await getRepo().upsert(sub);
         logger.info('Push subscription saved', { userId: user.id });
         return c.json({ success: true }, 201);
     } catch (error: unknown) {
-        const err = error as { status?: number; message?: string };
-        logger.error('Failed to save push subscription', { userId: user.id, error: err.message });
-        throw new APIError(err.message ?? 'Internal Server Error', err.status ?? 500);
+        logger.error('Failed to save push subscription', { userId: user.id, error: (error as Error).message });
+        return throwApiError(error);
     }
 };
 
@@ -56,8 +64,7 @@ export const unsubscribe = async (c: Context<HonoVars>) => {
         logger.info('Push subscription removed', { userId: user.id });
         return c.json({ success: true }, 200);
     } catch (error: unknown) {
-        const err = error as { status?: number; message?: string };
-        logger.error('Failed to remove push subscription', { userId: user.id, error: err.message });
-        throw new APIError(err.message ?? 'Internal Server Error', err.status ?? 500);
+        logger.error('Failed to remove push subscription', { userId: user.id, error: (error as Error).message });
+        return throwApiError(error);
     }
 };
