@@ -1,3 +1,10 @@
+# [1.49.0](https://github.com/igor-siergiej/shoppingo/compare/v1.48.0...v1.49.0) (2026-06-24)
+
+
+### Features
+
+* **web:** notification polish — persistent, per-list, monochrome badge, notify-unless-focused ([#92](https://github.com/igor-siergiej/shoppingo/issues/92)) ([0b567b8](https://github.com/igor-siergiej/shoppingo/commit/0b567b8e0403374163e93b56f3bcd0ded76fc77c))
+
 # [1.48.0](https://github.com/igor-siergiej/shoppingo/compare/v1.47.1...v1.48.0) (2026-06-23)
 
 
