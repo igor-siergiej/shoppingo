@@ -34,13 +34,30 @@ self.addEventListener('push', (event: PushEvent) => {
         payload = { title: 'Shoppingo', body: event.data.text() };
     }
 
+    // `renotify`/`vibrate` are valid at runtime but absent from the DOM lib's NotificationOptions.
+    const options: NotificationOptions & { renotify?: boolean; vibrate?: number[] } = {
+        body: payload.body ?? '',
+        icon: '/logo-192.png',
+        badge: '/badge-96.png',
+        data: payload.data ?? {},
+        // Per-list tag: repeated updates to the same list replace+re-alert; different lists stack separately.
+        tag: payload.data?.url ?? 'shoppingo',
+        renotify: true,
+        requireInteraction: true,
+        vibrate: [200, 100, 200],
+    };
+
     event.waitUntil(
-        self.registration.showNotification(payload.title ?? 'Shoppingo', {
-            body: payload.body ?? '',
-            icon: '/logo-192.png',
-            badge: '/logo-192.png',
-            data: payload.data ?? {},
-        })
+        (async () => {
+            const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+            // Only suppress the OS notification when the user is actively focused on the app.
+            // Backgrounded (hidden) or closed windows still get notified.
+            const focused = windows.some((client) => (client as WindowClient).focused);
+            if (focused) {
+                return;
+            }
+            await self.registration.showNotification(payload.title ?? 'Shoppingo', options);
+        })()
     );
 });
 
