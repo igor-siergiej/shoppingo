@@ -1,3 +1,10 @@
+# [1.50.0](https://github.com/igor-siergiej/shoppingo/compare/v1.49.0...v1.50.0) (2026-06-25)
+
+
+### Features
+
+* daily todo reminder push notification (08:30 UK) ([#93](https://github.com/igor-siergiej/shoppingo/issues/93)) ([f14ad39](https://github.com/igor-siergiej/shoppingo/commit/f14ad398996bb4fd262cae225a4efd7efa569484))
+
 # [1.49.0](https://github.com/igor-siergiej/shoppingo/compare/v1.48.0...v1.49.0) (2026-06-24)
 
 
