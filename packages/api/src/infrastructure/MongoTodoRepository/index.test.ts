@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'bun:test';
+import { beforeEach, describe, expect, it, mock } from 'bun:test';
 import type { Todo } from '@shoppingo/types';
 import { MongoTodoRepository } from './index';
 
@@ -16,11 +16,9 @@ class FakeCollection {
     async findOne(q: { id: string }) {
         return this.docs.find((d) => d.id === q.id) ?? null;
     }
-    find(q: { ownerId?: string; done?: boolean; dueDate?: { $lte: Date } } = {}) {
+    find(q: { ownerId?: string }) {
         const matched = this.docs.filter((d) => {
             if (q.ownerId !== undefined && d.ownerId !== q.ownerId) return false;
-            if (q.done !== undefined && d.done !== q.done) return false;
-            if (q.dueDate?.$lte !== undefined && (!d.dueDate || d.dueDate > q.dueDate.$lte)) return false;
             return true;
         });
         return { toArray: async () => matched };
@@ -91,15 +89,16 @@ describe('MongoTodoRepository', () => {
         expect((await repo.getById('t2'))?.labelId).toBe('L');
     });
 
-    it('findDueCandidates returns incomplete todos due on or before dayEnd', async () => {
+    it('findDueCandidates sends correct query shape', async () => {
         const dayEnd = new Date('2026-06-25T23:59:59.999Z');
-        await repo.insert(makeTodo({ id: 't1', done: false, dueDate: new Date('2026-06-20') }));
-        await repo.insert(makeTodo({ id: 't2', done: false, dueDate: new Date('2026-06-25') }));
-        await repo.insert(makeTodo({ id: 't3', done: false, dueDate: new Date('2026-06-26') }));
-        await repo.insert(makeTodo({ id: 't4', done: true, dueDate: new Date('2026-06-20') }));
+        const mockFind = mock(() => ({ toArray: async () => [] }));
+        const mockDb = {
+            getCollection: () => ({ find: mockFind }),
+        } as never;
+        const testRepo = new MongoTodoRepository(mockDb);
 
-        const candidates = await repo.findDueCandidates(dayEnd);
+        await testRepo.findDueCandidates(dayEnd);
 
-        expect(candidates.map((t) => t.id).sort()).toEqual(['t1', 't2']);
+        expect(mockFind).toHaveBeenCalledWith({ done: false, dueDate: { $lte: dayEnd } });
     });
 });
