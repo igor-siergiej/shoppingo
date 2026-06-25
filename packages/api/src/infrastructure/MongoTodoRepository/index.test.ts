@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'bun:test';
+import { beforeEach, describe, expect, it, mock } from 'bun:test';
 import type { Todo } from '@shoppingo/types';
 import { MongoTodoRepository } from './index';
 
@@ -16,8 +16,11 @@ class FakeCollection {
     async findOne(q: { id: string }) {
         return this.docs.find((d) => d.id === q.id) ?? null;
     }
-    find(q: { ownerId: string }) {
-        const matched = this.docs.filter((d) => d.ownerId === q.ownerId);
+    find(q: { ownerId?: string }) {
+        const matched = this.docs.filter((d) => {
+            if (q.ownerId !== undefined && d.ownerId !== q.ownerId) return false;
+            return true;
+        });
         return { toArray: async () => matched };
     }
     async insertOne(doc: Todo) {
@@ -84,5 +87,18 @@ describe('MongoTodoRepository', () => {
         await repo.clearLabel('L', 'u1');
         expect((await repo.getById('t1'))?.labelId).toBeUndefined();
         expect((await repo.getById('t2'))?.labelId).toBe('L');
+    });
+
+    it('findDueCandidates sends correct query shape', async () => {
+        const dayEnd = new Date('2026-06-25T23:59:59.999Z');
+        const mockFind = mock(() => ({ toArray: async () => [] }));
+        const mockDb = {
+            getCollection: () => ({ find: mockFind }),
+        } as never;
+        const testRepo = new MongoTodoRepository(mockDb);
+
+        await testRepo.findDueCandidates(dayEnd);
+
+        expect(mockFind).toHaveBeenCalledWith({ done: false, dueDate: { $lte: dayEnd } });
     });
 });

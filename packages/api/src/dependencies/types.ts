@@ -2,6 +2,7 @@ import type { Logger, MongoDbConnection, ObjectStoreConnection } from '@imapps/a
 import type { Label, List, PushSubscription, Recipe, Todo } from '@shoppingo/types';
 
 import type { AuthorizationService } from '../domain/AuthorizationService';
+import type { DailyReminderScheduler } from '../domain/DailyReminderScheduler';
 import type { IdGenerator } from '../domain/IdGenerator';
 import type { ImageService } from '../domain/ImageService';
 import type { ImageGenerator, ImageStore } from '../domain/ImageService/types';
@@ -15,6 +16,7 @@ import type { PushSubscriptionRepository } from '../domain/PushSubscriptionRepos
 import type { RecipeImageService } from '../domain/RecipeImageService';
 import type { RecipeRepository } from '../domain/RecipeRepository';
 import type { RecipeService } from '../domain/RecipeService';
+import type { TodoReminderService } from '../domain/TodoReminderService';
 import type { TodoRepository } from '../domain/TodoRepository';
 import type { TodoService } from '../domain/TodoService';
 import type { WebPushSender } from '../infrastructure/WebPushSender';
@@ -53,6 +55,8 @@ export enum DependencyToken {
     PushSubscriptionRepository = 'PushSubscriptionRepository',
     WebPushSender = 'WebPushSender',
     NotificationService = 'NotificationService',
+    TodoReminderService = 'TodoReminderService',
+    DailyReminderScheduler = 'DailyReminderScheduler',
 }
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
@@ -80,6 +84,8 @@ export type Dependencies = {
     [DependencyToken.PushSubscriptionRepository]: PushSubscriptionRepository;
     [DependencyToken.WebPushSender]: WebPushSender;
     [DependencyToken.NotificationService]: NotificationService;
+    [DependencyToken.TodoReminderService]: TodoReminderService;
+    [DependencyToken.DailyReminderScheduler]: DailyReminderScheduler;
 };
 
 export enum CollectionNames {
