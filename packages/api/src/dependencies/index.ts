@@ -3,12 +3,14 @@ import { Logger, MongoDbConnection, ObjectStoreConnection } from '@imapps/api-ut
 
 import { config } from '../config';
 import { AuthorizationService } from '../domain/AuthorizationService';
+import { DailyReminderScheduler } from '../domain/DailyReminderScheduler';
 import { ImageService } from '../domain/ImageService';
 import { LabelService } from '../domain/LabelService';
 import { ListService } from '../domain/ListService';
 import { NotificationService } from '../domain/NotificationService';
 import { RecipeImageService } from '../domain/RecipeImageService';
 import { RecipeService } from '../domain/RecipeService';
+import { TodoReminderService } from '../domain/TodoReminderService';
 import { TodoService } from '../domain/TodoService';
 import { HttpAuthClient } from '../infrastructure/AuthClient';
 import { BucketStore } from '../infrastructure/BucketStore';
@@ -151,6 +153,33 @@ export const registerDepdendencies = () => {
                     dependencyContainer.resolve(DependencyToken.IdGenerator),
                     dependencyContainer.resolve(DependencyToken.Logger)
                 );
+            }
+        }
+    );
+
+    dependencyContainer.registerSingleton(
+        DependencyToken.TodoReminderService,
+        // @ts-expect-error - Dependency injection requires constructor return override
+        class {
+            constructor() {
+                return new TodoReminderService(
+                    dependencyContainer.resolve(DependencyToken.TodoRepository),
+                    dependencyContainer.resolve(DependencyToken.PushSubscriptionRepository),
+                    dependencyContainer.resolve(DependencyToken.WebPushSender),
+                    dependencyContainer.resolve(DependencyToken.Logger)
+                );
+            }
+        }
+    );
+
+    dependencyContainer.registerSingleton(
+        DependencyToken.DailyReminderScheduler,
+        // @ts-expect-error - Dependency injection requires constructor return override
+        class {
+            constructor() {
+                return new DailyReminderScheduler(dependencyContainer.resolve(DependencyToken.TodoReminderService), {
+                    logger: dependencyContainer.resolve(DependencyToken.Logger),
+                });
             }
         }
     );

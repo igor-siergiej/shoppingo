@@ -75,6 +75,9 @@ export const onStartup = async () => {
         });
 
         logger.info(`Shoppingo API server running on port ${port}`);
+
+        dependencyContainer.resolve(DependencyToken.DailyReminderScheduler).start();
+        logger.info('Daily todo reminder scheduler started');
     } catch (error) {
         const logger = dependencyContainer.resolve(DependencyToken.Logger);
         logger.error('Encountered an error on start up', error);
