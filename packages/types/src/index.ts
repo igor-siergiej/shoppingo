@@ -111,3 +111,5 @@ export interface PushSubscription {
     };
     dateAdded: Date;
 }
+
+export { expandOccurrences, isoDay, type Occurrence, occursOn } from './recurrence';
