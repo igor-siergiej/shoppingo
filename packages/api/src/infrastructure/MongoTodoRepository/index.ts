@@ -19,6 +19,12 @@ export class MongoTodoRepository implements TodoRepository {
         return this.collection().find({ ownerId }).toArray();
     }
 
+    async findDueCandidates(dayEnd: Date): Promise<Todo[]> {
+        return this.collection()
+            .find({ done: false, dueDate: { $lte: dayEnd } })
+            .toArray();
+    }
+
     async insert(todo: Todo): Promise<Todo> {
         await this.collection().insertOne(todo);
         return todo;

@@ -16,8 +16,13 @@ class FakeCollection {
     async findOne(q: { id: string }) {
         return this.docs.find((d) => d.id === q.id) ?? null;
     }
-    find(q: { ownerId: string }) {
-        const matched = this.docs.filter((d) => d.ownerId === q.ownerId);
+    find(q: { ownerId?: string; done?: boolean; dueDate?: { $lte: Date } } = {}) {
+        const matched = this.docs.filter((d) => {
+            if (q.ownerId !== undefined && d.ownerId !== q.ownerId) return false;
+            if (q.done !== undefined && d.done !== q.done) return false;
+            if (q.dueDate?.$lte !== undefined && (!d.dueDate || d.dueDate > q.dueDate.$lte)) return false;
+            return true;
+        });
         return { toArray: async () => matched };
     }
     async insertOne(doc: Todo) {
@@ -84,5 +89,17 @@ describe('MongoTodoRepository', () => {
         await repo.clearLabel('L', 'u1');
         expect((await repo.getById('t1'))?.labelId).toBeUndefined();
         expect((await repo.getById('t2'))?.labelId).toBe('L');
+    });
+
+    it('findDueCandidates returns incomplete todos due on or before dayEnd', async () => {
+        const dayEnd = new Date('2026-06-25T23:59:59.999Z');
+        await repo.insert(makeTodo({ id: 't1', done: false, dueDate: new Date('2026-06-20') }));
+        await repo.insert(makeTodo({ id: 't2', done: false, dueDate: new Date('2026-06-25') }));
+        await repo.insert(makeTodo({ id: 't3', done: false, dueDate: new Date('2026-06-26') }));
+        await repo.insert(makeTodo({ id: 't4', done: true, dueDate: new Date('2026-06-20') }));
+
+        const candidates = await repo.findDueCandidates(dayEnd);
+
+        expect(candidates.map((t) => t.id).sort()).toEqual(['t1', 't2']);
     });
 });
