@@ -49,6 +49,7 @@ const ukWallClockToUtc = (y: number, mo: number, da: number, h: number, mi: numb
 };
 
 /** Next instant whose Europe/London wall-clock time is `hour:minute`, strictly after `from`. */
+// fallow-ignore-next-line unused-export
 export const nextRunAt = (from: Date, hour = 8, minute = 30): Date => {
     const f = londonFields(from);
     const today = ukWallClockToUtc(f.y, f.mo, f.da, hour, minute);
@@ -67,7 +68,6 @@ const ukDayKey = (date: Date): string => {
 };
 
 export class DailyReminderScheduler {
-    private timer?: ReturnType<typeof setTimeout>;
     private lastRunDay?: string;
     private readonly now: () => Date;
     private readonly schedule: (fn: () => void, ms: number) => ReturnType<typeof setTimeout>;
@@ -89,14 +89,7 @@ export class DailyReminderScheduler {
     start(): void {
         const from = this.now();
         const delay = Math.max(0, nextRunAt(from).getTime() - from.getTime());
-        this.timer = this.schedule(() => this.fire() as unknown as undefined, delay);
-    }
-
-    stop(): void {
-        if (this.timer) {
-            clearTimeout(this.timer);
-            this.timer = undefined;
-        }
+        this.schedule(() => this.fire() as unknown as undefined, delay);
     }
 
     private async fire(): Promise<void> {

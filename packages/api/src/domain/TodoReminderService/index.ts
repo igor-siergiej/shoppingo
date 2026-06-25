@@ -6,8 +6,9 @@ import type { PushSubscriptionRepository } from '../PushSubscriptionRepository';
 import type { TodoRepository } from '../TodoRepository';
 
 /** Max todo titles listed before the rest collapse into "and N more". */
-export const MAX_TITLES_SHOWN = 3;
+const MAX_TITLES_SHOWN = 3;
 
+// fallow-ignore-next-line unused-export
 export const formatDueBody = (titles: string[]): string => {
     const shown = titles.slice(0, MAX_TITLES_SHOWN).join(', ');
     const extra = titles.length - MAX_TITLES_SHOWN;

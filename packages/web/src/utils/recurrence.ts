@@ -1,1 +1,1 @@
-export { expandOccurrences, isoDay, type Occurrence, occursOn } from '@shoppingo/types';
+export { expandOccurrences, isoDay } from '@shoppingo/types';
