@@ -21,6 +21,20 @@ const endOfLocalDay = (now: Date): Date => {
     return end;
 };
 
+/** Outcome of a reminder run — surfaced to the manual trigger for debugging. */
+export interface ReminderSummary {
+    /** Web push has VAPID keys; false means nothing can ever be sent. */
+    configured: boolean;
+    /** Incomplete todos occurring today. */
+    due: number;
+    /** Distinct owners with at least one due todo. */
+    owners: number;
+    /** Push subscriptions targeted across those owners. */
+    subscriptions: number;
+    /** Pushes the browser push service accepted. */
+    sent: number;
+}
+
 /**
  * Sends one summary push per owner for todos due "today".
  *
@@ -34,15 +48,16 @@ export class TodoReminderService {
         private readonly logger?: Logger
     ) {}
 
-    async sendDailyReminders(now: Date): Promise<void> {
-        if (!this.sender.isConfigured()) {
-            return;
+    async sendDailyReminders(now: Date): Promise<ReminderSummary> {
+        const configured = this.sender.isConfigured();
+        if (!configured) {
+            return { configured, due: 0, owners: 0, subscriptions: 0, sent: 0 };
         }
 
         const candidates = await this.todoRepo.findDueCandidates(endOfLocalDay(now));
         const due = candidates.filter((todo) => occursOn(todo, now));
         if (due.length === 0) {
-            return;
+            return { configured, due: 0, owners: 0, subscriptions: 0, sent: 0 };
         }
 
         const byOwner = new Map<string, Todo[]>();
@@ -52,14 +67,24 @@ export class TodoReminderService {
             byOwner.set(todo.ownerId, list);
         }
 
-        await Promise.all([...byOwner.entries()].map(([ownerId, todos]) => this.notifyOwner(ownerId, todos)));
+        const perOwner = await Promise.all(
+            [...byOwner.entries()].map(([ownerId, todos]) => this.notifyOwner(ownerId, todos))
+        );
+
+        return {
+            configured,
+            due: due.length,
+            owners: byOwner.size,
+            subscriptions: perOwner.reduce((n, r) => n + r.subscriptions, 0),
+            sent: perOwner.reduce((n, r) => n + r.sent, 0),
+        };
     }
 
-    private async notifyOwner(ownerId: string, todos: Todo[]): Promise<void> {
+    private async notifyOwner(ownerId: string, todos: Todo[]): Promise<{ subscriptions: number; sent: number }> {
         try {
             const subs = await this.pushRepo.findByUserIds([ownerId]);
             if (subs.length === 0) {
-                return;
+                return { subscriptions: 0, sent: 0 };
             }
 
             const payload = JSON.stringify({
@@ -73,11 +98,14 @@ export class TodoReminderService {
             if (dead.length > 0) {
                 await this.pushRepo.deleteByEndpoints(dead);
             }
+
+            return { subscriptions: subs.length, sent: results.filter((r) => r === 'ok').length };
         } catch (error) {
             this.logger?.error('Todo reminder fan-out failed', {
                 ownerId,
                 error: (error as Error).message,
             });
+            return { subscriptions: 0, sent: 0 };
         }
     }
 }

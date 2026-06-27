@@ -41,14 +41,20 @@ describe('runDailyReminder', () => {
         });
     });
 
-    it('triggers the daily reminder fan-out for an authenticated user', async () => {
-        mockReminderService.sendDailyReminders.mockResolvedValue(undefined);
+    it('triggers the daily reminder fan-out and returns the run summary', async () => {
+        mockReminderService.sendDailyReminders.mockResolvedValue({
+            configured: true,
+            due: 2,
+            owners: 1,
+            subscriptions: 3,
+            sent: 3,
+        });
         const ctx = createMockContext();
         const response = await todoHandlers.runDailyReminder(ctx);
         expect(mockReminderService.sendDailyReminders).toHaveBeenCalledTimes(1);
         expect(mockReminderService.sendDailyReminders.mock.calls[0][0]).toBeInstanceOf(Date);
         const body = await response.json();
-        expect(body.triggered).toBe(true);
+        expect(body).toEqual({ triggered: true, configured: true, due: 2, owners: 1, subscriptions: 3, sent: 3 });
     });
 
     it('rejects an unauthenticated caller', async () => {

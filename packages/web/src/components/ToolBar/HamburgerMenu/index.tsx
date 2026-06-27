@@ -92,8 +92,18 @@ const TestReminderButton = () => {
         if (isSending) return;
         setIsSending(true);
         try {
-            await runDailyReminder();
-            toast.success('Reminder triggered. Push fires only if you have todos due today.');
+            const r = await runDailyReminder();
+            if (!r.configured) {
+                toast.error('Push not configured on the server (VAPID keys missing).', {
+                    style: { backgroundColor: '#ef4444', color: '#ffffff' },
+                });
+            } else if (r.due === 0) {
+                toast('No todos due today — nothing to send.');
+            } else if (r.subscriptions === 0) {
+                toast.warning('1+ todos due, but no devices subscribed. Enable notifications on this device.');
+            } else {
+                toast.success(`Sent ${r.sent}/${r.subscriptions} push · ${r.due} due across ${r.owners} owner(s).`);
+            }
         } catch {
             toast.error('Failed to trigger reminder', {
                 style: { backgroundColor: '#ef4444', color: '#ffffff' },
