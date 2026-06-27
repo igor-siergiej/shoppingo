@@ -1,3 +1,10 @@
+# [1.51.0](https://github.com/igor-siergiej/shoppingo/compare/v1.50.0...v1.51.0) (2026-06-27)
+
+
+### Features
+
+* manual trigger for daily todo reminder ([#94](https://github.com/igor-siergiej/shoppingo/issues/94)) ([96b9db2](https://github.com/igor-siergiej/shoppingo/commit/96b9db26003bcbe817412a7d3e6813104e5ac7d6))
+
 # [1.50.0](https://github.com/igor-siergiej/shoppingo/compare/v1.49.0...v1.50.0) (2026-06-25)
 
 
