@@ -387,6 +387,14 @@ export const deleteTodo = async (id: string): Promise<void> => {
     });
 };
 
+export const runDailyReminder = async (): Promise<{ triggered: boolean }> => {
+    return await makeRequest({
+        pathname: '/api/todos/reminder/run',
+        method: MethodType.POST,
+        operationString: 'run daily reminder',
+    });
+};
+
 export const completeTodo = async (id: string, date?: string): Promise<Todo> => {
     return await makeRequest({
         pathname: `/api/todos/${encodeURIComponent(id)}/complete`,
