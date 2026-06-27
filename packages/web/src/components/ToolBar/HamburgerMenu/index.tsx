@@ -2,7 +2,7 @@ import { Bell, BellRing, Download, Loader2, LogOut, Moon, RefreshCw, Sun, Tag, U
 import { motion } from 'motion/react';
 import { type ReactNode, useState } from 'react';
 import { toast } from 'sonner';
-import { runDailyReminder } from '../../../api';
+import { type ReminderRunResult, runDailyReminder } from '../../../api';
 import { Button } from '../../../components/ui/button';
 import { Switch } from '../../../components/ui/switch';
 import { useTheme } from '../../../contexts/ThemeContext';
@@ -83,6 +83,20 @@ const NotificationToggle = () => {
     );
 };
 
+const ERROR_TOAST = { style: { backgroundColor: '#ef4444', color: '#ffffff' } };
+
+const showReminderToast = (r: ReminderRunResult): void => {
+    if (!r.configured) {
+        toast.error('Push not configured on the server (VAPID keys missing).', ERROR_TOAST);
+    } else if (r.due === 0) {
+        toast('No todos due today — nothing to send.');
+    } else if (r.subscriptions === 0) {
+        toast.warning('1+ todos due, but no devices subscribed. Enable notifications on this device.');
+    } else {
+        toast.success(`Sent ${r.sent}/${r.subscriptions} push · ${r.due} due across ${r.owners} owner(s).`);
+    }
+};
+
 const TestReminderButton = () => {
     const { isSupported, isSubscribed } = usePushNotifications();
     const [isSending, setIsSending] = useState(false);
@@ -92,22 +106,9 @@ const TestReminderButton = () => {
         if (isSending) return;
         setIsSending(true);
         try {
-            const r = await runDailyReminder();
-            if (!r.configured) {
-                toast.error('Push not configured on the server (VAPID keys missing).', {
-                    style: { backgroundColor: '#ef4444', color: '#ffffff' },
-                });
-            } else if (r.due === 0) {
-                toast('No todos due today — nothing to send.');
-            } else if (r.subscriptions === 0) {
-                toast.warning('1+ todos due, but no devices subscribed. Enable notifications on this device.');
-            } else {
-                toast.success(`Sent ${r.sent}/${r.subscriptions} push · ${r.due} due across ${r.owners} owner(s).`);
-            }
+            showReminderToast(await runDailyReminder());
         } catch {
-            toast.error('Failed to trigger reminder', {
-                style: { backgroundColor: '#ef4444', color: '#ffffff' },
-            });
+            toast.error('Failed to trigger reminder', ERROR_TOAST);
         } finally {
             setIsSending(false);
         }

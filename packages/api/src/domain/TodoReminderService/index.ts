@@ -21,6 +21,24 @@ const endOfLocalDay = (now: Date): Date => {
     return end;
 };
 
+const groupByOwner = (todos: Todo[]): Map<string, Todo[]> => {
+    const byOwner = new Map<string, Todo[]>();
+    for (const todo of todos) {
+        const list = byOwner.get(todo.ownerId) ?? [];
+        list.push(todo);
+        byOwner.set(todo.ownerId, list);
+    }
+    return byOwner;
+};
+
+const emptySummary = (configured: boolean): ReminderSummary => ({
+    configured,
+    due: 0,
+    owners: 0,
+    subscriptions: 0,
+    sent: 0,
+});
+
 /** Outcome of a reminder run — surfaced to the manual trigger for debugging. */
 export interface ReminderSummary {
     /** Web push has VAPID keys; false means nothing can ever be sent. */
@@ -51,21 +69,16 @@ export class TodoReminderService {
     async sendDailyReminders(now: Date): Promise<ReminderSummary> {
         const configured = this.sender.isConfigured();
         if (!configured) {
-            return { configured, due: 0, owners: 0, subscriptions: 0, sent: 0 };
+            return emptySummary(configured);
         }
 
         const candidates = await this.todoRepo.findDueCandidates(endOfLocalDay(now));
         const due = candidates.filter((todo) => occursOn(todo, now));
         if (due.length === 0) {
-            return { configured, due: 0, owners: 0, subscriptions: 0, sent: 0 };
+            return emptySummary(configured);
         }
 
-        const byOwner = new Map<string, Todo[]>();
-        for (const todo of due) {
-            const list = byOwner.get(todo.ownerId) ?? [];
-            list.push(todo);
-            byOwner.set(todo.ownerId, list);
-        }
+        const byOwner = groupByOwner(due);
 
         const perOwner = await Promise.all(
             [...byOwner.entries()].map(([ownerId, todos]) => this.notifyOwner(ownerId, todos))
