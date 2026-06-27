@@ -5,6 +5,8 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAuthConfig } from '../../config/auth';
 import { usePWA } from '../../hooks/usePWA';
+import { startDrainer } from '../../offline/drainer';
+import { outboxStore } from '../../offline/outboxStore';
 import LoadingPage from '../LoadingPage';
 
 interface AppInitializerProps {
@@ -43,6 +45,14 @@ const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
 
         return () => clearTimeout(timer);
     }, [login, logout]);
+
+    useEffect(() => {
+        let stop = () => {};
+        void outboxStore.hydrate().then(() => {
+            stop = startDrainer();
+        });
+        return () => stop();
+    }, []);
 
     useEffect(() => {
         const handleSessionExpired = () => {

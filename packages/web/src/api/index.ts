@@ -2,12 +2,13 @@ import { getStorageItem } from '@imapps/web-utils';
 import type { Item, Label, ListResponse, ListType, Recipe, Todo, User } from '@shoppingo/types';
 
 import { getAuthConfig } from '../config/auth';
+import { foldPendingItems } from '../offline/foldPending';
 import { makeRequest } from './makeRequest';
 import { MethodType } from './types';
 
 export const getListQuery = (listTitle: string) => ({
     queryKey: [listTitle],
-    queryFn: async () => await getList(listTitle),
+    queryFn: async () => foldPendingItems(listTitle, await getList(listTitle)),
 });
 
 const getList = async (

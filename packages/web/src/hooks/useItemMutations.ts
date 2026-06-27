@@ -1,11 +1,26 @@
 import type { Item, ListType } from '@shoppingo/types';
 import type { UseMutationOptions } from 'react-query';
 import { useMutation, useQueryClient } from 'react-query';
-import { deleteItem, updateItem, updateItemName, updateItemQuantity } from '../api';
+import { drainOutbox } from '../offline/drainer';
+import type { ItemOp } from '../offline/outboxStore';
+import { outboxStore } from '../offline/outboxStore';
 
 interface OptimisticMutationContext {
     previousData: { listType: ListType; items: Item[] } | undefined;
 }
+
+const enqueueItem = async (op: ItemOp, listTitle: string, targetId: string, payload: Record<string, unknown>) => {
+    await outboxStore.enqueue({
+        id: crypto.randomUUID(),
+        entityType: 'item',
+        op,
+        targetId,
+        scope: listTitle,
+        payload,
+        createdAt: Date.now(),
+    });
+    void drainOutbox();
+};
 
 function createOptimisticMutation<TVariables>(
     queryClient: React.QueryClient,
@@ -48,7 +63,7 @@ export function useItemMutations(listTitle: string, itemId: string) {
         createOptimisticMutation(
             queryClient,
             listTitle,
-            (isSelected: boolean) => updateItem(itemId, isSelected, listTitle),
+            (isSelected: boolean) => enqueueItem('item.toggle', listTitle, itemId, { isSelected }),
             (items, isSelected) => items.map((i) => (i.id === itemId ? { ...i, isSelected } : i))
         ) as UseMutationOptions<unknown, unknown, boolean, OptimisticMutationContext>
     );
@@ -57,7 +72,7 @@ export function useItemMutations(listTitle: string, itemId: string) {
         createOptimisticMutation(
             queryClient,
             listTitle,
-            () => deleteItem(itemId, listTitle),
+            () => enqueueItem('item.delete', listTitle, itemId, {}),
             (items) => items.filter((i) => i.id !== itemId)
         ) as UseMutationOptions<unknown, unknown, undefined, OptimisticMutationContext>
     );
@@ -66,7 +81,7 @@ export function useItemMutations(listTitle: string, itemId: string) {
         createOptimisticMutation(
             queryClient,
             listTitle,
-            (newName: string) => updateItemName(listTitle, itemId, newName),
+            (newName: string) => enqueueItem('item.rename', listTitle, itemId, { newItemName: newName }),
             (items, newName) => items.map((i) => (i.id === itemId ? { ...i, name: newName } : i))
         ) as UseMutationOptions<unknown, unknown, string, OptimisticMutationContext>
     );
@@ -76,7 +91,10 @@ export function useItemMutations(listTitle: string, itemId: string) {
             queryClient,
             listTitle,
             ({ quantity, unit }: { quantity?: number; unit?: string }) =>
-                updateItemQuantity(listTitle, itemId, quantity, unit),
+                enqueueItem('item.quantity', listTitle, itemId, {
+                    ...(quantity !== undefined && { quantity }),
+                    ...(unit !== undefined && { unit }),
+                }),
             (items, { quantity, unit }) =>
                 items.map((i) =>
                     i.id === itemId

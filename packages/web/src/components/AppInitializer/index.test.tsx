@@ -24,6 +24,14 @@ vi.mock('../../hooks/usePWA', () => ({
     })),
 }));
 
+vi.mock('../../offline/outboxStore', () => ({
+    outboxStore: { hydrate: vi.fn().mockResolvedValue(undefined) },
+}));
+
+vi.mock('../../offline/drainer', () => ({
+    startDrainer: vi.fn().mockReturnValue(() => {}),
+}));
+
 import { tryRefreshToken, useAuth } from '@imapps/web-utils';
 
 const mockLogin = vi.fn();

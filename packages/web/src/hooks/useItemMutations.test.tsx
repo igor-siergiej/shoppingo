@@ -1,6 +1,7 @@
+import 'fake-indexeddb/auto';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from 'react-query';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('../api', () => ({
     updateItem: vi.fn().mockResolvedValue(undefined),
@@ -9,7 +10,9 @@ vi.mock('../api', () => ({
     updateItemQuantity: vi.fn().mockResolvedValue(undefined),
 }));
 
-import { deleteItem, updateItem } from '../api';
+vi.mock('../offline/drainer', () => ({ drainOutbox: vi.fn().mockResolvedValue(undefined) }));
+
+import { outboxStore } from '../offline/outboxStore';
 import { useItemMutations } from './useItemMutations';
 
 const wrap =
@@ -19,7 +22,28 @@ const wrap =
     );
 
 describe('useItemMutations (id-addressed)', () => {
-    it('toggle optimistically updates the item matched by id and calls api with id', async () => {
+    beforeEach(async () => {
+        await outboxStore._resetForTests();
+    });
+
+    it('toggle enqueues an outbox intent and triggers a drain', async () => {
+        const client = new QueryClient();
+        client.setQueryData(['My List'], {
+            listType: 'shopping',
+            items: [{ id: 'x1', name: 'Milk', isSelected: false }],
+        });
+        const { result } = renderHook(() => useItemMutations('My List', 'x1'), { wrapper: wrap(client) });
+        act(() => {
+            result.current.toggleMutation.mutate(true);
+        });
+        await waitFor(() => expect(outboxStore.peekAll()).toHaveLength(1));
+        const intent = outboxStore.peekAll()[0];
+        expect(intent.op).toBe('item.toggle');
+        expect(intent.targetId).toBe('x1');
+        expect(intent.payload).toEqual({ isSelected: true });
+    });
+
+    it('toggle optimistically updates the item matched by id', async () => {
         const client = new QueryClient();
         client.setQueryData(['My List'], {
             listType: 'shopping',
@@ -33,7 +57,6 @@ describe('useItemMutations (id-addressed)', () => {
             const data = client.getQueryData(['My List']) as { items: { id: string; isSelected: boolean }[] };
             expect(data.items[0].isSelected).toBe(true);
         });
-        await waitFor(() => expect(updateItem).toHaveBeenCalledWith('x1', true, 'My List'));
     });
 
     it('delete removes the item matched by id', async () => {
@@ -53,6 +76,5 @@ describe('useItemMutations (id-addressed)', () => {
             const data = client.getQueryData(['My List']) as { items: { id: string }[] };
             expect(data.items.map((i) => i.id)).toEqual(['x2']);
         });
-        await waitFor(() => expect(deleteItem).toHaveBeenCalledWith('x1', 'My List'));
     });
 });
