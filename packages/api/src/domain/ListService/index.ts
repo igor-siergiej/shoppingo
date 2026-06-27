@@ -165,12 +165,25 @@ export class ListService {
         }
     }
 
-    async addItem(title: string, itemName: string, dateAdded: Date, quantity?: number, unit?: string, actor?: User) {
+    async addItem(
+        title: string,
+        itemName: string,
+        dateAdded: Date,
+        quantity?: number,
+        unit?: string,
+        actor?: User,
+        id?: string
+    ) {
         try {
             const list = await this.repo.getByTitle(title);
 
             if (!list) {
                 throw Object.assign(new Error('List not found'), { status: 404 });
+            }
+
+            if (id) {
+                const already = list.items.find((i) => i.id === id);
+                if (already) return already;
             }
 
             // Check if an item with the same name already exists (case-insensitive)
@@ -181,7 +194,7 @@ export class ListService {
             }
 
             const item: Item = {
-                id: this.idGenerator.generate(),
+                id: id ?? this.idGenerator.generate(),
                 name: itemName,
                 dateAdded,
                 isSelected: false,
@@ -209,16 +222,12 @@ export class ListService {
         }
     }
 
-    async updateItemName(title: string, itemName: string, newItemName: string) {
+    async updateItemName(title: string, itemId: string, newItemName: string) {
         try {
             if (!newItemName || newItemName.trim() === '') {
                 throw Object.assign(new Error('New title cannot be empty'), {
                     status: 400,
                 });
-            }
-
-            if (newItemName.trim() === itemName) {
-                throw Object.assign(new Error('New item name must be different from current name'), { status: 400 });
             }
 
             const list = await this.repo.getByTitle(title);
@@ -227,21 +236,29 @@ export class ListService {
                 throw Object.assign(new Error('List not found'), { status: 404 });
             }
 
-            const existingItem = list.items.find((item) => item.name === newItemName.trim());
+            const target = list.items.find((item) => item.id === itemId);
 
-            if (existingItem) {
+            if (!target) {
+                throw Object.assign(new Error('Item not found'), { status: 404 });
+            }
+
+            if (newItemName.trim() === target.name) {
+                throw Object.assign(new Error('New item name must be different from current name'), { status: 400 });
+            }
+
+            const clash = list.items.find((i) => i.id !== itemId && i.name === newItemName.trim());
+
+            if (clash) {
                 throw Object.assign(new Error('An item with that name already exists in this list'), { status: 409 });
             }
 
-            list.items = list.items.map((item) =>
-                item.name === itemName ? { ...item, name: newItemName.trim() } : item
-            );
+            list.items = list.items.map((item) => (item.id === itemId ? { ...item, name: newItemName.trim() } : item));
 
             await this.repo.replaceByTitle(title, list);
 
             this.logger?.info('Item name updated', {
                 listTitle: title,
-                oldItemName: itemName,
+                itemId,
                 newItemName: newItemName.trim(),
             });
 
@@ -252,7 +269,7 @@ export class ListService {
         } catch (error) {
             this.logger?.error('Failed to update item name', {
                 listTitle: title,
-                oldItemName: itemName,
+                itemId,
                 newItemName,
                 error,
             });
@@ -260,7 +277,7 @@ export class ListService {
         }
     }
 
-    async setItemSelected(title: string, itemName: string, isSelected: boolean) {
+    async setItemSelected(title: string, itemId: string, isSelected: boolean) {
         try {
             const list = await this.repo.getByTitle(title);
 
@@ -268,13 +285,13 @@ export class ListService {
                 throw Object.assign(new Error('List not found'), { status: 404 });
             }
 
-            list.items = list.items.map((item) => (item.name === itemName ? { ...item, isSelected } : item));
+            list.items = list.items.map((item) => (item.id === itemId ? { ...item, isSelected } : item));
 
             await this.repo.replaceByTitle(title, list);
 
             this.logger?.info('Item selection updated', {
                 listTitle: title,
-                itemName,
+                itemId,
                 isSelected,
             });
 
@@ -282,7 +299,7 @@ export class ListService {
         } catch (error) {
             this.logger?.error('Failed to update item selection', {
                 listTitle: title,
-                itemName,
+                itemId,
                 isSelected,
                 error,
             });
@@ -290,7 +307,7 @@ export class ListService {
         }
     }
 
-    async updateItemQuantity(title: string, itemName: string, quantity?: number, unit?: string) {
+    async updateItemQuantity(title: string, itemId: string, quantity?: number, unit?: string) {
         try {
             const list = await this.repo.getByTitle(title);
 
@@ -299,7 +316,7 @@ export class ListService {
             }
 
             list.items = list.items.map((item) =>
-                item.name === itemName
+                item.id === itemId
                     ? {
                           ...item,
                           ...(quantity !== undefined && { quantity }),
@@ -312,7 +329,7 @@ export class ListService {
 
             this.logger?.info('Item quantity updated', {
                 listTitle: title,
-                itemName,
+                itemId,
                 quantity,
                 unit,
             });
@@ -321,7 +338,7 @@ export class ListService {
         } catch (error) {
             this.logger?.error('Failed to update item quantity', {
                 listTitle: title,
-                itemName,
+                itemId,
                 quantity,
                 unit,
                 error,
@@ -355,7 +372,7 @@ export class ListService {
         }
     }
 
-    async deleteItem(title: string, itemName: string) {
+    async deleteItem(title: string, itemId: string) {
         try {
             const list = await this.repo.getByTitle(title);
 
@@ -363,18 +380,18 @@ export class ListService {
                 throw Object.assign(new Error('List not found'), { status: 404 });
             }
 
-            list.items = list.items.filter((item) => item.name !== itemName);
+            list.items = list.items.filter((item) => item.id !== itemId);
             await this.repo.replaceByTitle(title, list);
 
             this.logger?.info('Item deleted from list', {
                 listTitle: title,
-                itemName,
+                itemId,
                 remainingItemCount: list.items.length,
             });
 
             return list;
         } catch (error) {
-            this.logger?.error('Failed to delete item', { listTitle: title, itemName, error });
+            this.logger?.error('Failed to delete item', { listTitle: title, itemId, error });
             throw error;
         }
     }

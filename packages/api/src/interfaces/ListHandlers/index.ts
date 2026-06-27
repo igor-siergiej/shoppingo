@@ -35,27 +35,26 @@ const resolveItemOperation = (body: {
     unit?: string;
 }): {
     type: 'name' | 'selection' | 'quantity';
-    execute: (service: ReturnType<typeof getListService>, title: string, itemName: string) => Promise<unknown>;
+    execute: (service: ReturnType<typeof getListService>, title: string, itemId: string) => Promise<unknown>;
 } | null => {
     if (body.newItemName !== undefined) {
         return {
             type: 'name',
-            execute: (service, title, itemName) => service.updateItemName(title, itemName, body.newItemName),
+            execute: (service, title, itemId) => service.updateItemName(title, itemId, body.newItemName),
         };
     }
 
     if (typeof body.isSelected === 'boolean') {
         return {
             type: 'selection',
-            execute: (service, title, itemName) => service.setItemSelected(title, itemName, body.isSelected),
+            execute: (service, title, itemId) => service.setItemSelected(title, itemId, body.isSelected),
         };
     }
 
     if (body.quantity !== undefined || body.unit !== undefined) {
         return {
             type: 'quantity',
-            execute: (service, title, itemName) =>
-                service.updateItemQuantity(title, itemName, body.quantity, body.unit),
+            execute: (service, title, itemId) => service.updateItemQuantity(title, itemId, body.quantity, body.unit),
         };
     }
 
@@ -189,11 +188,12 @@ export const addList = async (c: Context<HonoVars>) => {
 
 export const addItem = async (c: Context<HonoVars>) => {
     const title = c.req.param('title');
-    const { itemName, dateAdded, quantity, unit } = await c.req.json<{
+    const { itemName, dateAdded, quantity, unit, id } = await c.req.json<{
         itemName: string;
         dateAdded: Date;
         quantity?: number;
         unit?: string;
+        id?: string;
     }>();
     const logger = getLogger();
     const authenticatedUser = c.get('user');
@@ -206,7 +206,7 @@ export const addItem = async (c: Context<HonoVars>) => {
         const denied = await ensureListAccess(c, title, authenticatedUser, logger);
         if (denied) return denied;
 
-        const item = await getListService().addItem(title, itemName, dateAdded, quantity, unit, authenticatedUser);
+        const item = await getListService().addItem(title, itemName, dateAdded, quantity, unit, authenticatedUser, id);
 
         logger.info('API: Item added to list', {
             listTitle: title,
@@ -224,7 +224,7 @@ export const addItem = async (c: Context<HonoVars>) => {
 
 export const updateItem = async (c: Context<HonoVars>) => {
     const title = c.req.param('title');
-    const itemName = c.req.param('itemName');
+    const itemId = c.req.param('itemId');
     const requestBody = await c.req.json<{
         isSelected?: boolean;
         newItemName?: string;
@@ -248,7 +248,7 @@ export const updateItem = async (c: Context<HonoVars>) => {
         if (!operation) {
             logger.warn('API: Invalid item update request', {
                 listTitle: title,
-                itemName,
+                itemId,
                 providedFields: requestBody,
             });
             return c.json(
@@ -257,21 +257,21 @@ export const updateItem = async (c: Context<HonoVars>) => {
             );
         }
 
-        const result = await operation.execute(getListService(), title, itemName);
+        const result = await operation.execute(getListService(), title, itemId);
         logger.info(`API: Item ${operation.type} updated`, {
             listTitle: title,
-            itemName,
+            itemId,
             ...requestBody,
         });
         return c.json(result, 200);
     } catch (error: unknown) {
-        return failWith(error, logger, 'API: Failed to update item', { listTitle: title, itemName });
+        return failWith(error, logger, 'API: Failed to update item', { listTitle: title, itemId });
     }
 };
 
 export const deleteItem = async (c: Context<HonoVars>) => {
     const title = c.req.param('title');
-    const itemName = c.req.param('itemName');
+    const itemId = c.req.param('itemId');
     const logger = getLogger();
     const authenticatedUser = c.get('user');
 
@@ -279,17 +279,17 @@ export const deleteItem = async (c: Context<HonoVars>) => {
         const denied = await ensureListAccess(c, title, authenticatedUser, logger);
         if (denied) return denied;
 
-        const list = await getListService().deleteItem(title, itemName);
+        const list = await getListService().deleteItem(title, itemId);
 
         logger.info('API: Item deleted from list', {
             listTitle: title,
-            itemName,
+            itemId,
             remainingItemCount: list.items.length,
         });
 
         return c.json(list, 200);
     } catch (error: unknown) {
-        return failWith(error, logger, 'API: Failed to delete item', { listTitle: title, itemName });
+        return failWith(error, logger, 'API: Failed to delete item', { listTitle: title, itemId });
     }
 };
 

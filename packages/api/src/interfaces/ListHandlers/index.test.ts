@@ -253,7 +253,7 @@ describe('ListHandlers', () => {
     describe('updateItem', () => {
         it('should update item successfully', async () => {
             const ctx = createMockContext({
-                params: { title: 'Test List', itemName: 'Old Name' },
+                params: { title: 'Test List', itemId: 'item-1' },
                 body: { newItemName: 'New Name' },
             });
 
@@ -264,7 +264,7 @@ describe('ListHandlers', () => {
 
             const response = await listHandlers.updateItem(ctx);
 
-            expect(mockListService.updateItemName).toHaveBeenCalledWith('Test List', 'Old Name', 'New Name');
+            expect(mockListService.updateItemName).toHaveBeenCalledWith('Test List', 'item-1', 'New Name');
             expect(response.status).toBe(200);
             expect(await getResponseBody(response)).toEqual({
                 message: 'Item updated successfully',
@@ -274,7 +274,7 @@ describe('ListHandlers', () => {
 
         it('should handle service errors', async () => {
             const ctx = createMockContext({
-                params: { title: 'Test List', itemName: 'Old Name' },
+                params: { title: 'Test List', itemId: 'item-1' },
                 body: { newItemName: 'New Name' },
             });
 
@@ -285,7 +285,7 @@ describe('ListHandlers', () => {
 
         it('should reject empty newItemName', async () => {
             const ctx = createMockContext({
-                params: { title: 'Test List', itemName: 'Old Name' },
+                params: { title: 'Test List', itemId: 'item-1' },
                 body: { newItemName: '' },
             });
 
@@ -307,14 +307,14 @@ describe('ListHandlers', () => {
                 listType: ListType.SHOPPING,
             };
             const ctx = createMockContext({
-                params: { title: 'Test List', itemName: 'Item 1' },
+                params: { title: 'Test List', itemId: 'item-1' },
             });
 
             mockListService.deleteItem.mockResolvedValue(mockList);
 
             const response = await listHandlers.deleteItem(ctx);
 
-            expect(mockListService.deleteItem).toHaveBeenCalledWith('Test List', 'Item 1');
+            expect(mockListService.deleteItem).toHaveBeenCalledWith('Test List', 'item-1');
             expect(response.status).toBe(200);
             const body = await getResponseBody(response);
             expect(body.id).toBe(mockList.id);
@@ -322,7 +322,7 @@ describe('ListHandlers', () => {
 
         it('should handle service errors', async () => {
             const ctx = createMockContext({
-                params: { title: 'Test List', itemName: 'Item 1' },
+                params: { title: 'Test List', itemId: 'item-1' },
             });
 
             mockListService.deleteItem.mockRejectedValue(new Error('List not found'));
@@ -464,7 +464,8 @@ describe('ListHandlers', () => {
                 expect.any(String),
                 undefined,
                 undefined,
-                { id: 'test-user-1', username: 'testuser' }
+                { id: 'test-user-1', username: 'testuser' },
+                undefined
             );
             expect(response.status).toBe(200);
             expect(await getResponseBody(response)).toEqual({
@@ -699,7 +700,7 @@ describe('ListHandlers', () => {
 
         it('updateItem should return 403 when user not in list', async () => {
             const ctx = createMockContext({
-                params: { title: 'Test List', itemName: 'Item' },
+                params: { title: 'Test List', itemId: 'item-1' },
                 body: { newItemName: 'Updated Item' },
             });
 
@@ -720,7 +721,7 @@ describe('ListHandlers', () => {
 
         it('deleteItem should return 403 when user not in list', async () => {
             const ctx = createMockContext({
-                params: { title: 'Test List', itemName: 'Item' },
+                params: { title: 'Test List', itemId: 'item-1' },
             });
 
             mockListService.getList.mockResolvedValue({
@@ -851,7 +852,7 @@ describe('ListHandlers', () => {
     describe('Missing Coverage - updateItem branches', () => {
         it('should update item selection successfully', async () => {
             const ctx = createMockContext({
-                params: { title: 'Test List', itemName: 'Item' },
+                params: { title: 'Test List', itemId: 'item-1' },
                 body: { isSelected: true },
             });
 
@@ -861,14 +862,14 @@ describe('ListHandlers', () => {
 
             const response = await listHandlers.updateItem(ctx);
 
-            expect(mockListService.setItemSelected).toHaveBeenCalledWith('Test List', 'Item', true);
+            expect(mockListService.setItemSelected).toHaveBeenCalledWith('Test List', 'item-1', true);
             expect(response.status).toBe(200);
             expect(await getResponseBody(response)).toEqual({ message: 'Item selection updated' });
         });
 
         it('should update item quantity successfully', async () => {
             const ctx = createMockContext({
-                params: { title: 'Test List', itemName: 'Item' },
+                params: { title: 'Test List', itemId: 'item-1' },
                 body: { quantity: 5, unit: 'kg' },
             });
 
@@ -878,14 +879,14 @@ describe('ListHandlers', () => {
 
             const response = await listHandlers.updateItem(ctx);
 
-            expect(mockListService.updateItemQuantity).toHaveBeenCalledWith('Test List', 'Item', 5, 'kg');
+            expect(mockListService.updateItemQuantity).toHaveBeenCalledWith('Test List', 'item-1', 5, 'kg');
             expect(response.status).toBe(200);
             expect(await getResponseBody(response)).toEqual({ message: 'Item quantity updated' });
         });
 
         it('should return 400 when no valid update fields provided', async () => {
             const ctx = createMockContext({
-                params: { title: 'Test List', itemName: 'Item' },
+                params: { title: 'Test List', itemId: 'item-1' },
                 body: {},
             });
 
@@ -898,7 +899,7 @@ describe('ListHandlers', () => {
 
         it('should handle error in setItemSelected', async () => {
             const ctx = createMockContext({
-                params: { title: 'Test List', itemName: 'Item' },
+                params: { title: 'Test List', itemId: 'item-1' },
                 body: { isSelected: true },
             });
 
@@ -909,7 +910,7 @@ describe('ListHandlers', () => {
 
         it('should handle error in updateItemQuantity', async () => {
             const ctx = createMockContext({
-                params: { title: 'Test List', itemName: 'Item' },
+                params: { title: 'Test List', itemId: 'item-1' },
                 body: { quantity: 5 },
             });
 

@@ -60,8 +60,8 @@ export const createRoutes = (): Hono<Vars> => {
     router.put('/api/lists', authenticate, addList);
     router.put('/api/lists/:title/items/bulk', authenticate, addItems);
     router.put('/api/lists/:title/items', authenticate, addItem);
-    router.post('/api/lists/:title/items/:itemName', authenticate, updateItem);
-    router.delete('/api/lists/:title/items/:itemName', authenticate, deleteItem);
+    router.post('/api/lists/:title/items/:itemId', authenticate, updateItem);
+    router.delete('/api/lists/:title/items/:itemId', authenticate, deleteItem);
     router.delete('/api/lists/:title/clear', authenticate, clearList);
     router.delete('/api/lists/:title/clearSelected', authenticate, deleteSelected);
     router.post('/api/lists/:title/users', authenticate, addUserToList);
