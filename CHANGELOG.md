@@ -1,3 +1,10 @@
+# [1.52.0](https://github.com/igor-siergiej/shoppingo/compare/v1.51.0...v1.52.0) (2026-06-27)
+
+
+### Features
+
+* surface reminder run counts for debugging ([#95](https://github.com/igor-siergiej/shoppingo/issues/95)) ([421c83c](https://github.com/igor-siergiej/shoppingo/commit/421c83c83bd8024ff68669716337b7f28d8a91f5))
+
 # [1.51.0](https://github.com/igor-siergiej/shoppingo/compare/v1.50.0...v1.51.0) (2026-06-27)
 
 
