@@ -1,6 +1,6 @@
 import { logger } from '../utils/logger';
-import { replayIntent } from './intents';
 import { outboxStore } from './outboxStore';
+import { replayIntent } from './replay';
 
 const DISCARD_STATUSES = new Set([404, 409]);
 let draining = false;

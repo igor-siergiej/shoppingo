@@ -56,6 +56,7 @@
     "workbox-precaching",
     "workbox-routing",
     "workbox-strategies",
-    "web-push"
+    "web-push",
+    "fake-indexeddb"
   ]
 }
