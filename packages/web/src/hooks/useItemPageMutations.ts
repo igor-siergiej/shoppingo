@@ -1,14 +1,32 @@
 import type { Item, ListType } from '@shoppingo/types';
 import { useMutation, useQueryClient } from 'react-query';
-import { addItem, clearList, clearSelected } from '../api';
+import { clearList, clearSelected } from '../api';
+import { drainOutbox } from '../offline/drainer';
+import { outboxStore } from '../offline/outboxStore';
 import { logger } from '../utils/logger';
 
 export const useItemPageMutations = (listTitle?: string) => {
     const queryClient = useQueryClient();
 
     const addItemMutation = useMutation({
-        mutationFn: ({ itemName, quantity, unit }: { itemName: string; quantity?: number; unit?: string }) =>
-            addItem(itemName, listTitle, quantity, unit),
+        mutationFn: async ({ itemName, quantity, unit }: { itemName: string; quantity?: number; unit?: string }) => {
+            const id = crypto.randomUUID();
+            await outboxStore.enqueue({
+                id: crypto.randomUUID(),
+                entityType: 'item',
+                op: 'item.add',
+                targetId: id,
+                scope: listTitle ?? '',
+                payload: {
+                    name: itemName,
+                    ...(quantity !== undefined && { quantity }),
+                    ...(unit !== undefined && { unit }),
+                },
+                createdAt: Date.now(),
+            });
+            void drainOutbox();
+            return id;
+        },
         onSuccess: (_, variables) => {
             logger.info('Item added', {
                 listTitle,

@@ -1,3 +1,5 @@
+import { SyncStatusBadge } from '../SyncStatusBadge';
+
 const Appbar = () => {
     return (
         <header className="bg-primary shadow-md fixed top-0 left-0 right-0 w-full z-50">
@@ -8,6 +10,9 @@ const Appbar = () => {
                     </span>
                 )}
                 <h1 className="text-2xl font-bold text-center w-full text-white">Shoppingo</h1>
+                <span className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <SyncStatusBadge />
+                </span>
             </div>
         </header>
     );

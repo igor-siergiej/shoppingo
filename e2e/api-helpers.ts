@@ -31,13 +31,25 @@ export async function apiAddItem(
     return res.json() as Promise<{ id: string; name: string }>;
 }
 
+async function resolveItemId(listTitle: string, itemName: string): Promise<string> {
+    const res = await fetch(`${API_BASE}/api/lists/title/${encodeURIComponent(listTitle)}`, {
+        headers: authHeaders,
+    });
+    if (!res.ok) throw new Error(`resolveItemId: get list failed: ${await res.text()}`);
+    const list = (await res.json()) as { items: Array<{ id: string; name: string }> };
+    const item = list.items.find((i) => i.name === itemName);
+    if (!item) throw new Error(`resolveItemId: item '${itemName}' not found in list '${listTitle}'`);
+    return item.id;
+}
+
 export async function apiUpdateItem(
     listTitle: string,
     itemName: string,
     updates: { isSelected?: boolean; newItemName?: string; quantity?: number; unit?: string }
 ) {
+    const itemId = await resolveItemId(listTitle, itemName);
     const res = await fetch(
-        `${API_BASE}/api/lists/${encodeURIComponent(listTitle)}/items/${encodeURIComponent(itemName)}`,
+        `${API_BASE}/api/lists/${encodeURIComponent(listTitle)}/items/${encodeURIComponent(itemId)}`,
         {
             method: 'POST',
             headers: authHeaders,

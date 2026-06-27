@@ -100,7 +100,7 @@ export const makeRequest = async ({ pathname, method, operationString, body, que
             status: response.status,
             statusText: response.statusText,
         });
-        throw new Error(errorMessage);
+        throw Object.assign(new Error(errorMessage), { status: response.status });
     } catch (error: unknown) {
         if (error instanceof Error) {
             logger.error(`Error while trying to ${operationString}`, {

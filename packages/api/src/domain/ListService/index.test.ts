@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, mock } from 'bun:test';
+import { beforeEach, describe, expect, it, mock, vi } from 'bun:test';
 import type { Item, List, User } from '@shoppingo/types';
 import { ListType } from '@shoppingo/types';
 
@@ -309,7 +309,7 @@ describe('ListService', () => {
 
                 await mockRepository.insert(mockList);
 
-                const result = await listService.updateItemName('Test List', 'Old Name', 'New Name');
+                const result = await listService.updateItemName('Test List', 'item-1', 'New Name');
 
                 expect(result.message).toBe('Item updated successfully');
                 expect(result.newItemName).toBe('New Name');
@@ -318,7 +318,7 @@ describe('ListService', () => {
 
         describe('When the list does not exist', () => {
             it('should throw an error indicating the list was not found', async () => {
-                await expect(listService.updateItemName('Non-existent', 'Old', 'New')).rejects.toThrow(
+                await expect(listService.updateItemName('Non-existent', 'item-1', 'New')).rejects.toThrow(
                     'List not found'
                 );
             });
@@ -343,7 +343,7 @@ describe('ListService', () => {
 
                 await mockRepository.insert(mockList);
 
-                await expect(listService.updateItemName('Test List', 'Old Name', '')).rejects.toThrow(
+                await expect(listService.updateItemName('Test List', 'item-1', '')).rejects.toThrow(
                     'New title cannot be empty'
                 );
             });
@@ -368,7 +368,7 @@ describe('ListService', () => {
 
                 await mockRepository.insert(mockList);
 
-                await expect(listService.updateItemName('Test List', 'Old Name', 'Old Name')).rejects.toThrow(
+                await expect(listService.updateItemName('Test List', 'item-1', 'Old Name')).rejects.toThrow(
                     'New item name must be different from current name'
                 );
             });
@@ -387,13 +387,19 @@ describe('ListService', () => {
                             dateAdded: new Date(),
                             isSelected: false,
                         },
+                        {
+                            id: 'item-2',
+                            name: 'Old Name',
+                            dateAdded: new Date(),
+                            isSelected: false,
+                        },
                     ],
                     users: [mockUser],
                 };
 
                 await mockRepository.insert(mockList);
 
-                await expect(listService.updateItemName('Test List', 'Old Name', 'Existing Item')).rejects.toThrow(
+                await expect(listService.updateItemName('Test List', 'item-2', 'Existing Item')).rejects.toThrow(
                     'An item with that name already exists in this list'
                 );
             });
@@ -420,7 +426,7 @@ describe('ListService', () => {
 
                 await mockRepository.insert(mockList);
 
-                const result = await listService.setItemSelected('Test List', 'Item 1', true);
+                const result = await listService.setItemSelected('Test List', 'item-1', true);
 
                 expect(result.message).toBe('Updated Successfully');
             });
@@ -428,8 +434,24 @@ describe('ListService', () => {
 
         describe('When the list does not exist', () => {
             it('should throw an error indicating the list was not found', async () => {
-                await expect(listService.setItemSelected('Non-existent', 'Item', true)).rejects.toThrow(
+                await expect(listService.setItemSelected('Non-existent', 'item-1', true)).rejects.toThrow(
                     'List not found'
+                );
+            });
+        });
+
+        describe('When the item does not exist', () => {
+            it('should throw a 404 indicating the item was not found', async () => {
+                await mockRepository.insert({
+                    id: 'list-1',
+                    title: 'Test List',
+                    dateAdded: new Date(),
+                    items: [{ id: 'item-1', name: 'Item 1', dateAdded: new Date(), isSelected: false }],
+                    users: [mockUser],
+                });
+
+                await expect(listService.setItemSelected('Test List', 'missing-id', true)).rejects.toThrow(
+                    'Item not found'
                 );
             });
         });
@@ -455,7 +477,7 @@ describe('ListService', () => {
 
                 await mockRepository.insert(mockList);
 
-                const result = await listService.updateItemQuantity('Test List', 'Item 1', 3, 'ml');
+                const result = await listService.updateItemQuantity('Test List', 'item-1', 3, 'ml');
 
                 expect(result.message).toBe('Quantity updated successfully');
 
@@ -486,7 +508,7 @@ describe('ListService', () => {
 
                 await mockRepository.insert(mockList);
 
-                await listService.updateItemQuantity('Test List', 'Item 1', 10, undefined);
+                await listService.updateItemQuantity('Test List', 'item-1', 10, undefined);
 
                 const updatedList = await mockRepository.getByTitle('Test List');
                 expect(updatedList?.items[0].quantity).toBe(10);
@@ -515,7 +537,7 @@ describe('ListService', () => {
 
                 await mockRepository.insert(mockList);
 
-                await listService.updateItemQuantity('Test List', 'Item 1', undefined, 'L');
+                await listService.updateItemQuantity('Test List', 'item-1', undefined, 'L');
 
                 const updatedList = await mockRepository.getByTitle('Test List');
                 expect(updatedList?.items[0].quantity).toBe(5);
@@ -525,8 +547,24 @@ describe('ListService', () => {
 
         describe('When the list does not exist', () => {
             it('should throw an error indicating the list was not found', async () => {
-                await expect(listService.updateItemQuantity('Non-existent', 'Item', 1, 'pcs')).rejects.toThrow(
+                await expect(listService.updateItemQuantity('Non-existent', 'item-1', 1, 'pcs')).rejects.toThrow(
                     'List not found'
+                );
+            });
+        });
+
+        describe('When the item does not exist', () => {
+            it('should throw a 404 indicating the item was not found', async () => {
+                await mockRepository.insert({
+                    id: 'list-1',
+                    title: 'Test List',
+                    dateAdded: new Date(),
+                    items: [{ id: 'item-1', name: 'Item 1', dateAdded: new Date(), isSelected: false }],
+                    users: [mockUser],
+                });
+
+                await expect(listService.updateItemQuantity('Test List', 'missing-id', 1, 'pcs')).rejects.toThrow(
+                    'Item not found'
                 );
             });
         });
@@ -598,7 +636,7 @@ describe('ListService', () => {
 
                 await mockRepository.insert(mockList);
 
-                const result = await listService.deleteItem('Test List', 'Item 1');
+                const result = await listService.deleteItem('Test List', 'item-1');
 
                 expect(result.items).toHaveLength(1);
                 expect(result.items[0].name).toBe('Item 2');
@@ -607,7 +645,21 @@ describe('ListService', () => {
 
         describe('When the list does not exist', () => {
             it('should throw an error indicating the list was not found', async () => {
-                await expect(listService.deleteItem('Non-existent', 'Item')).rejects.toThrow('List not found');
+                await expect(listService.deleteItem('Non-existent', 'item-1')).rejects.toThrow('List not found');
+            });
+        });
+
+        describe('When the item does not exist', () => {
+            it('should throw a 404 indicating the item was not found', async () => {
+                await mockRepository.insert({
+                    id: 'list-1',
+                    title: 'Test List',
+                    dateAdded: new Date(),
+                    items: [{ id: 'item-1', name: 'Item 1', dateAdded: new Date(), isSelected: false }],
+                    users: [mockUser],
+                });
+
+                await expect(listService.deleteItem('Test List', 'missing-id')).rejects.toThrow('Item not found');
             });
         });
     });
@@ -1075,6 +1127,82 @@ describe('ListService', () => {
                 expect(breadItem?.unit).toBeUndefined();
             });
         });
+    });
+});
+
+describe('Item id-addressing', () => {
+    let service: ListService;
+    let repo: {
+        getByTitle: ReturnType<typeof vi.fn>;
+        replaceByTitle: ReturnType<typeof vi.fn>;
+        pushItem: ReturnType<typeof vi.fn>;
+    };
+
+    const makeList = (overrides: Partial<List> = {}): List => ({
+        id: 'list-1',
+        title: 'Test List',
+        dateAdded: new Date(),
+        items: [],
+        users: [{ id: 'user-1', username: 'testuser' }],
+        ...overrides,
+    });
+
+    beforeEach(() => {
+        repo = {
+            getByTitle: vi.fn(),
+            replaceByTitle: vi.fn().mockResolvedValue(undefined),
+            pushItem: vi.fn().mockResolvedValue(undefined),
+        };
+        service = new ListService(repo as never, { generate: () => 'generated-id' } as never);
+    });
+
+    it('setItemSelected matches by item id, not name', async () => {
+        const list = makeList({
+            items: [
+                { id: 'a1', name: 'Milk', isSelected: false, dateAdded: new Date() },
+                { id: 'a2', name: 'Milk', isSelected: false, dateAdded: new Date() },
+            ],
+        });
+        repo.getByTitle.mockResolvedValue(list);
+        await service.setItemSelected('Test List', 'a2', true);
+        const saved = repo.replaceByTitle.mock.calls[0][1] as List;
+        expect(saved.items.find((i: Item) => i.id === 'a2')?.isSelected).toBe(true);
+        expect(saved.items.find((i: Item) => i.id === 'a1')?.isSelected).toBe(false);
+    });
+
+    it('deleteItem removes by id', async () => {
+        const list = makeList({
+            items: [
+                { id: 'a1', name: 'Milk', isSelected: false, dateAdded: new Date() },
+                { id: 'a2', name: 'Bread', isSelected: false, dateAdded: new Date() },
+            ],
+        });
+        repo.getByTitle.mockResolvedValue(list);
+        await service.deleteItem('Test List', 'a1');
+        const saved = repo.replaceByTitle.mock.calls[0][1] as List;
+        expect(saved.items.map((i: Item) => i.id)).toEqual(['a2']);
+    });
+
+    it('addItem uses caller-provided id when given', async () => {
+        repo.getByTitle.mockResolvedValue(makeList({ items: [] }));
+        const item = await service.addItem(
+            'Test List',
+            'Eggs',
+            new Date(),
+            undefined,
+            undefined,
+            undefined,
+            'client-uuid'
+        );
+        expect(item.id).toBe('client-uuid');
+    });
+
+    it('addItem with an already-present id returns the existing item (idempotent replay)', async () => {
+        const existing: Item = { id: 'dup', name: 'Eggs', isSelected: false, dateAdded: new Date() };
+        repo.getByTitle.mockResolvedValue(makeList({ items: [existing] }));
+        const item = await service.addItem('Test List', 'Eggs', new Date(), undefined, undefined, undefined, 'dup');
+        expect(item.id).toBe('dup');
+        expect(repo.pushItem).not.toHaveBeenCalled();
     });
 });
 
