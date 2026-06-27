@@ -57,7 +57,7 @@ describe('TodoReminderService.sendDailyReminders', () => {
         );
 
     it('sends ONE summary push per owner with all their due todos', async () => {
-        await service([
+        const summary = await service([
             todo({ id: 'a', title: 'Pay rent' }),
             todo({ id: 'b', title: 'Call dentist' }),
         ]).sendDailyReminders(NOW);
@@ -69,6 +69,13 @@ describe('TodoReminderService.sendDailyReminders', () => {
             body: 'Pay rent, Call dentist',
             data: { url: '/calendar' },
         });
+        expect(summary).toEqual({ configured: true, due: 2, owners: 1, subscriptions: 1, sent: 1 });
+    });
+
+    it('reports configured:false without touching the repo', async () => {
+        sender.isConfigured = () => false;
+        const summary = await service([todo({})]).sendDailyReminders(NOW);
+        expect(summary).toEqual({ configured: false, due: 0, owners: 0, subscriptions: 0, sent: 0 });
     });
 
     it('groups by owner — one push each', async () => {
@@ -124,10 +131,11 @@ describe('TodoReminderService.sendDailyReminders', () => {
         expect(sender.send).not.toHaveBeenCalled();
     });
 
-    it('never throws when a send rejects', async () => {
+    it('never throws when a send rejects, and reports zero sent', async () => {
         sender.send = mock(async () => {
             throw new Error('boom');
         });
-        await expect(service([todo({})]).sendDailyReminders(NOW)).resolves.toBeUndefined();
+        const summary = await service([todo({})]).sendDailyReminders(NOW);
+        expect(summary).toEqual({ configured: true, due: 1, owners: 1, subscriptions: 0, sent: 0 });
     });
 });

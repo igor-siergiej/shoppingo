@@ -38,6 +38,6 @@ export const completeTodo = withAuth(async (c, user) => {
 
 /** Test trigger: run the daily due-todo reminder fan-out now (same path as the 08:30 scheduler). */
 export const runDailyReminder = withAuth(async (c) => {
-    await getTodoReminderService().sendDailyReminders(new Date());
-    return c.json({ triggered: true }, 200);
+    const summary = await getTodoReminderService().sendDailyReminders(new Date());
+    return c.json({ triggered: true, ...summary }, 200);
 });
