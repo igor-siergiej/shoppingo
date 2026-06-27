@@ -32,7 +32,14 @@ import {
     updateRecipe,
     uploadRecipeImage,
 } from '../interfaces/RecipeHandlers';
-import { completeTodo, createTodo, deleteTodo, getTodos, updateTodo } from '../interfaces/TodoHandlers';
+import {
+    completeTodo,
+    createTodo,
+    deleteTodo,
+    getTodos,
+    runDailyReminder,
+    updateTodo,
+} from '../interfaces/TodoHandlers';
 import { authenticate } from '../middleware/auth';
 
 type Vars = { Variables: { user: { id: string; username: string } } };
@@ -94,6 +101,7 @@ export const createRoutes = (): Hono<Vars> => {
     router.post('/api/todos/:id', authenticate, updateTodo);
     router.delete('/api/todos/:id', authenticate, deleteTodo);
     router.post('/api/todos/:id/complete', authenticate, completeTodo);
+    router.post('/api/todos/reminder/run', authenticate, runDailyReminder);
 
     router.get('/api/labels', authenticate, getLabels);
     router.put('/api/labels', authenticate, createLabel);

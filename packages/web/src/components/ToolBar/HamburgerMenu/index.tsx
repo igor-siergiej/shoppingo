@@ -1,6 +1,8 @@
-import { Bell, Download, Loader2, LogOut, Moon, RefreshCw, Sun, Tag, Users } from 'lucide-react';
+import { Bell, BellRing, Download, Loader2, LogOut, Moon, RefreshCw, Sun, Tag, Users } from 'lucide-react';
 import { motion } from 'motion/react';
-import type { ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
+import { toast } from 'sonner';
+import { runDailyReminder } from '../../../api';
 import { Button } from '../../../components/ui/button';
 import { Switch } from '../../../components/ui/switch';
 import { useTheme } from '../../../contexts/ThemeContext';
@@ -78,6 +80,34 @@ const NotificationToggle = () => {
             </div>
             <Switch checked={isSubscribed} onCheckedChange={handleToggle} disabled={isBusy} />
         </button>
+    );
+};
+
+const TestReminderButton = () => {
+    const { isSupported, isSubscribed } = usePushNotifications();
+    const [isSending, setIsSending] = useState(false);
+    if (!isSupported || !isSubscribed) return null;
+
+    const handleClick = async () => {
+        if (isSending) return;
+        setIsSending(true);
+        try {
+            await runDailyReminder();
+            toast.success('Reminder triggered. Push fires only if you have todos due today.');
+        } catch {
+            toast.error('Failed to trigger reminder', {
+                style: { backgroundColor: '#ef4444', color: '#ffffff' },
+            });
+        } finally {
+            setIsSending(false);
+        }
+    };
+
+    return (
+        <Button variant="outline" onClick={() => void handleClick()} disabled={isSending} className={OUTLINE_BTN}>
+            {isSending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <BellRing className="h-4 w-4 mr-2" />}
+            Send test reminder
+        </Button>
     );
 };
 
@@ -171,6 +201,10 @@ export const HamburgerMenu = ({
 
             <MenuItem delay={0.1}>
                 <NotificationToggle />
+            </MenuItem>
+
+            <MenuItem delay={0.1}>
+                <TestReminderButton />
             </MenuItem>
 
             <MenuItem delay={0.1}>
