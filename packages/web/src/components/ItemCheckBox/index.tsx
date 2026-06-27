@@ -81,7 +81,7 @@ const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
     const { x, controls, swipeState, handleDragEnd, closeSwipe } = useSwipeGesture();
     const { toggleMutation, deleteMutation, updateNameMutation, updateQuantityMutation } = useItemMutations(
         listTitle,
-        item.name
+        item.id
     );
     const drawerState = useItemEditDrawer();
 

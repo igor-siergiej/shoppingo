@@ -41,15 +41,15 @@ function createOptimisticMutation<TVariables>(
     };
 }
 
-export function useItemMutations(listTitle: string, itemName: string) {
+export function useItemMutations(listTitle: string, itemId: string) {
     const queryClient = useQueryClient();
 
     const toggleMutation = useMutation(
         createOptimisticMutation(
             queryClient,
             listTitle,
-            (isSelected: boolean) => updateItem(itemName, isSelected, listTitle),
-            (items, isSelected) => items.map((i) => (i.name === itemName ? { ...i, isSelected } : i))
+            (isSelected: boolean) => updateItem(itemId, isSelected, listTitle),
+            (items, isSelected) => items.map((i) => (i.id === itemId ? { ...i, isSelected } : i))
         ) as UseMutationOptions<unknown, unknown, boolean, OptimisticMutationContext>
     );
 
@@ -57,8 +57,8 @@ export function useItemMutations(listTitle: string, itemName: string) {
         createOptimisticMutation(
             queryClient,
             listTitle,
-            () => deleteItem(itemName, listTitle),
-            (items) => items.filter((i) => i.name !== itemName)
+            () => deleteItem(itemId, listTitle),
+            (items) => items.filter((i) => i.id !== itemId)
         ) as UseMutationOptions<unknown, unknown, undefined, OptimisticMutationContext>
     );
 
@@ -66,8 +66,8 @@ export function useItemMutations(listTitle: string, itemName: string) {
         createOptimisticMutation(
             queryClient,
             listTitle,
-            (newName: string) => updateItemName(listTitle, itemName, newName),
-            (items, newName) => items.map((i) => (i.name === itemName ? { ...i, name: newName } : i))
+            (newName: string) => updateItemName(listTitle, itemId, newName),
+            (items, newName) => items.map((i) => (i.id === itemId ? { ...i, name: newName } : i))
         ) as UseMutationOptions<unknown, unknown, string, OptimisticMutationContext>
     );
 
@@ -76,10 +76,10 @@ export function useItemMutations(listTitle: string, itemName: string) {
             queryClient,
             listTitle,
             ({ quantity, unit }: { quantity?: number; unit?: string }) =>
-                updateItemQuantity(listTitle, itemName, quantity, unit),
+                updateItemQuantity(listTitle, itemId, quantity, unit),
             (items, { quantity, unit }) =>
                 items.map((i) =>
-                    i.name === itemName
+                    i.id === itemId
                         ? {
                               ...i,
                               ...(quantity !== undefined && { quantity }),

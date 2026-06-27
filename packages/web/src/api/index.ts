@@ -67,7 +67,8 @@ export const addItem = async (
     itemName: string,
     listTitle: string,
     quantity?: number,
-    unit?: string
+    unit?: string,
+    id?: string
 ): Promise<unknown> => {
     const dateAdded = generateTimestamp(new Date());
 
@@ -80,15 +81,11 @@ export const addItem = async (
             dateAdded,
             ...(quantity !== undefined && { quantity }),
             ...(unit !== undefined && { unit }),
+            ...(id !== undefined && { id }),
         }),
     });
 
-    // Trigger image generation/fetch for the item in the background (fire-and-forget)
-    void fetch(`/api/image/${encodeURIComponent(itemName)}`, {
-        method: 'GET',
-    }).catch(() => {
-        /* ignore errors, do not block addItem */
-    });
+    void fetch(`/api/image/${encodeURIComponent(itemName)}`, { method: 'GET' }).catch(() => {});
 
     return result;
 };
@@ -116,24 +113,20 @@ export const addItemsBulk = async (
     return result;
 };
 
-export const updateItem = async (itemName: string, isSelected: boolean, listTitle: string) => {
-    return await makeRequest({
-        pathname: `/api/lists/${encodeURIComponent(listTitle)}/items/${encodeURIComponent(itemName)}`,
+export const updateItem = async (itemId: string, isSelected: boolean, listTitle: string) =>
+    makeRequest({
+        pathname: `/api/lists/${encodeURIComponent(listTitle)}/items/${encodeURIComponent(itemId)}`,
         method: MethodType.POST,
         operationString: 'update item',
-        body: JSON.stringify({
-            isSelected,
-        }),
+        body: JSON.stringify({ isSelected }),
     });
-};
 
-export const deleteItem = async (itemName: string, listTitle: string) => {
-    return await makeRequest({
-        pathname: `/api/lists/${encodeURIComponent(listTitle)}/items/${encodeURIComponent(itemName)}`,
+export const deleteItem = async (itemId: string, listTitle: string) =>
+    makeRequest({
+        pathname: `/api/lists/${encodeURIComponent(listTitle)}/items/${encodeURIComponent(itemId)}`,
         method: MethodType.DELETE,
         operationString: 'delete item',
     });
-};
 
 export const deleteList = async (listTitle: string) => {
     return await makeRequest({
@@ -170,20 +163,17 @@ export const updateListName = async (listTitle: string, newTitle: string) => {
     });
 };
 
-export const updateItemName = async (listTitle: string, itemName: string, newItemName: string) => {
-    return await makeRequest({
-        pathname: `/api/lists/${encodeURIComponent(listTitle)}/items/${encodeURIComponent(itemName)}`,
+export const updateItemName = async (listTitle: string, itemId: string, newItemName: string) =>
+    makeRequest({
+        pathname: `/api/lists/${encodeURIComponent(listTitle)}/items/${encodeURIComponent(itemId)}`,
         method: MethodType.POST,
         operationString: 'update item name',
-        body: JSON.stringify({
-            newItemName,
-        }),
+        body: JSON.stringify({ newItemName }),
     });
-};
 
-export const updateItemQuantity = async (listTitle: string, itemName: string, quantity?: number, unit?: string) => {
-    return await makeRequest({
-        pathname: `/api/lists/${encodeURIComponent(listTitle)}/items/${encodeURIComponent(itemName)}`,
+export const updateItemQuantity = async (listTitle: string, itemId: string, quantity?: number, unit?: string) =>
+    makeRequest({
+        pathname: `/api/lists/${encodeURIComponent(listTitle)}/items/${encodeURIComponent(itemId)}`,
         method: MethodType.POST,
         operationString: 'update item quantity',
         body: JSON.stringify({
@@ -191,7 +181,6 @@ export const updateItemQuantity = async (listTitle: string, itemName: string, qu
             ...(unit !== undefined && { unit }),
         }),
     });
-};
 
 export const addUserToList = async (listTitle: string, username: string): Promise<ListResponse> => {
     return await makeRequest({
