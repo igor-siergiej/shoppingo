@@ -285,6 +285,10 @@ export class ListService {
                 throw Object.assign(new Error('List not found'), { status: 404 });
             }
 
+            if (!list.items.some((item) => item.id === itemId)) {
+                throw Object.assign(new Error('Item not found'), { status: 404 });
+            }
+
             list.items = list.items.map((item) => (item.id === itemId ? { ...item, isSelected } : item));
 
             await this.repo.replaceByTitle(title, list);
@@ -313,6 +317,10 @@ export class ListService {
 
             if (!list) {
                 throw Object.assign(new Error('List not found'), { status: 404 });
+            }
+
+            if (!list.items.some((item) => item.id === itemId)) {
+                throw Object.assign(new Error('Item not found'), { status: 404 });
             }
 
             list.items = list.items.map((item) =>
@@ -378,6 +386,10 @@ export class ListService {
 
             if (!list) {
                 throw Object.assign(new Error('List not found'), { status: 404 });
+            }
+
+            if (!list.items.some((item) => item.id === itemId)) {
+                throw Object.assign(new Error('Item not found'), { status: 404 });
             }
 
             list.items = list.items.filter((item) => item.id !== itemId);

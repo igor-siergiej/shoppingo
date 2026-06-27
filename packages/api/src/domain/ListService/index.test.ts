@@ -439,6 +439,22 @@ describe('ListService', () => {
                 );
             });
         });
+
+        describe('When the item does not exist', () => {
+            it('should throw a 404 indicating the item was not found', async () => {
+                await mockRepository.insert({
+                    id: 'list-1',
+                    title: 'Test List',
+                    dateAdded: new Date(),
+                    items: [{ id: 'item-1', name: 'Item 1', dateAdded: new Date(), isSelected: false }],
+                    users: [mockUser],
+                });
+
+                await expect(listService.setItemSelected('Test List', 'missing-id', true)).rejects.toThrow(
+                    'Item not found'
+                );
+            });
+        });
     });
 
     describe('Updating item quantities', () => {
@@ -536,6 +552,22 @@ describe('ListService', () => {
                 );
             });
         });
+
+        describe('When the item does not exist', () => {
+            it('should throw a 404 indicating the item was not found', async () => {
+                await mockRepository.insert({
+                    id: 'list-1',
+                    title: 'Test List',
+                    dateAdded: new Date(),
+                    items: [{ id: 'item-1', name: 'Item 1', dateAdded: new Date(), isSelected: false }],
+                    users: [mockUser],
+                });
+
+                await expect(listService.updateItemQuantity('Test List', 'missing-id', 1, 'pcs')).rejects.toThrow(
+                    'Item not found'
+                );
+            });
+        });
     });
 
     describe('Clearing selected items', () => {
@@ -614,6 +646,20 @@ describe('ListService', () => {
         describe('When the list does not exist', () => {
             it('should throw an error indicating the list was not found', async () => {
                 await expect(listService.deleteItem('Non-existent', 'item-1')).rejects.toThrow('List not found');
+            });
+        });
+
+        describe('When the item does not exist', () => {
+            it('should throw a 404 indicating the item was not found', async () => {
+                await mockRepository.insert({
+                    id: 'list-1',
+                    title: 'Test List',
+                    dateAdded: new Date(),
+                    items: [{ id: 'item-1', name: 'Item 1', dateAdded: new Date(), isSelected: false }],
+                    users: [mockUser],
+                });
+
+                await expect(listService.deleteItem('Test List', 'missing-id')).rejects.toThrow('Item not found');
             });
         });
     });
