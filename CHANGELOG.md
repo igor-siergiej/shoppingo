@@ -1,3 +1,10 @@
+# [1.53.0](https://github.com/igor-siergiej/shoppingo/compare/v1.52.0...v1.53.0) (2026-06-27)
+
+
+### Features
+
+* offline sync (Phase 1) — item edits via outbox queue ([#96](https://github.com/igor-siergiej/shoppingo/issues/96)) ([74b6106](https://github.com/igor-siergiej/shoppingo/commit/74b6106a0d1bd25f69db8facadc069ed0739a556))
+
 # [1.52.0](https://github.com/igor-siergiej/shoppingo/compare/v1.51.0...v1.52.0) (2026-06-27)
 
 
