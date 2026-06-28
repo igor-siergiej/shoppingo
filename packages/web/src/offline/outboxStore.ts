@@ -2,13 +2,16 @@ import { type DBSchema, type IDBPDatabase, openDB } from 'idb';
 
 export type ItemOp = 'item.add' | 'item.toggle' | 'item.delete' | 'item.rename' | 'item.quantity';
 export type ListOp = 'list.create';
-export type EntityType = 'item' | 'list';
+export type TodoOp = 'todo.create' | 'todo.update' | 'todo.delete' | 'todo.complete';
+export type LabelOp = 'label.create' | 'label.update' | 'label.delete';
+export type RecipeOp = 'recipe.create' | 'recipe.update' | 'recipe.delete';
+export type EntityType = 'item' | 'list' | 'todo' | 'label' | 'recipe';
 
 export interface OutboxIntent {
     seq: number;
     id: string;
     entityType: EntityType;
-    op: ItemOp | ListOp;
+    op: ItemOp | ListOp | TodoOp | LabelOp | RecipeOp;
     targetId: string;
     scope: string;
     payload: Record<string, unknown>;

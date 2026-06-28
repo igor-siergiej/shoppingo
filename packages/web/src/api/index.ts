@@ -234,7 +234,8 @@ export const addRecipe = async (
     selectedUsers?: Array<string>,
     ingredients?: Array<{ name: string; quantity?: number; unit?: string }>,
     link?: string,
-    instructions?: string[]
+    instructions?: string[],
+    id?: string
 ): Promise<Recipe> => {
     const dateAdded = generateTimestamp(new Date());
     const requestBody = {
@@ -245,6 +246,7 @@ export const addRecipe = async (
         ...(ingredients !== undefined && { ingredients }),
         ...(link !== undefined && { link }),
         ...(instructions !== undefined && { instructions }),
+        ...(id !== undefined && { id }),
     };
 
     const result = await makeRequest({
@@ -353,12 +355,12 @@ const getTodos = async (): Promise<Array<Todo>> => {
     });
 };
 
-export const createTodo = async (body: CreateTodoBody): Promise<Todo> => {
+export const createTodo = async (body: CreateTodoBody, id?: string): Promise<Todo> => {
     return await makeRequest({
         pathname: '/api/todos',
         method: MethodType.PUT,
         operationString: 'create todo',
-        body: JSON.stringify(body),
+        body: JSON.stringify(id !== undefined ? { ...body, id } : body),
     });
 };
 
@@ -418,12 +420,12 @@ const getLabels = async (): Promise<Array<Label>> => {
     });
 };
 
-export const createLabel = async (body: { name: string; color: string }): Promise<Label> => {
+export const createLabel = async (body: { name: string; color: string }, id?: string): Promise<Label> => {
     return await makeRequest({
         pathname: '/api/labels',
         method: MethodType.PUT,
         operationString: 'create label',
-        body: JSON.stringify(body),
+        body: JSON.stringify(id !== undefined ? { ...body, id } : body),
     });
 };
 
