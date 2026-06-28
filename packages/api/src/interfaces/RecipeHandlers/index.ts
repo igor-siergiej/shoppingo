@@ -89,12 +89,13 @@ export const getRecipe = async (c: Context<HonoVars>): Promise<Response> => {
 };
 
 export const createRecipe = async (c: Context<HonoVars>): Promise<Response> => {
-    const { title, ingredients, link, instructions, selectedUsers } = await c.req.json<{
+    const { title, ingredients, link, instructions, selectedUsers, id } = await c.req.json<{
         title: string;
         ingredients: Ingredient[];
         link?: string;
         instructions?: string[];
         selectedUsers?: string[];
+        id?: string;
     }>();
     const logger = getLogger();
     const authenticatedUser = getAuthenticatedUser(c);
@@ -120,7 +121,8 @@ export const createRecipe = async (c: Context<HonoVars>): Promise<Response> => {
             authenticatedUser,
             link,
             instructions,
-            selectedUsers
+            selectedUsers,
+            id
         );
 
         logger.info('API: Recipe created', {
