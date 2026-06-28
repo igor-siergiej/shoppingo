@@ -1,6 +1,12 @@
 import 'fake-indexeddb/auto';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { foldPendingItems, foldPendingLists } from './foldPending';
+import {
+    foldPendingItems,
+    foldPendingLabels,
+    foldPendingLists,
+    foldPendingRecipes,
+    foldPendingTodos,
+} from './foldPending';
 import { outboxStore } from './outboxStore';
 
 describe('foldPendingItems', () => {
@@ -84,5 +90,77 @@ describe('foldPendingLists', () => {
             { id: 'S1', title: 'Existing', dateAdded: new Date(), items: [], users: [], listType: 'shopping' },
         ];
         expect(foldPendingLists('user-1', server as never)).toHaveLength(1);
+    });
+});
+
+describe('foldPendingTodos', () => {
+    beforeEach(async () => {
+        await outboxStore._resetForTests();
+    });
+    it('appends pending todo.create for the given user', async () => {
+        await outboxStore.enqueue({
+            id: '1',
+            entityType: 'todo',
+            op: 'todo.create',
+            targetId: 'T1',
+            scope: 'user-1',
+            payload: { title: 'Buy milk', ownerId: 'user-1' },
+            createdAt: 0,
+        });
+        const server = [{ id: 'S1', ownerId: 'user-1', title: 'Existing', done: false, dateAdded: new Date() }];
+        expect(foldPendingTodos('user-1', server as never).map((t) => t.id)).toEqual(['S1', 'T1']);
+    });
+    it('ignores todo intents scoped to another user', async () => {
+        await outboxStore.enqueue({
+            id: '1',
+            entityType: 'todo',
+            op: 'todo.create',
+            targetId: 'T1',
+            scope: 'user-2',
+            payload: { title: 'x' },
+            createdAt: 0,
+        });
+        const server = [{ id: 'S1', ownerId: 'user-1', title: 'Existing', done: false, dateAdded: new Date() }];
+        expect(foldPendingTodos('user-1', server as never)).toHaveLength(1);
+    });
+});
+
+describe('foldPendingLabels', () => {
+    beforeEach(async () => {
+        await outboxStore._resetForTests();
+    });
+    it('appends pending label.create for the given user', async () => {
+        await outboxStore.enqueue({
+            id: '1',
+            entityType: 'label',
+            op: 'label.create',
+            targetId: 'L1',
+            scope: 'user-1',
+            payload: { name: 'Home', color: '#fff', ownerId: 'user-1' },
+            createdAt: 0,
+        });
+        const server = [{ id: 'S1', ownerId: 'user-1', name: 'Work', color: '#000' }];
+        expect(foldPendingLabels('user-1', server as never).map((l) => l.id)).toEqual(['S1', 'L1']);
+    });
+});
+
+describe('foldPendingRecipes', () => {
+    beforeEach(async () => {
+        await outboxStore._resetForTests();
+    });
+    it('appends pending recipe.create for the given user', async () => {
+        await outboxStore.enqueue({
+            id: '1',
+            entityType: 'recipe',
+            op: 'recipe.create',
+            targetId: 'R1',
+            scope: 'user-1',
+            payload: { title: 'Pasta', ownerId: 'user-1' },
+            createdAt: 0,
+        });
+        const server = [
+            { id: 'S1', title: 'Soup', ingredients: [], ownerId: 'user-1', users: [], dateAdded: new Date() },
+        ];
+        expect(foldPendingRecipes('user-1', server as never).map((r) => r.id)).toEqual(['S1', 'R1']);
     });
 });

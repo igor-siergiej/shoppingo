@@ -1,15 +1,17 @@
+import { useUser } from '@imapps/web-utils';
 import type { Label } from '@shoppingo/types';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { createLabel as apiCreate, deleteLabel as apiDelete, updateLabel as apiUpdate, getLabelsQuery } from '../api';
 
 export const useLabels = () => {
     const queryClient = useQueryClient();
+    const { user } = useUser();
     const invalidate = () => {
         queryClient.invalidateQueries('labels');
         queryClient.invalidateQueries('todos');
     };
 
-    const { data, isLoading, refetch } = useQuery<Label[]>(getLabelsQuery());
+    const { data, isLoading, refetch } = useQuery<Label[]>(getLabelsQuery(user?.id ?? ''));
 
     const createMutation = useMutation((body: { name: string; color: string }) => apiCreate(body), {
         onSuccess: invalidate,

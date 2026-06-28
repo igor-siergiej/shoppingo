@@ -1,5 +1,13 @@
-import type { Item, ListResponse, ListType, User } from '@shoppingo/types';
-import { applyItemIntent, applyListIntent, type ItemView, type ListView } from './intents';
+import type { Item, Label, ListResponse, ListType, Recipe, Todo, User } from '@shoppingo/types';
+import {
+    applyItemIntent,
+    applyLabelIntent,
+    applyListIntent,
+    applyRecipeIntent,
+    applyTodoIntent,
+    type ItemView,
+    type ListView,
+} from './intents';
 import { outboxStore } from './outboxStore';
 
 export interface ListItemsData {
@@ -27,4 +35,22 @@ export const foldPendingLists = (userId: string, lists: ListResponse[]): ListRes
         lists as unknown as ListView[]
     );
     return folded as unknown as ListResponse[];
+};
+
+export const foldPendingTodos = (userId: string, todos: Todo[]): Todo[] => {
+    const pending = outboxStore.peekAll().filter((i) => i.entityType === 'todo' && i.scope === userId);
+    if (pending.length === 0) return todos;
+    return pending.reduce<Todo[]>((acc, intent) => applyTodoIntent(acc, intent), todos);
+};
+
+export const foldPendingLabels = (userId: string, labels: Label[]): Label[] => {
+    const pending = outboxStore.peekAll().filter((i) => i.entityType === 'label' && i.scope === userId);
+    if (pending.length === 0) return labels;
+    return pending.reduce<Label[]>((acc, intent) => applyLabelIntent(acc, intent), labels);
+};
+
+export const foldPendingRecipes = (userId: string, recipes: Recipe[]): Recipe[] => {
+    const pending = outboxStore.peekAll().filter((i) => i.entityType === 'recipe' && i.scope === userId);
+    if (pending.length === 0) return recipes;
+    return pending.reduce<Recipe[]>((acc, intent) => applyRecipeIntent(acc, intent), recipes);
 };

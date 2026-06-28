@@ -2,7 +2,13 @@ import { getStorageItem } from '@imapps/web-utils';
 import type { Item, Label, ListResponse, ListType, Recipe, Todo, User } from '@shoppingo/types';
 
 import { getAuthConfig } from '../config/auth';
-import { foldPendingItems, foldPendingLists } from '../offline/foldPending';
+import {
+    foldPendingItems,
+    foldPendingLabels,
+    foldPendingLists,
+    foldPendingRecipes,
+    foldPendingTodos,
+} from '../offline/foldPending';
 import { makeRequest } from './makeRequest';
 import { MethodType } from './types';
 
@@ -204,7 +210,7 @@ export const removeUserFromList = async (listTitle: string, userId: string): Pro
 
 export const getRecipesQuery = (userId: string) => ({
     queryKey: ['recipes', userId],
-    queryFn: async () => await getRecipes(userId),
+    queryFn: async () => foldPendingRecipes(userId, await getRecipes(userId)),
 });
 
 const getRecipes = async (_userId: string): Promise<Array<Recipe>> => {
@@ -342,9 +348,9 @@ export interface CreateTodoBody {
     recurrence?: Todo['recurrence'];
 }
 
-export const getTodosQuery = () => ({
+export const getTodosQuery = (userId: string) => ({
     queryKey: ['todos'],
-    queryFn: async () => await getTodos(),
+    queryFn: async () => foldPendingTodos(userId, await getTodos()),
 });
 
 const getTodos = async (): Promise<Array<Todo>> => {
@@ -407,9 +413,9 @@ export const completeTodo = async (id: string, date?: string): Promise<Todo> => 
     });
 };
 
-export const getLabelsQuery = () => ({
+export const getLabelsQuery = (userId: string) => ({
     queryKey: ['labels'],
-    queryFn: async () => await getLabels(),
+    queryFn: async () => foldPendingLabels(userId, await getLabels()),
 });
 
 const getLabels = async (): Promise<Array<Label>> => {

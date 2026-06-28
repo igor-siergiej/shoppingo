@@ -1,3 +1,4 @@
+import { useUser } from '@imapps/web-utils';
 import type { Todo } from '@shoppingo/types';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import {
@@ -11,9 +12,10 @@ import {
 
 export const useTodos = () => {
     const queryClient = useQueryClient();
+    const { user } = useUser();
     const invalidate = () => queryClient.invalidateQueries('todos');
 
-    const { data, isLoading, isError, refetch } = useQuery<Todo[]>(getTodosQuery());
+    const { data, isLoading, isError, refetch } = useQuery<Todo[]>(getTodosQuery(user?.id ?? ''));
 
     const createMutation = useMutation((body: CreateTodoBody) => apiCreate(body), { onSuccess: invalidate });
     const updateMutation = useMutation(({ id, body }: { id: string; body: Partial<Todo> }) => apiUpdate(id, body), {
