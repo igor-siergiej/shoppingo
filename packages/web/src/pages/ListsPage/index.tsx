@@ -3,13 +3,14 @@ import type { ListType } from '@shoppingo/types';
 import { AlertTriangle, ListPlus, Users } from 'lucide-react';
 import { useEffect } from 'react';
 import { useQuery } from 'react-query';
-import { addList, getListsQuery } from '../../api';
+import { getListsQuery } from '../../api';
 import ListsList from '../../components/ListsList';
 import { ListsSkeleton } from '../../components/LoadingSkeleton';
 import ToolBar from '../../components/ToolBar';
 import { Button } from '../../components/ui/button';
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '../../components/ui/empty';
 import { usePullToRefreshContext } from '../../contexts/PullToRefreshContext';
+import { useCreateList } from '../../hooks/useCreateList';
 import { logger } from '../../utils/logger';
 
 const ListsPage = () => {
@@ -19,6 +20,7 @@ const ListsPage = () => {
         enabled: !!user?.id,
     });
     const { registerRefresh } = usePullToRefreshContext();
+    const createList = useCreateList(user);
 
     useEffect(() => {
         return registerRefresh(async () => {
@@ -86,17 +88,8 @@ const ListsPage = () => {
     );
 
     const handleAddList = async (listTitle: string, listType: ListType, selectedUsers: string[]) => {
-        if (!user) {
-            logger.warn('Attempted to add list without user');
-            return;
-        }
-
-        logger.info('Creating list', { listTitle, sharedWith: selectedUsers.length, listType });
-
         try {
-            await addList(listTitle, user, selectedUsers, listType);
-            logger.info('List created successfully', { listTitle, sharedWith: selectedUsers.length, listType });
-            await refetch();
+            await createList(listTitle, listType, selectedUsers);
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Unknown error';
             logger.error('Failed to create list', { listTitle, error: errorMessage });
