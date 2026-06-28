@@ -45,3 +45,33 @@ export const applyItemIntent = (items: ItemView[], intent: OutboxIntent): ItemVi
             return items;
     }
 };
+
+export interface ListView {
+    id: string;
+    title: string;
+    items: unknown[];
+    users: Array<{ id: string; username: string }>;
+    listType: string;
+    ownerId?: string;
+    dateAdded?: string | Date;
+}
+
+export const applyListIntent = (lists: ListView[], intent: OutboxIntent): ListView[] => {
+    const p = intent.payload;
+    if (intent.op === 'list.create') {
+        if (lists.some((l) => l.id === intent.targetId)) return lists;
+        return [
+            ...lists,
+            {
+                id: intent.targetId,
+                title: String(p.title ?? ''),
+                items: [],
+                users: (p.users as ListView['users']) ?? [],
+                listType: String(p.listType ?? 'shopping'),
+                ...(p.ownerId !== undefined && { ownerId: String(p.ownerId) }),
+                dateAdded: new Date(),
+            },
+        ];
+    }
+    return lists;
+};

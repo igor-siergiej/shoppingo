@@ -1,4 +1,4 @@
-import { addItem, deleteItem, updateItem, updateItemName, updateItemQuantity } from '../api';
+import { addItem, addList, deleteItem, updateItem, updateItemName, updateItemQuantity } from '../api';
 import type { OutboxIntent } from './outboxStore';
 
 export const replayIntent = async (intent: OutboxIntent): Promise<void> => {
@@ -28,6 +28,15 @@ export const replayIntent = async (intent: OutboxIntent): Promise<void> => {
                 intent.targetId,
                 p.quantity as number | undefined,
                 p.unit as string | undefined
+            );
+            return;
+        case 'list.create':
+            await addList(
+                String(p.title),
+                p.user as Parameters<typeof addList>[1],
+                (p.selectedUsers as string[] | undefined) ?? [],
+                p.listType as Parameters<typeof addList>[3] | undefined,
+                intent.targetId
             );
             return;
     }

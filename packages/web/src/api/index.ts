@@ -43,7 +43,8 @@ export const addList = async (
     listTitle: string,
     user: User,
     selectedUsers?: Array<string>,
-    listType?: ListType
+    listType?: ListType,
+    id?: string
 ): Promise<unknown> => {
     const dateAdded = generateTimestamp(new Date());
     const requestBody = {
@@ -52,6 +53,7 @@ export const addList = async (
         user,
         selectedUsers: selectedUsers || [],
         ...(listType !== undefined && { listType }),
+        ...(id !== undefined && { id }),
     };
 
     const result = await makeRequest({

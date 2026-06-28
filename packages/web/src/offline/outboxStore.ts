@@ -1,12 +1,14 @@
 import { type DBSchema, type IDBPDatabase, openDB } from 'idb';
 
 export type ItemOp = 'item.add' | 'item.toggle' | 'item.delete' | 'item.rename' | 'item.quantity';
+export type ListOp = 'list.create';
+export type EntityType = 'item' | 'list';
 
 export interface OutboxIntent {
     seq: number;
     id: string;
-    entityType: 'item';
-    op: ItemOp;
+    entityType: EntityType;
+    op: ItemOp | ListOp;
     targetId: string;
     scope: string;
     payload: Record<string, unknown>;

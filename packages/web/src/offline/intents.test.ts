@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { applyItemIntent } from './intents';
+import { applyItemIntent, applyListIntent } from './intents';
 import type { OutboxIntent } from './outboxStore';
 
 const base = (op: OutboxIntent['op'], targetId: string, payload = {}): OutboxIntent => ({
@@ -37,5 +37,34 @@ describe('applyItemIntent', () => {
     it('add is idempotent when id already present', () => {
         const r = applyItemIntent(items, base('item.add', 'a', { name: 'Milk' }));
         expect(r).toHaveLength(1);
+    });
+});
+
+const listBase = (targetId: string, payload = {}): OutboxIntent => ({
+    seq: 1,
+    id: 'i',
+    entityType: 'list',
+    op: 'list.create',
+    targetId,
+    scope: 'user-1',
+    payload,
+    createdAt: 0,
+});
+
+describe('applyListIntent', () => {
+    it('list.create appends a new list', () => {
+        const r = applyListIntent([], listBase('L1', { title: 'Groceries', listType: 'shopping', ownerId: 'user-1' }));
+        expect(r).toHaveLength(1);
+        expect(r[0]).toMatchObject({
+            id: 'L1',
+            title: 'Groceries',
+            items: [],
+            listType: 'shopping',
+            ownerId: 'user-1',
+        });
+    });
+    it('list.create is idempotent when id already present', () => {
+        const existing = [{ id: 'L1', title: 'Groceries', items: [], users: [], listType: 'shopping' }];
+        expect(applyListIntent(existing, listBase('L1', { title: 'Groceries' }))).toHaveLength(1);
     });
 });
