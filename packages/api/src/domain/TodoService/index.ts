@@ -16,6 +16,15 @@ export type UpdateTodoInput = Partial<Omit<Todo, 'id' | 'ownerId' | 'dateAdded'>
 const forbidden = () => Object.assign(new Error('Forbidden'), { status: 403 });
 const notFound = () => Object.assign(new Error('Todo not found'), { status: 404 });
 
+/** dueDate/recurrence.until arrive as JSON strings over HTTP; Mongo range queries need real Dates. */
+const coerceDates = <T extends { dueDate?: Date; recurrence?: Recurrence }>(input: T): T => ({
+    ...input,
+    ...(input.dueDate !== undefined && { dueDate: new Date(input.dueDate) }),
+    ...(input.recurrence?.until !== undefined && {
+        recurrence: { ...input.recurrence, until: new Date(input.recurrence.until) },
+    }),
+});
+
 export class TodoService {
     constructor(
         private readonly repo: TodoRepository,
@@ -30,7 +39,8 @@ export class TodoService {
         return todo;
     }
 
-    async createTodo(ownerId: string, input: CreateTodoInput): Promise<Todo> {
+    async createTodo(ownerId: string, rawInput: CreateTodoInput): Promise<Todo> {
+        const input = coerceDates(rawInput);
         const todo: Todo = {
             id: this.idGenerator.generate(),
             ownerId,
@@ -51,9 +61,9 @@ export class TodoService {
         return this.repo.findByOwnerId(ownerId);
     }
 
-    async updateTodo(todoId: string, ownerId: string, input: UpdateTodoInput): Promise<Todo> {
+    async updateTodo(todoId: string, ownerId: string, rawInput: UpdateTodoInput): Promise<Todo> {
         const existing = await this.getOwned(todoId, ownerId);
-        const merged: Todo = { ...existing, ...input };
+        const merged: Todo = { ...existing, ...coerceDates(rawInput) };
         return this.repo.update(todoId, merged);
     }
 
