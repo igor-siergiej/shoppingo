@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { addItemsBulk, deleteRecipe, getListsQuery, getRecipeQuery, updateRecipe } from '../../api';
+import { addItemsBulk, getListsQuery, getRecipeQuery } from '../../api';
 import ToolBar from '../../components/ToolBar';
 import {
     AlertDialog,
@@ -23,6 +23,7 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Skeleton } from '../../components/ui/skeleton';
 import { useConfirmation } from '../../hooks/useConfirmation';
+import { useRecipeMutations } from '../../hooks/useRecipeMutations';
 import { logger } from '../../utils/logger';
 import { CoverImageSection } from './CoverImageSection';
 import { ErrorState } from './ErrorState';
@@ -35,6 +36,7 @@ const RecipeDetailPage = () => {
     const navigate = useNavigate();
     const { user } = useUser();
     const queryClient = useQueryClient();
+    const { updateRecipe, deleteRecipe } = useRecipeMutations(user ?? undefined);
     const { confirm, isOpen, config: confirmConfig, handleConfirm, handleCancel } = useConfirmation();
 
     const [isEditingTitle, setIsEditingTitle] = useState(false);

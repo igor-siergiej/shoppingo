@@ -3,7 +3,7 @@ import { AlertTriangle, BookOpen, ChefHat, Search, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { addRecipe, generateRecipeAiImage, getRecipesQuery, uploadRecipeImage } from '../../api';
+import { generateRecipeAiImage, getRecipesQuery, uploadRecipeImage } from '../../api';
 import { ListsSkeleton } from '../../components/LoadingSkeleton';
 import { RecipesList } from '../../components/RecipesList';
 import ToolBar from '../../components/ToolBar';
@@ -11,6 +11,7 @@ import { Button } from '../../components/ui/button';
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '../../components/ui/empty';
 import { Input } from '../../components/ui/input';
 import { usePullToRefreshContext } from '../../contexts/PullToRefreshContext';
+import { useRecipeMutations } from '../../hooks/useRecipeMutations';
 import { useRecipeSearch } from '../../hooks/useRecipeSearch';
 import { logger } from '../../utils/logger';
 
@@ -18,6 +19,7 @@ const RecipesPage = () => {
     const { user } = useUser();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
+    const { createRecipe } = useRecipeMutations(user ?? undefined);
     const [searchParams, setSearchParams] = useSearchParams();
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [sharedUrl, setSharedUrl] = useState('');
@@ -105,24 +107,25 @@ const RecipesPage = () => {
         }
 
         try {
-            const recipe = await addRecipe(title, user, selectedUsers || [], ingredients, link, instructions);
-            logger.info('Recipe created successfully', { title, recipeId: recipe.id });
+            const recipeId = await createRecipe(title, selectedUsers || [], ingredients, link, instructions);
+            logger.info('Recipe created successfully', { title, recipeId });
 
             if (imageFile) {
-                await uploadRecipeImage(recipe.id, imageFile);
+                await uploadRecipeImage(recipeId, imageFile);
             } else {
-                generatingRef.current.add(recipe.id);
+                generatingRef.current.add(recipeId);
             }
 
             await refetch();
 
             if (!imageFile) {
-                void generateRecipeAiImage(recipe.id).then(() =>
+                void generateRecipeAiImage(recipeId).then(() =>
                     queryClient.invalidateQueries(getRecipesQuery(user.id).queryKey)
                 );
             }
 
-            return recipe;
+            const recipes = queryClient.getQueryData<import('@shoppingo/types').Recipe[]>(['recipes', user.id]) ?? [];
+            return recipes.find((r) => r.id === recipeId);
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Unknown error';
             logger.error('Failed to create recipe', { title, error: errorMessage });

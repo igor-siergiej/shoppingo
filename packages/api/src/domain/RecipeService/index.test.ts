@@ -140,6 +140,47 @@ describe('RecipeService.createRecipe', () => {
             svc.createRecipe('Pasta', [], owner.id, owner, undefined, undefined, ['nonexistent'])
         ).rejects.toMatchObject({ status: 400 });
     });
+
+    it('uses the caller-provided id when given', async () => {
+        const svc = new RecipeService(repo as any, ids);
+        const recipe = await svc.createRecipe(
+            'Pasta',
+            [],
+            owner.id,
+            owner,
+            undefined,
+            undefined,
+            [],
+            'client-recipe-uuid'
+        );
+        expect(recipe.id).toBe('client-recipe-uuid');
+    });
+
+    it('returns the existing recipe without re-insert when id+owner already exist', async () => {
+        const svc = new RecipeService(repo as any, ids);
+        const first = await svc.createRecipe(
+            'Pasta',
+            [],
+            owner.id,
+            owner,
+            undefined,
+            undefined,
+            [],
+            'client-recipe-uuid'
+        );
+        const second = await svc.createRecipe(
+            'Risotto',
+            [],
+            owner.id,
+            owner,
+            undefined,
+            undefined,
+            [],
+            'client-recipe-uuid'
+        );
+        expect(second).toBe(first);
+        expect(second.title).toBe('Pasta');
+    });
 });
 
 class MockRecipeImageService {

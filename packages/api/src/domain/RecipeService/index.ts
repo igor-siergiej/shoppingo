@@ -91,12 +91,19 @@ export class RecipeService {
         owner: User,
         link?: string,
         instructions?: string[],
-        selectedUsers?: string[]
+        selectedUsers?: string[],
+        id?: string
     ): Promise<Recipe> {
         try {
+            if (id) {
+                const existing = await this.recipeRepository.getById(id);
+                if (existing && existing.ownerId === ownerId) {
+                    return existing; // idempotent replay
+                }
+            }
             const users = await this.resolveSharedUsers(title, owner, selectedUsers);
             const recipe: Recipe = {
-                id: this.idGenerator.generate(),
+                id: id ?? this.idGenerator.generate(),
                 title,
                 ingredients: ingredients.map((ing) => ({
                     ...ing,

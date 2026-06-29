@@ -216,11 +216,45 @@ describe('ListHandlers', () => {
                 expect.any(String),
                 { id: 'test-user-1', username: 'testuser' },
                 [],
-                'shopping'
+                'shopping',
+                undefined
             );
             expect(response.status).toBe(200);
             const body = await getResponseBody(response);
             expect(body.id).toBe(mockList.id);
+        });
+
+        it('should thread a caller-provided id through to the service', async () => {
+            const mockList: List = {
+                id: 'client-list-uuid',
+                title: 'New List',
+                dateAdded: new Date(),
+                items: [],
+                users: [{ id: 'test-user-1', username: 'testuser' }],
+                listType: ListType.SHOPPING,
+            };
+            const ctx = createMockContext({
+                body: {
+                    title: 'New List',
+                    dateAdded: new Date().toISOString(),
+                    selectedUsers: [],
+                    listType: ListType.SHOPPING,
+                    id: 'client-list-uuid',
+                },
+            });
+
+            mockListService.addList.mockResolvedValue(mockList);
+
+            await listHandlers.addList(ctx);
+
+            expect(mockListService.addList).toHaveBeenCalledWith(
+                'New List',
+                expect.any(String),
+                { id: 'test-user-1', username: 'testuser' },
+                [],
+                'shopping',
+                'client-list-uuid'
+            );
         });
 
         it('should handle service errors', async () => {

@@ -83,4 +83,19 @@ describe('LabelService', () => {
         expect(svc.deleteLabel(l.id, 'intruder')).rejects.toMatchObject({ status: 403 });
         expect(todos.cleared).toEqual([]);
     });
+
+    describe('createLabel idempotency', () => {
+        it('uses the caller-provided id when given', async () => {
+            const label = await svc.createLabel('user-1', { name: 'Home', color: '#fff', id: 'client-label-uuid' });
+            expect(label.id).toBe('client-label-uuid');
+        });
+
+        it('returns the existing label without re-insert when id+owner already exist', async () => {
+            const first = await svc.createLabel('user-1', { name: 'Home', color: '#fff', id: 'client-label-uuid' });
+            const second = await svc.createLabel('user-1', { name: 'Work', color: '#000', id: 'client-label-uuid' });
+            expect(second).toBe(first);
+            expect(second.name).toBe('Home');
+            expect(await svc.getLabelsByOwner('user-1')).toHaveLength(1);
+        });
+    });
 });

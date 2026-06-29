@@ -1,4 +1,21 @@
-import { addItem, deleteItem, updateItem, updateItemName, updateItemQuantity } from '../api';
+import {
+    addItem,
+    addList,
+    addRecipe,
+    completeTodo,
+    createLabel,
+    createTodo,
+    deleteItem,
+    deleteLabel,
+    deleteRecipe,
+    deleteTodo,
+    updateItem,
+    updateItemName,
+    updateItemQuantity,
+    updateLabel,
+    updateRecipe,
+    updateTodo,
+} from '../api';
 import type { OutboxIntent } from './outboxStore';
 
 export const replayIntent = async (intent: OutboxIntent): Promise<void> => {
@@ -29,6 +46,62 @@ export const replayIntent = async (intent: OutboxIntent): Promise<void> => {
                 p.quantity as number | undefined,
                 p.unit as string | undefined
             );
+            return;
+        case 'list.create':
+            await addList(
+                String(p.title),
+                p.user as Parameters<typeof addList>[1],
+                (p.selectedUsers as string[] | undefined) ?? [],
+                p.listType as Parameters<typeof addList>[3] | undefined,
+                intent.targetId
+            );
+            return;
+        case 'todo.create':
+            await createTodo(intent.payload as Parameters<typeof createTodo>[0], intent.targetId);
+            return;
+        case 'todo.update':
+            await updateTodo(intent.targetId, intent.payload as Parameters<typeof updateTodo>[1]);
+            return;
+        case 'todo.delete':
+            await deleteTodo(intent.targetId);
+            return;
+        case 'todo.complete':
+            await completeTodo(intent.targetId, intent.payload.date as string | undefined);
+            return;
+        case 'label.create':
+            await createLabel(intent.payload as Parameters<typeof createLabel>[0], intent.targetId);
+            return;
+        case 'label.update':
+            await updateLabel(intent.targetId, intent.payload as Parameters<typeof updateLabel>[1]);
+            return;
+        case 'label.delete':
+            await deleteLabel(intent.targetId);
+            return;
+        case 'recipe.create': {
+            await addRecipe(
+                String(p.title),
+                p.user as Parameters<typeof addRecipe>[1],
+                (p.selectedUsers as string[] | undefined) ?? [],
+                p.ingredients as Parameters<typeof addRecipe>[3] | undefined,
+                p.link as string | undefined,
+                p.instructions as string[] | undefined,
+                intent.targetId
+            );
+            return;
+        }
+        case 'recipe.update': {
+            await updateRecipe(
+                intent.targetId,
+                String(p.title),
+                p.ingredients as Parameters<typeof updateRecipe>[2],
+                p.coverImageKey as string | undefined,
+                p.link as string | undefined,
+                p.instructions as string[] | undefined
+            );
+            return;
+        }
+        case 'recipe.delete':
+            await deleteRecipe(intent.targetId);
             return;
     }
 };

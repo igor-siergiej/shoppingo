@@ -104,4 +104,19 @@ describe('TodoService', () => {
         const removed = await svc.toggleComplete(t.id, 'u1', '2026-06-04');
         expect(removed.completedDates).toEqual([]);
     });
+
+    describe('createTodo idempotency', () => {
+        it('uses the caller-provided id when given', async () => {
+            const todo = await svc.createTodo('user-1', { title: 'Buy milk', id: 'client-todo-uuid' });
+            expect(todo.id).toBe('client-todo-uuid');
+        });
+
+        it('returns the existing todo without re-insert when id+owner already exist', async () => {
+            const first = await svc.createTodo('user-1', { title: 'Buy milk', id: 'client-todo-uuid' });
+            const second = await svc.createTodo('user-1', { title: 'Buy milk again', id: 'client-todo-uuid' });
+            expect(second).toBe(first);
+            expect(second.title).toBe('Buy milk');
+            expect(await svc.getTodosByOwner('user-1')).toHaveLength(1);
+        });
+    });
 });

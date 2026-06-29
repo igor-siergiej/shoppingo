@@ -7,6 +7,7 @@ import type { TodoRepository } from '../TodoRepository';
 export interface CreateLabelInput {
     name: string;
     color: string;
+    id?: string;
 }
 
 export type UpdateLabelInput = Partial<Pick<Label, 'name' | 'color'>>;
@@ -30,8 +31,14 @@ export class LabelService {
     }
 
     async createLabel(ownerId: string, input: CreateLabelInput): Promise<Label> {
+        if (input.id) {
+            const existing = await this.labels.getById(input.id);
+            if (existing && existing.ownerId === ownerId) {
+                return existing; // idempotent replay
+            }
+        }
         const label: Label = {
-            id: this.idGenerator.generate(),
+            id: input.id ?? this.idGenerator.generate(),
             ownerId,
             name: input.name,
             color: input.color,
