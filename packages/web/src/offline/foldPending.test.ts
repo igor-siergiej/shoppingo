@@ -4,6 +4,7 @@ import {
     foldPendingItems,
     foldPendingLabels,
     foldPendingLists,
+    foldPendingRecipe,
     foldPendingRecipes,
     foldPendingTodos,
 } from './foldPending';
@@ -162,5 +163,51 @@ describe('foldPendingRecipes', () => {
             { id: 'S1', title: 'Soup', ingredients: [], ownerId: 'user-1', users: [], dateAdded: new Date() },
         ];
         expect(foldPendingRecipes('user-1', server as never).map((r) => r.id)).toEqual(['S1', 'R1']);
+    });
+});
+
+describe('foldPendingRecipe', () => {
+    beforeEach(async () => {
+        await outboxStore._resetForTests();
+    });
+    it('re-applies a pending recipe.update over fresh server data for that recipe', async () => {
+        await outboxStore.enqueue({
+            id: '1',
+            entityType: 'recipe',
+            op: 'recipe.update',
+            targetId: 'R1',
+            scope: 'user-1',
+            payload: { title: 'New Title' },
+            createdAt: 0,
+        });
+        const server = {
+            id: 'R1',
+            title: 'Old Title',
+            ingredients: [],
+            ownerId: 'user-1',
+            users: [],
+            dateAdded: new Date(),
+        };
+        expect(foldPendingRecipe('R1', server as never).title).toBe('New Title');
+    });
+    it('returns the recipe unchanged when no pending intent targets it', async () => {
+        await outboxStore.enqueue({
+            id: '1',
+            entityType: 'recipe',
+            op: 'recipe.update',
+            targetId: 'OTHER',
+            scope: 'user-1',
+            payload: { title: 'Nope' },
+            createdAt: 0,
+        });
+        const server = {
+            id: 'R1',
+            title: 'Old Title',
+            ingredients: [],
+            ownerId: 'user-1',
+            users: [],
+            dateAdded: new Date(),
+        };
+        expect(foldPendingRecipe('R1', server as never).title).toBe('Old Title');
     });
 });

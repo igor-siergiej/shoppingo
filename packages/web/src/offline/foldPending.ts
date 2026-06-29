@@ -54,3 +54,12 @@ export const foldPendingRecipes = (userId: string, recipes: Recipe[]): Recipe[] 
     if (pending.length === 0) return recipes;
     return pending.reduce<Recipe[]>((acc, intent) => applyRecipeIntent(acc, intent), recipes);
 };
+
+// Single-recipe fold for the detail query: re-applies this recipe's pending intents over
+// fresh server data so an optimistic edit survives a refetch before the outbox has drained.
+export const foldPendingRecipe = (recipeId: string, recipe: Recipe): Recipe => {
+    const pending = outboxStore.peekAll().filter((i) => i.entityType === 'recipe' && i.targetId === recipeId);
+    if (pending.length === 0) return recipe;
+    const folded = pending.reduce<Recipe[]>((acc, intent) => applyRecipeIntent(acc, intent), [recipe]);
+    return folded[0] ?? recipe;
+};

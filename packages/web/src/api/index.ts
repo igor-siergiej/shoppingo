@@ -6,6 +6,7 @@ import {
     foldPendingItems,
     foldPendingLabels,
     foldPendingLists,
+    foldPendingRecipe,
     foldPendingRecipes,
     foldPendingTodos,
 } from '../offline/foldPending';
@@ -223,7 +224,7 @@ const getRecipes = async (_userId: string): Promise<Array<Recipe>> => {
 
 export const getRecipeQuery = (recipeId: string) => ({
     queryKey: ['recipe', recipeId],
-    queryFn: async () => await getRecipe(recipeId),
+    queryFn: async () => foldPendingRecipe(recipeId, await getRecipe(recipeId)),
 });
 
 const getRecipe = async (recipeId: string): Promise<Recipe> => {
