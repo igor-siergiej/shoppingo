@@ -1,11 +1,25 @@
+import 'fake-indexeddb/auto';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import * as api from '../api';
+import { outboxStore } from '../offline/outboxStore';
 import { useTodos } from './useTodos';
 
-vi.mock('../api');
+vi.mock('@imapps/web-utils', () => ({
+    useUser: () => ({ user: { id: 'user-1', username: 'testuser' } }),
+}));
+
+vi.mock('../offline/drainer', () => ({ drainOutbox: vi.fn().mockResolvedValue(undefined) }));
+
+vi.mock('../api', async (importOriginal) => {
+    const actual = await importOriginal<typeof api>();
+    return {
+        ...actual,
+        getTodosQuery: actual.getTodosQuery,
+    };
+});
 
 const wrapper = ({ children }: { children: ReactNode }) => {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -13,8 +27,9 @@ const wrapper = ({ children }: { children: ReactNode }) => {
 };
 
 describe('useTodos', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
         vi.clearAllMocks();
+        await outboxStore._resetForTests();
     });
 
     it('loads todos', async () => {
@@ -28,25 +43,64 @@ describe('useTodos', () => {
         expect(result.current.todos[0].title).toBe('A');
     });
 
-    it('createTodo calls api', async () => {
+    it('createTodo enqueues a todo.create intent and optimistically adds it', async () => {
         vi.spyOn(api, 'getTodosQuery').mockReturnValue({ queryKey: ['todos'], queryFn: async () => [] } as never);
-        const createSpy = vi.spyOn(api, 'createTodo').mockResolvedValue({} as never);
 
         const { result } = renderHook(() => useTodos(), { wrapper });
         await act(async () => {
-            await result.current.createTodo({ title: 'New' });
+            await result.current.createTodo({ title: 'Buy milk' });
         });
-        expect(createSpy).toHaveBeenCalledWith({ title: 'New' });
+        await waitFor(() => expect(outboxStore.peekAll()).toHaveLength(1));
+        const intent = outboxStore.peekAll()[0];
+        expect(intent.op).toBe('todo.create');
+        expect(intent.entityType).toBe('todo');
+        expect(intent.scope).toBe('user-1');
+        expect(intent.payload).toMatchObject({ title: 'Buy milk' });
     });
 
-    it('completeTodo calls api with id and date', async () => {
+    it('createTodo optimistically adds todo to cache', async () => {
+        const client = new QueryClient({
+            defaultOptions: { queries: { retry: false, staleTime: Infinity } },
+        });
+        client.setQueryData(['todos'], []);
         vi.spyOn(api, 'getTodosQuery').mockReturnValue({ queryKey: ['todos'], queryFn: async () => [] } as never);
-        const completeSpy = vi.spyOn(api, 'completeTodo').mockResolvedValue({} as never);
+        const localWrapper = ({ children }: { children: ReactNode }) => (
+            <QueryClientProvider client={client}>{children}</QueryClientProvider>
+        );
+
+        const { result } = renderHook(() => useTodos(), { wrapper: localWrapper });
+        await act(async () => {
+            await result.current.createTodo({ title: 'Buy milk' });
+        });
+        await waitFor(() => {
+            const todos = client.getQueryData<{ id: string; title: string }[]>(['todos']);
+            expect(todos?.some((t) => t.title === 'Buy milk')).toBe(true);
+        });
+    });
+
+    it('deleteTodo enqueues a todo.delete intent', async () => {
+        vi.spyOn(api, 'getTodosQuery').mockReturnValue({ queryKey: ['todos'], queryFn: async () => [] } as never);
+
+        const { result } = renderHook(() => useTodos(), { wrapper });
+        await act(async () => {
+            await result.current.deleteTodo('t1');
+        });
+        await waitFor(() => expect(outboxStore.peekAll()).toHaveLength(1));
+        const intent = outboxStore.peekAll()[0];
+        expect(intent.op).toBe('todo.delete');
+        expect(intent.targetId).toBe('t1');
+    });
+
+    it('completeTodo enqueues a todo.complete intent with date payload', async () => {
+        vi.spyOn(api, 'getTodosQuery').mockReturnValue({ queryKey: ['todos'], queryFn: async () => [] } as never);
 
         const { result } = renderHook(() => useTodos(), { wrapper });
         await act(async () => {
             await result.current.completeTodo('t1', '2026-06-04');
         });
-        expect(completeSpy).toHaveBeenCalledWith('t1', '2026-06-04');
+        await waitFor(() => expect(outboxStore.peekAll()).toHaveLength(1));
+        const intent = outboxStore.peekAll()[0];
+        expect(intent.op).toBe('todo.complete');
+        expect(intent.payload).toEqual({ date: '2026-06-04' });
     });
 });

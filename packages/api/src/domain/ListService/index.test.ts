@@ -141,6 +141,47 @@ describe('ListService', () => {
             });
         });
 
+        describe('When a caller-provided id is given', () => {
+            it('should use the caller-provided id as the new list id', async () => {
+                const result = await listService.addList(
+                    'Groceries',
+                    new Date('2023-01-01'),
+                    mockUser,
+                    [],
+                    undefined,
+                    'client-list-uuid'
+                );
+
+                expect(result.id).toBe('client-list-uuid');
+            });
+
+            it('should be idempotent: existing list with same title and id is returned without re-insert', async () => {
+                const existing: List = {
+                    id: 'client-list-uuid',
+                    title: 'Groceries',
+                    dateAdded: new Date('2023-01-01'),
+                    items: [],
+                    users: [mockUser],
+                    listType: ListType.SHOPPING,
+                    ownerId: mockUser.id,
+                };
+                await mockRepository.insert(existing);
+                const insertSpy = vi.spyOn(mockRepository, 'insert');
+
+                const result = await listService.addList(
+                    'Groceries',
+                    new Date('2023-01-02'),
+                    mockUser,
+                    [],
+                    undefined,
+                    'client-list-uuid'
+                );
+
+                expect(result).toBe(existing);
+                expect(insertSpy).not.toHaveBeenCalled();
+            });
+        });
+
         describe('When auth service is not configured', () => {
             it('should throw an error when trying to add additional users', async () => {
                 const serviceWithoutAuth = new ListService(mockRepository, mockIdGenerator);

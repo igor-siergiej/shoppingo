@@ -130,13 +130,21 @@ export class ListService {
         dateAdded: Date,
         owner: User,
         selectedUsernames?: Array<string>,
-        listType: ListType = ListTypeEnum.SHOPPING
+        listType: ListType = ListTypeEnum.SHOPPING,
+        id?: string
     ) {
         try {
+            if (id) {
+                const existing = await this.repo.getByTitle(title);
+                if (existing && existing.id === id) {
+                    return existing; // idempotent replay
+                }
+            }
+
             const users = await this.resolveSharedUsers(title, owner, selectedUsernames);
 
             const list: List = {
-                id: this.idGenerator.generate(),
+                id: id ?? this.idGenerator.generate(),
                 title,
                 dateAdded,
                 items: [],

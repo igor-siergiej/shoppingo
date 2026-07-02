@@ -145,11 +145,12 @@ export const getLists = async (c: Context<HonoVars>) => {
 };
 
 export const addList = async (c: Context<HonoVars>) => {
-    const { title, dateAdded, selectedUsers, listType } = await c.req.json<{
+    const { title, dateAdded, selectedUsers, listType, id } = await c.req.json<{
         title: string;
         dateAdded: Date;
         selectedUsers?: Array<string>;
         listType?: string;
+        id?: string;
     }>();
     const logger = getLogger();
     const authenticatedUser = c.get('user');
@@ -165,7 +166,8 @@ export const addList = async (c: Context<HonoVars>) => {
             authenticatedUser,
             selectedUsers,
             // @ts-expect-error - listType can be undefined from request body
-            listType
+            listType,
+            id
         );
 
         logger.info('API: List created', {

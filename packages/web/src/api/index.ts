@@ -2,7 +2,14 @@ import { getStorageItem } from '@imapps/web-utils';
 import type { Item, Label, ListResponse, ListType, Recipe, Todo, User } from '@shoppingo/types';
 
 import { getAuthConfig } from '../config/auth';
-import { foldPendingItems } from '../offline/foldPending';
+import {
+    foldPendingItems,
+    foldPendingLabels,
+    foldPendingLists,
+    foldPendingRecipe,
+    foldPendingRecipes,
+    foldPendingTodos,
+} from '../offline/foldPending';
 import { makeRequest } from './makeRequest';
 import { MethodType } from './types';
 
@@ -28,7 +35,7 @@ const getList = async (
 
 export const getListsQuery = (userId: string) => ({
     queryKey: ['lists', userId],
-    queryFn: async () => await getLists(userId),
+    queryFn: async () => foldPendingLists(userId, await getLists(userId)),
 });
 
 const getLists = async (userId: string): Promise<Array<ListResponse>> => {
@@ -43,7 +50,8 @@ export const addList = async (
     listTitle: string,
     user: User,
     selectedUsers?: Array<string>,
-    listType?: ListType
+    listType?: ListType,
+    id?: string
 ): Promise<unknown> => {
     const dateAdded = generateTimestamp(new Date());
     const requestBody = {
@@ -52,6 +60,7 @@ export const addList = async (
         user,
         selectedUsers: selectedUsers || [],
         ...(listType !== undefined && { listType }),
+        ...(id !== undefined && { id }),
     };
 
     const result = await makeRequest({
@@ -202,7 +211,7 @@ export const removeUserFromList = async (listTitle: string, userId: string): Pro
 
 export const getRecipesQuery = (userId: string) => ({
     queryKey: ['recipes', userId],
-    queryFn: async () => await getRecipes(userId),
+    queryFn: async () => foldPendingRecipes(userId, await getRecipes(userId)),
 });
 
 const getRecipes = async (_userId: string): Promise<Array<Recipe>> => {
@@ -215,7 +224,7 @@ const getRecipes = async (_userId: string): Promise<Array<Recipe>> => {
 
 export const getRecipeQuery = (recipeId: string) => ({
     queryKey: ['recipe', recipeId],
-    queryFn: async () => await getRecipe(recipeId),
+    queryFn: async () => foldPendingRecipe(recipeId, await getRecipe(recipeId)),
 });
 
 const getRecipe = async (recipeId: string): Promise<Recipe> => {
@@ -232,7 +241,8 @@ export const addRecipe = async (
     selectedUsers?: Array<string>,
     ingredients?: Array<{ name: string; quantity?: number; unit?: string }>,
     link?: string,
-    instructions?: string[]
+    instructions?: string[],
+    id?: string
 ): Promise<Recipe> => {
     const dateAdded = generateTimestamp(new Date());
     const requestBody = {
@@ -243,6 +253,7 @@ export const addRecipe = async (
         ...(ingredients !== undefined && { ingredients }),
         ...(link !== undefined && { link }),
         ...(instructions !== undefined && { instructions }),
+        ...(id !== undefined && { id }),
     };
 
     const result = await makeRequest({
@@ -338,9 +349,9 @@ export interface CreateTodoBody {
     recurrence?: Todo['recurrence'];
 }
 
-export const getTodosQuery = () => ({
+export const getTodosQuery = (userId: string) => ({
     queryKey: ['todos'],
-    queryFn: async () => await getTodos(),
+    queryFn: async () => foldPendingTodos(userId, await getTodos()),
 });
 
 const getTodos = async (): Promise<Array<Todo>> => {
@@ -351,12 +362,12 @@ const getTodos = async (): Promise<Array<Todo>> => {
     });
 };
 
-export const createTodo = async (body: CreateTodoBody): Promise<Todo> => {
+export const createTodo = async (body: CreateTodoBody, id?: string): Promise<Todo> => {
     return await makeRequest({
         pathname: '/api/todos',
         method: MethodType.PUT,
         operationString: 'create todo',
-        body: JSON.stringify(body),
+        body: JSON.stringify(id !== undefined ? { ...body, id } : body),
     });
 };
 
@@ -403,9 +414,9 @@ export const completeTodo = async (id: string, date?: string): Promise<Todo> => 
     });
 };
 
-export const getLabelsQuery = () => ({
+export const getLabelsQuery = (userId: string) => ({
     queryKey: ['labels'],
-    queryFn: async () => await getLabels(),
+    queryFn: async () => foldPendingLabels(userId, await getLabels()),
 });
 
 const getLabels = async (): Promise<Array<Label>> => {
@@ -416,12 +427,12 @@ const getLabels = async (): Promise<Array<Label>> => {
     });
 };
 
-export const createLabel = async (body: { name: string; color: string }): Promise<Label> => {
+export const createLabel = async (body: { name: string; color: string }, id?: string): Promise<Label> => {
     return await makeRequest({
         pathname: '/api/labels',
         method: MethodType.PUT,
         operationString: 'create label',
-        body: JSON.stringify(body),
+        body: JSON.stringify(id !== undefined ? { ...body, id } : body),
     });
 };
 

@@ -9,6 +9,7 @@ export interface CreateTodoInput {
     time?: string;
     labelId?: string;
     recurrence?: Recurrence;
+    id?: string;
 }
 
 export type UpdateTodoInput = Partial<Omit<Todo, 'id' | 'ownerId' | 'dateAdded'>>;
@@ -41,8 +42,14 @@ export class TodoService {
 
     async createTodo(ownerId: string, rawInput: CreateTodoInput): Promise<Todo> {
         const input = coerceDates(rawInput);
+        if (input.id) {
+            const existing = await this.repo.getById(input.id);
+            if (existing && existing.ownerId === ownerId) {
+                return existing;
+            }
+        }
         const todo: Todo = {
-            id: this.idGenerator.generate(),
+            id: input.id ?? this.idGenerator.generate(),
             ownerId,
             title: input.title,
             done: false,
