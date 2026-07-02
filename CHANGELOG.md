@@ -1,3 +1,10 @@
+# [1.54.0](https://github.com/igor-siergiej/shoppingo/compare/v1.53.1...v1.54.0) (2026-07-02)
+
+
+### Features
+
+* offline sync phase 2 + 3 (list creation, todos, labels, recipes) ([#97](https://github.com/igor-siergiej/shoppingo/issues/97)) ([5a65cc9](https://github.com/igor-siergiej/shoppingo/commit/5a65cc95e7fa66dcaa996c363950954d979e6f64))
+
 ## [1.53.1](https://github.com/igor-siergiej/shoppingo/compare/v1.53.0...v1.53.1) (2026-06-29)
 
 
