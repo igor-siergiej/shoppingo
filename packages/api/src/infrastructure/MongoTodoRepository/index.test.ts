@@ -89,7 +89,7 @@ describe('MongoTodoRepository', () => {
         expect((await repo.getById('t2'))?.labelId).toBe('L');
     });
 
-    it('findDueCandidates sends correct query shape', async () => {
+    it('findDueCandidates matches both Date and legacy string dueDates', async () => {
         const dayEnd = new Date('2026-06-25T23:59:59.999Z');
         const mockFind = mock(() => ({ toArray: async () => [] }));
         const mockDb = {
@@ -99,6 +99,9 @@ describe('MongoTodoRepository', () => {
 
         await testRepo.findDueCandidates(dayEnd);
 
-        expect(mockFind).toHaveBeenCalledWith({ done: false, dueDate: { $lte: dayEnd } });
+        expect(mockFind).toHaveBeenCalledWith({
+            done: false,
+            $or: [{ dueDate: { $lte: dayEnd } }, { dueDate: { $lte: dayEnd.toISOString() } }],
+        });
     });
 });
