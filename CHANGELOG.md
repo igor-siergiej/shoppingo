@@ -1,3 +1,10 @@
+## [1.53.1](https://github.com/igor-siergiej/shoppingo/compare/v1.53.0...v1.53.1) (2026-06-29)
+
+
+### Bug Fixes
+
+* **api:** coerce todo dueDate strings to Dates so reminders fire ([#98](https://github.com/igor-siergiej/shoppingo/issues/98)) ([4398583](https://github.com/igor-siergiej/shoppingo/commit/439858304219c3395bcbe48768d7ae541bbc650e))
+
 # [1.53.0](https://github.com/igor-siergiej/shoppingo/compare/v1.52.0...v1.53.0) (2026-06-27)
 
 
