@@ -19,14 +19,11 @@ export class MongoTodoRepository implements TodoRepository {
         return this.collection().find({ ownerId }).toArray();
     }
 
-    async findDueCandidates(dayEnd: Date): Promise<Todo[]> {
-        // Legacy todos stored dueDate as an ISO string; Mongo $lte won't compare a string
-        // field against a Date operand, so match both types (ISO strings sort lexically).
+    async findDueCandidates(today: string): Promise<Todo[]> {
+        // dueDate is a YYYY-MM-DD day string; ISO day strings sort lexically, so a plain
+        // $lte against today's day matches today's and overdue todos (recurring anchors included).
         return this.collection()
-            .find({
-                done: false,
-                $or: [{ dueDate: { $lte: dayEnd } }, { dueDate: { $lte: dayEnd.toISOString() } }],
-            })
+            .find({ done: false, dueDate: { $lte: today } })
             .toArray();
     }
 

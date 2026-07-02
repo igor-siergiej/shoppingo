@@ -1,4 +1,4 @@
-import type { Label as LabelType, Recurrence } from '@shoppingo/types';
+import { isoDay, type Label as LabelType, type Recurrence } from '@shoppingo/types';
 import { Plus } from 'lucide-react';
 import { useEffect, useId, useState } from 'react';
 import type { CreateTodoBody } from '../../../api';
@@ -28,11 +28,10 @@ interface BuildTodoBodyArgs {
     recurrence?: Recurrence;
 }
 
-const buildTodoBody = ({ title, ...optional }: BuildTodoBodyArgs): CreateTodoBody => {
-    const body: CreateTodoBody = { title };
-    for (const [key, value] of Object.entries(optional)) {
-        if (value !== undefined) (body as Record<string, unknown>)[key] = value;
-    }
+const buildTodoBody = ({ title, dueDate, ...rest }: BuildTodoBodyArgs): CreateTodoBody => {
+    const body: CreateTodoBody = { title, ...rest };
+    // Serialize the picked Date as a tz-agnostic day so the server-side reminder can't drift it.
+    if (dueDate !== undefined) body.dueDate = isoDay(dueDate);
     return body;
 };
 

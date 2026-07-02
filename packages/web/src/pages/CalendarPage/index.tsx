@@ -14,6 +14,7 @@ import { usePullToRefreshContext } from '../../contexts/PullToRefreshContext';
 import { useLabels } from '../../hooks/useLabels';
 import { useTodos } from '../../hooks/useTodos';
 import { buildCalendarDayData, buildWeekAgenda } from '../../utils/calendar';
+import { isoDay } from '../../utils/recurrence';
 
 type CalendarView = 'month' | 'week';
 
@@ -60,7 +61,7 @@ const CalendarPage = () => {
     const handleAddTodo = async (body: CreateTodoBody) => {
         await createTodo(body);
     };
-    const handleDropOnDay = (todoId: string, day: Date) => void updateTodo(todoId, { dueDate: day });
+    const handleDropOnDay = (todoId: string, day: Date) => void updateTodo(todoId, { dueDate: isoDay(day) });
     const handleToggle = (todoId: string, occurrenceDay: string) => {
         const todo = todos.find((t) => t.id === todoId);
         void completeTodo(todoId, todo?.recurrence ? occurrenceDay : undefined);

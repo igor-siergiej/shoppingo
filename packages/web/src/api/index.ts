@@ -343,7 +343,8 @@ export const uploadRecipeImage = async (recipeId: string, file: File): Promise<{
 
 export interface CreateTodoBody {
     title: string;
-    dueDate?: Date;
+    /** Timezone-agnostic YYYY-MM-DD day. */
+    dueDate?: string;
     time?: string;
     labelId?: string;
     recurrence?: Todo['recurrence'];

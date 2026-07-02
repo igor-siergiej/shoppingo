@@ -10,7 +10,7 @@ const todo = (over: Partial<Todo>): Todo => ({
     title: 'Task',
     done: false,
     dateAdded: new Date('2026-06-01'),
-    dueDate: new Date('2026-06-25'),
+    dueDate: '2026-06-25',
     ...over,
 });
 
@@ -91,7 +91,7 @@ describe('TodoReminderService.sendDailyReminders', () => {
 
     it('excludes todos not landing today (filtered by occursOn)', async () => {
         await service([
-            todo({ dueDate: new Date('2026-06-24') }), // yesterday, non-recurring
+            todo({ dueDate: '2026-06-24' }), // yesterday, non-recurring
             todo({ done: true }), // done
             todo({ recurrence: { freq: 'daily', interval: 1 }, completedDates: ['2026-06-25'] }), // already ticked
         ]).sendDailyReminders(NOW);
@@ -100,9 +100,9 @@ describe('TodoReminderService.sendDailyReminders', () => {
     });
 
     it('includes a recurring todo whose rule lands today', async () => {
-        await service([
-            todo({ dueDate: new Date('2026-06-01'), recurrence: { freq: 'daily', interval: 1 } }),
-        ]).sendDailyReminders(NOW);
+        await service([todo({ dueDate: '2026-06-01', recurrence: { freq: 'daily', interval: 1 } })]).sendDailyReminders(
+            NOW
+        );
 
         expect(sender.send).toHaveBeenCalledTimes(1);
     });
