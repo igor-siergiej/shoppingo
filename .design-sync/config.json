@@ -1,0 +1,18 @@
+{
+  "projectId": "d37df1a0-2fed-455c-b067-07d214b9d01e",
+  "pkg": "@shoppingo/web",
+  "globalName": "Shoppingo",
+  "shape": "package",
+  "srcDir": "src/components/ui",
+  "tsconfig": "tsconfig.app.json",
+  "buildCmd": "bash .design-sync/build-css.sh",
+  "cssEntry": ".design-sync-build/compiled.css",
+  "extraFonts": ".design-sync-fonts/montserrat.css",
+  "readmeHeader": ".design-sync/conventions.md",
+  "overrides": {
+    "AlertDialog": { "cardMode": "single", "viewport": "640x420" },
+    "Drawer": { "cardMode": "single", "viewport": "440x540" },
+    "Popover": { "cardMode": "single", "viewport": "380x320" },
+    "Select": { "cardMode": "single", "viewport": "320x380" }
+  }
+}
