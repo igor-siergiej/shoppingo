@@ -50,8 +50,9 @@ CSS-variable equivalents for inline styles: `var(--primary)`, `var(--muted-foreg
 
 ## Where the truth lives
 
-- **`_ds_bundle.css`** — compiled Tailwind utilities + the neutral `:root` / `.dark` tokens.
-- **`tokens/theme-*.css`** — the scoped `.theme-*` brand blocks (imported by `styles.css`).
+- **`_ds_bundle.css`** — compiled Tailwind utilities + the neutral `:root` / `.dark` tokens
+  **and the scoped `.theme-*` brand blocks** (all in this one file, reached via `styles.css`).
+  There are no separate theme files to import — just apply the `theme-*` class.
 - **Per component:** `<Name>.d.ts` (the `<Name>Props` contract) and `<Name>.prompt.md`
   (usage + composition). Compound components (Card, Select, Drawer, AlertDialog, Empty) are
   composed from their sub-parts — read the parent's prompt for the part list.
