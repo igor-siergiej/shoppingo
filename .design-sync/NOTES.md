@@ -30,6 +30,28 @@ This is an **app**, not a published component library — synth-entry mode (no `
   **never loads them** (only Montserrat is imported), so system fallback is faithful. The
   `ui/` primitives are all sans. `[FONT_MISSING]` for these two is expected — do NOT self-host.
 
+## Theming architecture (neutral base + swappable themes)
+
+- **The base is unthemed** — `packages/web/.design-sync-theme/base.css` compiles to neutral
+  monochrome shadcn tokens (`buildCmd` → `.design-sync-build/compiled.css`, `cfg.cssEntry`).
+  It mirrors `src/index.css` (imports, `@theme inline`, shimmer keyframes, base layer) but with
+  neutral `:root`/`.dark` values and an explicit `@source "../src/components/ui/**"`.
+- **Themes = scoped `.theme-*` blocks** in `packages/web/.design-sync-theme/themes/*.css`,
+  shipped into the bundle via `cfg.tokensPkg` (`@shoppingo/web`) + `cfg.tokensGlob`
+  (`.design-sync-theme/themes/*.css`) → copied to `tokens/`, `@import`ed by `styles.css`.
+  A design brands itself by wrapping a subtree in `<div class="theme-<name>">`.
+  Dark variant selectors: `.dark .theme-x, .theme-x.dark`.
+- **Themes shipped:** `shoppingo` (green/Montserrat) + `jewellery` (violet/Delius) are
+  generated verbatim from each app's `src/index.css` `:root`/`.dark` by the scratch script
+  `gen-theme.mjs`; `rosegold` + `ocean` are hue-rotated variants of shoppingo via `rotate.mjs`.
+  Both generator scripts live in scratch (not committed) — the generated `theme-*.css` ARE
+  committed under `.design-sync-theme/themes/`. To add a theme: drop another `.theme-x.css`
+  there (any tool), rebuild; `tokensGlob` picks it up automatically.
+- **`cfg.tokensPkg` is required for `tokensGlob`** — the glob is resolved relative to that
+  package's dir (the self-symlink), so `tokensGlob` alone (no `tokensPkg`) silently copies nothing.
+- **Fonts:** Montserrat (shoppingo) + Delius (jewellery) self-hosted under `.design-sync-fonts/`,
+  both wired via `cfg.extraFonts` (array). rosegold/ocean use system fonts (serif / system-ui).
+
 ## Component surface
 
 - 64 exports discovered; ~18 are top-level primitives, ~46 are compound sub-parts

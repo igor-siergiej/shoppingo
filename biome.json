@@ -2,7 +2,7 @@
   "extends": ["@imapps/biome-config/base"],
   "files": {
     "experimentalScannerIgnores": [".github/workflows-utils"],
-    "includes": ["**", "!.design-sync", "!packages/web/.design-sync-fonts"]
+    "includes": ["**", "!.design-sync", "!packages/web/.design-sync-fonts", "!packages/web/.design-sync-theme"]
   },
   "linter": {
     "rules": {

@@ -7,7 +7,9 @@
   "tsconfig": "tsconfig.app.json",
   "buildCmd": "bash .design-sync/build-css.sh",
   "cssEntry": ".design-sync-build/compiled.css",
-  "extraFonts": ".design-sync-fonts/montserrat.css",
+  "tokensPkg": "@shoppingo/web",
+  "tokensGlob": ".design-sync-theme/themes/*.css",
+  "extraFonts": [".design-sync-fonts/montserrat.css", ".design-sync-fonts/delius.css"],
   "readmeHeader": ".design-sync/conventions.md",
   "overrides": {
     "AlertDialog": { "cardMode": "single", "viewport": "640x420" },
