@@ -14,12 +14,12 @@ import { TodoReminderService } from '../domain/TodoReminderService';
 import { TodoService } from '../domain/TodoService';
 import { HttpAuthClient } from '../infrastructure/AuthClient';
 import { BucketStore } from '../infrastructure/BucketStore';
+import { FalImageGenerator } from '../infrastructure/FalImageGenerator';
 import { MongoLabelRepository } from '../infrastructure/MongoLabelRepository';
 import { MongoListRepository } from '../infrastructure/MongoListRepository';
 import { MongoPushSubscriptionRepository } from '../infrastructure/MongoPushSubscriptionRepository';
 import { MongoRecipeRepository } from '../infrastructure/MongoRecipeRepository';
 import { MongoTodoRepository } from '../infrastructure/MongoTodoRepository';
-import { OpenAIImageGenerator } from '../infrastructure/OpenAIImageGenerator';
 import { UuidGenerator } from '../infrastructure/UuidGenerator';
 import { WebPushSender } from '../infrastructure/WebPushSender';
 import * as RecipeHandlers from '../interfaces/RecipeHandlers';
@@ -236,8 +236,12 @@ export const registerDepdendencies = () => {
         // @ts-expect-error - Dependency injection requires constructor return override
         class {
             constructor() {
-                const model = config.get('openaiModel') || 'gpt-image-1-mini';
-                return new OpenAIImageGenerator(config.get('openaiApiKey') || '', model);
+                return new FalImageGenerator(config.get('falKey') || '', {
+                    model: config.get('falModel') || 'fal-ai/flux/schnell',
+                    imageSize: 'square',
+                    outputFormat: 'png',
+                    outputSize: 256,
+                });
             }
         }
     );
@@ -247,8 +251,12 @@ export const registerDepdendencies = () => {
         // @ts-expect-error - Dependency injection requires constructor return override
         class {
             constructor() {
-                const model = config.get('openaiRecipeModel') || 'gpt-image-1';
-                return new OpenAIImageGenerator(config.get('openaiApiKey') || '', model, 512);
+                return new FalImageGenerator(config.get('falKey') || '', {
+                    model: config.get('falRecipeModel') || 'fal-ai/flux/schnell',
+                    imageSize: 'square_hd',
+                    outputFormat: 'jpeg',
+                    outputSize: 512,
+                });
             }
         }
     );
