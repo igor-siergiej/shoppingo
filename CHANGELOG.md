@@ -1,3 +1,10 @@
+## [1.55.1](https://github.com/igor-siergiej/shoppingo/compare/v1.55.0...v1.55.1) (2026-07-05)
+
+
+### Bug Fixes
+
+* **todos:** store dueDate as timezone-agnostic day so reminders fire ([#100](https://github.com/igor-siergiej/shoppingo/issues/100)) ([17c033e](https://github.com/igor-siergiej/shoppingo/commit/17c033e1b03526282ddec0c96d11513ce56c64fa)), closes [#98](https://github.com/igor-siergiej/shoppingo/issues/98) [#98](https://github.com/igor-siergiej/shoppingo/issues/98) [#99](https://github.com/igor-siergiej/shoppingo/issues/99)
+
 # [1.55.0](https://github.com/igor-siergiej/shoppingo/compare/v1.54.1...v1.55.0) (2026-07-05)
 
 
