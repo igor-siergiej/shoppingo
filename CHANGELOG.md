@@ -1,3 +1,10 @@
+# [1.55.0](https://github.com/igor-siergiej/shoppingo/compare/v1.54.1...v1.55.0) (2026-07-05)
+
+
+### Features
+
+* **api:** replace OpenAI image gen with fal.ai FLUX.1 [schnell] ([#102](https://github.com/igor-siergiej/shoppingo/issues/102)) ([db7e91e](https://github.com/igor-siergiej/shoppingo/commit/db7e91e6e36b86584a4d20dfd50c462d643c6c68))
+
 ## [1.54.1](https://github.com/igor-siergiej/shoppingo/compare/v1.54.0...v1.54.1) (2026-07-02)
 
 
