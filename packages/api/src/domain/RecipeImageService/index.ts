@@ -1,6 +1,7 @@
 import type { Logger } from '@imapps/api-utils';
 import type { Ingredient } from '@shoppingo/types';
 
+import { withImageExtension } from '../../infrastructure/objectKey';
 import type { ImageGenerator, ImageStore } from '../ImageService/types';
 
 export class RecipeImageService {
@@ -17,7 +18,8 @@ export class RecipeImageService {
         force = false
     ): Promise<string> {
         // Keyed by recipe id so each recipe owns a unique, immutable AI image (no cross-recipe sharing).
-        const key = `recipe-image/${recipeId}`;
+        // AI images are always WebP, so the key carries a fixed .webp extension.
+        const key = withImageExtension(`recipe-image/${recipeId}`, 'image/webp');
 
         if (!force) {
             try {

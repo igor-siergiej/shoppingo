@@ -148,8 +148,8 @@ describe('ImageService', () => {
 
                 const result = await imageService.getImage('test-image');
 
-                expect(mockImageStore.calls.getHeadObject[0]).toEqual(['test-image']);
-                expect(mockImageStore.calls.getObjectStream[0]).toEqual(['test-image']);
+                expect(mockImageStore.calls.getHeadObject[0]).toEqual(['test-image.webp']);
+                expect(mockImageStore.calls.getObjectStream[0]).toEqual(['test-image.webp']);
                 expect(result.stream).toBe(mockStream);
                 expect(result.contentType).toBe('image/png');
                 expect(result.cacheControl).toBe('public, max-age=31536000, immutable');
@@ -187,7 +187,7 @@ describe('ImageService', () => {
                     'Minimalistic flat icon of a shopping-cart drawn in a simple, clean style, this is going to be a icon for my shopping list item. Bright solid colors, soft rounded edges, modern vector look, no text.',
                 ]);
                 expect(mockImageStore.calls.putObject[0]).toEqual([
-                    'shopping-cart',
+                    'shopping-cart.webp',
                     mockBuffer,
                     { contentType: 'image/webp' },
                 ]);

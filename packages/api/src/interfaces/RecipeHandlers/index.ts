@@ -4,6 +4,7 @@ import type { Context } from 'hono';
 import { dependencyContainer } from '../../dependencies/container';
 import { DependencyToken } from '../../dependencies/types';
 import type { RecipeService } from '../../domain/RecipeService';
+import { withImageExtension } from '../../infrastructure/objectKey';
 import type { HonoVars } from '../handlerUtils';
 
 interface HttpError {
@@ -417,7 +418,11 @@ export const uploadRecipeImage = async (c: Context<HonoVars>): Promise<Response>
 
         const fileBuffer = Buffer.from(await imageFile.arrayBuffer());
         // Versioned key so each upload is a distinct, immutable URL (avoids stale browser cache).
-        const imageKey = `recipe-upload/${authenticatedUser.id}/${recipeId}/${Date.now()}`;
+        // Extension derived from the uploaded file's type so the stored object is correctly identified.
+        const imageKey = withImageExtension(
+            `recipe-upload/${authenticatedUser.id}/${recipeId}/${Date.now()}`,
+            mimeType
+        );
 
         const bucketStore = getBucketStore();
         await bucketStore.putObject(imageKey, fileBuffer, { contentType: mimeType });

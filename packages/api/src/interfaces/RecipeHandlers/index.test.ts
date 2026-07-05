@@ -539,6 +539,9 @@ describe('RecipeHandlers', () => {
             });
             const response = await recipeHandlers.uploadRecipeImage(ctx);
             expect(response.status).toBe(200);
+            const storedKey = mockBucketStore.putObject.mock.calls[0][0] as string;
+            expect(storedKey.endsWith('.jpg')).toBe(true);
+            expect(mockRecipeService.setCoverImageKey.mock.calls[0][1]).toBe(storedKey);
         });
 
         it('returns error on bucket failure', async () => {

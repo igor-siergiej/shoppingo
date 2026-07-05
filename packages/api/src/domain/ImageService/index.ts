@@ -1,6 +1,7 @@
 import type { Logger } from '@imapps/api-utils';
 
 import { imageGenerationFailuresTotal, imagesGeneratedTotal, imagesServedTotal } from '../../infrastructure/metrics';
+import { withImageExtension } from '../../infrastructure/objectKey';
 import type { ImageGenerator, ImageStore } from './types';
 
 export class ImageService {
@@ -21,12 +22,14 @@ export class ImageService {
             }
 
             const normalisedName = name.trim().toLowerCase();
+            // AI item images are always WebP, so the storage key carries a fixed .webp extension.
+            const storageKey = withImageExtension(normalisedName, 'image/webp');
 
             // Try to fetch from store first
             try {
-                const head = await this.store.getHeadObject(normalisedName);
+                const head = await this.store.getHeadObject(storageKey);
                 const contentType = head?.metaData?.['content-type'] ?? 'image/webp';
-                const stream = await this.store.getObjectStream(normalisedName);
+                const stream = await this.store.getObjectStream(storageKey);
 
                 this.logger?.info('Image retrieved from cache', {
                     itemName: normalisedName,
@@ -69,7 +72,7 @@ export class ImageService {
 
             // Store the generated image (fire and forget)
             try {
-                await this.store.putObject(normalisedName, buffer, { contentType });
+                await this.store.putObject(storageKey, buffer, { contentType });
             } catch (uploadErr) {
                 this.logger?.error('Failed to store generated image', {
                     itemName: normalisedName,
