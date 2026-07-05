@@ -10,6 +10,9 @@ jobs:
     permissions:
       contents: write
       packages: read
+    env:
+      # Skip husky hook install; semantic-release's git push must not trigger the local pre-push audit.
+      HUSKY: 0
     steps:
       - uses: actions/checkout@v6
         with:
