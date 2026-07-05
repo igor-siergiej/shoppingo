@@ -1,3 +1,4 @@
+import { isoDay } from '@shoppingo/types';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { AddTodoDrawer } from './index';
@@ -21,12 +22,12 @@ describe('AddTodoDrawer', () => {
 
     it('submits the title and prefilled date', async () => {
         const onAdd = vi.fn().mockResolvedValue(undefined);
-        const prefill = new Date('2026-06-04');
+        const prefill = new Date('2026-06-04T12:00:00');
         render(<AddTodoDrawer open onOpenChange={noop} onAdd={onAdd} labels={[]} prefillDate={prefill} />);
         fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Buy milk' } });
         fireEvent.click(screen.getByRole('button', { name: 'Add Todo' }));
         await waitFor(() =>
-            expect(onAdd).toHaveBeenCalledWith(expect.objectContaining({ title: 'Buy milk', dueDate: prefill }))
+            expect(onAdd).toHaveBeenCalledWith(expect.objectContaining({ title: 'Buy milk', dueDate: isoDay(prefill) }))
         );
     });
 });

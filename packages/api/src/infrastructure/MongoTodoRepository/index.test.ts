@@ -89,19 +89,15 @@ describe('MongoTodoRepository', () => {
         expect((await repo.getById('t2'))?.labelId).toBe('L');
     });
 
-    it('findDueCandidates matches both Date and legacy string dueDates', async () => {
-        const dayEnd = new Date('2026-06-25T23:59:59.999Z');
+    it('findDueCandidates queries incomplete todos due on or before today (day string)', async () => {
         const mockFind = mock(() => ({ toArray: async () => [] }));
         const mockDb = {
             getCollection: () => ({ find: mockFind }),
         } as never;
         const testRepo = new MongoTodoRepository(mockDb);
 
-        await testRepo.findDueCandidates(dayEnd);
+        await testRepo.findDueCandidates('2026-06-25');
 
-        expect(mockFind).toHaveBeenCalledWith({
-            done: false,
-            $or: [{ dueDate: { $lte: dayEnd } }, { dueDate: { $lte: dayEnd.toISOString() } }],
-        });
+        expect(mockFind).toHaveBeenCalledWith({ done: false, dueDate: { $lte: '2026-06-25' } });
     });
 });

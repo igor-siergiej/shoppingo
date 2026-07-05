@@ -8,6 +8,21 @@ export interface Occurrence {
 
 export const isoDay = (date: Date): string => format(date, 'yyyy-MM-dd');
 
+const normalize = (date: Date): Date => new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+/**
+ * Parse a due-day to local midnight of that calendar day — timezone-invariant, no instant drift.
+ *
+ * Canonical input is a YYYY-MM-DD string. Legacy pre-migration rows may still hold a Date or a
+ * full ISO string; those are tolerated so reads never crash mid-migration (a Date is bucketed by
+ * its local calendar day, which in the browser is the user's own day).
+ */
+export const parseDay = (day: string | Date): Date => {
+    if (day instanceof Date) return normalize(day);
+    const [y, m, d] = day.slice(0, 10).split('-').map(Number);
+    return new Date(y, m - 1, d);
+};
+
 const ADDERS = {
     daily: addDays,
     weekly: addWeeks,
@@ -17,17 +32,15 @@ const ADDERS = {
 
 const step = (date: Date, recurrence: Recurrence): Date => ADDERS[recurrence.freq](date, recurrence.interval);
 
-const normalize = (date: Date): Date => new Date(date.getFullYear(), date.getMonth(), date.getDate());
-
 const expandSingle = (todo: Todo, start: Date, end: Date): Occurrence[] => {
-    const anchor = normalize(new Date(todo.dueDate as Date));
+    const anchor = parseDay(todo.dueDate as string);
     if (isBefore(anchor, start) || isAfter(anchor, end)) return [];
     return [{ date: anchor, done: todo.done }];
 };
 
 const resolveLimit = (recurrence: Recurrence, end: Date): Date => {
     if (!recurrence.until) return end;
-    const until = normalize(new Date(recurrence.until));
+    const until = parseDay(recurrence.until);
     return isBefore(until, end) ? until : end;
 };
 
@@ -38,7 +51,7 @@ const expandRecurring = (todo: Todo, start: Date, end: Date): Occurrence[] => {
     const completed = toDoneSet(todo.completedDates);
     const limit = resolveLimit(rec, end);
     const occurrences: Occurrence[] = [];
-    let cursor = normalize(new Date(todo.dueDate as Date));
+    let cursor = parseDay(todo.dueDate as string);
     for (let i = 0; i < 1000 && !isAfter(cursor, limit); i += 1) {
         if (!isBefore(cursor, start)) {
             occurrences.push({ date: cursor, done: completed.has(isoDay(cursor)) });

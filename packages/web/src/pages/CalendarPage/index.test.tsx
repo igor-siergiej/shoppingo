@@ -17,7 +17,7 @@ vi.mock('../../hooks/useTodos', () => ({
                 title: 'Standup',
                 done: false,
                 dateAdded: new Date('2026-06-01'),
-                dueDate: new Date('2026-06-04'),
+                dueDate: '2026-06-04',
             },
             { id: 't2', ownerId: 'u', title: 'Someday', done: false, dateAdded: new Date('2026-06-01') },
         ],

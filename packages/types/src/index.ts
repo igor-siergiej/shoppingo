@@ -74,7 +74,8 @@ export interface RecipeResponse {
 export interface Recurrence {
     freq: 'daily' | 'weekly' | 'monthly' | 'yearly';
     interval: number;
-    until?: Date;
+    /** Recurrence end, as a timezone-agnostic YYYY-MM-DD day. */
+    until?: string;
 }
 
 export interface Todo {
@@ -83,7 +84,8 @@ export interface Todo {
     title: string;
     done: boolean;
     dateAdded: Date;
-    dueDate?: Date;
+    /** Scheduled day, as a timezone-agnostic YYYY-MM-DD string. */
+    dueDate?: string;
     time?: string;
     labelId?: string;
     recurrence?: Recurrence;
@@ -112,4 +114,4 @@ export interface PushSubscription {
     dateAdded: Date;
 }
 
-export { expandOccurrences, isoDay, type Occurrence, occursOn } from './recurrence';
+export { expandOccurrences, isoDay, type Occurrence, occursOn, parseDay } from './recurrence';

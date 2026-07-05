@@ -1,6 +1,6 @@
 import type { Logger } from '@imapps/api-utils';
 import type { PushSubscription, Todo } from '@shoppingo/types';
-import { occursOn } from '@shoppingo/types';
+import { isoDay, occursOn } from '@shoppingo/types';
 import type { WebPushSender } from '../../infrastructure/WebPushSender';
 import type { PushSubscriptionRepository } from '../PushSubscriptionRepository';
 import type { TodoRepository } from '../TodoRepository';
@@ -13,12 +13,6 @@ export const formatDueBody = (titles: string[]): string => {
     const shown = titles.slice(0, MAX_TITLES_SHOWN).join(', ');
     const extra = titles.length - MAX_TITLES_SHOWN;
     return extra > 0 ? `${shown} and ${extra} more` : shown;
-};
-
-const endOfLocalDay = (now: Date): Date => {
-    const end = new Date(now);
-    end.setHours(23, 59, 59, 999);
-    return end;
 };
 
 const groupByOwner = (todos: Todo[]): Map<string, Todo[]> => {
@@ -72,7 +66,7 @@ export class TodoReminderService {
             return emptySummary(configured);
         }
 
-        const candidates = await this.todoRepo.findDueCandidates(endOfLocalDay(now));
+        const candidates = await this.todoRepo.findDueCandidates(isoDay(now));
         const due = candidates.filter((todo) => occursOn(todo, now));
         if (due.length === 0) {
             return emptySummary(configured);

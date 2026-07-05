@@ -5,7 +5,7 @@ import type { TodoRepository } from '../TodoRepository';
 
 export interface CreateTodoInput {
     title: string;
-    dueDate?: Date;
+    dueDate?: string;
     time?: string;
     labelId?: string;
     recurrence?: Recurrence;
@@ -17,12 +17,18 @@ export type UpdateTodoInput = Partial<Omit<Todo, 'id' | 'ownerId' | 'dateAdded'>
 const forbidden = () => Object.assign(new Error('Forbidden'), { status: 403 });
 const notFound = () => Object.assign(new Error('Todo not found'), { status: 404 });
 
-/** dueDate/recurrence.until arrive as JSON strings over HTTP; Mongo range queries need real Dates. */
-const coerceDates = <T extends { dueDate?: Date; recurrence?: Recurrence }>(input: T): T => ({
+/**
+ * dueDate/recurrence.until are timezone-agnostic YYYY-MM-DD days. Clients send that directly,
+ * but a legacy client (or a Date serialized to ISO) may send a full instant — keep only the
+ * day part so day-string range queries and calendar bucketing stay tz-stable.
+ */
+const toDay = (value: string): string => value.slice(0, 10);
+
+const normalizeDays = <T extends { dueDate?: string; recurrence?: Recurrence }>(input: T): T => ({
     ...input,
-    ...(input.dueDate !== undefined && { dueDate: new Date(input.dueDate) }),
+    ...(input.dueDate !== undefined && { dueDate: toDay(input.dueDate) }),
     ...(input.recurrence?.until !== undefined && {
-        recurrence: { ...input.recurrence, until: new Date(input.recurrence.until) },
+        recurrence: { ...input.recurrence, until: toDay(input.recurrence.until) },
     }),
 });
 
@@ -41,7 +47,7 @@ export class TodoService {
     }
 
     async createTodo(ownerId: string, rawInput: CreateTodoInput): Promise<Todo> {
-        const input = coerceDates(rawInput);
+        const input = normalizeDays(rawInput);
         if (input.id) {
             const existing = await this.repo.getById(input.id);
             if (existing && existing.ownerId === ownerId) {
@@ -70,7 +76,7 @@ export class TodoService {
 
     async updateTodo(todoId: string, ownerId: string, rawInput: UpdateTodoInput): Promise<Todo> {
         const existing = await this.getOwned(todoId, ownerId);
-        const merged: Todo = { ...existing, ...coerceDates(rawInput) };
+        const merged: Todo = { ...existing, ...normalizeDays(rawInput) };
         return this.repo.update(todoId, merged);
     }
 

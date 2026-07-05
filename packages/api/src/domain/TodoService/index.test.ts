@@ -105,25 +105,25 @@ describe('TodoService', () => {
         expect(removed.completedDates).toEqual([]);
     });
 
-    it('coerces a string dueDate to a Date on create', async () => {
-        const t = await svc.createTodo('u1', { title: 'A', dueDate: '2026-06-29T00:00:00.000Z' as never });
-        expect(t.dueDate).toBeInstanceOf(Date);
-        expect((t.dueDate as Date).toISOString()).toBe('2026-06-29T00:00:00.000Z');
+    it('keeps a YYYY-MM-DD dueDate as a day string on create', async () => {
+        const t = await svc.createTodo('u1', { title: 'A', dueDate: '2026-06-29' });
+        expect(t.dueDate).toBe('2026-06-29');
     });
 
-    it('coerces a string recurrence.until to a Date on create', async () => {
+    it('reduces a full ISO dueDate/until to its day part on create', async () => {
         const t = await svc.createTodo('u1', {
             title: 'A',
-            dueDate: '2026-06-29T00:00:00.000Z' as never,
-            recurrence: { freq: 'daily', interval: 1, until: '2026-07-29T00:00:00.000Z' as never },
+            dueDate: '2026-06-29T00:00:00.000Z',
+            recurrence: { freq: 'daily', interval: 1, until: '2026-07-29T00:00:00.000Z' },
         });
-        expect(t.recurrence?.until).toBeInstanceOf(Date);
+        expect(t.dueDate).toBe('2026-06-29');
+        expect(t.recurrence?.until).toBe('2026-07-29');
     });
 
-    it('coerces a string dueDate to a Date on update', async () => {
+    it('keeps a YYYY-MM-DD dueDate as a day string on update', async () => {
         const t = await svc.createTodo('u1', { title: 'A' });
-        const updated = await svc.updateTodo(t.id, 'u1', { dueDate: '2026-06-29T00:00:00.000Z' as never });
-        expect(updated.dueDate).toBeInstanceOf(Date);
+        const updated = await svc.updateTodo(t.id, 'u1', { dueDate: '2026-06-29' });
+        expect(updated.dueDate).toBe('2026-06-29');
     });
 
     describe('createTodo idempotency', () => {
