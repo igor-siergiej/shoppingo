@@ -23,7 +23,7 @@
     "packages/web/src/sw.ts",
     "packages/api/src/infrastructure/UuidGenerator/index.ts",
     "packages/api/src/infrastructure/metrics.ts",
-    "packages/api/src/infrastructure/OpenAIImageGenerator/index.ts",
+    "packages/api/src/infrastructure/FalImageGenerator/index.ts",
     "packages/api/src/infrastructure/imageProcessor.ts",
     "**/dist/**",
     "**/coverage/**",

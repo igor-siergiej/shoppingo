@@ -54,17 +54,17 @@ export class ImageService {
             try {
                 ({ buffer, contentType } = await this.generator.generateImage(prompt));
             } catch (genErr) {
-                imageGenerationFailuresTotal.inc({ provider: 'openai' });
+                imageGenerationFailuresTotal.inc({ provider: 'fal' });
                 throw genErr;
             }
 
             this.logger?.info('Image generated using AI', {
                 itemName: normalisedName,
                 contentType,
-                source: 'gemini',
+                source: 'fal',
             });
 
-            imagesGeneratedTotal.inc({ provider: 'openai' });
+            imagesGeneratedTotal.inc({ provider: 'fal' });
             imagesServedTotal.inc({ source: 'fresh' });
 
             // Store the generated image (fire and forget)

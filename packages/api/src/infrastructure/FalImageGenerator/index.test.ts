@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'bun:test';
 
-import { OpenAIImageGenerator } from './index';
+import { FalImageGenerator } from './index';
 
 const mockSharpInstance = {
     resize: vi.fn(),
@@ -26,12 +26,14 @@ import { processImage } from '../imageProcessor';
 
 const mockProcessImage = processImage as unknown as ReturnType<typeof vi.fn>;
 
-describe('OpenAIImageGenerator', () => {
-    let generator: OpenAIImageGenerator;
+const dataUri = (buffer: Buffer) => `data:image/png;base64,${buffer.toString('base64')}`;
+
+describe('FalImageGenerator', () => {
+    let generator: FalImageGenerator;
 
     beforeEach(() => {
         vi.clearAllMocks();
-        generator = new OpenAIImageGenerator('test-api-key');
+        generator = new FalImageGenerator('test-api-key');
         mockSharpInstance.resize.mockReturnValue(mockSharpInstance);
         mockSharpInstance.webp.mockReturnValue(mockSharpInstance);
         mockSharpInstance.withMetadata.mockReturnValue(mockSharpInstance);
@@ -39,7 +41,7 @@ describe('OpenAIImageGenerator', () => {
 
     describe('When apiKey is empty', () => {
         it('should throw an error', async () => {
-            const generatorNoKey = new OpenAIImageGenerator('');
+            const generatorNoKey = new FalImageGenerator('');
 
             await expect(generatorNoKey.generateImage('test prompt')).rejects.toMatchObject({
                 message: 'Image generation service not configured',
@@ -48,7 +50,44 @@ describe('OpenAIImageGenerator', () => {
         });
     });
 
-    describe('When OpenAI API returns an error', () => {
+    describe('When request options are provided', () => {
+        it('should send prompt, model and params to the fal endpoint', async () => {
+            const processedBuffer = Buffer.from('processed-bytes');
+            mockProcessImage.mockResolvedValue(processedBuffer);
+
+            const fetchMock = vi.fn().mockResolvedValue({
+                ok: true,
+                json: vi.fn().mockResolvedValue({ images: [{ url: dataUri(Buffer.from('img')) }] }),
+            });
+            global.fetch = fetchMock;
+
+            const recipeGenerator = new FalImageGenerator('key', {
+                model: 'fal-ai/flux/schnell',
+                imageSize: 'square_hd',
+                outputFormat: 'jpeg',
+                numInferenceSteps: 4,
+                outputSize: 512,
+            });
+
+            await recipeGenerator.generateImage('a nice recipe');
+
+            const [url, init] = fetchMock.mock.calls[0];
+            expect(url).toBe('https://fal.run/fal-ai/flux/schnell');
+            expect(init.headers.Authorization).toBe('Key key');
+            const body = JSON.parse(init.body);
+            expect(body).toMatchObject({
+                prompt: 'a nice recipe',
+                image_size: 'square_hd',
+                output_format: 'jpeg',
+                num_inference_steps: 4,
+                num_images: 1,
+                sync_mode: true,
+            });
+            expect(mockProcessImage).toHaveBeenCalledWith(expect.any(Buffer), undefined, 512);
+        });
+    });
+
+    describe('When fal API returns an error', () => {
         it('should throw a 502 error', async () => {
             global.fetch = vi.fn().mockResolvedValue({
                 ok: false,
@@ -61,7 +100,7 @@ describe('OpenAIImageGenerator', () => {
         });
     });
 
-    describe('When response contains b64_json', () => {
+    describe('When response contains a data URI', () => {
         it('should decode base64 and process the image', async () => {
             const imageBuffer = Buffer.from('fake-image-bytes');
             const processedBuffer = Buffer.from('processed-bytes');
@@ -69,9 +108,7 @@ describe('OpenAIImageGenerator', () => {
 
             global.fetch = vi.fn().mockResolvedValue({
                 ok: true,
-                json: vi.fn().mockResolvedValue({
-                    data: [{ b64_json: imageBuffer.toString('base64') }],
-                }),
+                json: vi.fn().mockResolvedValue({ images: [{ url: dataUri(imageBuffer) }] }),
             });
 
             const result = await generator.generateImage('test prompt');
@@ -82,24 +119,17 @@ describe('OpenAIImageGenerator', () => {
         });
     });
 
-    describe('When response contains a URL', () => {
+    describe('When response contains a hosted URL', () => {
         it('should fetch the image from the URL and process it', async () => {
             const imageBuffer = Buffer.from('url-image-bytes');
             const processedBuffer = Buffer.from('processed-url-bytes');
             mockProcessImage.mockResolvedValue(processedBuffer);
 
-            const _mockImageFetch = vi.fn().mockResolvedValue({
-                ok: true,
-                arrayBuffer: vi.fn().mockResolvedValue(imageBuffer.buffer),
-            });
-
             global.fetch = vi
                 .fn()
                 .mockResolvedValueOnce({
                     ok: true,
-                    json: vi.fn().mockResolvedValue({
-                        data: [{ url: 'https://example.com/image.png' }],
-                    }),
+                    json: vi.fn().mockResolvedValue({ images: [{ url: 'https://cdn.fal.ai/image.png' }] }),
                 })
                 .mockResolvedValueOnce({
                     ok: true,
@@ -119,9 +149,7 @@ describe('OpenAIImageGenerator', () => {
                 .fn()
                 .mockResolvedValueOnce({
                     ok: true,
-                    json: vi.fn().mockResolvedValue({
-                        data: [{ url: 'https://example.com/image.png' }],
-                    }),
+                    json: vi.fn().mockResolvedValue({ images: [{ url: 'https://cdn.fal.ai/image.png' }] }),
                 })
                 .mockResolvedValueOnce({
                     ok: false,
@@ -131,22 +159,22 @@ describe('OpenAIImageGenerator', () => {
         });
     });
 
-    describe('When response has neither b64_json nor url', () => {
+    describe('When response has no image url', () => {
         it('should throw a 502 error', async () => {
             global.fetch = vi.fn().mockResolvedValue({
                 ok: true,
-                json: vi.fn().mockResolvedValue({ data: [{}] }),
+                json: vi.fn().mockResolvedValue({ images: [{}] }),
             });
 
             await expect(generator.generateImage('test prompt')).rejects.toMatchObject({ status: 502 });
         });
     });
 
-    describe('When response data is empty', () => {
+    describe('When response images is empty', () => {
         it('should throw a 502 error', async () => {
             global.fetch = vi.fn().mockResolvedValue({
                 ok: true,
-                json: vi.fn().mockResolvedValue({ data: [] }),
+                json: vi.fn().mockResolvedValue({ images: [] }),
             });
 
             await expect(generator.generateImage('test prompt')).rejects.toMatchObject({ status: 502 });
@@ -162,9 +190,7 @@ describe('OpenAIImageGenerator', () => {
 
             global.fetch = vi.fn().mockResolvedValue({
                 ok: true,
-                json: vi.fn().mockResolvedValue({
-                    data: [{ b64_json: imageBuffer.toString('base64') }],
-                }),
+                json: vi.fn().mockResolvedValue({ images: [{ url: dataUri(imageBuffer) }] }),
             });
 
             const result = await generator.generateImage('test prompt');
@@ -180,9 +206,7 @@ describe('OpenAIImageGenerator', () => {
 
             global.fetch = vi.fn().mockResolvedValue({
                 ok: true,
-                json: vi.fn().mockResolvedValue({
-                    data: [{ b64_json: imageBuffer.toString('base64') }],
-                }),
+                json: vi.fn().mockResolvedValue({ images: [{ url: dataUri(imageBuffer) }] }),
             });
 
             const result = await generator.generateImage('test prompt');

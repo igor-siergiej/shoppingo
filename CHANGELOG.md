@@ -1,3 +1,10 @@
+## [1.54.1](https://github.com/igor-siergiej/shoppingo/compare/v1.54.0...v1.54.1) (2026-07-02)
+
+
+### Bug Fixes
+
+* **api:** match legacy string dueDates in reminder query ([#99](https://github.com/igor-siergiej/shoppingo/issues/99)) ([3352e81](https://github.com/igor-siergiej/shoppingo/commit/3352e8101134d1ae3be1b4b2423c5bac6c270ded)), closes [#98](https://github.com/igor-siergiej/shoppingo/issues/98)
+
 # [1.54.0](https://github.com/igor-siergiej/shoppingo/compare/v1.53.1...v1.54.0) (2026-07-02)
 
 
