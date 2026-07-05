@@ -1,3 +1,11 @@
+## [1.55.2](https://github.com/igor-siergiej/shoppingo/compare/v1.55.1...v1.55.2) (2026-07-05)
+
+
+### Bug Fixes
+
+* **api:** set file extension on MinIO image object keys ([#103](https://github.com/igor-siergiej/shoppingo/issues/103)) ([7ab423e](https://github.com/igor-siergiej/shoppingo/commit/7ab423e7d982102aa6d2e6482c239d55b04dd712))
+* **ci:** disable husky hooks in release job ([46a6dd9](https://github.com/igor-siergiej/shoppingo/commit/46a6dd938bd99d0f08e65ffa87cb3b478b379c93))
+
 ## [1.55.1](https://github.com/igor-siergiej/shoppingo/compare/v1.55.0...v1.55.1) (2026-07-05)
 
 
