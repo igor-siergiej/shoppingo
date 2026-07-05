@@ -30,3 +30,9 @@ test-results/
 
 # fallow audit binary (downloaded on demand by scripts/run-fallow.sh)
 .tooling/
+.ds-sync/
+ds-bundle/
+.design-sync/.cache/
+.design-sync/learnings/
+.design-sync/node_modules
+packages/web/.design-sync-build/
