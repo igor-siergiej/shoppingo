@@ -6,7 +6,7 @@ Shoppingo is a full-stack e-commerce application with a React frontend and Node.
 ## Architecture
 - **Frontend**: React 19 + TypeScript + Vite + Tailwind CSS + shadcn/ui + PWA (vite-plugin-pwa)
 - **Backend**: Node.js + Koa + TypeScript + MongoDB
-- **Additional Services**: MinIO (object storage), AI image generation (Gemini or OpenAI, configurable via `IMAGE_PROVIDER` env var)
+- **Additional Services**: MinIO (object storage), AI image generation (fal.ai FLUX.1 [schnell], via `FAL_KEY` env var)
 
 ## Requirements
 - **Bun**: v1.x
@@ -51,7 +51,7 @@ Run these from the root directory:
 The project requires:
 - MongoDB (localhost:27017)
 - MinIO object storage (192.168.68.54:7000)
-- Gemini AI API key or OpenAI API key (set `IMAGE_PROVIDER=gemini|openai`)
+- fal.ai API key (set `FAL_KEY`)
 
 Environment variables are in `.env` file (development values).
 
@@ -69,7 +69,7 @@ Key dependencies:
 - Koa + Koa Router for HTTP server
 - MongoDB native driver
 - MinIO for file storage
-- Google Gemini AI or OpenAI for AI image generation
+- fal.ai (FLUX.1 [schnell]) for AI image generation
 - Sharp for image processing
 - `@imapps/api-utils` - Shared utilities for configuration, database connections, and logging
 
