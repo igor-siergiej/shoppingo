@@ -14,6 +14,8 @@ import type { AuthClient } from '../domain/ListService/types';
 import type { NotificationService } from '../domain/NotificationService';
 import type { PushSubscriptionRepository } from '../domain/PushSubscriptionRepository';
 import type { RecipeImageService } from '../domain/RecipeImageService';
+import type { RecipeImportService } from '../domain/RecipeImportService';
+import type { PageFetcher, RecipeTextExtractor } from '../domain/RecipeImportService/types';
 import type { RecipeRepository } from '../domain/RecipeRepository';
 import type { RecipeService } from '../domain/RecipeService';
 import type { TodoReminderService } from '../domain/TodoReminderService';
@@ -48,6 +50,9 @@ export enum DependencyToken {
     RecipeHandlers = 'RecipeHandlers',
     RecipeImageGenerator = 'RecipeImageGenerator',
     RecipeImageService = 'RecipeImageService',
+    PageFetcher = 'PageFetcher',
+    RecipeTextExtractor = 'RecipeTextExtractor',
+    RecipeImportService = 'RecipeImportService',
     TodoRepository = 'TodoRepository',
     TodoService = 'TodoService',
     LabelRepository = 'LabelRepository',
@@ -77,6 +82,9 @@ export type Dependencies = {
     [DependencyToken.RecipeHandlers]: RecipeHandlers;
     [DependencyToken.RecipeImageGenerator]: ImageGenerator;
     [DependencyToken.RecipeImageService]: RecipeImageService;
+    [DependencyToken.PageFetcher]: PageFetcher;
+    [DependencyToken.RecipeTextExtractor]: RecipeTextExtractor;
+    [DependencyToken.RecipeImportService]: RecipeImportService;
     [DependencyToken.TodoRepository]: TodoRepository;
     [DependencyToken.TodoService]: TodoService;
     [DependencyToken.LabelRepository]: LabelRepository;

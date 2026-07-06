@@ -28,6 +28,10 @@ const mockRecipeService = {
     revertToAiImage: vi.fn(),
 };
 
+const mockRecipeImportService = {
+    importFromUrl: vi.fn(),
+};
+
 const mockLogger = {
     info: vi.fn(),
     error: vi.fn(),
@@ -90,11 +94,55 @@ describe('RecipeHandlers', () => {
         vi.clearAllMocks();
         mockDependencyContainer.resolve.mockImplementation((token: string) => {
             if (token === 'RecipeService') return mockRecipeService;
+            if (token === 'RecipeImportService') return mockRecipeImportService;
             if (token === 'Logger') return mockLogger;
             if (token === 'ImageStore') return mockBucketStore;
             return null;
         });
         mockRecipeService.getRecipe.mockResolvedValue(baseRecipe);
+    });
+
+    describe('importRecipe', () => {
+        const draft = {
+            title: 'Imported',
+            ingredients: [{ id: 'i1', name: '2 cups flour' }],
+            instructions: ['Mix it.'],
+            link: 'https://example.com/r',
+        };
+
+        it('returns 401 when no authenticated user', async () => {
+            const ctx = createMockContext({ user: undefined, body: { url: 'https://example.com/r' } });
+            const response = await recipeHandlers.importRecipe(ctx);
+            expect(response.status).toBe(401);
+        });
+
+        it('returns 400 when url is missing', async () => {
+            const ctx = createMockContext({ body: {} });
+            const response = await recipeHandlers.importRecipe(ctx);
+            expect(response.status).toBe(400);
+        });
+
+        it('returns 400 when url is blank', async () => {
+            const ctx = createMockContext({ body: { url: '   ' } });
+            const response = await recipeHandlers.importRecipe(ctx);
+            expect(response.status).toBe(400);
+        });
+
+        it('returns the draft on success', async () => {
+            mockRecipeImportService.importFromUrl.mockResolvedValue(draft);
+            const ctx = createMockContext({ body: { url: 'https://example.com/r' } });
+            const response = await recipeHandlers.importRecipe(ctx);
+            expect(response.status).toBe(200);
+            expect(mockRecipeImportService.importFromUrl).toHaveBeenCalledWith('https://example.com/r');
+            const body = (await response.json()) as typeof draft;
+            expect(body.title).toBe('Imported');
+        });
+
+        it('throws an APIError when the import service fails', async () => {
+            mockRecipeImportService.importFromUrl.mockRejectedValue(Object.assign(new Error('boom'), { status: 502 }));
+            const ctx = createMockContext({ body: { url: 'https://example.com/r' } });
+            await expect(recipeHandlers.importRecipe(ctx)).rejects.toMatchObject({ status: 502 });
+        });
     });
 
     describe('getRecipes', () => {

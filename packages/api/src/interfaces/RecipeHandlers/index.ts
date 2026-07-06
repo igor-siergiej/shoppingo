@@ -3,6 +3,7 @@ import type { Ingredient, Recipe } from '@shoppingo/types';
 import type { Context } from 'hono';
 import { dependencyContainer } from '../../dependencies/container';
 import { DependencyToken } from '../../dependencies/types';
+import type { RecipeImportService } from '../../domain/RecipeImportService';
 import type { RecipeService } from '../../domain/RecipeService';
 import { withImageExtension } from '../../infrastructure/objectKey';
 import type { HonoVars } from '../handlerUtils';
@@ -13,6 +14,8 @@ interface HttpError {
 }
 
 const getRecipeService = (): RecipeService => dependencyContainer.resolve(DependencyToken.RecipeService);
+const getRecipeImportService = (): RecipeImportService =>
+    dependencyContainer.resolve(DependencyToken.RecipeImportService);
 const getLogger = () => dependencyContainer.resolve(DependencyToken.Logger);
 const getBucketStore = () => dependencyContainer.resolve(DependencyToken.ImageStore);
 
@@ -146,6 +149,39 @@ export const createRecipe = async (c: Context<HonoVars>): Promise<Response> => {
             status,
         });
         throw new APIError(errorMessage, status);
+    }
+};
+
+export const importRecipe = async (c: Context<HonoVars>): Promise<Response> => {
+    const { url } = await c.req.json<{ url?: string }>();
+    const logger = getLogger();
+    const authenticatedUser = getAuthenticatedUser(c);
+
+    if (!authenticatedUser) {
+        logger.warn('Unauthorized recipe import attempt', { ip: c.req.header('x-forwarded-for') });
+        return c.json({ error: 'Unauthorized' }, 401);
+    }
+
+    if (!url || typeof url !== 'string' || url.trim() === '') {
+        return c.json({ error: 'url is required and must be a non-empty string' }, 400);
+    }
+
+    try {
+        const draft = await getRecipeImportService().importFromUrl(url.trim());
+
+        logger.info('API: Recipe imported from URL', {
+            userId: authenticatedUser.id,
+            link: draft.link,
+            ingredientCount: draft.ingredients.length,
+            instructionCount: draft.instructions.length,
+        });
+
+        return c.json(draft, 200);
+    } catch (error: unknown) {
+        return failWithApiError(error, 'API: Failed to import recipe from URL', {
+            userId: authenticatedUser.id,
+            url,
+        });
     }
 };
 

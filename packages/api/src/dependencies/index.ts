@@ -9,12 +9,15 @@ import { LabelService } from '../domain/LabelService';
 import { ListService } from '../domain/ListService';
 import { NotificationService } from '../domain/NotificationService';
 import { RecipeImageService } from '../domain/RecipeImageService';
+import { RecipeImportService } from '../domain/RecipeImportService';
 import { RecipeService } from '../domain/RecipeService';
 import { TodoReminderService } from '../domain/TodoReminderService';
 import { TodoService } from '../domain/TodoService';
 import { HttpAuthClient } from '../infrastructure/AuthClient';
 import { BucketStore } from '../infrastructure/BucketStore';
 import { FalImageGenerator } from '../infrastructure/FalImageGenerator';
+import { FalRecipeExtractor } from '../infrastructure/FalRecipeExtractor';
+import { HttpPageFetcher } from '../infrastructure/HttpPageFetcher';
 import { MongoLabelRepository } from '../infrastructure/MongoLabelRepository';
 import { MongoListRepository } from '../infrastructure/MongoListRepository';
 import { MongoPushSubscriptionRepository } from '../infrastructure/MongoPushSubscriptionRepository';
@@ -284,6 +287,49 @@ export const registerDepdendencies = () => {
                     dependencyContainer.resolve(DependencyToken.ImageStore),
                     dependencyContainer.resolve(DependencyToken.RecipeImageGenerator),
                     dependencyContainer.resolve(DependencyToken.Logger)
+                );
+            }
+        }
+    );
+
+    // Recipe import (scrape a recipe URL into an editable draft)
+    dependencyContainer.registerSingleton(
+        DependencyToken.PageFetcher,
+        // @ts-expect-error - Dependency injection requires constructor return override
+        class {
+            constructor() {
+                return new HttpPageFetcher();
+            }
+        }
+    );
+
+    dependencyContainer.registerSingleton(
+        DependencyToken.RecipeTextExtractor,
+        // @ts-expect-error - Dependency injection requires constructor return override
+        class {
+            constructor() {
+                // Reuses FAL_KEY unless a dedicated import key is set.
+                return new FalRecipeExtractor(config.get('recipeImportLlmApiKey') || config.get('falKey') || '', {
+                    ...(config.get('recipeImportLlmModel') && { model: config.get('recipeImportLlmModel') }),
+                });
+            }
+        }
+    );
+
+    dependencyContainer.registerSingleton(
+        DependencyToken.RecipeImportService,
+        // @ts-expect-error - Dependency injection requires constructor return override
+        class {
+            constructor() {
+                // Tier 3 is opt-in: only inject the LLM extractor when explicitly enabled.
+                const llmExtractor = config.get('recipeImportLlmEnabled')
+                    ? dependencyContainer.resolve(DependencyToken.RecipeTextExtractor)
+                    : undefined;
+                return new RecipeImportService(
+                    dependencyContainer.resolve(DependencyToken.PageFetcher),
+                    dependencyContainer.resolve(DependencyToken.IdGenerator),
+                    dependencyContainer.resolve(DependencyToken.Logger),
+                    llmExtractor
                 );
             }
         }

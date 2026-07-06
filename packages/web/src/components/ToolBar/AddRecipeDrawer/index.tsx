@@ -1,6 +1,7 @@
-import { ChefHat, Image as ImageIcon, Plus, X } from 'lucide-react';
+import { ChefHat, Download, Image as ImageIcon, Loader2, Plus, X } from 'lucide-react';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { importRecipe } from '../../../api';
 import { SearchResults } from '../../../components/SearchResults';
 import { useSearch } from '../../../hooks/useSearch';
 import { Badge } from '../../ui/badge';
@@ -42,6 +43,8 @@ export interface AddRecipeDrawerProps {
     ) => Promise<Recipe | undefined>;
     placeholder?: string;
     initialLink?: string;
+    /** When true and a link is present, auto-run URL import once on open (used by the share-target flow). */
+    autoImport?: boolean;
 }
 
 const splitIntoSteps = (text: string): string[] =>
@@ -50,7 +53,7 @@ const splitIntoSteps = (text: string): string[] =>
         .map((line) => line.replace(/^\s*\d+[.)]\s*/, '').trim())
         .filter(Boolean);
 
-export const AddRecipeDrawer = ({ open, onOpenChange, onAdd, initialLink }: AddRecipeDrawerProps) => {
+export const AddRecipeDrawer = ({ open, onOpenChange, onAdd, initialLink, autoImport }: AddRecipeDrawerProps) => {
     const recipeNameId = useId();
     const userSearchId = useId();
     const fileInputId = useId();
@@ -69,10 +72,65 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd, initialLink }: AddR
     const [instructionsPasteText, setInstructionsPasteText] = useState('');
     const [steps, setSteps] = useState<string[]>([]);
     const [showPasteArea, setShowPasteArea] = useState(true);
+    const [ingredientsPasteText, setIngredientsPasteText] = useState('');
+    const [ingredients, setIngredients] = useState<string[]>([]);
+    const [showIngredientsPaste, setShowIngredientsPaste] = useState(true);
+    const [isImporting, setIsImporting] = useState(false);
+    const autoImportedRef = useRef(false);
 
     useEffect(() => {
         setLink(initialLink ?? '');
     }, [initialLink]);
+
+    const handleImport = useCallback(async (importUrl: string) => {
+        const target = importUrl.trim();
+        if (!target) {
+            toast.error('Enter a recipe link to import');
+            return;
+        }
+
+        setIsImporting(true);
+        setError('');
+        try {
+            const draft = await importRecipe(target);
+
+            if (draft.title) setTitle(draft.title);
+            if (draft.link) setLink(draft.link);
+            if (draft.ingredients.length > 0) {
+                setIngredients(draft.ingredients.map((i) => i.name));
+                setShowIngredientsPaste(false);
+            }
+            if (draft.instructions.length > 0) {
+                setSteps(draft.instructions);
+                setShowPasteArea(false);
+            }
+
+            const foundCount = draft.ingredients.length + draft.instructions.length;
+            if (foundCount === 0) {
+                toast('Couldn’t find recipe details — fill them in manually', {
+                    style: { backgroundColor: '#f59e0b', color: '#ffffff' },
+                });
+            } else {
+                toast.success('Recipe imported — review and edit before saving');
+            }
+        } catch (err) {
+            const message = err instanceof Error ? err.message : 'Failed to import recipe';
+            toast.error(message, { style: { backgroundColor: '#ef4444', color: '#ffffff' } });
+        } finally {
+            setIsImporting(false);
+        }
+    }, []);
+
+    // Share-target flow: run the import automatically the first time the drawer opens with a shared link.
+    useEffect(() => {
+        if (open && autoImport && initialLink && !autoImportedRef.current) {
+            autoImportedRef.current = true;
+            void handleImport(initialLink);
+        }
+        if (!open) {
+            autoImportedRef.current = false;
+        }
+    }, [open, autoImport, initialLink, handleImport]);
 
     const handleAddUser = useCallback(
         (username: string) => {
@@ -113,7 +171,7 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd, initialLink }: AddR
         try {
             const recipe = await onAdd(
                 title,
-                [],
+                ingredients.filter((name) => name.trim()).map((name) => ({ name: name.trim() })),
                 undefined,
                 selectedUsers,
                 link.trim() || undefined,
@@ -147,6 +205,10 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd, initialLink }: AddR
         setInstructionsPasteText('');
         setSteps([]);
         setShowPasteArea(true);
+        setIngredientsPasteText('');
+        setIngredients([]);
+        setShowIngredientsPaste(true);
+        setIsImporting(false);
         if (fileInputRef.current) fileInputRef.current.value = '';
         onOpenChange(false);
     };
@@ -235,17 +297,99 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd, initialLink }: AddR
                             />
                         </div>
 
-                        {/* Recipe Link */}
+                        {/* Recipe Link + import from URL */}
                         <div className="space-y-2">
                             <Label>Recipe Link</Label>
-                            <Input
-                                type="url"
-                                placeholder="https://..."
-                                value={link}
-                                onChange={(e) => setLink(e.target.value)}
-                                disabled={isLoading}
-                                className="h-10 border border-foreground/30"
-                            />
+                            <div className="flex gap-2">
+                                <Input
+                                    type="url"
+                                    placeholder="https://..."
+                                    value={link}
+                                    onChange={(e) => setLink(e.target.value)}
+                                    disabled={isLoading || isImporting}
+                                    className="h-10 border border-foreground/30"
+                                />
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => void handleImport(link)}
+                                    disabled={isLoading || isImporting || !link.trim()}
+                                    className="h-10 shrink-0 gap-1.5"
+                                >
+                                    {isImporting ? (
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                        <Download className="h-4 w-4" />
+                                    )}
+                                    {isImporting ? 'Importing…' : 'Import'}
+                                </Button>
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                                Paste a recipe URL and tap Import to auto-fill the fields below.
+                            </p>
+                        </div>
+
+                        {/* Ingredients */}
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                                <Label>Ingredients</Label>
+                                {ingredients.length > 0 && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowIngredientsPaste(true)}
+                                        className="text-xs text-muted-foreground underline"
+                                    >
+                                        edit text ↩
+                                    </button>
+                                )}
+                            </div>
+
+                            {showIngredientsPaste || ingredients.length === 0 ? (
+                                <Textarea
+                                    placeholder="Paste ingredients here — each line becomes an item automatically..."
+                                    value={ingredientsPasteText}
+                                    onChange={(e) => setIngredientsPasteText(e.target.value)}
+                                    onBlur={() => {
+                                        const parsed = splitIntoSteps(ingredientsPasteText);
+                                        if (parsed.length > 0) {
+                                            setIngredients(parsed);
+                                            setShowIngredientsPaste(false);
+                                        }
+                                    }}
+                                    disabled={isLoading || isImporting}
+                                    className="min-h-[80px] resize-none border border-foreground/30"
+                                />
+                            ) : (
+                                <div className="space-y-1">
+                                    {ingredients.map((ingredient, i) => (
+                                        <div
+                                            key={`${i}-${ingredient.slice(0, 20)}`}
+                                            className="flex items-start gap-2 px-3 py-2 rounded-md bg-muted border border-border text-sm"
+                                        >
+                                            <span className="flex-1 text-foreground">{ingredient}</span>
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    setIngredients(ingredients.filter((_, idx) => idx !== i))
+                                                }
+                                                disabled={isLoading}
+                                                className="text-destructive hover:opacity-70"
+                                                aria-label={`Remove ingredient ${i + 1}`}
+                                            >
+                                                ×
+                                            </button>
+                                        </div>
+                                    ))}
+                                    <button
+                                        type="button"
+                                        onClick={() => setIngredients([...ingredients, ''])}
+                                        disabled={isLoading}
+                                        className="w-full text-sm text-muted-foreground border border-dashed border-border rounded-md py-1.5 hover:bg-muted/50 transition-colors"
+                                    >
+                                        + Add ingredient
+                                    </button>
+                                </div>
+                            )}
                         </div>
 
                         {/* Instructions */}
