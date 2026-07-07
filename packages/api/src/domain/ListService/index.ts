@@ -15,7 +15,7 @@ export class ListService {
     constructor(
         private readonly repo: ListRepository,
         private readonly idGenerator: IdGenerator,
-        readonly _auth?: AuthClient,
+        private readonly _auth?: AuthClient,
         private readonly logger?: Logger,
         authorizationService?: AuthorizationService,
         private readonly notificationService?: NotificationService,
