@@ -14,6 +14,10 @@ class MockListRepository implements ListRepository {
         return this.lists.find((list) => list.title === title) || null;
     }
 
+    async getAll(): Promise<Array<List>> {
+        return this.lists;
+    }
+
     async findByUserId(userId: string): Promise<Array<List>> {
         return this.lists.filter((list) => list.users.some((user) => user.id === userId));
     }

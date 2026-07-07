@@ -15,6 +15,10 @@ export class MongoRecipeRepository implements RecipeRepository {
         return this.collection().findOne({ id: recipeId });
     }
 
+    async getAll(): Promise<Recipe[]> {
+        return this.collection().find({}).toArray();
+    }
+
     async findByUserId(userId: string): Promise<Recipe[]> {
         return this.collection().find({ 'users.id': userId }).toArray();
     }

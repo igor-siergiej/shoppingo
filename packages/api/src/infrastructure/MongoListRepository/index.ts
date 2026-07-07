@@ -15,6 +15,10 @@ export class MongoListRepository implements ListRepository {
         return this.collection().findOne({ title });
     }
 
+    async getAll(): Promise<Array<List>> {
+        return this.collection().find({}).toArray();
+    }
+
     async findByUserId(userId: string): Promise<Array<List>> {
         return this.collection().find({ 'users.id': userId }).toArray();
     }

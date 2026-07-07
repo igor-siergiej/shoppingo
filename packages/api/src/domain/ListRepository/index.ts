@@ -2,6 +2,7 @@ import type { Item, List } from '@shoppingo/types';
 
 export interface ListRepository {
     getByTitle(title: string): Promise<List | null>;
+    getAll(): Promise<Array<List>>;
     findByUserId(userId: string): Promise<Array<List>>;
     insert(list: List): Promise<void>;
     deleteByTitle(title: string): Promise<void>;
