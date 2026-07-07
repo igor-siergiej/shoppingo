@@ -1,0 +1,94 @@
+import { fireEvent, render, within } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { useGenerateFriendCode, useRedeemFriendCode } from '../../../hooks/useFriends';
+import { AddFriendDrawer } from './index';
+
+vi.mock('../../../hooks/useFriends', () => ({
+    useGenerateFriendCode: vi.fn(),
+    useRedeemFriendCode: vi.fn(),
+}));
+
+const mockedUseGenerateFriendCode = vi.mocked(useGenerateFriendCode);
+const mockedUseRedeemFriendCode = vi.mocked(useRedeemFriendCode);
+
+const drawerContent = () => within(document.querySelector('[data-vaul-drawer]') as HTMLElement);
+
+describe('AddFriendDrawer', () => {
+    const noop = () => {};
+    let generateMutate: ReturnType<typeof vi.fn>;
+    let redeemMutate: ReturnType<typeof vi.fn>;
+
+    beforeEach(() => {
+        generateMutate = vi.fn();
+        redeemMutate = vi.fn();
+        mockedUseGenerateFriendCode.mockReturnValue({
+            mutate: generateMutate,
+            data: undefined,
+            isLoading: false,
+            error: null,
+            isError: false,
+            reset: vi.fn(),
+        } as never);
+        mockedUseRedeemFriendCode.mockReturnValue({
+            mutate: redeemMutate,
+            data: undefined,
+            isLoading: false,
+            error: null,
+            isError: false,
+            reset: vi.fn(),
+        } as never);
+    });
+
+    it('invite mode: clicking "Invite a friend" calls generate and shows the returned code', () => {
+        generateMutate.mockImplementation(() => {
+            mockedUseGenerateFriendCode.mockReturnValue({
+                mutate: generateMutate,
+                data: { code: 'ABC123', expiresAt: new Date(Date.now() + 60_000).toISOString() },
+                isLoading: false,
+                error: null,
+                isError: false,
+                reset: vi.fn(),
+            } as never);
+        });
+
+        const { rerender } = render(<AddFriendDrawer open onOpenChange={noop} />);
+        fireEvent.click(drawerContent().getByRole('button', { name: 'Invite a friend' }));
+        expect(generateMutate).toHaveBeenCalled();
+
+        rerender(<AddFriendDrawer open onOpenChange={noop} />);
+        expect(drawerContent().getByText('ABC123')).toBeInTheDocument();
+    });
+
+    // input-otp schedules an internal setTimeout(0) to sync its selection "mirror" on mount/change;
+    // flushing a macrotask keeps it from firing after happy-dom tears the test environment down.
+    const flush = () => new Promise((resolve) => setTimeout(resolve, 10));
+
+    it('enter mode: entering 6 chars and clicking "Add friend" calls redeem', async () => {
+        render(<AddFriendDrawer open onOpenChange={noop} />);
+        fireEvent.click(drawerContent().getByRole('button', { name: 'Enter code' }));
+
+        const otpInput = document.querySelector('input[data-input-otp]') as HTMLInputElement;
+        fireEvent.change(otpInput, { target: { value: 'ABC123' } });
+
+        fireEvent.click(drawerContent().getByRole('button', { name: 'Add friend' }));
+        expect(redeemMutate).toHaveBeenCalledWith('ABC123', expect.anything());
+        await flush();
+    });
+
+    it('shows the expired-code error message on a rejected redeem', async () => {
+        mockedUseRedeemFriendCode.mockReturnValue({
+            mutate: redeemMutate,
+            data: undefined,
+            isLoading: false,
+            error: Object.assign(new Error('This code has expired'), { status: 410 }),
+            isError: true,
+            reset: vi.fn(),
+        } as never);
+
+        render(<AddFriendDrawer open onOpenChange={noop} />);
+        fireEvent.click(drawerContent().getByRole('button', { name: 'Enter code' }));
+
+        expect(drawerContent().getByText('This code has expired')).toBeInTheDocument();
+        await flush();
+    });
+});
