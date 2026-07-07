@@ -1,6 +1,7 @@
 import type { IdGenerator, Logger } from '@imapps/api-utils';
 import type { Ingredient, Recipe, User } from '@shoppingo/types';
 import { AuthorizationService } from '../AuthorizationService';
+import type { FriendService } from '../FriendService';
 import type { RecipeImageService } from '../RecipeImageService';
 import type { RecipeRepository } from '../RecipeRepository';
 
@@ -17,71 +18,51 @@ export class RecipeService {
         private logger?: Logger,
         authorizationService?: AuthorizationService,
         private recipeImageService?: RecipeImageService,
-        private auth?: AuthClient
+        private readonly _auth?: AuthClient,
+        private readonly friendService?: FriendService
     ) {
         this.authorizationService = authorizationService ?? new AuthorizationService();
     }
 
-    private async resolveSharedUsers(title: string, owner: User, usernames?: Array<string>): Promise<Array<User>> {
-        if (!usernames || usernames.length === 0) {
+    /** Seeds shared members: owner plus all current friends by default, or an explicit friend subset (403 on non-friends). */
+    private async resolveSharedUsers(
+        title: string,
+        owner: User,
+        selectedFriendIds?: Array<string>
+    ): Promise<Array<User>> {
+        if (!this.friendService) {
             return [owner];
         }
 
-        if (!this.auth) {
-            throw Object.assign(new Error('Auth service not configured'), { status: 502 });
-        }
+        const friends = await this.friendService.listFriends(owner.id);
 
-        try {
-            const fetched = await this.auth.getUsersByUsernames(usernames);
-
-            if (!fetched || fetched.length === 0) {
-                throw Object.assign(new Error('No users found for the provided usernames'), {
-                    status: 400,
-                    usersNotFound: true,
-                });
-            }
-
-            this.logger?.info('Recipe shared with users', {
+        if (selectedFriendIds === undefined) {
+            this.logger?.info('Recipe auto-shared with friends', {
                 recipeTitle: title,
                 owner: owner.username,
-                sharedWithCount: fetched.length,
-                sharedWith: fetched.map((u) => u.username),
+                sharedWithCount: friends.length,
             });
 
-            return [owner, ...fetched];
-        } catch (error) {
-            const errorWithStatus = error as {
-                status?: number;
-                usersNotFound?: boolean;
-                authServiceError?: boolean;
-            };
+            return [owner, ...friends];
+        }
 
-            if (errorWithStatus.usersNotFound) {
-                this.logger?.warn('Attempted to share recipe with non-existent users', {
-                    recipeTitle: title,
-                    owner: owner.username,
-                    selectedUsernames: usernames,
-                    message: (error as Error).message,
-                });
-                throw error;
-            } else if (errorWithStatus.authServiceError) {
-                this.logger?.error('Auth service unavailable when sharing recipe', {
-                    recipeTitle: title,
-                    owner: owner.username,
-                    selectedUsernames: usernames,
-                    message: (error as Error).message,
-                });
-                throw Object.assign(new Error('Auth service unavailable. Please try again later.'), { status: 502 });
-            } else {
-                this.logger?.error('Failed to share recipe with users', {
-                    recipeTitle: title,
-                    owner: owner.username,
-                    selectedUsernames: usernames,
-                    error,
-                });
-                throw Object.assign(new Error('Failed to share recipe. Please try again.'), { status: 500 });
+        const allowedFriendIds = new Set(friends.map((f) => f.id));
+
+        for (const friendId of selectedFriendIds) {
+            if (!allowedFriendIds.has(friendId)) {
+                throw Object.assign(new Error('Can only share with friends'), { status: 403 });
             }
         }
+
+        const sharedWith = friends.filter((f) => selectedFriendIds.includes(f.id));
+
+        this.logger?.info('Recipe shared with selected friends', {
+            recipeTitle: title,
+            owner: owner.username,
+            sharedWithCount: sharedWith.length,
+        });
+
+        return [owner, ...sharedWith];
     }
 
     async createRecipe(
@@ -208,34 +189,37 @@ export class RecipeService {
         }
     }
 
-    async addUserToRecipe(recipeId: string, user: User, ownerId: string): Promise<Recipe> {
-        try {
-            const recipe = await this.getRecipe(recipeId);
-            if (!this.authorizationService.canManageUsers(recipe, ownerId)) {
-                const error = new Error('Only recipe owner can add users');
-                Object.assign(error, { status: 403 });
-                throw error;
-            }
-            if (recipe.users.some((u) => u.id === user.id)) {
-                const error = new Error('User is already in this recipe');
-                Object.assign(error, { status: 400 });
-                throw error;
-            }
-            const updated = await this.recipeRepository.addUser(recipeId, user);
-            this.logger?.info('User added to recipe', {
-                recipeId,
-                addedUser: user.username,
-                addedBy: ownerId,
-            });
-            return updated;
-        } catch (error) {
-            this.logger?.error('Failed to add user to recipe', {
-                recipeId,
-                user: (error as { user?: User })?.user?.username,
-                error,
-            });
-            throw error;
+    /**
+     * Add a friend to an existing recipe
+     * Only the recipe owner can add users, and only friends of the owner can be added
+     */
+    async addUserToRecipe(recipeId: string, friendId: string, requestingUserId: string): Promise<Recipe> {
+        const recipe = await this.getRecipe(recipeId);
+
+        // Authorization: only owner can add users
+        if (!this.authorizationService.canManageUsers(recipe, requestingUserId)) {
+            throw Object.assign(new Error('Only recipe owner can add users'), { status: 403 });
         }
+
+        // Validate friendship by id
+        if (!this.friendService || !(await this.friendService.areFriends(requestingUserId, friendId))) {
+            throw Object.assign(new Error('Can only share with friends'), { status: 403 });
+        }
+
+        // Check if user is already in the recipe
+        if (recipe.users.some((u) => u.id === friendId)) {
+            throw Object.assign(new Error('User is already in this recipe'), { status: 400 });
+        }
+
+        const [friend] = (await this.friendService.listFriends(requestingUserId)).filter((f) => f.id === friendId);
+
+        const updated = await this.recipeRepository.addUser(recipeId, friend);
+        this.logger?.info('User added to recipe', {
+            recipeId,
+            addedUser: friend.username,
+            addedBy: requestingUserId,
+        });
+        return updated;
     }
 
     async removeUserFromRecipe(recipeId: string, userId: string, ownerId: string): Promise<Recipe> {

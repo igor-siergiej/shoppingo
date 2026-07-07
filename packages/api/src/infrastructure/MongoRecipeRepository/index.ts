@@ -58,4 +58,8 @@ export class MongoRecipeRepository implements RecipeRepository {
     async setCoverImageKey(recipeId: string, key: string): Promise<void> {
         await this.collection().findOneAndUpdate({ id: recipeId }, { $set: { coverImageKey: key } });
     }
+
+    async removeMemberFromAll(memberId: string, ownerId: string): Promise<void> {
+        await this.collection().updateMany({ ownerId }, { $pull: { users: { id: memberId } } });
+    }
 }

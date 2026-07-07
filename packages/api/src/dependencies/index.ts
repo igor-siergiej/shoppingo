@@ -132,7 +132,8 @@ export const registerDepdendencies = () => {
                     dependencyContainer.resolve(DependencyToken.Logger),
                     dependencyContainer.resolve(DependencyToken.AuthorizationService),
                     dependencyContainer.resolve(DependencyToken.RecipeImageService),
-                    dependencyContainer.resolve(DependencyToken.AuthClient)
+                    dependencyContainer.resolve(DependencyToken.AuthClient),
+                    dependencyContainer.resolve(DependencyToken.FriendService)
                 );
             }
         }

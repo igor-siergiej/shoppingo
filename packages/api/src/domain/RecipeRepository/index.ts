@@ -9,4 +9,5 @@ export interface RecipeRepository {
     addUser(recipeId: string, user: User): Promise<Recipe>;
     removeUser(recipeId: string, userId: string): Promise<Recipe>;
     setCoverImageKey(recipeId: string, key: string): Promise<void>;
+    removeMemberFromAll(memberId: string, ownerId: string): Promise<void>;
 }
