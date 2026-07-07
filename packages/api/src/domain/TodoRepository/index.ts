@@ -9,4 +9,8 @@ export interface TodoRepository {
     update(todoId: string, todo: Todo): Promise<Todo>;
     deleteById(todoId: string): Promise<void>;
     clearLabel(labelId: string, ownerId: string): Promise<void>;
+    /** Todos where userId appears in users[] (shared with them). */
+    findByMember(userId: string): Promise<Todo[]>;
+    /** Remove memberId from users[] on every todo owned by ownerId. */
+    removeMemberFromAll(memberId: string, ownerId: string): Promise<void>;
 }

@@ -121,6 +121,8 @@ export interface Todo {
     labelId?: string;
     recurrence?: Recurrence;
     completedDates?: string[];
+    /** Friends this todo is shared with (excludes the owner, who is implicit via ownerId). */
+    users?: Array<User>;
 }
 
 export interface TodoResponse extends Todo {}

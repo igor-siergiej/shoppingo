@@ -48,4 +48,12 @@ export class MongoTodoRepository implements TodoRepository {
     async clearLabel(labelId: string, ownerId: string): Promise<void> {
         await this.collection().updateMany({ labelId, ownerId }, { $unset: { labelId: '' } });
     }
+
+    async findByMember(userId: string): Promise<Todo[]> {
+        return this.collection().find({ 'users.id': userId }).toArray();
+    }
+
+    async removeMemberFromAll(memberId: string, ownerId: string): Promise<void> {
+        await this.collection().updateMany({ ownerId }, { $pull: { users: { id: memberId } } });
+    }
 }
