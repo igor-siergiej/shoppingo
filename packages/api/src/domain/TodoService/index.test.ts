@@ -15,6 +15,9 @@ class MockRepo {
     async findByOwnerId(ownerId: string) {
         return [...this.store.values()].filter((t) => t.ownerId === ownerId);
     }
+    async findByMember(userId: string) {
+        return [...this.store.values()].filter((t) => t.users?.some((u) => u.id === userId));
+    }
     async update(id: string, t: Todo) {
         this.store.set(id, t);
         return t;
@@ -35,13 +38,37 @@ class MockIds {
     }
 }
 
+class MockFriends {
+    edges = new Set<string>(); // "a|b" sorted
+    private key(a: string, b: string) {
+        return [a, b].sort().join('|');
+    }
+    add(a: string, b: string) {
+        this.edges.add(this.key(a, b));
+    }
+    async areFriends(a: string, b: string) {
+        return this.edges.has(this.key(a, b));
+    }
+    async friendIdsOf(userId: string) {
+        return [...this.edges]
+            .map((e) => e.split('|'))
+            .filter((p) => p.includes(userId))
+            .map((p) => (p[0] === userId ? p[1] : p[0]));
+    }
+    async listFriends(userId: string) {
+        return (await this.friendIdsOf(userId)).map((id) => ({ id, username: `user-${id}` }));
+    }
+}
+
 describe('TodoService', () => {
     let repo: MockRepo;
+    let friends: MockFriends;
     let svc: TodoService;
 
     beforeEach(() => {
         repo = new MockRepo();
-        svc = new TodoService(repo as never, new MockIds() as never);
+        friends = new MockFriends();
+        svc = new TodoService(repo as never, new MockIds() as never, undefined, friends as never);
     });
 
     it('creates a todo with id, ownerId, dateAdded, done=false', async () => {
@@ -138,6 +165,31 @@ describe('TodoService', () => {
             expect(second).toBe(first);
             expect(second.title).toBe('Buy milk');
             expect(await svc.getTodosByOwner('user-1')).toHaveLength(1);
+        });
+    });
+
+    describe('friend-seeded sharing', () => {
+        it("seeds users[] from the owner's current friends on create", async () => {
+            friends.add('u1', 'u2');
+            const todo = await svc.createTodo('u1', { title: 'Plan trip' });
+            expect(todo.users).toEqual([{ id: 'u2', username: 'user-u2' }]);
+        });
+
+        it('accepts an explicit friend subset and rejects a non-friend (403)', async () => {
+            friends.add('u1', 'u2');
+            const ok = await svc.createTodo('u1', { title: 'A', userIds: ['u2'] });
+            expect(ok.users?.map((u) => u.id)).toEqual(['u2']);
+            await expect(svc.createTodo('u1', { title: 'B', userIds: ['u9'] })).rejects.toMatchObject({
+                status: 403,
+            });
+        });
+
+        it('getTodosForUser returns owned and shared todos', async () => {
+            friends.add('u1', 'u2');
+            await svc.createTodo('u1', { title: 'Owned by u1, shared to u2' });
+            await svc.createTodo('u2', { title: 'Owned by u2' });
+            const forU2 = await svc.getTodosForUser('u2');
+            expect(forU2.map((t) => t.title).sort()).toEqual(['Owned by u1, shared to u2', 'Owned by u2']);
         });
     });
 });

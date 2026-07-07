@@ -10,7 +10,7 @@ const getTodoReminderService = (): TodoReminderService =>
     dependencyContainer.resolve(DependencyToken.TodoReminderService);
 
 export const getTodos = withAuth(async (c, user) => {
-    return c.json(await getTodoService().getTodosByOwner(user.id), 200);
+    return c.json(await getTodoService().getTodosForUser(user.id), 200);
 });
 
 export const createTodo = withAuth(async (c, user) => {
