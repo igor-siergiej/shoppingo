@@ -71,6 +71,18 @@ export interface RecipeResponse {
     instructions?: string[];
 }
 
+export interface RecipeImportResult {
+    title: string;
+    ingredients: Ingredient[];
+    instructions: string[];
+    link: string;
+    /** Absolute cover image URL scraped from the page, if any. */
+    image?: string;
+    prepTime?: string;
+    cookTime?: string;
+    recipeYield?: string;
+}
+
 export interface Recurrence {
     freq: 'daily' | 'weekly' | 'monthly' | 'yearly';
     interval: number;

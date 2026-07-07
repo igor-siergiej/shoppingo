@@ -1,5 +1,5 @@
 import { getStorageItem } from '@imapps/web-utils';
-import type { Item, Label, ListResponse, ListType, Recipe, Todo, User } from '@shoppingo/types';
+import type { Item, Label, ListResponse, ListType, Recipe, RecipeImportResult, Todo, User } from '@shoppingo/types';
 
 import { getAuthConfig } from '../config/auth';
 import {
@@ -264,6 +264,15 @@ export const addRecipe = async (
     });
 
     return result as Recipe;
+};
+
+export const importRecipe = async (url: string): Promise<RecipeImportResult> => {
+    return await makeRequest({
+        pathname: '/api/recipes/import',
+        method: MethodType.POST,
+        operationString: 'import recipe from URL',
+        body: JSON.stringify({ url }),
+    });
 };
 
 export const updateRecipe = async (

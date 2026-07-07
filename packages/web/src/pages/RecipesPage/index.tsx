@@ -23,6 +23,7 @@ const RecipesPage = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [sharedUrl, setSharedUrl] = useState('');
+    const [autoImport, setAutoImport] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const generatingRef = useRef<Set<string>>(new Set());
     const { data, isLoading, isError, refetch } = useQuery({
@@ -69,6 +70,7 @@ const RecipesPage = () => {
         const url = searchParams.get('sharedUrl');
         if (url) {
             setSharedUrl(url);
+            setAutoImport(true);
             setDrawerOpen(true);
             const next = new URLSearchParams(searchParams);
             next.delete('sharedUrl');
@@ -249,9 +251,13 @@ const RecipesPage = () => {
                 addRecipeDrawerOpen={drawerOpen}
                 onAddRecipeDrawerOpenChange={(open) => {
                     setDrawerOpen(open);
-                    if (!open) setSharedUrl('');
+                    if (!open) {
+                        setSharedUrl('');
+                        setAutoImport(false);
+                    }
                 }}
                 addRecipeInitialLink={sharedUrl}
+                addRecipeAutoImport={autoImport}
             />
         </>
     );

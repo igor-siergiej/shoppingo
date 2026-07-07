@@ -40,6 +40,7 @@ interface ToolBarProps {
     addRecipeDrawerOpen?: boolean;
     onAddRecipeDrawerOpenChange?: (open: boolean) => void;
     addRecipeInitialLink?: string;
+    addRecipeAutoImport?: boolean;
     handleGoBack?: () => void;
     handleClearSelected?: () => void;
     handleRemoveAll?: () => void;
@@ -65,6 +66,7 @@ const ToolBar = ({
     addRecipeDrawerOpen,
     onAddRecipeDrawerOpenChange,
     addRecipeInitialLink,
+    addRecipeAutoImport,
     handleGoBack,
     handleClearSelected,
     handleRemoveAll,
@@ -272,6 +274,7 @@ const ToolBar = ({
                                             onAdd={onAddRecipe}
                                             placeholder={placeholder}
                                             initialLink={addRecipeInitialLink}
+                                            autoImport={addRecipeAutoImport}
                                         />
                                     ) : undefined
                                 }
