@@ -39,6 +39,13 @@ class MockIds {
     }
 }
 
+class MockItemRepo {
+    calls: Array<{ memberId: string; ownerId: string }> = [];
+    async removeMemberFromAll(memberId: string, ownerId: string) {
+        this.calls.push({ memberId, ownerId });
+    }
+}
+
 const svcWith = (repo: MockRepo) => new FriendService(repo as never, new MockIds() as never);
 
 describe('FriendService.generateCode', () => {
@@ -145,6 +152,32 @@ describe('FriendService.listFriends / unfriend / areFriends / friendIdsOf', () =
         const repo = new MockRepo();
         seedFriendship(repo);
         await svcWith(repo).unfriend('u1', 'u2');
+        expect(repo.friendships).toHaveLength(0);
+    });
+
+    it('unfriend strips the ex-friend from all items both directions', async () => {
+        const repo = new MockRepo();
+        seedFriendship(repo);
+        const lists = new MockItemRepo();
+        const recipes = new MockItemRepo();
+        const todos = new MockItemRepo();
+        const svc = new FriendService(
+            repo as never,
+            new MockIds() as never,
+            undefined,
+            lists as never,
+            recipes as never,
+            todos as never
+        );
+        await svc.unfriend('u1', 'u2');
+        for (const r of [lists, recipes, todos]) {
+            expect(r.calls).toEqual(
+                expect.arrayContaining([
+                    { memberId: 'u2', ownerId: 'u1' },
+                    { memberId: 'u1', ownerId: 'u2' },
+                ])
+            );
+        }
         expect(repo.friendships).toHaveLength(0);
     });
 });

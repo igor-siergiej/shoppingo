@@ -12,11 +12,16 @@ const err = (message: string, status: number) => Object.assign(new Error(message
 
 const sortPair = (a: string, b: string): [string, string] => (a < b ? [a, b] : [b, a]);
 
+type ItemRepo = { removeMemberFromAll(memberId: string, ownerId: string): Promise<void> };
+
 export class FriendService {
     constructor(
         private readonly repo: FriendRepository,
         private readonly idGenerator: IdGenerator,
-        private readonly logger?: Logger
+        private readonly logger?: Logger,
+        private readonly listRepo?: ItemRepo,
+        private readonly recipeRepo?: ItemRepo,
+        private readonly todoRepo?: ItemRepo
     ) {}
 
     private randomCode(): string {
@@ -73,7 +78,11 @@ export class FriendService {
 
     async unfriend(userId: string, friendId: string): Promise<void> {
         await this.repo.deletePair(userId, friendId);
-        this.logger?.info('Unfriended', { userId, friendId });
-        // Phase 2 extends this to strip friendId from all owned lists/recipes/todos.
+        const repos = [this.listRepo, this.recipeRepo, this.todoRepo].filter(Boolean) as ItemRepo[];
+        for (const r of repos) {
+            await r.removeMemberFromAll(friendId, userId); // strip friend from userId's items
+            await r.removeMemberFromAll(userId, friendId); // strip userId from friend's items
+        }
+        this.logger?.info('Unfriended (hard revoke)', { userId, friendId });
     }
 }

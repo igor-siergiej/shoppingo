@@ -211,7 +211,10 @@ export const registerDepdendencies = () => {
                 return new FriendService(
                     dependencyContainer.resolve(DependencyToken.FriendRepository),
                     dependencyContainer.resolve(DependencyToken.IdGenerator),
-                    dependencyContainer.resolve(DependencyToken.Logger)
+                    dependencyContainer.resolve(DependencyToken.Logger),
+                    dependencyContainer.resolve(DependencyToken.ListRepository),
+                    dependencyContainer.resolve(DependencyToken.RecipeRepository),
+                    dependencyContainer.resolve(DependencyToken.TodoRepository)
                 );
             }
         }
