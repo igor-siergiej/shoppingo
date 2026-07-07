@@ -4,6 +4,7 @@ import type { Friendship, Label, List, PairingCode, PushSubscription, Recipe, To
 import type { AuthorizationService } from '../domain/AuthorizationService';
 import type { DailyReminderScheduler } from '../domain/DailyReminderScheduler';
 import type { FriendRepository } from '../domain/FriendRepository';
+import type { FriendService } from '../domain/FriendService';
 import type { IdGenerator } from '../domain/IdGenerator';
 import type { ImageService } from '../domain/ImageService';
 import type { ImageGenerator, ImageStore } from '../domain/ImageService/types';
@@ -100,6 +101,7 @@ export type Dependencies = {
     [DependencyToken.TodoReminderService]: TodoReminderService;
     [DependencyToken.DailyReminderScheduler]: DailyReminderScheduler;
     [DependencyToken.FriendRepository]: FriendRepository;
+    [DependencyToken.FriendService]: FriendService;
 };
 
 export enum CollectionNames {

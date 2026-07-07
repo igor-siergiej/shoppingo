@@ -4,6 +4,7 @@ import { Logger, MongoDbConnection, ObjectStoreConnection } from '@imapps/api-ut
 import { config } from '../config';
 import { AuthorizationService } from '../domain/AuthorizationService';
 import { DailyReminderScheduler } from '../domain/DailyReminderScheduler';
+import { FriendService } from '../domain/FriendService';
 import { ImageService } from '../domain/ImageService';
 import { LabelService } from '../domain/LabelService';
 import { ListService } from '../domain/ListService';
@@ -18,6 +19,7 @@ import { BucketStore } from '../infrastructure/BucketStore';
 import { FalImageGenerator } from '../infrastructure/FalImageGenerator';
 import { FalRecipeExtractor } from '../infrastructure/FalRecipeExtractor';
 import { HttpPageFetcher } from '../infrastructure/HttpPageFetcher';
+import { MongoFriendRepository } from '../infrastructure/MongoFriendRepository';
 import { MongoLabelRepository } from '../infrastructure/MongoLabelRepository';
 import { MongoListRepository } from '../infrastructure/MongoListRepository';
 import { MongoPushSubscriptionRepository } from '../infrastructure/MongoPushSubscriptionRepository';
@@ -183,6 +185,31 @@ export const registerDepdendencies = () => {
                 return new DailyReminderScheduler(dependencyContainer.resolve(DependencyToken.TodoReminderService), {
                     logger: dependencyContainer.resolve(DependencyToken.Logger),
                 });
+            }
+        }
+    );
+
+    // Friend services
+    dependencyContainer.registerSingleton(
+        DependencyToken.FriendRepository,
+        // @ts-expect-error - Dependency injection requires constructor return override
+        class {
+            constructor() {
+                return new MongoFriendRepository(dependencyContainer.resolve(DependencyToken.Database));
+            }
+        }
+    );
+
+    dependencyContainer.registerSingleton(
+        DependencyToken.FriendService,
+        // @ts-expect-error - Dependency injection requires constructor return override
+        class {
+            constructor() {
+                return new FriendService(
+                    dependencyContainer.resolve(DependencyToken.FriendRepository),
+                    dependencyContainer.resolve(DependencyToken.IdGenerator),
+                    dependencyContainer.resolve(DependencyToken.Logger)
+                );
             }
         }
     );

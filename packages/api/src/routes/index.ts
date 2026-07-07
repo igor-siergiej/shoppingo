@@ -1,5 +1,6 @@
 import type { Context, Next } from 'hono';
 import { Hono } from 'hono';
+import { generateFriendCode, getFriends, redeemFriendCode, removeFriend } from '../interfaces/FriendHandlers';
 import { getImage } from '../interfaces/ImageHandlers';
 import { createLabel, deleteLabel, getLabels, updateLabel } from '../interfaces/LabelHandlers';
 import {
@@ -109,6 +110,11 @@ export const createRoutes = (): Hono<Vars> => {
     router.put('/api/labels', authenticate, createLabel);
     router.post('/api/labels/:id', authenticate, updateLabel);
     router.delete('/api/labels/:id', authenticate, deleteLabel);
+
+    router.post('/api/friends/code', authenticate, generateFriendCode);
+    router.post('/api/friends/redeem', authenticate, redeemFriendCode);
+    router.get('/api/friends', authenticate, getFriends);
+    router.delete('/api/friends/:friendId', authenticate, removeFriend);
 
     router.get('/api/push/vapid-public-key', getVapidPublicKey);
     router.post('/api/push/subscribe', authenticate, subscribe);
