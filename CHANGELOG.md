@@ -1,3 +1,10 @@
+# [1.56.0](https://github.com/igor-siergiej/shoppingo/compare/v1.55.2...v1.56.0) (2026-07-07)
+
+
+### Features
+
+* **recipes:** import recipe from URL ([#105](https://github.com/igor-siergiej/shoppingo/issues/105)) ([88f5978](https://github.com/igor-siergiej/shoppingo/commit/88f59787ba199fb0e43b3fd7cec735233ac5e4d5))
+
 ## [1.55.2](https://github.com/igor-siergiej/shoppingo/compare/v1.55.1...v1.55.2) (2026-07-05)
 
 
