@@ -77,25 +77,25 @@ describe('FriendService.redeem', () => {
 
     it('404 when the code does not exist', async () => {
         const repo = new MockRepo();
-        expect(svcWith(repo).redeem('NOPE22', 'u2', 'bob')).rejects.toMatchObject({ status: 404 });
+        await expect(svcWith(repo).redeem('NOPE22', 'u2', 'bob')).rejects.toMatchObject({ status: 404 });
     });
 
     it('410 when the code is expired', async () => {
         const repo = new MockRepo();
         seedCode(repo, { expiresAt: new Date(Date.now() - 1000) });
-        expect(svcWith(repo).redeem('ABC234', 'u2', 'bob')).rejects.toMatchObject({ status: 410 });
+        await expect(svcWith(repo).redeem('ABC234', 'u2', 'bob')).rejects.toMatchObject({ status: 410 });
     });
 
     it('409 when the code was already used', async () => {
         const repo = new MockRepo();
         seedCode(repo, { usedAt: new Date() });
-        expect(svcWith(repo).redeem('ABC234', 'u2', 'bob')).rejects.toMatchObject({ status: 409 });
+        await expect(svcWith(repo).redeem('ABC234', 'u2', 'bob')).rejects.toMatchObject({ status: 409 });
     });
 
     it('400 when redeeming your own code', async () => {
         const repo = new MockRepo();
         seedCode(repo);
-        expect(svcWith(repo).redeem('ABC234', 'u1', 'alice')).rejects.toMatchObject({ status: 400 });
+        await expect(svcWith(repo).redeem('ABC234', 'u1', 'alice')).rejects.toMatchObject({ status: 400 });
     });
 
     it('409 when the two are already friends', async () => {
@@ -110,7 +110,7 @@ describe('FriendService.redeem', () => {
             ],
             createdAt: new Date(),
         });
-        expect(svcWith(repo).redeem('ABC234', 'u2', 'bob')).rejects.toMatchObject({ status: 409 });
+        await expect(svcWith(repo).redeem('ABC234', 'u2', 'bob')).rejects.toMatchObject({ status: 409 });
     });
 });
 
