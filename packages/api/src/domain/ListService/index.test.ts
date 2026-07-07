@@ -49,6 +49,12 @@ class MockListRepository implements ListRepository {
             list.items.push(...items);
         }
     }
+
+    async removeMemberFromAll(memberId: string, ownerId: string): Promise<void> {
+        this.lists = this.lists.map((list) =>
+            list.ownerId === ownerId ? { ...list, users: list.users.filter((u) => u.id !== memberId) } : list
+        );
+    }
 }
 
 class MockIdGenerator implements IdGenerator {
@@ -68,20 +74,52 @@ class MockAuthClient implements AuthClient {
     }
 }
 
+class MockFriends {
+    edges = new Set<string>(); // "a|b" sorted
+    private key(a: string, b: string) {
+        return [a, b].sort().join('|');
+    }
+    add(a: string, b: string) {
+        this.edges.add(this.key(a, b));
+    }
+    async areFriends(a: string, b: string) {
+        return this.edges.has(this.key(a, b));
+    }
+    async friendIdsOf(userId: string) {
+        return [...this.edges]
+            .map((e) => e.split('|'))
+            .filter((p) => p.includes(userId))
+            .map((p) => (p[0] === userId ? p[1] : p[0]));
+    }
+    async listFriends(userId: string) {
+        return (await this.friendIdsOf(userId)).map((id) => ({ id, username: `user-${id}` }));
+    }
+}
+
 describe('ListService', () => {
     let listService: ListService;
     let mockRepository: MockListRepository;
     let mockIdGenerator: MockIdGenerator;
     let mockAuthClient: MockAuthClient;
+    let friends: MockFriends;
     let mockUser: User;
 
     beforeEach(() => {
         mockRepository = new MockListRepository();
         mockIdGenerator = new MockIdGenerator();
         mockAuthClient = new MockAuthClient();
+        friends = new MockFriends();
         mockUser = { id: 'user-1', username: 'testuser' };
 
-        listService = new ListService(mockRepository, mockIdGenerator, mockAuthClient);
+        listService = new ListService(
+            mockRepository,
+            mockIdGenerator,
+            mockAuthClient,
+            undefined,
+            undefined,
+            undefined,
+            friends
+        );
     });
 
     describe('Getting lists for a user', () => {
@@ -127,17 +165,34 @@ describe('ListService', () => {
         });
 
         describe('When creating a list with additional users', () => {
-            it('should create a list with all specified users', async () => {
+            it("should create a list with the owner plus the owner's friends", async () => {
                 const title = 'New List';
                 const dateAdded = new Date('2023-01-01');
-                const selectedUsers = ['user2', 'user3'];
+                friends.add(mockUser.id, 'friend-2');
+                friends.add(mockUser.id, 'friend-3');
 
-                const result = await listService.addList(title, dateAdded, mockUser, selectedUsers);
+                const result = await listService.addList(title, dateAdded, mockUser);
 
                 expect(result.users).toHaveLength(3);
                 expect(result.users[0]).toEqual(mockUser);
-                expect(result.users[1].username).toBe('user2');
-                expect(result.users[2].username).toBe('user3');
+                expect(result.users.map((u) => u.id).sort()).toEqual([mockUser.id, 'friend-2', 'friend-3'].sort());
+            });
+
+            it('should create a list with only the explicitly selected friend subset', async () => {
+                const title = 'New List Subset';
+                const dateAdded = new Date('2023-01-01');
+                friends.add(mockUser.id, 'friend-2');
+                friends.add(mockUser.id, 'friend-3');
+
+                const result = await listService.addList(title, dateAdded, mockUser, ['friend-2']);
+
+                expect(result.users.map((u) => u.id)).toEqual([mockUser.id, 'friend-2']);
+            });
+
+            it('should reject sharing with a non-friend id (403)', async () => {
+                await expect(
+                    listService.addList('New List Rejected', new Date('2023-01-01'), mockUser, ['not-a-friend'])
+                ).rejects.toMatchObject({ status: 403 });
             });
         });
 
@@ -182,28 +237,15 @@ describe('ListService', () => {
             });
         });
 
-        describe('When auth service is not configured', () => {
-            it('should throw an error when trying to add additional users', async () => {
-                const serviceWithoutAuth = new ListService(mockRepository, mockIdGenerator);
+        describe('When no friend service is configured', () => {
+            it('should silently seed the owner only, ignoring any selected friend ids', async () => {
+                const serviceWithoutFriends = new ListService(mockRepository, mockIdGenerator, mockAuthClient);
 
-                await expect(
-                    serviceWithoutAuth.addList('New List', new Date('2023-01-01'), mockUser, ['user2'])
-                ).rejects.toThrow('Auth service not configured');
-            });
-        });
+                const result = await serviceWithoutFriends.addList('New List', new Date('2023-01-01'), mockUser, [
+                    'friend-2',
+                ]);
 
-        describe('When no users are found for the provided usernames', () => {
-            it('should throw an error indicating no users were found', async () => {
-                const mockAuthClientEmpty = {
-                    async getUsersByUsernames(): Promise<Array<User>> {
-                        return [];
-                    },
-                };
-                const serviceWithEmptyAuth = new ListService(mockRepository, mockIdGenerator, mockAuthClientEmpty);
-
-                await expect(
-                    serviceWithEmptyAuth.addList('New List', new Date('2023-01-01'), mockUser, ['user2'])
-                ).rejects.toThrow('Failed to share list. Please try again.');
+                expect(result.users).toEqual([mockUser]);
             });
         });
     });
@@ -832,7 +874,7 @@ describe('ListService', () => {
     describe('Adding a user to a list', () => {
         describe('When the list does not exist', () => {
             it('should throw a 404 error', async () => {
-                await expect(listService.addUserToList('Non-existent', 'newuser', mockUser.id)).rejects.toMatchObject({
+                await expect(listService.addUserToList('Non-existent', 'friend-2', mockUser.id)).rejects.toMatchObject({
                     message: 'List not found',
                     status: 404,
                 });
@@ -852,16 +894,16 @@ describe('ListService', () => {
 
                 await mockRepository.insert(mockList);
 
-                await expect(listService.addUserToList('Test List', 'newuser', 'non-owner-id')).rejects.toMatchObject({
+                await expect(listService.addUserToList('Test List', 'friend-2', 'non-owner-id')).rejects.toMatchObject({
                     message: 'Only the list owner can manage users',
                     status: 403,
                 });
             });
         });
 
-        describe('When no auth service is configured', () => {
-            it('should throw a 502 error', async () => {
-                const serviceWithoutAuth = new ListService(mockRepository, mockIdGenerator);
+        describe('When no friend service is configured', () => {
+            it('should throw a 403 error', async () => {
+                const serviceWithoutFriends = new ListService(mockRepository, mockIdGenerator, mockAuthClient);
                 const mockList: List = {
                     id: 'list-1',
                     title: 'Test List',
@@ -874,19 +916,13 @@ describe('ListService', () => {
                 await mockRepository.insert(mockList);
 
                 await expect(
-                    serviceWithoutAuth.addUserToList('Test List', 'newuser', mockUser.id)
-                ).rejects.toMatchObject({ message: 'Auth service not configured', status: 502 });
+                    serviceWithoutFriends.addUserToList('Test List', 'friend-2', mockUser.id)
+                ).rejects.toMatchObject({ message: 'Can only share with friends', status: 403 });
             });
         });
 
-        describe('When the user is not found in the auth service', () => {
-            it('should throw a 400 error', async () => {
-                const emptyAuthClient = {
-                    async getUsersByUsernames(): Promise<Array<User>> {
-                        return [];
-                    },
-                };
-                const serviceWithEmptyAuth = new ListService(mockRepository, mockIdGenerator, emptyAuthClient);
+        describe('When the target id is not a friend', () => {
+            it('should throw a 403 error', async () => {
                 const mockList: List = {
                     id: 'list-1',
                     title: 'Test List',
@@ -898,21 +934,16 @@ describe('ListService', () => {
 
                 await mockRepository.insert(mockList);
 
-                await expect(
-                    serviceWithEmptyAuth.addUserToList('Test List', 'ghost', mockUser.id)
-                ).rejects.toMatchObject({ status: 400 });
+                await expect(listService.addUserToList('Test List', 'not-a-friend', mockUser.id)).rejects.toMatchObject(
+                    { message: 'Can only share with friends', status: 403 }
+                );
             });
         });
 
         describe('When the user is already in the list', () => {
             it('should throw a 400 error', async () => {
-                const existingUser: User = { id: 'user-alice', username: 'alice' };
-                const authClient = {
-                    async getUsersByUsernames(): Promise<Array<User>> {
-                        return [existingUser];
-                    },
-                };
-                const serviceWithAuth = new ListService(mockRepository, mockIdGenerator, authClient);
+                const existingUser: User = { id: 'friend-alice', username: 'user-friend-alice' };
+                friends.add(mockUser.id, existingUser.id);
                 const mockList: List = {
                     id: 'list-1',
                     title: 'Test List',
@@ -924,7 +955,9 @@ describe('ListService', () => {
 
                 await mockRepository.insert(mockList);
 
-                await expect(serviceWithAuth.addUserToList('Test List', 'alice', mockUser.id)).rejects.toMatchObject({
+                await expect(
+                    listService.addUserToList('Test List', existingUser.id, mockUser.id)
+                ).rejects.toMatchObject({
                     message: 'User is already in this list',
                     status: 400,
                 });
@@ -932,7 +965,8 @@ describe('ListService', () => {
         });
 
         describe('When everything is valid', () => {
-            it('should add the user and return the updated list', async () => {
+            it('should add the friend and return the updated list', async () => {
+                friends.add(mockUser.id, 'friend-2');
                 const mockList: List = {
                     id: 'list-1',
                     title: 'Test List',
@@ -944,10 +978,32 @@ describe('ListService', () => {
 
                 await mockRepository.insert(mockList);
 
-                const result = await listService.addUserToList('Test List', 'user2', mockUser.id);
+                const result = await listService.addUserToList('Test List', 'friend-2', mockUser.id);
 
                 expect(result.users).toHaveLength(2);
-                expect(result.users[1].username).toBe('user2');
+                expect(result.users[1].id).toBe('friend-2');
+            });
+
+            it('rejects a non-friend by id (403) after allowing a friend', async () => {
+                friends.add(mockUser.id, 'friend-2');
+                const mockList: List = {
+                    id: 'list-1',
+                    title: 'Test List',
+                    dateAdded: new Date('2023-01-01'),
+                    items: [],
+                    users: [mockUser],
+                    ownerId: mockUser.id,
+                };
+
+                await mockRepository.insert(mockList);
+
+                await listService.addUserToList('Test List', 'friend-2', mockUser.id);
+                const list = await listService.getList('Test List');
+                expect(list.users.some((u) => u.id === 'friend-2')).toBe(true);
+
+                await expect(listService.addUserToList('Test List', 'friend-9', mockUser.id)).rejects.toMatchObject({
+                    status: 403,
+                });
             });
         });
     });

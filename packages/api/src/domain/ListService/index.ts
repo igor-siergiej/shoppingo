@@ -3,6 +3,7 @@ import type { Logger } from '@imapps/api-utils';
 import type { Item, List, ListType, User } from '@shoppingo/types';
 import { ListType as ListTypeEnum } from '@shoppingo/types';
 import { AuthorizationService } from '../AuthorizationService';
+import type { FriendService } from '../FriendService';
 import type { IdGenerator } from '../IdGenerator';
 import type { ListRepository } from '../ListRepository';
 import type { NotificationService } from '../NotificationService';
@@ -14,73 +15,54 @@ export class ListService {
     constructor(
         private readonly repo: ListRepository,
         private readonly idGenerator: IdGenerator,
-        private readonly auth?: AuthClient,
+        readonly _auth?: AuthClient,
         private readonly logger?: Logger,
         authorizationService?: AuthorizationService,
-        private readonly notificationService?: NotificationService
+        private readonly notificationService?: NotificationService,
+        private readonly friendService?: FriendService
     ) {
         this.authorizationService = authorizationService ?? new AuthorizationService();
     }
 
-    private async resolveSharedUsers(title: string, owner: User, usernames?: Array<string>): Promise<Array<User>> {
-        if (!usernames || usernames.length === 0) {
+    /** Seeds shared members: owner plus all current friends by default, or an explicit friend subset (403 on non-friends). */
+    private async resolveSharedUsers(
+        title: string,
+        owner: User,
+        selectedFriendIds?: Array<string>
+    ): Promise<Array<User>> {
+        if (!this.friendService) {
             return [owner];
         }
 
-        if (!this.auth) {
-            throw Object.assign(new Error('Auth service not configured'), { status: 502 });
-        }
+        const friends = await this.friendService.listFriends(owner.id);
 
-        try {
-            const fetched = await this.auth.getUsersByUsernames(usernames);
-
-            if (!fetched || fetched.length === 0) {
-                throw Object.assign(new Error('No users found for the provided usernames'), { status: 400 });
-            }
-
-            this.logger?.info('List shared with users', {
+        if (selectedFriendIds === undefined) {
+            this.logger?.info('List auto-shared with friends', {
                 listTitle: title,
                 owner: owner.username,
-                sharedWithCount: fetched.length,
-                sharedWith: fetched.map((u) => u.username),
+                sharedWithCount: friends.length,
             });
 
-            return [owner, ...fetched];
-        } catch (error) {
-            const errorWithStatus = error as {
-                status?: number;
-                usersNotFound?: boolean;
-                authServiceError?: boolean;
-            };
+            return [owner, ...friends];
+        }
 
-            if (errorWithStatus.usersNotFound) {
-                this.logger?.warn('Attempted to share list with non-existent users', {
-                    listTitle: title,
-                    owner: owner.username,
-                    selectedUsernames: usernames,
-                    message: (error as Error).message,
-                });
-                throw error;
-            } else if (errorWithStatus.authServiceError) {
-                this.logger?.error('Auth service unavailable when sharing list', {
-                    listTitle: title,
-                    owner: owner.username,
-                    selectedUsernames: usernames,
-                    message: (error as Error).message,
-                });
-                throw Object.assign(new Error('Auth service unavailable. Please try again later.'), {
-                    status: 502,
-                });
-            } else {
-                this.logger?.error('Failed to share list with users', {
-                    listTitle: title,
-                    owner: owner.username,
-                    selectedUsernames: usernames,
-                    error,
-                });
-                throw Object.assign(new Error('Failed to share list. Please try again.'), { status: 500 });
+        const allowedFriendIds = new Set(friends.map((f) => f.id));
+
+        for (const friendId of selectedFriendIds) {
+            if (!allowedFriendIds.has(friendId)) {
+                throw Object.assign(new Error('Can only share with friends'), { status: 403 });
             }
         }
+
+        const sharedWith = friends.filter((f) => selectedFriendIds.includes(f.id));
+
+        this.logger?.info('List shared with selected friends', {
+            listTitle: title,
+            owner: owner.username,
+            sharedWithCount: sharedWith.length,
+        });
+
+        return [owner, ...sharedWith];
     }
 
     async getList(title: string): Promise<List> {
@@ -129,7 +111,7 @@ export class ListService {
         title: string,
         dateAdded: Date,
         owner: User,
-        selectedUsernames?: Array<string>,
+        selectedFriendIds?: Array<string>,
         listType: ListType = ListTypeEnum.SHOPPING,
         id?: string
     ) {
@@ -141,7 +123,7 @@ export class ListService {
                 }
             }
 
-            const users = await this.resolveSharedUsers(title, owner, selectedUsernames);
+            const users = await this.resolveSharedUsers(title, owner, selectedFriendIds);
 
             const list: List = {
                 id: id ?? this.idGenerator.generate(),
@@ -493,10 +475,10 @@ export class ListService {
     }
 
     /**
-     * Add a user to an existing list
-     * Only the list owner can add users
+     * Add a friend to an existing list
+     * Only the list owner can add users, and only friends of the owner can be added
      */
-    async addUserToList(title: string, username: string, requestingUserId: string): Promise<List> {
+    async addUserToList(title: string, friendId: string, requestingUserId: string): Promise<List> {
         const list = await this.repo.getByTitle(title);
 
         if (!list) {
@@ -508,31 +490,25 @@ export class ListService {
             throw Object.assign(new Error('Only the list owner can manage users'), { status: 403 });
         }
 
-        // Validate username exists via auth service
-        if (!this.auth) {
-            throw Object.assign(new Error('Auth service not configured'), { status: 502 });
+        // Validate friendship by id
+        if (!this.friendService || !(await this.friendService.areFriends(requestingUserId, friendId))) {
+            throw Object.assign(new Error('Can only share with friends'), { status: 403 });
         }
-
-        const fetchedUsers = await this.auth.getUsersByUsernames([username]);
-
-        if (!fetchedUsers || fetchedUsers.length === 0) {
-            throw Object.assign(new Error(`User not found: ${username}`), { status: 400 });
-        }
-
-        const userToAdd = fetchedUsers[0];
 
         // Check if user is already in the list
-        if (list.users.some((u) => u.id === userToAdd.id)) {
+        if (list.users.some((u) => u.id === friendId)) {
             throw Object.assign(new Error('User is already in this list'), { status: 400 });
         }
 
-        // Add user to list
-        list.users.push(userToAdd);
+        const [friend] = (await this.friendService.listFriends(requestingUserId)).filter((f) => f.id === friendId);
+
+        // Add friend to list
+        list.users.push(friend);
         await this.repo.replaceByTitle(title, list);
 
         this.logger?.info('User added to list', {
             listTitle: title,
-            addedUser: username,
+            addedUser: friend.username,
             addedBy: requestingUserId,
         });
 

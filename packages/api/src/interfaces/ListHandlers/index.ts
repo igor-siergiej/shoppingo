@@ -394,25 +394,25 @@ export const deleteSelected = async (c: Context<HonoVars>) => {
 
 export const addUserToList = async (c: Context<HonoVars>) => {
     const title = c.req.param('title');
-    const { username } = await c.req.json<{ username: string }>();
+    const { friendId } = await c.req.json<{ friendId: string }>();
     const authenticatedUser = c.get('user');
     const logger = getLogger();
 
-    if (!username || typeof username !== 'string' || username.trim() === '') {
-        return c.json({ error: 'Username is required' }, 400);
+    if (!friendId || typeof friendId !== 'string' || friendId.trim() === '') {
+        return c.json({ error: 'friendId is required' }, 400);
     }
 
     const denied = await ensureListAccess(c, title, authenticatedUser, logger);
     if (denied) return denied;
 
     try {
-        const list = await getListService().addUserToList(title, username.trim(), authenticatedUser.id);
+        const list = await getListService().addUserToList(title, friendId.trim(), authenticatedUser.id);
 
         logger.info('API: User added to list', {
             userId: authenticatedUser.id,
             username: authenticatedUser.username,
             listTitle: title,
-            addedUser: username,
+            addedUser: friendId,
         });
 
         return c.json(list, 200);
@@ -425,7 +425,7 @@ export const addUserToList = async (c: Context<HonoVars>) => {
             userId: authenticatedUser.id,
             username: authenticatedUser.username,
             listTitle: title,
-            addedUser: username,
+            addedUser: friendId,
             error: errorMessage,
             status,
         });

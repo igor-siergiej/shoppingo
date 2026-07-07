@@ -575,35 +575,35 @@ describe('ListHandlers', () => {
             };
             const ctx = createMockContext({
                 params: { title: 'Test List' },
-                body: { username: 'newuser' },
+                body: { friendId: 'user-2' },
             });
 
             mockListService.addUserToList.mockResolvedValue(mockList);
 
             const response = await listHandlers.addUserToList(ctx);
 
-            expect(mockListService.addUserToList).toHaveBeenCalledWith('Test List', 'newuser', 'test-user-1');
+            expect(mockListService.addUserToList).toHaveBeenCalledWith('Test List', 'user-2', 'test-user-1');
             expect(response.status).toBe(200);
             const body = await getResponseBody(response);
             expect(body.id).toBe(mockList.id);
         });
 
-        it('should reject empty username', async () => {
+        it('should reject empty friendId', async () => {
             const ctx = createMockContext({
                 params: { title: 'Test List' },
-                body: { username: '' },
+                body: { friendId: '' },
             });
 
             const response = await listHandlers.addUserToList(ctx);
 
             expect(response.status).toBe(400);
-            expect(await getResponseBody(response)).toEqual({ error: 'Username is required' });
+            expect(await getResponseBody(response)).toEqual({ error: 'friendId is required' });
         });
 
         it('should return 403 when user has no list access', async () => {
             const ctx = createMockContext({
                 params: { title: 'Test List' },
-                body: { username: 'newuser' },
+                body: { friendId: 'user-2' },
             });
 
             mockListService.getList.mockResolvedValue({
@@ -624,7 +624,7 @@ describe('ListHandlers', () => {
         it('should handle service errors', async () => {
             const ctx = createMockContext({
                 params: { title: 'Test List' },
-                body: { username: 'newuser' },
+                body: { friendId: 'user-2' },
             });
 
             mockListService.addUserToList.mockRejectedValue(
