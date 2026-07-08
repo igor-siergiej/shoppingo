@@ -31,6 +31,7 @@ export const test = base.extend<Fixtures>({
         await db.collection('recipe').deleteMany({});
         await db.collection('todo').deleteMany({});
         await db.collection('label').deleteMany({});
+        await db.collection('friendships').deleteMany({});
         await client.close();
 
         await mockAuthRoutes(page);
