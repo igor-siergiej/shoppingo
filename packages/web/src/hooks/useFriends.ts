@@ -23,7 +23,10 @@ export const useUnfriend = () => {
     return useMutation(unfriend, {
         onSuccess: () => {
             void queryClient.invalidateQueries(['friends']);
+            // Hard-revoke strips the ex-friend from lists, recipes and todos server-side.
             void queryClient.invalidateQueries(['lists']);
+            void queryClient.invalidateQueries(['recipes']);
+            void queryClient.invalidateQueries(['todos']);
         },
     });
 };
