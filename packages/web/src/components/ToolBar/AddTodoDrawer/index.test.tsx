@@ -1,7 +1,12 @@
 import { isoDay } from '@shoppingo/types';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
+import { useFriends } from '../../../hooks/useFriends';
 import { AddTodoDrawer } from './index';
+
+vi.mock('../../../hooks/useFriends', () => ({
+    useFriends: vi.fn(() => ({ friends: [], isLoading: false })),
+}));
 
 describe('AddTodoDrawer', () => {
     const noop = () => {};
@@ -29,5 +34,21 @@ describe('AddTodoDrawer', () => {
         await waitFor(() =>
             expect(onAdd).toHaveBeenCalledWith(expect.objectContaining({ title: 'Buy milk', dueDate: isoDay(prefill) }))
         );
+    });
+
+    it('seeds and submits friend ids to share with', async () => {
+        vi.mocked(useFriends).mockReturnValue({
+            friends: [
+                { id: 'f1', username: 'alice' },
+                { id: 'f2', username: 'bob' },
+            ],
+            isLoading: false,
+        } as ReturnType<typeof useFriends>);
+
+        const onAdd = vi.fn().mockResolvedValue(undefined);
+        render(<AddTodoDrawer open onOpenChange={noop} onAdd={onAdd} labels={[]} />);
+        fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Buy milk' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Add Todo' }));
+        await waitFor(() => expect(onAdd).toHaveBeenCalledWith(expect.objectContaining({ userIds: ['f1', 'f2'] })));
     });
 });

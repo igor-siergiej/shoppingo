@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { Button } from '../../components/ui/button';
 import {
     Drawer,
@@ -11,9 +10,9 @@ import {
     DrawerHeader,
     DrawerTitle,
 } from '../../components/ui/drawer';
+import { Label } from '../../components/ui/label';
 import { useManageUsers } from '../../hooks/useManageUsers';
-import { ManageUsersMembersList } from './ManageUsersMembersList';
-import { ManageUsersSearchSection } from './ManageUsersSearchSection';
+import { FriendPicker } from '../FriendPicker';
 
 interface ManageUsersDrawerProps {
     open: boolean;
@@ -32,31 +31,23 @@ export const ManageUsersDrawer = ({
     listTitle,
     currentUsers,
     ownerId,
-    currentUserId,
     onUserAdded,
     onUserRemoved,
 }: ManageUsersDrawerProps) => {
-    const [confirmRemoveUserId, setConfirmRemoveUserId] = useState<string | null>(null);
+    const { addUserMutation, removeUserMutation } = useManageUsers({ listTitle });
 
-    const { searchInput, setSearchInput, availableUsers, isSearching, addUserMutation, removeUserMutation } =
-        useManageUsers({ listTitle, currentUsers, ownerId });
+    const ownerUsername = currentUsers.find((u) => u.id === ownerId)?.username;
+    const memberIds = currentUsers.filter((u) => u.id !== ownerId).map((u) => u.id);
 
-    const handleAddUserWithCallback = async (username: string) => {
-        try {
-            await addUserMutation.mutateAsync(username);
-            onUserAdded();
-        } catch {
-            // error handled by onError in useManageUsers
+    const handleChange = (nextIds: string[]) => {
+        const added = nextIds.filter((id) => !memberIds.includes(id));
+        const removed = memberIds.filter((id) => !nextIds.includes(id));
+
+        for (const friendId of added) {
+            addUserMutation.mutate(friendId, { onSuccess: onUserAdded });
         }
-    };
-
-    const handleRemoveUserWithCallback = async (userId: string) => {
-        try {
-            await removeUserMutation.mutateAsync(userId);
-            setConfirmRemoveUserId(null);
-            onUserRemoved();
-        } catch {
-            // error handled by onError in useManageUsers
+        for (const userId of removed) {
+            removeUserMutation.mutate(userId, { onSuccess: onUserRemoved });
         }
     };
 
@@ -71,25 +62,12 @@ export const ManageUsersDrawer = ({
 
                     <div className="flex-1 overflow-y-auto p-4">
                         <div className="space-y-4">
-                            <ManageUsersMembersList
-                                currentUsers={currentUsers}
-                                ownerId={ownerId}
-                                currentUserId={currentUserId}
-                                isRemoving={removeUserMutation.isLoading}
-                                confirmRemoveUserId={confirmRemoveUserId}
-                                onRemoveClick={setConfirmRemoveUserId}
-                                onRemoveConfirm={handleRemoveUserWithCallback}
-                                onRemoveCancel={() => setConfirmRemoveUserId(null)}
-                            />
+                            {ownerUsername && <p className="text-sm text-muted-foreground">Owner: {ownerUsername}</p>}
 
-                            <ManageUsersSearchSection
-                                searchInput={searchInput}
-                                onSearchChange={setSearchInput}
-                                availableUsers={availableUsers}
-                                isSearching={isSearching}
-                                isAdding={addUserMutation.isLoading}
-                                onAddUser={handleAddUserWithCallback}
-                            />
+                            <div className="space-y-2">
+                                <Label className="text-sm font-semibold">Members</Label>
+                                <FriendPicker value={memberIds} onChange={handleChange} />
+                            </div>
                         </div>
                     </div>
 

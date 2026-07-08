@@ -2,9 +2,7 @@ import { ChefHat, Download, Image as ImageIcon, Loader2, Plus, X } from 'lucide-
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { importRecipe } from '../../../api';
-import { SearchResults } from '../../../components/SearchResults';
-import { useSearch } from '../../../hooks/useSearch';
-import { Badge } from '../../ui/badge';
+import { FriendPicker } from '../../FriendPicker';
 import { Button } from '../../ui/button';
 import {
     Drawer,
@@ -55,15 +53,11 @@ const splitIntoSteps = (text: string): string[] =>
 
 export const AddRecipeDrawer = ({ open, onOpenChange, onAdd, initialLink, autoImport }: AddRecipeDrawerProps) => {
     const recipeNameId = useId();
-    const userSearchId = useId();
     const fileInputId = useId();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const { query, setQuery, results, isLoading: isSearchLoading, clearResults } = useSearch();
-
     const [title, setTitle] = useState('');
     const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
-    const [showUserSearch, setShowUserSearch] = useState(false);
     const [imageUrl, setImageUrl] = useState<string | null>(null);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [error, setError] = useState('');
@@ -132,21 +126,6 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd, initialLink, autoIm
         }
     }, [open, autoImport, initialLink, handleImport]);
 
-    const handleAddUser = useCallback(
-        (username: string) => {
-            if (!selectedUsers.includes(username)) {
-                setSelectedUsers((prev) => [...prev, username]);
-            }
-            setQuery('');
-            clearResults();
-        },
-        [selectedUsers, setQuery, clearResults]
-    );
-
-    const handleRemoveUser = useCallback((username: string) => {
-        setSelectedUsers((prev) => prev.filter((u) => u !== username));
-    }, []);
-
     const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
@@ -195,12 +174,9 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd, initialLink, autoIm
     const handleCancel = () => {
         setTitle('');
         setSelectedUsers([]);
-        setShowUserSearch(false);
         setImageUrl(null);
         setSelectedFile(null);
         setError('');
-        setQuery('');
-        clearResults();
         setLink('');
         setInstructionsPasteText('');
         setSteps([]);
@@ -458,50 +434,7 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd, initialLink, autoIm
 
                         <div className="space-y-3 border-t pt-4">
                             <Label className="text-sm font-semibold">Share With Users</Label>
-
-                            {selectedUsers.length > 0 && (
-                                <div className="flex flex-wrap gap-2">
-                                    {selectedUsers.map((username) => (
-                                        <Badge key={username} variant="secondary" className="gap-1 px-2 py-1">
-                                            {username}
-                                            <button
-                                                type="button"
-                                                onClick={() => handleRemoveUser(username)}
-                                                disabled={isLoading}
-                                                className="hover:text-slate-700"
-                                            >
-                                                ×
-                                            </button>
-                                        </Badge>
-                                    ))}
-                                </div>
-                            )}
-
-                            <div className="relative">
-                                <Input
-                                    id={userSearchId}
-                                    placeholder="Search users..."
-                                    value={query}
-                                    onChange={(e) => setQuery(e.target.value)}
-                                    disabled={isLoading || isSearchLoading}
-                                    onFocus={() => setShowUserSearch(true)}
-                                    className="h-9"
-                                />
-
-                                {showUserSearch && (
-                                    <SearchResults
-                                        results={results}
-                                        isLoading={isSearchLoading}
-                                        error={null}
-                                        query={query}
-                                        onSelect={(username) => {
-                                            handleAddUser(username);
-                                            setShowUserSearch(false);
-                                        }}
-                                        onClose={() => setShowUserSearch(false)}
-                                    />
-                                )}
-                            </div>
+                            <FriendPicker value={selectedUsers} onChange={setSelectedUsers} seedAllByDefault />
                         </div>
 
                         {error && <p className="text-sm text-destructive">{error}</p>}

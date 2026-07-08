@@ -192,12 +192,12 @@ export const updateItemQuantity = async (listTitle: string, itemId: string, quan
         }),
     });
 
-export const addUserToList = async (listTitle: string, username: string): Promise<ListResponse> => {
+export const addUserToList = async (listTitle: string, friendId: string): Promise<ListResponse> => {
     return await makeRequest({
         pathname: `/api/lists/${encodeURIComponent(listTitle)}/users`,
         method: MethodType.POST,
         operationString: 'add user to list',
-        body: JSON.stringify({ username }),
+        body: JSON.stringify({ friendId }),
     });
 };
 
@@ -357,6 +357,8 @@ export interface CreateTodoBody {
     time?: string;
     labelId?: string;
     recurrence?: Todo['recurrence'];
+    /** Friend user-ids to share this todo with. */
+    userIds?: string[];
 }
 
 export const getTodosQuery = (userId: string) => ({
