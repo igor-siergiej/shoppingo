@@ -49,6 +49,14 @@ export class TodoService {
         return todo;
     }
 
+    /** Owner or a shared member may load the todo; used where shared todos are collaborative (edit/complete). */
+    private async getOwnedOrMember(todoId: string, actorId: string): Promise<Todo> {
+        const todo = await this.repo.getById(todoId);
+        if (!todo) throw notFound();
+        if (todo.ownerId !== actorId && !todo.users?.some((u) => u.id === actorId)) throw forbidden();
+        return todo;
+    }
+
     /** Seeds shared members: all current friends by default, or an explicit friend subset (403 on non-friends). */
     private async seedMembers(ownerId: string, explicit?: string[]): Promise<User[]> {
         if (!this.friendService) return [];
@@ -99,9 +107,12 @@ export class TodoService {
         return [...byId.values()];
     }
 
-    async updateTodo(todoId: string, ownerId: string, rawInput: UpdateTodoInput): Promise<Todo> {
-        const existing = await this.getOwned(todoId, ownerId);
-        const merged: Todo = { ...existing, ...normalizeDays(rawInput) };
+    async updateTodo(todoId: string, actorId: string, rawInput: UpdateTodoInput): Promise<Todo> {
+        const existing = await this.getOwnedOrMember(todoId, actorId);
+        const input = normalizeDays(rawInput);
+        // Membership (sharing) is owner-only; a member editing content must not re-scope who it's shared with.
+        if (existing.ownerId !== actorId) delete input.users;
+        const merged: Todo = { ...existing, ...input };
         return this.repo.update(todoId, merged);
     }
 
@@ -110,8 +121,8 @@ export class TodoService {
         await this.repo.deleteById(todoId);
     }
 
-    async toggleComplete(todoId: string, ownerId: string, date?: string): Promise<Todo> {
-        const todo = await this.getOwned(todoId, ownerId);
+    async toggleComplete(todoId: string, actorId: string, date?: string): Promise<Todo> {
+        const todo = await this.getOwnedOrMember(todoId, actorId);
 
         if (todo.recurrence && date) {
             const current = todo.completedDates ?? [];

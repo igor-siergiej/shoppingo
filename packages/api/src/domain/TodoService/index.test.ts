@@ -192,4 +192,46 @@ describe('TodoService', () => {
             expect(forU2.map((t) => t.title).sort()).toEqual(['Owned by u1, shared to u2', 'Owned by u2']);
         });
     });
+
+    describe('collaborative shared todos', () => {
+        it('lets a member toggle complete on a shared todo', async () => {
+            friends.add('u1', 'u2');
+            const t = await svc.createTodo('u1', { title: 'Shared task' });
+            const toggled = await svc.toggleComplete(t.id, 'u2');
+            expect(toggled.done).toBe(true);
+        });
+
+        it('lets a member update the title of a shared todo', async () => {
+            friends.add('u1', 'u2');
+            const t = await svc.createTodo('u1', { title: 'Shared task' });
+            const updated = await svc.updateTodo(t.id, 'u2', { title: 'Renamed by member' });
+            expect(updated.title).toBe('Renamed by member');
+        });
+
+        it("does not let a member change a shared todo's users[]", async () => {
+            friends.add('u1', 'u2');
+            const t = await svc.createTodo('u1', { title: 'Shared task' });
+            const originalUsers = t.users;
+            const updated = await svc.updateTodo(t.id, 'u2', { title: 'x', users: [] });
+            expect(updated.users).toEqual(originalUsers);
+        });
+
+        it('rejects toggleComplete by a non-member non-owner with 403', async () => {
+            friends.add('u1', 'u2');
+            const t = await svc.createTodo('u1', { title: 'Shared task' });
+            await expect(svc.toggleComplete(t.id, 'intruder')).rejects.toMatchObject({ status: 403 });
+        });
+
+        it('rejects updateTodo by a non-member non-owner with 403', async () => {
+            friends.add('u1', 'u2');
+            const t = await svc.createTodo('u1', { title: 'Shared task' });
+            await expect(svc.updateTodo(t.id, 'intruder', { title: 'x' })).rejects.toMatchObject({ status: 403 });
+        });
+
+        it('rejects deleteTodo by a member with 403 (owner-only delete)', async () => {
+            friends.add('u1', 'u2');
+            const t = await svc.createTodo('u1', { title: 'Shared task' });
+            await expect(svc.deleteTodo(t.id, 'u2')).rejects.toMatchObject({ status: 403 });
+        });
+    });
 });
