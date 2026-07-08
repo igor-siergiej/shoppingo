@@ -97,18 +97,45 @@ describe('ManageUsersDrawer', () => {
         expect(mockOnUserAdded).toHaveBeenCalled();
     });
 
-    it('removes a user and calls onUserRemoved when toggling a member off', async () => {
-        mockRemoveMutate.mockImplementation((_id, opts) => opts?.onSuccess?.());
+    it('opens a confirm dialog instead of removing immediately when toggling a member off', async () => {
         const user = userEvent.setup();
         render(<ManageUsersDrawer {...defaultProps} />);
 
         const switches = screen.getAllByRole('switch');
         await user.click(switches[0]);
 
+        expect(screen.getByText('Remove alice from this list?')).toBeInTheDocument();
+        expect(mockRemoveMutate).not.toHaveBeenCalled();
+    });
+
+    it('removes a user and calls onUserRemoved when the removal is confirmed', async () => {
+        mockRemoveMutate.mockImplementation((_id, opts) => opts?.onSuccess?.());
+        const user = userEvent.setup();
+        render(<ManageUsersDrawer {...defaultProps} />);
+
+        const switches = screen.getAllByRole('switch');
+        await user.click(switches[0]);
+        await user.click(screen.getByRole('button', { name: 'Remove' }));
+
         expect(mockRemoveMutate).toHaveBeenCalledWith(
             'friend-1',
             expect.objectContaining({ onSuccess: expect.any(Function) })
         );
         expect(mockOnUserRemoved).toHaveBeenCalled();
+    });
+
+    it('does not remove the user and keeps the toggle on when the removal is cancelled', async () => {
+        const user = userEvent.setup();
+        render(<ManageUsersDrawer {...defaultProps} />);
+
+        const switches = screen.getAllByRole('switch');
+        await user.click(switches[0]);
+        await user.click(screen.getByRole('button', { name: 'Cancel' }));
+
+        expect(mockRemoveMutate).not.toHaveBeenCalled();
+        expect(mockOnUserRemoved).not.toHaveBeenCalled();
+
+        const switchesAfterCancel = screen.getAllByRole('switch');
+        expect(switchesAfterCancel[0]).toBeChecked();
     });
 });
