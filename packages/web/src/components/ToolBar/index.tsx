@@ -12,6 +12,7 @@ import { Card } from '../../components/ui/card';
 import { useToolBarState } from '../../hooks/useToolBarState';
 import { ManageLabelsDrawer } from '../ManageLabelsDrawer';
 import { ManageUsersDrawer } from '../ManageUsersDrawer';
+import { AddFriendDrawer } from './AddFriendDrawer';
 import { AddFromRecipeDrawer } from './AddFromRecipeDrawer';
 import { AddIngredientDrawer } from './AddIngredientDrawer';
 import { AddItemDrawer } from './AddItemDrawer';
@@ -108,12 +109,14 @@ const ToolBar = ({
     const [isAddFromRecipeDrawerOpen, setIsAddFromRecipeDrawerOpen] = useState(false);
     const [isAddTodoDrawerOpen, setIsAddTodoDrawerOpen] = useState(false);
     const [isManageLabelsOpen, setIsManageLabelsOpen] = useState(false);
+    const [isAddFriendDrawerOpen, setIsAddFriendDrawerOpen] = useState(false);
 
     const isItemsPage = location.pathname.includes('/list/');
     const isListsPage = location.pathname === '/';
     const isRecipesPage = location.pathname === '/recipes';
     const isRecipeDetailPage = location.pathname.includes('/recipes/');
     const isCalendarPage = location.pathname === '/calendar';
+    const isFriendsPage = location.pathname === '/friends';
 
     const [contentRef, { height: contentHeight }] = useMeasure();
     const [menuRef, { width: menuWidth }] = useMeasure();
@@ -220,6 +223,7 @@ const ToolBar = ({
                                 isRecipesPage={isRecipesPage}
                                 isRecipeDetailPage={isRecipeDetailPage}
                                 isCalendarPage={isCalendarPage}
+                                isFriendsPage={isFriendsPage}
                                 onGoBack={handleGoBack}
                                 onClearSelected={handleClearSelected}
                                 onRemoveAll={handleRemoveAll}
@@ -294,6 +298,14 @@ const ToolBar = ({
                                             onOpenChange={setIsAddFromRecipeDrawerOpen}
                                             listTitle={currentList.title}
                                             listItems={listItems}
+                                        />
+                                    ) : undefined
+                                }
+                                friendDrawer={
+                                    isFriendsPage ? (
+                                        <AddFriendDrawer
+                                            open={isAddFriendDrawerOpen}
+                                            onOpenChange={setIsAddFriendDrawerOpen}
                                         />
                                     ) : undefined
                                 }

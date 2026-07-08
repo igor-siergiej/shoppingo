@@ -143,4 +143,14 @@ describe('ToolBarAppBar', () => {
         const calendarButton = Array.from(buttons).find((btn) => btn.title === 'Calendar');
         expect(calendarButton).toBeDefined();
     });
+
+    it('renders a Friends button that navigates to /friends', async () => {
+        const { ToolBarAppBar } = await import('./index');
+        const { container } = renderWithRouter(
+            <ToolBarAppBar isItemsPage={false} isListsPage={false} isFriendsPage={false} onMenuClick={() => {}} />
+        );
+        const buttons = container.querySelectorAll('button');
+        const friendsButton = Array.from(buttons).find((btn) => btn.title === 'Friends');
+        expect(friendsButton).toBeDefined();
+    });
 });

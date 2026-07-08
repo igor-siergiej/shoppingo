@@ -1,4 +1,4 @@
-import { ArrowLeft, BookOpen, Calendar, CheckCheck, Menu, ShoppingCart, Trash2 } from 'lucide-react';
+import { ArrowLeft, BookOpen, Calendar, CheckCheck, Menu, ShoppingCart, Trash2, Users } from 'lucide-react';
 import { forwardRef, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ToolBarButton } from '../ToolBarButton';
@@ -9,6 +9,7 @@ interface ToolBarAppBarProps {
     isRecipesPage?: boolean;
     isRecipeDetailPage?: boolean;
     isCalendarPage?: boolean;
+    isFriendsPage?: boolean;
     onGoBack?: () => void;
     onClearSelected?: () => void;
     onRemoveAll?: () => void;
@@ -22,6 +23,7 @@ interface ToolBarAppBarProps {
     ingredientDrawer?: ReactNode;
     recipePickerDrawer?: ReactNode;
     todoDrawer?: ReactNode;
+    friendDrawer?: ReactNode;
 }
 
 export const ToolBarAppBar = forwardRef<HTMLDivElement, ToolBarAppBarProps>(
@@ -32,6 +34,7 @@ export const ToolBarAppBar = forwardRef<HTMLDivElement, ToolBarAppBarProps>(
             isRecipesPage,
             isRecipeDetailPage,
             isCalendarPage,
+            isFriendsPage,
             onGoBack,
             onClearSelected,
             onRemoveAll,
@@ -45,6 +48,7 @@ export const ToolBarAppBar = forwardRef<HTMLDivElement, ToolBarAppBarProps>(
             ingredientDrawer,
             recipePickerDrawer,
             todoDrawer,
+            friendDrawer,
         },
         ref
     ) => {
@@ -79,6 +83,12 @@ export const ToolBarAppBar = forwardRef<HTMLDivElement, ToolBarAppBarProps>(
                             onClick={() => navigate('/recipes')}
                             active={isRecipesPage}
                         />
+                        <ToolBarButton
+                            icon={Users}
+                            title="Friends"
+                            onClick={() => navigate('/friends')}
+                            active={isFriendsPage}
+                        />
                     </>
                 )}
 
@@ -88,6 +98,7 @@ export const ToolBarAppBar = forwardRef<HTMLDivElement, ToolBarAppBarProps>(
                 {isRecipesPage && recipeDrawer}
                 {isRecipeDetailPage && ingredientDrawer}
                 {isCalendarPage && todoDrawer}
+                {isFriendsPage && friendDrawer}
                 {isItemsPage && recipePickerDrawer}
 
                 {/* Calendar nav — right of the + */}
