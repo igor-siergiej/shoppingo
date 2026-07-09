@@ -19,7 +19,6 @@ import { RippleButton } from '../../ui/ripple';
 import { Textarea } from '../../ui/textarea';
 
 export interface Ingredient {
-    id: string;
     name: string;
     quantity?: number;
     unit?: string;
@@ -51,6 +50,11 @@ const splitIntoSteps = (text: string): string[] =>
         .map((line) => line.replace(/^\s*\d+[.)]\s*/, '').trim())
         .filter(Boolean);
 
+const formatIngredientLine = (ingredient: Ingredient): string =>
+    [ingredient.quantity, ingredient.unit, ingredient.name]
+        .filter((part) => part !== undefined && part !== '')
+        .join(' ');
+
 export const AddRecipeDrawer = ({ open, onOpenChange, onAdd, initialLink, autoImport }: AddRecipeDrawerProps) => {
     const recipeNameId = useId();
     const fileInputId = useId();
@@ -67,7 +71,7 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd, initialLink, autoIm
     const [steps, setSteps] = useState<string[]>([]);
     const [showPasteArea, setShowPasteArea] = useState(true);
     const [ingredientsPasteText, setIngredientsPasteText] = useState('');
-    const [ingredients, setIngredients] = useState<string[]>([]);
+    const [ingredients, setIngredients] = useState<Ingredient[]>([]);
     const [showIngredientsPaste, setShowIngredientsPaste] = useState(true);
     const [isImporting, setIsImporting] = useState(false);
     const autoImportedRef = useRef(false);
@@ -91,7 +95,7 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd, initialLink, autoIm
             if (draft.title) setTitle(draft.title);
             if (draft.link) setLink(draft.link);
             if (draft.ingredients.length > 0) {
-                setIngredients(draft.ingredients.map((i) => i.name));
+                setIngredients(draft.ingredients.map(({ name, quantity, unit }) => ({ name, quantity, unit })));
                 setShowIngredientsPaste(false);
             }
             if (draft.instructions.length > 0) {
@@ -150,7 +154,9 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd, initialLink, autoIm
         try {
             const recipe = await onAdd(
                 title,
-                ingredients.filter((name) => name.trim()).map((name) => ({ name: name.trim() })),
+                ingredients
+                    .filter((ingredient) => ingredient.name.trim())
+                    .map((ingredient) => ({ ...ingredient, name: ingredient.name.trim() })),
                 undefined,
                 selectedUsers,
                 link.trim() || undefined,
@@ -328,7 +334,7 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd, initialLink, autoIm
                                     onBlur={() => {
                                         const parsed = splitIntoSteps(ingredientsPasteText);
                                         if (parsed.length > 0) {
-                                            setIngredients(parsed);
+                                            setIngredients(parsed.map((name) => ({ name })));
                                             setShowIngredientsPaste(false);
                                         }
                                     }}
@@ -339,10 +345,12 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd, initialLink, autoIm
                                 <div className="space-y-1">
                                     {ingredients.map((ingredient, i) => (
                                         <div
-                                            key={`${i}-${ingredient.slice(0, 20)}`}
+                                            key={`${i}-${ingredient.name.slice(0, 20)}`}
                                             className="flex items-start gap-2 px-3 py-2 rounded-md bg-muted border border-border text-sm"
                                         >
-                                            <span className="flex-1 text-foreground">{ingredient}</span>
+                                            <span className="flex-1 text-foreground">
+                                                {formatIngredientLine(ingredient)}
+                                            </span>
                                             <button
                                                 type="button"
                                                 onClick={() =>
@@ -358,7 +366,7 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd, initialLink, autoIm
                                     ))}
                                     <button
                                         type="button"
-                                        onClick={() => setIngredients([...ingredients, ''])}
+                                        onClick={() => setIngredients([...ingredients, { name: '' }])}
                                         disabled={isLoading}
                                         className="w-full text-sm text-muted-foreground border border-dashed border-border rounded-md py-1.5 hover:bg-muted/50 transition-colors"
                                     >

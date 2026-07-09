@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { importRecipe } from '../../../api';
 import { AddRecipeDrawer } from './index';
 
 vi.mock('../../../hooks/useFriends', () => ({
@@ -12,6 +13,10 @@ vi.mock('sonner', () => ({
         success: vi.fn(),
         error: vi.fn(),
     },
+}));
+
+vi.mock('../../../api', () => ({
+    importRecipe: vi.fn(),
 }));
 
 describe('AddRecipeDrawer', () => {
@@ -164,6 +169,55 @@ describe('AddRecipeDrawer', () => {
                 [],
                 'https://example.com',
                 ['Step one', 'Step two'],
+                undefined
+            );
+        });
+    });
+
+    it('preserves quantity/unit parsed from an imported recipe when creating it', async () => {
+        vi.mocked(importRecipe).mockResolvedValue({
+            title: 'Imported Dish',
+            ingredients: [
+                { id: 'i1', name: 'flour', quantity: 200, unit: 'g' },
+                { id: 'i2', name: 'eggs', quantity: 3 },
+                { id: 'i3', name: 'salt' },
+            ],
+            instructions: ['Mix.', 'Bake.'],
+            link: 'https://example.com/dish',
+        });
+        mockOnAdd.mockResolvedValue({ id: 'recipe-1' });
+
+        render(
+            <AddRecipeDrawer
+                open={true}
+                onOpenChange={mockOnOpenChange}
+                onAdd={mockOnAdd}
+                initialLink="https://example.com/dish"
+            />
+        );
+
+        await userEvent.click(screen.getByRole('button', { name: /Import/ }));
+
+        await waitFor(() => {
+            expect(screen.getByText('200 g flour')).toBeTruthy();
+            expect(screen.getByText('3 eggs')).toBeTruthy();
+            expect(screen.getByText('salt')).toBeTruthy();
+        });
+
+        await userEvent.click(screen.getByRole('button', { name: /Create Recipe/ }));
+
+        await waitFor(() => {
+            expect(mockOnAdd).toHaveBeenCalledWith(
+                'Imported Dish',
+                [
+                    { name: 'flour', quantity: 200, unit: 'g' },
+                    { name: 'eggs', quantity: 3, unit: undefined },
+                    { name: 'salt', quantity: undefined, unit: undefined },
+                ],
+                undefined,
+                [],
+                'https://example.com/dish',
+                ['Mix.', 'Bake.'],
                 undefined
             );
         });
