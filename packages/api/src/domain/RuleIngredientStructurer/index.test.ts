@@ -45,6 +45,18 @@ describe('RuleIngredientStructurer', () => {
         expect(result).toEqual([{ name: '(optional)' }]);
     });
 
+    it('cleans nested parentheses and removes stray closing parens', async () => {
+        const result = await structurer.structure(['guanciale (Italian (cured) pork cheek)']);
+
+        expect(result).toEqual([{ name: 'guanciale pork cheek' }]);
+    });
+
+    it('removes unmatched opening parens left by parse-ingredient', async () => {
+        const result = await structurer.structure(['spaghetti (12 oz']);
+
+        expect(result).toEqual([{ name: 'spaghetti', quantity: 12, unit: 'oz' }]);
+    });
+
     it('returns one entry per input line, in order', async () => {
         const result = await structurer.structure(['1/2 cup salt', '2 cloves garlic', '3 eggs']);
 

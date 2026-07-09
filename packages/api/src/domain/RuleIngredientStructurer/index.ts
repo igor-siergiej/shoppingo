@@ -3,6 +3,7 @@ import { parseIngredient } from 'parse-ingredient';
 import type { IngredientStructurer, ParsedIngredient } from '../IngredientStructurer/types';
 
 const PARENTHETICAL = /\([^)]*\)/g;
+const STRAY_PAREN = /[()]/g;
 const TRAILING_QUALIFIER = /,?\s*\b(?:to taste|as needed|optional|divided|plus more.*)\s*$/i;
 const EDGE_PUNCTUATION = /^[\s,;:.\-–—]+|[\s,;:.\-–—]+$/g;
 
@@ -13,6 +14,7 @@ const EDGE_PUNCTUATION = /^[\s,;:.\-–—]+|[\s,;:.\-–—]+$/g;
 const cleanName = (description: string): string =>
     description
         .replace(PARENTHETICAL, ' ')
+        .replace(STRAY_PAREN, ' ')
         .replace(TRAILING_QUALIFIER, '')
         .replace(/\s+/g, ' ')
         .replace(EDGE_PUNCTUATION, '')
