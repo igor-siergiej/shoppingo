@@ -92,12 +92,13 @@ export class RecipeImportService {
     private toIngredient(raw: string): Ingredient {
         const [parsed] = parseIngredient(raw);
         const name = parsed?.description ? collapse(parsed.description) : raw;
+        const hasQuantity = typeof parsed?.quantity === 'number';
 
         return {
             id: this.idGenerator.generate(),
             name: name || raw,
-            ...(typeof parsed?.quantity === 'number' && { quantity: parsed.quantity }),
-            ...(parsed?.unitOfMeasure && { unit: parsed.unitOfMeasure }),
+            ...(hasQuantity && { quantity: parsed.quantity }),
+            ...(hasQuantity && { unit: parsed?.unitOfMeasure || 'pcs' }),
         };
     }
 
