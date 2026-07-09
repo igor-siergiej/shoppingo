@@ -1,3 +1,10 @@
+## [1.57.3](https://github.com/igor-siergiej/shoppingo/compare/v1.57.2...v1.57.3) (2026-07-09)
+
+
+### Bug Fixes
+
+* **recipe-import:** split quantity/unit out of ingredient name ([#109](https://github.com/igor-siergiej/shoppingo/issues/109)) ([7d39d14](https://github.com/igor-siergiej/shoppingo/commit/7d39d147c074f9ac64578f2f18101dc63b8920ea))
+
 ## [1.57.2](https://github.com/igor-siergiej/shoppingo/compare/v1.57.1...v1.57.2) (2026-07-09)
 
 
