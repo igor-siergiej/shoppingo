@@ -1,6 +1,7 @@
 import type { Logger } from '@imapps/api-utils';
 import type { Ingredient, RecipeImportResult } from '@shoppingo/types';
 import * as cheerio from 'cheerio';
+import { parseIngredient } from 'parse-ingredient';
 
 import type { IdGenerator } from '../IdGenerator';
 import type { PageFetcher, RecipeDraft, RecipeTextExtractor } from './types';
@@ -62,7 +63,7 @@ export class RecipeImportService {
 
         return {
             title: draft.title,
-            ingredients: draft.ingredients.map<Ingredient>((name) => ({ id: this.idGenerator.generate(), name })),
+            ingredients: draft.ingredients.map((raw) => this.toIngredient(raw)),
             instructions: draft.instructions,
             link: draft.link,
             ...(draft.image !== undefined && { image: draft.image }),
@@ -83,6 +84,21 @@ export class RecipeImportService {
             throw Object.assign(new Error('URL must be http or https'), { status: 400 });
         }
         return parsed.toString();
+    }
+
+    // Splits a raw ingredient line ("2 cups flour") into { name, quantity, unit } so the
+    // name stays free of measurements — imports also feed the AI image prompt, which
+    // renders garbled results when numbers/units are mixed into the ingredient name.
+    private toIngredient(raw: string): Ingredient {
+        const [parsed] = parseIngredient(raw);
+        const name = parsed?.description ? collapse(parsed.description) : raw;
+
+        return {
+            id: this.idGenerator.generate(),
+            name: name || raw,
+            ...(typeof parsed?.quantity === 'number' && { quantity: parsed.quantity }),
+            ...(parsed?.unitOfMeasure && { unit: parsed.unitOfMeasure }),
+        };
     }
 
     private isInsufficient(draft: RecipeDraft): boolean {

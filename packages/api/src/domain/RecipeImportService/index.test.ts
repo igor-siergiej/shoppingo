@@ -63,7 +63,9 @@ describe('RecipeImportService', () => {
 
             expect(result.title).toBe('Test Cake');
             expect(result.image).toBe('https://img/cake.jpg');
-            expect(result.ingredients.map((i) => i.name)).toEqual(['200g flour', '3 eggs', '100g sugar']);
+            expect(result.ingredients.map((i) => i.name)).toEqual(['flour', 'eggs', 'sugar']);
+            expect(result.ingredients.map((i) => i.quantity)).toEqual([200, 3, 100]);
+            expect(result.ingredients.map((i) => i.unit)).toEqual(['g', undefined, 'g']);
             expect(result.ingredients[0].id).toBe('id-1');
             expect(result.instructions).toEqual(['Mix.', 'Bake.']);
             expect(result.prepTime).toBe('PT20M');
@@ -131,6 +133,40 @@ describe('RecipeImportService', () => {
         });
     });
 
+    describe('ingredient quantity/unit parsing', () => {
+        it('splits quantity and unit out of the name, leaving name free of measurements', async () => {
+            fetcher.html = jsonLdPage({
+                '@type': 'Recipe',
+                name: 'Parsing',
+                recipeIngredient: ['1/2 cup salt', '2 cloves garlic', '3 eggs', 'salt to taste'],
+                recipeInstructions: ['Do it.'],
+            });
+
+            const result = await service.importFromUrl('https://example.com/parsing');
+
+            expect(result.ingredients).toEqual([
+                { id: 'id-1', name: 'salt', quantity: 0.5, unit: 'cup' },
+                { id: 'id-2', name: 'garlic', quantity: 2, unit: 'cloves' },
+                { id: 'id-3', name: 'eggs', quantity: 3 },
+                { id: 'id-4', name: 'salt to taste' },
+            ]);
+        });
+
+        it('falls back to the raw line as the name when it has no quantity or unit', async () => {
+            fetcher.html = jsonLdPage({
+                '@type': 'Recipe',
+                name: 'No measurements',
+                recipeIngredient: ['flour', 'a pinch of nutmeg'],
+                recipeInstructions: ['Do it.'],
+            });
+
+            const result = await service.importFromUrl('https://example.com/no-measurements');
+
+            expect(result.ingredients.map((i) => i.name)).toEqual(['flour', 'a pinch of nutmeg']);
+            expect(result.ingredients.every((i) => i.quantity === undefined && i.unit === undefined)).toBe(true);
+        });
+    });
+
     describe('Tier 2 — HTML heuristics', () => {
         it('recovers ingredients/instructions from class-based markup (joshuaweissman shape)', async () => {
             fetcher.html = jsonLdPage(
@@ -156,11 +192,9 @@ describe('RecipeImportService', () => {
 
             expect(result.title).toBe('Kimchi');
             expect(result.image).toBe('https://img/kimchi.jpg');
-            expect(result.ingredients.map((i) => i.name)).toEqual([
-                '1 napa cabbage',
-                '1/2 cup salt',
-                '3 tbsp gochugaru',
-            ]);
+            expect(result.ingredients.map((i) => i.name)).toEqual(['napa cabbage', 'salt', 'gochugaru']);
+            expect(result.ingredients.map((i) => i.quantity)).toEqual([1, 0.5, 3]);
+            expect(result.ingredients.map((i) => i.unit)).toEqual([undefined, 'cup', 'tbsp']);
             expect(result.instructions).toEqual(['Salt the cabbage.', 'Rinse and drain.', 'Mix with paste.']);
         });
 
@@ -175,7 +209,9 @@ describe('RecipeImportService', () => {
             const result = await service.importFromUrl('https://example.com/rice');
 
             expect(result.title).toBe('Plain Rice');
-            expect(result.ingredients.map((i) => i.name)).toEqual(['2 cups rice', '4 cups water']);
+            expect(result.ingredients.map((i) => i.name)).toEqual(['rice', 'water']);
+            expect(result.ingredients.map((i) => i.quantity)).toEqual([2, 4]);
+            expect(result.ingredients.map((i) => i.unit)).toEqual(['cups', 'cups']);
             expect(result.instructions).toEqual(['Boil rice in water.']);
         });
 
@@ -231,7 +267,9 @@ describe('RecipeImportService', () => {
             const result = await service.importFromUrl('https://example.com/blog');
 
             expect(result.title).toBe('LLM Dish');
-            expect(result.ingredients.map((i) => i.name)).toEqual(['1 onion', '2 cloves garlic']);
+            expect(result.ingredients.map((i) => i.name)).toEqual(['onion', 'garlic']);
+            expect(result.ingredients.map((i) => i.quantity)).toEqual([1, 2]);
+            expect(result.ingredients.map((i) => i.unit)).toEqual([undefined, 'cloves']);
             expect(result.instructions).toEqual(['Fry onion.', 'Add garlic.']);
         });
 
