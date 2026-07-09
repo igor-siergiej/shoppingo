@@ -29,13 +29,14 @@
     },
     "packages/api": {
       "name": "@shoppingo/api",
-      "version": "1.55.1",
+      "version": "1.57.2",
       "dependencies": {
         "@imapps/api-utils": "0.6.0",
         "@shoppingo/types": "workspace:*",
         "cheerio": "^1.2.0",
         "dotenv": "^17.2.2",
         "hono": "^4.6.14",
+        "parse-ingredient": "^2.2.0",
         "prom-client": "^15.1.3",
         "sharp": "^0.34.5",
         "typescript": "^5.9.2",
@@ -49,14 +50,14 @@
     },
     "packages/types": {
       "name": "@shoppingo/types",
-      "version": "1.55.1",
+      "version": "1.57.2",
       "dependencies": {
         "date-fns": "^4.1.0",
       },
     },
     "packages/web": {
       "name": "@shoppingo/web",
-      "version": "1.55.1",
+      "version": "1.57.2",
       "dependencies": {
         "@hookform/resolvers": "^5.2.2",
         "@imapps/web-utils": "0.5.1",
@@ -1793,6 +1794,8 @@
 
     "nth-check": ["nth-check@2.1.1", "", { "dependencies": { "boolbase": "^1.0.0" } }, "sha512-lqjrjmaOoAnWfMmBPL+XNnynZh2+swxiX3WUE0s4yEHI6m+AwrK2UZOimIRl3X/4QctVqS8AiZjFqyOGrMXb/w=="],
 
+    "numeric-quantity": ["numeric-quantity@3.2.2", "", {}, "sha512-qHc6mhIySaoqFYCM+foWY0DYYIT0ick1fI+MB9530gJ8XAPDExwXT8eyl3J+PWLIlZy0MCxSLobBjrggN9Z8EQ=="],
+
     "nwsapi": ["nwsapi@2.2.23", "", {}, "sha512-7wfH4sLbt4M0gCDzGE6vzQBo0bfTKjU7Sfpqy/7gs1qBfYz2vEJH6vXcBKpO3+6Yu1telwd0t9HpyOoLEQQbIQ=="],
 
     "object-assign": ["object-assign@4.1.1", "", {}, "sha512-rJgTQnkUnH1sFw8yT6VSU3zD3sWmu6sZhIseY8VX+GRu3P6F7Fu+JNDoXfklElbLJSnc3FUQHVe4cU5hj+BcUg=="],
@@ -1840,6 +1843,8 @@
     "package-json-from-dist": ["package-json-from-dist@1.0.1", "", {}, "sha512-UEZIS3/by4OC8vL3P2dTXRETpebLI2NiI5vIrjaD/5UtrkFX/tNbwjTSRAGC/+7CAo2pIcBaRgWmcBBHcsaCIw=="],
 
     "parent-module": ["parent-module@1.0.1", "", { "dependencies": { "callsites": "^3.0.0" } }, "sha512-GQ2EWRpQV8/o+Aw8YqtfZZPfNRWZYkbidE9k5rpl/hC3vtHHBfGm2Ifi6qWV+coDGkrUKZAxE3Lot5kcsRlh+g=="],
+
+    "parse-ingredient": ["parse-ingredient@2.2.0", "", { "dependencies": { "numeric-quantity": "^3.2.1" } }, "sha512-0nC1B3AJxZHAXM4zu/57XlZbaXuK6vpZDQcHpwBALU7KRxw5f1O/Tr0x0Srz3vxpn4+AP0NqCLKqnNdkIx9GVQ=="],
 
     "parse-json": ["parse-json@8.3.0", "", { "dependencies": { "@babel/code-frame": "^7.26.2", "index-to-position": "^1.1.0", "type-fest": "^4.39.1" } }, "sha512-ybiGyvspI+fAoRQbIPRddCcSTV9/LsJbf0e/S85VLowVGzRmokfneg2kwVW/KU5rOXrPSbF1qAKPMgNTqqROQQ=="],
 
