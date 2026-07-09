@@ -6,9 +6,10 @@ export interface HttpPageFetcherOptions {
     userAgent?: string;
 }
 
-// A realistic desktop UA so recipe sites serve full HTML rather than a bot/challenge page.
-const DEFAULT_USER_AGENT =
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
+// Firefox, not Chrome: several recipe sites run WAF rules that specifically flag the extremely
+// common "generic Chrome" UA string used by countless scraping tools/headless browsers, while a
+// Firefox UA (much less commonly spoofed) passes through the same bot checks unblocked.
+const DEFAULT_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:126.0) Gecko/20100101 Firefox/126.0';
 
 export class HttpPageFetcher implements PageFetcher {
     private readonly timeoutMs: number;
