@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
 
 import type { IdGenerator } from '../IdGenerator';
+import type { IngredientStructurer, ParsedIngredient } from '../IngredientStructurer/types';
+import { RuleIngredientStructurer } from '../RuleIngredientStructurer';
 import { RecipeImportService } from './index';
 import type { PageFetcher, RecipeTextExtractor } from './types';
 
@@ -24,6 +26,14 @@ class SequentialIdGenerator implements IdGenerator {
     }
 }
 
+class ThrowingStructurer implements IngredientStructurer {
+    readonly strategy = 'llm' as const;
+
+    async structure(): Promise<ParsedIngredient[]> {
+        throw Object.assign(new Error('LLM ingredient structuring failed'), { status: 502 });
+    }
+}
+
 const jsonLdPage = (ld: unknown, bodyExtra = ''): string =>
     `<!doctype html><html><head><script type="application/ld+json">${JSON.stringify(ld)}</script></head><body>${bodyExtra}</body></html>`;
 
@@ -33,7 +43,7 @@ describe('RecipeImportService', () => {
 
     beforeEach(() => {
         fetcher = new MockFetcher();
-        service = new RecipeImportService(fetcher, new SequentialIdGenerator());
+        service = new RecipeImportService(fetcher, new SequentialIdGenerator(), new RuleIngredientStructurer());
     });
 
     describe('URL validation', () => {
@@ -148,7 +158,7 @@ describe('RecipeImportService', () => {
                 { id: 'id-1', name: 'salt', quantity: 0.5, unit: 'cup' },
                 { id: 'id-2', name: 'garlic', quantity: 2, unit: 'cloves' },
                 { id: 'id-3', name: 'eggs', quantity: 3, unit: 'pcs' },
-                { id: 'id-4', name: 'salt to taste' },
+                { id: 'id-4', name: 'salt' },
             ]);
         });
 
@@ -277,7 +287,13 @@ describe('RecipeImportService', () => {
                     };
                 },
             };
-            service = new RecipeImportService(fetcher, new SequentialIdGenerator(), undefined, extractor);
+            service = new RecipeImportService(
+                fetcher,
+                new SequentialIdGenerator(),
+                new RuleIngredientStructurer(),
+                undefined,
+                extractor
+            );
             fetcher.html = llmPage;
 
             const result = await service.importFromUrl('https://example.com/blog');
@@ -295,7 +311,13 @@ describe('RecipeImportService', () => {
                     throw new Error('llm down');
                 },
             };
-            service = new RecipeImportService(fetcher, new SequentialIdGenerator(), undefined, extractor);
+            service = new RecipeImportService(
+                fetcher,
+                new SequentialIdGenerator(),
+                new RuleIngredientStructurer(),
+                undefined,
+                extractor
+            );
             fetcher.html = `<html><head><meta property="og:title" content="Partial" /></head><body></body></html>`;
 
             const result = await service.importFromUrl('https://example.com/partial');
@@ -312,7 +334,13 @@ describe('RecipeImportService', () => {
                     return { title: 'x', ingredients: [], instructions: [] };
                 },
             };
-            service = new RecipeImportService(fetcher, new SequentialIdGenerator(), undefined, extractor);
+            service = new RecipeImportService(
+                fetcher,
+                new SequentialIdGenerator(),
+                new RuleIngredientStructurer(),
+                undefined,
+                extractor
+            );
             fetcher.html = jsonLdPage({
                 '@type': 'Recipe',
                 name: 'Complete',
@@ -323,6 +351,20 @@ describe('RecipeImportService', () => {
             await service.importFromUrl('https://example.com/complete');
 
             expect(called).toBe(false);
+        });
+    });
+
+    describe('ingredient structuring', () => {
+        it('propagates a structurer failure instead of swallowing it', async () => {
+            fetcher.html = jsonLdPage({
+                '@type': 'Recipe',
+                name: 'Boom',
+                recipeIngredient: ['1 onion', '2 carrots'],
+                recipeInstructions: ['Do it.'],
+            });
+            const failing = new RecipeImportService(fetcher, new SequentialIdGenerator(), new ThrowingStructurer());
+
+            await expect(failing.importFromUrl('https://example.com/boom')).rejects.toMatchObject({ status: 502 });
         });
     });
 });

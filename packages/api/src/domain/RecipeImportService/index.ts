@@ -1,9 +1,9 @@
 import type { Logger } from '@imapps/api-utils';
-import type { Ingredient, RecipeImportResult } from '@shoppingo/types';
+import type { RecipeImportResult } from '@shoppingo/types';
 import * as cheerio from 'cheerio';
-import { parseIngredient } from 'parse-ingredient';
 
 import type { IdGenerator } from '../IdGenerator';
+import type { IngredientStructurer } from '../IngredientStructurer/types';
 import type { PageFetcher, RecipeDraft, RecipeTextExtractor } from './types';
 
 const MIN_INGREDIENTS = 2;
@@ -31,6 +31,7 @@ export class RecipeImportService {
     constructor(
         private readonly fetcher: PageFetcher,
         private readonly idGenerator: IdGenerator,
+        private readonly structurer: IngredientStructurer,
         private readonly logger?: Logger,
         private readonly llmExtractor?: RecipeTextExtractor
     ) {}
@@ -61,9 +62,17 @@ export class RecipeImportService {
             await this.tryLlm(draft, html);
         }
 
+        const started = Date.now();
+        const structured = await this.structurer.structure(draft.ingredients);
+        this.logger?.info('Recipe import structured ingredients', {
+            strategy: this.structurer.strategy,
+            lineCount: draft.ingredients.length,
+            durationMs: Date.now() - started,
+        });
+
         return {
             title: draft.title,
-            ingredients: draft.ingredients.map((raw) => this.toIngredient(raw)),
+            ingredients: structured.map((parsed) => ({ id: this.idGenerator.generate(), ...parsed })),
             instructions: draft.instructions,
             link: draft.link,
             ...(draft.image !== undefined && { image: draft.image }),
@@ -84,22 +93,6 @@ export class RecipeImportService {
             throw Object.assign(new Error('URL must be http or https'), { status: 400 });
         }
         return parsed.toString();
-    }
-
-    // Splits a raw ingredient line ("2 cups flour") into { name, quantity, unit } so the
-    // name stays free of measurements — imports also feed the AI image prompt, which
-    // renders garbled results when numbers/units are mixed into the ingredient name.
-    private toIngredient(raw: string): Ingredient {
-        const [parsed] = parseIngredient(raw);
-        const name = parsed?.description ? collapse(parsed.description) : raw;
-        const hasQuantity = typeof parsed?.quantity === 'number';
-
-        return {
-            id: this.idGenerator.generate(),
-            name: name || raw,
-            ...(hasQuantity && { quantity: parsed.quantity }),
-            ...(hasQuantity && { unit: parsed?.unitOfMeasure || 'pcs' }),
-        };
     }
 
     private isInsufficient(draft: RecipeDraft): boolean {
