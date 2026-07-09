@@ -75,6 +75,18 @@ describe('AddFriendDrawer', () => {
         await flush();
     });
 
+    it('enter mode: pasting a mixed-case code with stray characters sanitizes it to an uppercase code', async () => {
+        render(<AddFriendDrawer open onOpenChange={noop} />);
+        fireEvent.click(drawerContent().getByRole('button', { name: 'Enter code' }));
+
+        const otpInput = document.querySelector('input[data-input-otp]') as HTMLInputElement;
+        fireEvent.paste(otpInput, { clipboardData: { getData: () => 'ab-cd 12' } });
+
+        fireEvent.click(drawerContent().getByRole('button', { name: 'Add friend' }));
+        expect(redeemMutate).toHaveBeenCalledWith('ABCD12', expect.anything());
+        await flush();
+    });
+
     it('shows the expired-code error message on a rejected redeem', async () => {
         mockedUseRedeemFriendCode.mockReturnValue({
             mutate: redeemMutate,

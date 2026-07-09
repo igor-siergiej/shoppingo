@@ -1,3 +1,4 @@
+import { REGEXP_ONLY_DIGITS_AND_CHARS } from 'input-otp';
 import { UserPlus } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '../../../components/ui/button';
@@ -15,6 +16,10 @@ type Mode = 'invite' | 'enter';
 
 const OTP_LENGTH = 6;
 const CLOSE_DELAY_MS = 900;
+
+// Codes are generated from an uppercase-letters-and-digits alphabet (see FriendService),
+// so normalize typed/pasted input to match regardless of case or stray whitespace.
+const sanitizeCode = (value: string) => value.toUpperCase().replace(/[^A-Z0-9]/g, '');
 
 const formatCountdown = (secondsLeft: number): string => {
     if (secondsLeft <= 0) return 'Expired';
@@ -173,7 +178,14 @@ export const AddFriendDrawer = ({ open, onOpenChange }: AddFriendDrawerProps) =>
                         ) : (
                             <div className="space-y-4">
                                 <div className="flex justify-center">
-                                    <InputOTP maxLength={OTP_LENGTH} value={otp} onChange={setOtp}>
+                                    <InputOTP
+                                        maxLength={OTP_LENGTH}
+                                        value={otp}
+                                        onChange={(value) => setOtp(sanitizeCode(value))}
+                                        pattern={REGEXP_ONLY_DIGITS_AND_CHARS}
+                                        inputMode="text"
+                                        pasteTransformer={sanitizeCode}
+                                    >
                                         <InputOTPGroup>
                                             {[0, 1, 2, 3, 4, 5].map((slotIndex) => (
                                                 <InputOTPSlot key={slotIndex} index={slotIndex} />
