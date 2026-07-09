@@ -1,3 +1,10 @@
+## [1.57.4](https://github.com/igor-siergiej/shoppingo/compare/v1.57.3...v1.57.4) (2026-07-09)
+
+
+### Bug Fixes
+
+* **recipe-import:** carry parsed quantity/unit into created recipe ingredients ([#110](https://github.com/igor-siergiej/shoppingo/issues/110)) ([cb6c9fb](https://github.com/igor-siergiej/shoppingo/commit/cb6c9fb22c835b9dacdb9f04ef018247c885a906))
+
 ## [1.57.3](https://github.com/igor-siergiej/shoppingo/compare/v1.57.2...v1.57.3) (2026-07-09)
 
 
