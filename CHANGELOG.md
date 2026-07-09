@@ -1,3 +1,10 @@
+# [1.57.0](https://github.com/igor-siergiej/shoppingo/compare/v1.56.0...v1.57.0) (2026-07-09)
+
+
+### Features
+
+* friends & consent-based sharing ([#106](https://github.com/igor-siergiej/shoppingo/issues/106)) ([767dc1c](https://github.com/igor-siergiej/shoppingo/commit/767dc1c4493ef78e6b73d515b18fb87734cbae03))
+
 # [1.56.0](https://github.com/igor-siergiej/shoppingo/compare/v1.55.2...v1.56.0) (2026-07-07)
 
 
