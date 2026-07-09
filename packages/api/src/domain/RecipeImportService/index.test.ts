@@ -65,7 +65,7 @@ describe('RecipeImportService', () => {
             expect(result.image).toBe('https://img/cake.jpg');
             expect(result.ingredients.map((i) => i.name)).toEqual(['flour', 'eggs', 'sugar']);
             expect(result.ingredients.map((i) => i.quantity)).toEqual([200, 3, 100]);
-            expect(result.ingredients.map((i) => i.unit)).toEqual(['g', undefined, 'g']);
+            expect(result.ingredients.map((i) => i.unit)).toEqual(['g', 'pcs', 'g']);
             expect(result.ingredients[0].id).toBe('id-1');
             expect(result.instructions).toEqual(['Mix.', 'Bake.']);
             expect(result.prepTime).toBe('PT20M');
@@ -147,8 +147,24 @@ describe('RecipeImportService', () => {
             expect(result.ingredients).toEqual([
                 { id: 'id-1', name: 'salt', quantity: 0.5, unit: 'cup' },
                 { id: 'id-2', name: 'garlic', quantity: 2, unit: 'cloves' },
-                { id: 'id-3', name: 'eggs', quantity: 3 },
+                { id: 'id-3', name: 'eggs', quantity: 3, unit: 'pcs' },
                 { id: 'id-4', name: 'salt to taste' },
+            ]);
+        });
+
+        it('defaults unit to "pcs" when a quantity is found but no unit of measure', async () => {
+            fetcher.html = jsonLdPage({
+                '@type': 'Recipe',
+                name: 'No unit',
+                recipeIngredient: ['3 eggs', '1 onion'],
+                recipeInstructions: ['Do it.'],
+            });
+
+            const result = await service.importFromUrl('https://example.com/no-unit');
+
+            expect(result.ingredients).toEqual([
+                { id: 'id-1', name: 'eggs', quantity: 3, unit: 'pcs' },
+                { id: 'id-2', name: 'onion', quantity: 1, unit: 'pcs' },
             ]);
         });
 
@@ -194,7 +210,7 @@ describe('RecipeImportService', () => {
             expect(result.image).toBe('https://img/kimchi.jpg');
             expect(result.ingredients.map((i) => i.name)).toEqual(['napa cabbage', 'salt', 'gochugaru']);
             expect(result.ingredients.map((i) => i.quantity)).toEqual([1, 0.5, 3]);
-            expect(result.ingredients.map((i) => i.unit)).toEqual([undefined, 'cup', 'tbsp']);
+            expect(result.ingredients.map((i) => i.unit)).toEqual(['pcs', 'cup', 'tbsp']);
             expect(result.instructions).toEqual(['Salt the cabbage.', 'Rinse and drain.', 'Mix with paste.']);
         });
 
@@ -269,7 +285,7 @@ describe('RecipeImportService', () => {
             expect(result.title).toBe('LLM Dish');
             expect(result.ingredients.map((i) => i.name)).toEqual(['onion', 'garlic']);
             expect(result.ingredients.map((i) => i.quantity)).toEqual([1, 2]);
-            expect(result.ingredients.map((i) => i.unit)).toEqual([undefined, 'cloves']);
+            expect(result.ingredients.map((i) => i.unit)).toEqual(['pcs', 'cloves']);
             expect(result.instructions).toEqual(['Fry onion.', 'Add garlic.']);
         });
 
