@@ -1,3 +1,10 @@
+## [1.57.1](https://github.com/igor-siergiej/shoppingo/compare/v1.57.0...v1.57.1) (2026-07-09)
+
+
+### Bug Fixes
+
+* **web:** allow letters and pasting in friend code input ([#107](https://github.com/igor-siergiej/shoppingo/issues/107)) ([10bb440](https://github.com/igor-siergiej/shoppingo/commit/10bb44082fda37009fb977c26853353c7ebd1df1))
+
 # [1.57.0](https://github.com/igor-siergiej/shoppingo/compare/v1.56.0...v1.57.0) (2026-07-09)
 
 
