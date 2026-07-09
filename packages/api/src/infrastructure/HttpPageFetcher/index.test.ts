@@ -34,6 +34,15 @@ describe('HttpPageFetcher', () => {
         await expect(new HttpPageFetcher().fetchPage('https://example.com')).rejects.toMatchObject({ status: 502 });
     });
 
+    it('throws a clear message when the target site blocks the request with a 403', async () => {
+        stubFetch(async () => new Response('forbidden', { status: 403, headers: { 'content-type': 'text/html' } }));
+
+        await expect(new HttpPageFetcher().fetchPage('https://example.com')).rejects.toMatchObject({
+            status: 502,
+            message: expect.stringContaining('blocks automated requests'),
+        });
+    });
+
     it('throws 415 on a non-html content type', async () => {
         stubFetch(async () => new Response('{}', { headers: { 'content-type': 'application/json' } }));
 

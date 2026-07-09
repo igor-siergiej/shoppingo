@@ -6,9 +6,10 @@ export interface HttpPageFetcherOptions {
     userAgent?: string;
 }
 
-// A realistic desktop UA so recipe sites serve full HTML rather than a bot/challenge page.
-const DEFAULT_USER_AGENT =
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36';
+// Firefox, not Chrome: several recipe sites run WAF rules that specifically flag the extremely
+// common "generic Chrome" UA string used by countless scraping tools/headless browsers, while a
+// Firefox UA (much less commonly spoofed) passes through the same bot checks unblocked.
+const DEFAULT_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:126.0) Gecko/20100101 Firefox/126.0';
 
 export class HttpPageFetcher implements PageFetcher {
     private readonly timeoutMs: number;
@@ -32,7 +33,13 @@ export class HttpPageFetcher implements PageFetcher {
                 redirect: 'follow',
                 headers: {
                     'User-Agent': this.userAgent,
-                    Accept: 'text/html,application/xhtml+xml',
+                    Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                    'Accept-Language': 'en-US,en;q=0.9',
+                    'Upgrade-Insecure-Requests': '1',
+                    'Sec-Fetch-Dest': 'document',
+                    'Sec-Fetch-Mode': 'navigate',
+                    'Sec-Fetch-Site': 'none',
+                    'Sec-Fetch-User': '?1',
                 },
             });
         } catch (error) {
@@ -44,6 +51,12 @@ export class HttpPageFetcher implements PageFetcher {
         }
 
         if (!response.ok) {
+            if (response.status === 403 || response.status === 999) {
+                throw Object.assign(
+                    new Error('This site blocks automated requests — paste the ingredients/instructions manually'),
+                    { status: 502 }
+                );
+            }
             throw Object.assign(new Error(`Failed to fetch page: ${response.status}`), { status: 502 });
         }
 
