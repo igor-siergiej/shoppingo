@@ -1,3 +1,10 @@
+## [1.57.2](https://github.com/igor-siergiej/shoppingo/compare/v1.57.1...v1.57.2) (2026-07-09)
+
+
+### Bug Fixes
+
+* **recipe-import:** send browser-like headers to reduce 403s from recipe sites ([#108](https://github.com/igor-siergiej/shoppingo/issues/108)) ([e4f6f70](https://github.com/igor-siergiej/shoppingo/commit/e4f6f705388176fa66bfc39cc6b3f1b639ad17f1))
+
 ## [1.57.1](https://github.com/igor-siergiej/shoppingo/compare/v1.57.0...v1.57.1) (2026-07-09)
 
 
