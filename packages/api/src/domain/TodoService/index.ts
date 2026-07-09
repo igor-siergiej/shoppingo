@@ -1,6 +1,7 @@
 import type { IdGenerator, Logger } from '@imapps/api-utils';
-import type { Recurrence, Todo } from '@shoppingo/types';
+import type { Recurrence, Todo, User } from '@shoppingo/types';
 
+import type { FriendService } from '../FriendService';
 import type { TodoRepository } from '../TodoRepository';
 
 export interface CreateTodoInput {
@@ -10,6 +11,7 @@ export interface CreateTodoInput {
     labelId?: string;
     recurrence?: Recurrence;
     id?: string;
+    userIds?: string[];
 }
 
 export type UpdateTodoInput = Partial<Omit<Todo, 'id' | 'ownerId' | 'dateAdded'>>;
@@ -36,7 +38,8 @@ export class TodoService {
     constructor(
         private readonly repo: TodoRepository,
         private readonly idGenerator: IdGenerator,
-        private readonly logger?: Logger
+        private readonly logger?: Logger,
+        private readonly friendService?: FriendService
     ) {}
 
     private async getOwned(todoId: string, ownerId: string): Promise<Todo> {
@@ -44,6 +47,26 @@ export class TodoService {
         if (!todo) throw notFound();
         if (todo.ownerId !== ownerId) throw forbidden();
         return todo;
+    }
+
+    /** Owner or a shared member may load the todo; used where shared todos are collaborative (edit/complete). */
+    private async getOwnedOrMember(todoId: string, actorId: string): Promise<Todo> {
+        const todo = await this.repo.getById(todoId);
+        if (!todo) throw notFound();
+        if (todo.ownerId !== actorId && !todo.users?.some((u) => u.id === actorId)) throw forbidden();
+        return todo;
+    }
+
+    /** Seeds shared members: all current friends by default, or an explicit friend subset (403 on non-friends). */
+    private async seedMembers(ownerId: string, explicit?: string[]): Promise<User[]> {
+        if (!this.friendService) return [];
+        const friends = await this.friendService.listFriends(ownerId);
+        if (explicit === undefined) return friends;
+        const allowed = new Set(friends.map((f) => f.id));
+        for (const id of explicit) {
+            if (!allowed.has(id)) throw forbidden();
+        }
+        return friends.filter((f) => explicit.includes(f.id));
     }
 
     async createTodo(ownerId: string, rawInput: CreateTodoInput): Promise<Todo> {
@@ -54,6 +77,7 @@ export class TodoService {
                 return existing;
             }
         }
+        const users = await this.seedMembers(ownerId, input.userIds);
         const todo: Todo = {
             id: input.id ?? this.idGenerator.generate(),
             ownerId,
@@ -64,6 +88,7 @@ export class TodoService {
             ...(input.time !== undefined && { time: input.time }),
             ...(input.labelId !== undefined && { labelId: input.labelId }),
             ...(input.recurrence !== undefined && { recurrence: input.recurrence, completedDates: [] }),
+            ...(users.length > 0 && { users }),
         };
         await this.repo.insert(todo);
         this.logger?.info('Todo created', { todoId: todo.id, ownerId });
@@ -74,9 +99,20 @@ export class TodoService {
         return this.repo.findByOwnerId(ownerId);
     }
 
-    async updateTodo(todoId: string, ownerId: string, rawInput: UpdateTodoInput): Promise<Todo> {
-        const existing = await this.getOwned(todoId, ownerId);
-        const merged: Todo = { ...existing, ...normalizeDays(rawInput) };
+    async getTodosForUser(userId: string): Promise<Todo[]> {
+        const owned = await this.repo.findByOwnerId(userId);
+        const shared = await this.repo.findByMember(userId);
+        const byId = new Map<string, Todo>();
+        for (const t of [...owned, ...shared]) byId.set(t.id, t);
+        return [...byId.values()];
+    }
+
+    async updateTodo(todoId: string, actorId: string, rawInput: UpdateTodoInput): Promise<Todo> {
+        const existing = await this.getOwnedOrMember(todoId, actorId);
+        const input = normalizeDays(rawInput);
+        // Membership (sharing) is owner-only; a member editing content must not re-scope who it's shared with.
+        if (existing.ownerId !== actorId) delete input.users;
+        const merged: Todo = { ...existing, ...input };
         return this.repo.update(todoId, merged);
     }
 
@@ -85,8 +121,8 @@ export class TodoService {
         await this.repo.deleteById(todoId);
     }
 
-    async toggleComplete(todoId: string, ownerId: string, date?: string): Promise<Todo> {
-        const todo = await this.getOwned(todoId, ownerId);
+    async toggleComplete(todoId: string, actorId: string, date?: string): Promise<Todo> {
+        const todo = await this.getOwnedOrMember(todoId, actorId);
 
         if (todo.recurrence && date) {
             const current = todo.completedDates ?? [];

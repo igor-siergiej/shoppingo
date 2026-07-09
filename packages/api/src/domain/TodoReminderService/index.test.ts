@@ -113,6 +113,23 @@ describe('TodoReminderService.sendDailyReminders', () => {
         expect(pushRepo.deleteByEndpoints).toHaveBeenCalledWith(['e1']);
     });
 
+    it('notifies only the owner, never shared members, for a shared todo', async () => {
+        pushRepo = makePushRepo([subFor('u1', 'e1'), subFor('u2', 'e2')]);
+        await new TodoReminderService(
+            {
+                findDueCandidates: mock(async () => [
+                    todo({ ownerId: 'u1', users: [{ id: 'u2', username: 'user-u2' }] }),
+                ]),
+            } as never,
+            pushRepo as never,
+            sender as never
+        ).sendDailyReminders(NOW);
+
+        expect(pushRepo.findByUserIds).toHaveBeenCalledWith(['u1']);
+        expect(sender.send).toHaveBeenCalledTimes(1);
+        expect(sender.send).toHaveBeenCalledWith(expect.objectContaining({ userId: 'u1' }), expect.any(String));
+    });
+
     it('skips owners with no subscriptions', async () => {
         pushRepo = makePushRepo([]);
         await new TodoReminderService(

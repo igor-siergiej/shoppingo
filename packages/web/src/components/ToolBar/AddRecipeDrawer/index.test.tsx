@@ -3,15 +3,8 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AddRecipeDrawer } from './index';
 
-vi.mock('../../../hooks/useSearch', () => ({
-    useSearch: vi.fn(() => ({
-        query: '',
-        setQuery: vi.fn(),
-        results: { success: 'false', usernames: [], count: 0, query: '' },
-        isLoading: false,
-        error: null,
-        clearResults: vi.fn(),
-    })),
+vi.mock('../../../hooks/useFriends', () => ({
+    useFriends: vi.fn(() => ({ friends: [], isLoading: false })),
 }));
 
 vi.mock('sonner', () => ({

@@ -1,8 +1,7 @@
 import type { ListType } from '@shoppingo/types';
 import { ListType as ListTypeEnum } from '@shoppingo/types';
-import { Plus, Search } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useId, useState } from 'react';
-import { SearchResults } from '../../../components/SearchResults';
 import { Button } from '../../../components/ui/button';
 import {
     Drawer,
@@ -16,8 +15,7 @@ import {
 import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
 import { RippleButton } from '../../../components/ui/ripple';
-import { useSearch } from '../../../hooks/useSearch';
-import { SelectedUsersList } from './SelectedUsersList';
+import { FriendPicker } from '../../FriendPicker';
 
 export interface AddListDrawerProps {
     open: boolean;
@@ -28,23 +26,10 @@ export interface AddListDrawerProps {
 
 export const AddListDrawer = ({ open, onOpenChange, onAdd, placeholder }: AddListDrawerProps) => {
     const listNameId = useId();
-    const searchUsersId = useId();
     const [newName, setNewName] = useState('');
-    const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+    const [shareWith, setShareWith] = useState<string[]>([]);
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-
-    const { query, results, isLoading: isSearching, error: searchError, setQuery, clearResults } = useSearch();
-
-    const handleUserSelect = (username: string) => {
-        setSelectedUsers((prev) => (prev.includes(username) ? prev : [...prev, username]));
-        clearResults();
-        setQuery('');
-    };
-
-    const removeSelectedUser = (username: string) => {
-        setSelectedUsers((prev) => prev.filter((u) => u !== username));
-    };
 
     const handleSubmit = async () => {
         const trimmedName = newName.trim();
@@ -58,10 +43,10 @@ export const AddListDrawer = ({ open, onOpenChange, onAdd, placeholder }: AddLis
         setError('');
 
         try {
-            await onAdd(trimmedName, ListTypeEnum.SHOPPING, selectedUsers);
+            await onAdd(trimmedName, ListTypeEnum.SHOPPING, shareWith);
 
             setNewName('');
-            setSelectedUsers([]);
+            setShareWith([]);
             onOpenChange(false);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to create list');
@@ -72,10 +57,8 @@ export const AddListDrawer = ({ open, onOpenChange, onAdd, placeholder }: AddLis
 
     const handleCancel = () => {
         setNewName('');
-        setSelectedUsers([]);
+        setShareWith([]);
         setError('');
-        clearResults();
-        setQuery('');
         onOpenChange(false);
     };
 
@@ -119,31 +102,9 @@ export const AddListDrawer = ({ open, onOpenChange, onAdd, placeholder }: AddLis
                             {error && <p className="text-sm text-destructive">{error}</p>}
                         </div>
 
-                        {/* User search */}
                         <div className="space-y-2">
-                            <Label htmlFor={searchUsersId}>Search Users to Share With</Label>
-                            <div className="relative">
-                                <div className="relative">
-                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                    <Input
-                                        id={searchUsersId}
-                                        value={query}
-                                        onChange={(e) => setQuery(e.target.value)}
-                                        placeholder="Search users..."
-                                        className="pl-10"
-                                    />
-                                </div>
-                                <SearchResults
-                                    results={results}
-                                    isLoading={isSearching}
-                                    error={searchError}
-                                    onSelect={handleUserSelect}
-                                    onClose={clearResults}
-                                    query={query}
-                                />
-                            </div>
-
-                            <SelectedUsersList selectedUsers={selectedUsers} onRemoveUser={removeSelectedUser} />
+                            <Label>Share with</Label>
+                            <FriendPicker value={shareWith} onChange={setShareWith} seedAllByDefault />
                         </div>
                     </div>
                     <DrawerFooter>

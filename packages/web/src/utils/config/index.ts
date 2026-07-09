@@ -44,7 +44,3 @@ export const getConfig = (): AppConfig => {
 
     return configState.config;
 };
-
-export const getAuthUrl = (): string => {
-    return getConfig().AUTH_URL;
-};

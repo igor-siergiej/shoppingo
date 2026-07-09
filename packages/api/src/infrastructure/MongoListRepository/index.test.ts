@@ -135,6 +135,27 @@ describe('MongoListRepository', () => {
         });
     });
 
+    describe('Getting all lists', () => {
+        it('should return every list in the collection', async () => {
+            const mockLists: Array<List> = [
+                {
+                    id: 'list-1',
+                    title: 'List 1',
+                    dateAdded: new Date('2023-01-01'),
+                    items: [],
+                    users: [{ id: 'user-1', username: 'testuser' }],
+                },
+            ];
+
+            mockCollection.resolvedValues.find = { toArray: async () => mockLists };
+
+            const result = await repository.getAll();
+
+            expect(mockCollection.calls.find[0]).toEqual([{}]);
+            expect(result).toEqual(mockLists);
+        });
+    });
+
     describe('Finding lists by user ID', () => {
         describe('When a user has lists', () => {
             it('should return all lists belonging to that user', async () => {

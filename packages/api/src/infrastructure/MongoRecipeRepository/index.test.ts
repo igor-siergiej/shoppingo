@@ -51,6 +51,16 @@ describe('MongoRecipeRepository', () => {
         });
     });
 
+    describe('getAll', () => {
+        it('returns every recipe in the collection', async () => {
+            const recipes = [makeRecipe('r1'), makeRecipe('r2')];
+            collection.find.mockReturnValue({ toArray: vi.fn().mockResolvedValue(recipes) });
+            const result = await repo.getAll();
+            expect(result).toEqual(recipes);
+            expect(collection.find).toHaveBeenCalledWith({});
+        });
+    });
+
     describe('findByUserId', () => {
         it('returns recipes for user', async () => {
             const recipes = [makeRecipe('r1'), makeRecipe('r2')];

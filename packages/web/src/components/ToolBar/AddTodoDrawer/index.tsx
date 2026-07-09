@@ -3,6 +3,7 @@ import { Plus } from 'lucide-react';
 import { useEffect, useId, useState } from 'react';
 import type { CreateTodoBody } from '../../../api';
 import { DueDateField } from '../../../components/DueDateField';
+import { FriendPicker } from '../../../components/FriendPicker';
 import { LabelSelect } from '../../../components/LabelSelect';
 import { RecurrenceField } from '../../../components/RecurrenceField';
 import { TimeField } from '../../../components/TimeField';
@@ -26,12 +27,14 @@ interface BuildTodoBodyArgs {
     time?: string;
     labelId?: string;
     recurrence?: Recurrence;
+    userIds?: string[];
 }
 
-const buildTodoBody = ({ title, dueDate, ...rest }: BuildTodoBodyArgs): CreateTodoBody => {
+const buildTodoBody = ({ title, dueDate, userIds, ...rest }: BuildTodoBodyArgs): CreateTodoBody => {
     const body: CreateTodoBody = { title, ...rest };
     // Serialize the picked Date as a tz-agnostic day so the server-side reminder can't drift it.
     if (dueDate !== undefined) body.dueDate = isoDay(dueDate);
+    if (userIds !== undefined && userIds.length > 0) body.userIds = userIds;
     return body;
 };
 
@@ -50,6 +53,7 @@ export const AddTodoDrawer = ({ open, onOpenChange, onAdd, labels, prefillDate }
     const [time, setTime] = useState<string | undefined>(undefined);
     const [labelId, setLabelId] = useState<string | undefined>(undefined);
     const [recurrence, setRecurrence] = useState<Recurrence | undefined>(undefined);
+    const [shareWith, setShareWith] = useState<string[]>([]);
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
@@ -63,6 +67,7 @@ export const AddTodoDrawer = ({ open, onOpenChange, onAdd, labels, prefillDate }
         setTime(undefined);
         setLabelId(undefined);
         setRecurrence(undefined);
+        setShareWith([]);
         setError('');
     };
 
@@ -75,7 +80,7 @@ export const AddTodoDrawer = ({ open, onOpenChange, onAdd, labels, prefillDate }
         setIsLoading(true);
         setError('');
         try {
-            await onAdd(buildTodoBody({ title: trimmed, dueDate, time, labelId, recurrence }));
+            await onAdd(buildTodoBody({ title: trimmed, dueDate, time, labelId, recurrence, userIds: shareWith }));
             reset();
             onOpenChange(false);
         } catch (err) {
@@ -131,6 +136,10 @@ export const AddTodoDrawer = ({ open, onOpenChange, onAdd, labels, prefillDate }
                         <TimeField value={time} onChange={setTime} />
                         <LabelSelect labels={labels} value={labelId} onChange={setLabelId} />
                         <RecurrenceField value={recurrence} onChange={setRecurrence} />
+                        <div className="space-y-2">
+                            <Label>Share with friends</Label>
+                            <FriendPicker value={shareWith} onChange={setShareWith} seedAllByDefault />
+                        </div>
                     </div>
                     <DrawerFooter className="flex-none">
                         <Button onClick={handleSubmit} disabled={isLoading}>

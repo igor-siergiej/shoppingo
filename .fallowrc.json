@@ -20,6 +20,9 @@
     "packages/api/src/infrastructure/MongoPushSubscriptionRepository/index.ts",
     "packages/api/src/infrastructure/WebPushSender/index.ts",
     "packages/api/src/domain/NotificationService/index.ts",
+    "packages/api/src/domain/FriendService/index.ts",
+    "packages/api/src/infrastructure/MongoFriendRepository/index.ts",
+    "packages/api/src/migrations/**",
     "packages/web/src/sw.ts",
     "packages/api/src/infrastructure/UuidGenerator/index.ts",
     "packages/api/src/infrastructure/metrics.ts",
@@ -58,6 +61,7 @@
     "workbox-routing",
     "workbox-strategies",
     "web-push",
-    "fake-indexeddb"
+    "fake-indexeddb",
+    "input-otp"
   ]
 }

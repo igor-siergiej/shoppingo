@@ -273,7 +273,7 @@ export const deleteRecipe = async (c: Context<HonoVars>): Promise<Response> => {
 
 export const addUserToRecipe = async (c: Context<HonoVars>): Promise<Response> => {
     const recipeId = c.req.param('recipeId');
-    const { user } = await c.req.json<{ user: { id: string; username: string } }>();
+    const { friendId } = await c.req.json<{ friendId: string }>();
     const logger = getLogger();
     const authenticatedUser = getAuthenticatedUser(c);
 
@@ -282,8 +282,8 @@ export const addUserToRecipe = async (c: Context<HonoVars>): Promise<Response> =
         return c.json({ error: 'Unauthorized' }, 401);
     }
 
-    if (!user || typeof user !== 'object' || !user.id || !user.username) {
-        return c.json({ error: 'User object with id and username is required' }, 400);
+    if (!friendId || typeof friendId !== 'string' || friendId.trim() === '') {
+        return c.json({ error: 'friendId is required' }, 400);
     }
 
     try {
@@ -293,14 +293,13 @@ export const addUserToRecipe = async (c: Context<HonoVars>): Promise<Response> =
             return c.json({ error: 'Forbidden' }, 403);
         }
 
-        const recipe = await getRecipeService().addUserToRecipe(recipeId, user, authenticatedUser.id);
+        const recipe = await getRecipeService().addUserToRecipe(recipeId, friendId.trim(), authenticatedUser.id);
 
         logger.info('API: User added to recipe', {
             userId: authenticatedUser.id,
             username: authenticatedUser.username,
             recipeId,
-            addedUserId: user.id,
-            addedUsername: user.username,
+            addedUser: friendId,
         });
 
         return c.json(recipe, 200);
@@ -312,7 +311,7 @@ export const addUserToRecipe = async (c: Context<HonoVars>): Promise<Response> =
             userId: authenticatedUser.id,
             username: authenticatedUser.username,
             recipeId,
-            addedUserId: user?.id,
+            addedUser: friendId,
             error: errorMessage,
             status,
         });

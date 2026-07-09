@@ -1,6 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '../../components/ui/alert-dialog';
 import { Button } from '../../components/ui/button';
 import {
     Drawer,
@@ -11,9 +21,11 @@ import {
     DrawerHeader,
     DrawerTitle,
 } from '../../components/ui/drawer';
+import { Label } from '../../components/ui/label';
+import { useConfirmation } from '../../hooks/useConfirmation';
+import { useFriends } from '../../hooks/useFriends';
 import { useManageUsers } from '../../hooks/useManageUsers';
-import { ManageUsersMembersList } from './ManageUsersMembersList';
-import { ManageUsersSearchSection } from './ManageUsersSearchSection';
+import { FriendPicker } from '../FriendPicker';
 
 interface ManageUsersDrawerProps {
     open: boolean;
@@ -26,82 +38,113 @@ interface ManageUsersDrawerProps {
     onUserRemoved: () => void;
 }
 
+const getMemberIds = (currentUsers: Array<{ id: string; username: string }>, ownerId: string) =>
+    currentUsers.filter((u) => u.id !== ownerId).map((u) => u.id);
+
 export const ManageUsersDrawer = ({
     open,
     onOpenChange,
     listTitle,
     currentUsers,
     ownerId,
-    currentUserId,
     onUserAdded,
     onUserRemoved,
 }: ManageUsersDrawerProps) => {
-    const [confirmRemoveUserId, setConfirmRemoveUserId] = useState<string | null>(null);
+    const { addUserMutation, removeUserMutation } = useManageUsers({ listTitle });
+    const { friends } = useFriends();
+    const { confirm, isOpen, config: confirmConfig, handleConfirm, handleCancel } = useConfirmation();
 
-    const { searchInput, setSearchInput, availableUsers, isSearching, addUserMutation, removeUserMutation } =
-        useManageUsers({ listTitle, currentUsers, ownerId });
+    // Local state is the source of truth for the picker so a cancelled removal
+    // leaves the toggle ON instead of flickering off while awaiting confirm.
+    const [memberIds, setMemberIds] = useState<string[]>(() => getMemberIds(currentUsers, ownerId));
 
-    const handleAddUserWithCallback = async (username: string) => {
-        try {
-            await addUserMutation.mutateAsync(username);
-            onUserAdded();
-        } catch {
-            // error handled by onError in useManageUsers
+    useEffect(() => {
+        setMemberIds(getMemberIds(currentUsers, ownerId));
+    }, [currentUsers, ownerId]);
+
+    const ownerUsername = currentUsers.find((u) => u.id === ownerId)?.username;
+
+    const handleChange = (nextIds: string[]) => {
+        const added = nextIds.filter((id) => !memberIds.includes(id));
+        const removed = memberIds.filter((id) => !nextIds.includes(id));
+
+        for (const friendId of added) {
+            setMemberIds((prev) => [...prev, friendId]);
+            addUserMutation.mutate(friendId, { onSuccess: onUserAdded });
         }
-    };
 
-    const handleRemoveUserWithCallback = async (userId: string) => {
-        try {
-            await removeUserMutation.mutateAsync(userId);
-            setConfirmRemoveUserId(null);
-            onUserRemoved();
-        } catch {
-            // error handled by onError in useManageUsers
+        for (const userId of removed) {
+            const username =
+                currentUsers.find((u) => u.id === userId)?.username ??
+                friends.find((f) => f.id === userId)?.username ??
+                'this member';
+
+            confirm({
+                title: 'Remove member?',
+                description: `Remove ${username} from this list?`,
+                actionLabel: 'Remove',
+                onConfirm: () => {
+                    removeUserMutation.mutate(userId, {
+                        onSuccess: () => {
+                            setMemberIds((prev) => prev.filter((id) => id !== userId));
+                            onUserRemoved();
+                        },
+                    });
+                },
+            });
         }
     };
 
     return (
-        <Drawer open={open} onOpenChange={onOpenChange}>
-            <DrawerContent>
-                <div className="mx-auto w-full max-w-sm flex flex-col h-[500px] max-h-[500px]">
-                    <DrawerHeader className="flex-shrink-0">
-                        <DrawerTitle>Manage Users</DrawerTitle>
-                        <DrawerDescription>{listTitle}</DrawerDescription>
-                    </DrawerHeader>
+        <>
+            <Drawer open={open} onOpenChange={onOpenChange}>
+                <DrawerContent>
+                    <div className="mx-auto w-full max-w-sm flex flex-col h-[500px] max-h-[500px]">
+                        <DrawerHeader className="flex-shrink-0">
+                            <DrawerTitle>Manage Users</DrawerTitle>
+                            <DrawerDescription>{listTitle}</DrawerDescription>
+                        </DrawerHeader>
 
-                    <div className="flex-1 overflow-y-auto p-4">
-                        <div className="space-y-4">
-                            <ManageUsersMembersList
-                                currentUsers={currentUsers}
-                                ownerId={ownerId}
-                                currentUserId={currentUserId}
-                                isRemoving={removeUserMutation.isLoading}
-                                confirmRemoveUserId={confirmRemoveUserId}
-                                onRemoveClick={setConfirmRemoveUserId}
-                                onRemoveConfirm={handleRemoveUserWithCallback}
-                                onRemoveCancel={() => setConfirmRemoveUserId(null)}
-                            />
+                        <div className="flex-1 overflow-y-auto p-4">
+                            <div className="space-y-4">
+                                {ownerUsername && (
+                                    <p className="text-sm text-muted-foreground">Owner: {ownerUsername}</p>
+                                )}
 
-                            <ManageUsersSearchSection
-                                searchInput={searchInput}
-                                onSearchChange={setSearchInput}
-                                availableUsers={availableUsers}
-                                isSearching={isSearching}
-                                isAdding={addUserMutation.isLoading}
-                                onAddUser={handleAddUserWithCallback}
-                            />
+                                <div className="space-y-2">
+                                    <Label className="text-sm font-semibold">Members</Label>
+                                    <FriendPicker value={memberIds} onChange={handleChange} />
+                                </div>
+                            </div>
                         </div>
-                    </div>
 
-                    <DrawerFooter className="flex-shrink-0">
-                        <DrawerClose asChild>
-                            <Button variant="outline" onClick={() => onOpenChange(false)}>
-                                Close
-                            </Button>
-                        </DrawerClose>
-                    </DrawerFooter>
-                </div>
-            </DrawerContent>
-        </Drawer>
+                        <DrawerFooter className="flex-shrink-0">
+                            <DrawerClose asChild>
+                                <Button variant="outline" onClick={() => onOpenChange(false)}>
+                                    Close
+                                </Button>
+                            </DrawerClose>
+                        </DrawerFooter>
+                    </div>
+                </DrawerContent>
+            </Drawer>
+
+            <AlertDialog open={isOpen} onOpenChange={(open) => !open && handleCancel()}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>{confirmConfig?.title}</AlertDialogTitle>
+                        <AlertDialogDescription>{confirmConfig?.description}</AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel onClick={handleCancel}>
+                            {confirmConfig?.cancelLabel || 'Cancel'}
+                        </AlertDialogCancel>
+                        <AlertDialogAction onClick={handleConfirm}>
+                            {confirmConfig?.actionLabel || 'Confirm'}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+        </>
     );
 };

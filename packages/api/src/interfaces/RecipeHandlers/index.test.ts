@@ -343,17 +343,17 @@ describe('RecipeHandlers', () => {
         it('returns 401 when no authenticated user', async () => {
             const ctx = createMockContext({
                 params: { recipeId: 'recipe-1' },
-                body: { user: newUser },
+                body: { friendId: newUser.id },
                 user: undefined,
             });
             const response = await recipeHandlers.addUserToRecipe(ctx);
             expect(response.status).toBe(401);
         });
 
-        it('returns 400 when user object invalid', async () => {
+        it('returns 400 when friendId missing', async () => {
             const ctx = createMockContext({
                 params: { recipeId: 'recipe-1' },
-                body: { user: null },
+                body: { friendId: '' },
             });
             const response = await recipeHandlers.addUserToRecipe(ctx);
             expect(response.status).toBe(400);
@@ -366,7 +366,7 @@ describe('RecipeHandlers', () => {
             });
             const ctx = createMockContext({
                 params: { recipeId: 'recipe-1' },
-                body: { user: newUser },
+                body: { friendId: newUser.id },
             });
             const response = await recipeHandlers.addUserToRecipe(ctx);
             expect(response.status).toBe(403);
@@ -377,7 +377,7 @@ describe('RecipeHandlers', () => {
             mockRecipeService.addUserToRecipe.mockResolvedValue(updated);
             const ctx = createMockContext({
                 params: { recipeId: 'recipe-1' },
-                body: { user: newUser },
+                body: { friendId: newUser.id },
             });
             const response = await recipeHandlers.addUserToRecipe(ctx);
             expect(response.status).toBe(200);
@@ -387,7 +387,7 @@ describe('RecipeHandlers', () => {
             mockRecipeService.addUserToRecipe.mockRejectedValue(Object.assign(new Error('fail'), { status: 400 }));
             const ctx = createMockContext({
                 params: { recipeId: 'recipe-1' },
-                body: { user: newUser },
+                body: { friendId: newUser.id },
             });
             await expect(recipeHandlers.addUserToRecipe(ctx)).rejects.toThrow('fail');
         });

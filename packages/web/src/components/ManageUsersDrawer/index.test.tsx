@@ -3,42 +3,21 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ManageUsersDrawer } from './index';
 
-const { mockHandleAddUser, mockHandleRemoveUser } = vi.hoisted(() => ({
-    mockHandleAddUser: vi.fn(),
-    mockHandleRemoveUser: vi.fn(),
+const { mockUseFriends, mockAddMutate, mockRemoveMutate } = vi.hoisted(() => ({
+    mockUseFriends: vi.fn(),
+    mockAddMutate: vi.fn(),
+    mockRemoveMutate: vi.fn(),
+}));
+
+vi.mock('../../hooks/useFriends', () => ({
+    useFriends: mockUseFriends,
 }));
 
 vi.mock('../../hooks/useManageUsers', () => ({
     useManageUsers: () => ({
-        searchInput: '',
-        setSearchInput: vi.fn(),
-        availableUsers: [],
-        isSearching: false,
-        addUserMutation: { isLoading: false, mutateAsync: vi.fn().mockResolvedValue(undefined) },
-        removeUserMutation: { isLoading: false, mutateAsync: vi.fn().mockResolvedValue(undefined) },
-        handleAddUser: mockHandleAddUser,
-        handleRemoveUser: mockHandleRemoveUser,
+        addUserMutation: { isLoading: false, mutate: mockAddMutate },
+        removeUserMutation: { isLoading: false, mutate: mockRemoveMutate },
     }),
-}));
-
-vi.mock('./ManageUsersMembersList', () => ({
-    ManageUsersMembersList: ({ onRemoveClick }: any) => (
-        <div data-testid="members-list">
-            <button type="button" onClick={() => onRemoveClick('user-1')}>
-                Remove User
-            </button>
-        </div>
-    ),
-}));
-
-vi.mock('./ManageUsersSearchSection', () => ({
-    ManageUsersSearchSection: ({ onAddUser }: any) => (
-        <div data-testid="search-section">
-            <button type="button" onClick={() => onAddUser('newuser')}>
-                Add User
-            </button>
-        </div>
-    ),
 }));
 
 describe('ManageUsersDrawer', () => {
@@ -50,15 +29,25 @@ describe('ManageUsersDrawer', () => {
         open: true,
         onOpenChange: mockOnOpenChange,
         listTitle: 'Shopping List',
-        currentUsers: [{ id: 'user-1', username: 'john' }],
-        ownerId: 'user-1',
-        currentUserId: 'user-1',
+        currentUsers: [
+            { id: 'owner-1', username: 'john' },
+            { id: 'friend-1', username: 'alice' },
+        ],
+        ownerId: 'owner-1',
+        currentUserId: 'owner-1',
         onUserAdded: mockOnUserAdded,
         onUserRemoved: mockOnUserRemoved,
     };
 
     beforeEach(() => {
         vi.clearAllMocks();
+        mockUseFriends.mockReturnValue({
+            friends: [
+                { id: 'friend-1', username: 'alice' },
+                { id: 'friend-2', username: 'bob' },
+            ],
+            isLoading: false,
+        });
     });
 
     it('renders drawer content when open', () => {
@@ -68,16 +57,19 @@ describe('ManageUsersDrawer', () => {
         expect(screen.getByText('Shopping List')).toBeInTheDocument();
     });
 
-    it('renders members list section', () => {
+    it('shows the owner', () => {
         render(<ManageUsersDrawer {...defaultProps} />);
 
-        expect(screen.getByTestId('members-list')).toBeInTheDocument();
+        expect(screen.getByText('Owner: john')).toBeInTheDocument();
     });
 
-    it('renders search section', () => {
+    it('reflects current members as toggled-on friends', () => {
         render(<ManageUsersDrawer {...defaultProps} />);
 
-        expect(screen.getByTestId('search-section')).toBeInTheDocument();
+        const switches = screen.getAllByRole('switch');
+        // alice (friend-1) is a current member; bob (friend-2) is not.
+        expect(switches[0]).toBeChecked();
+        expect(switches[1]).not.toBeChecked();
     });
 
     it('closes drawer when close button is clicked', async () => {
@@ -90,37 +82,60 @@ describe('ManageUsersDrawer', () => {
         expect(mockOnOpenChange).toHaveBeenCalledWith(false);
     });
 
-    it('calls onUserAdded when user is added', async () => {
+    it('adds a user and calls onUserAdded when toggling a non-member friend on', async () => {
+        mockAddMutate.mockImplementation((_id, opts) => opts?.onSuccess?.());
         const user = userEvent.setup();
         render(<ManageUsersDrawer {...defaultProps} />);
 
-        const addButton = screen.getByRole('button', { name: /add user/i });
-        await user.click(addButton);
+        const switches = screen.getAllByRole('switch');
+        await user.click(switches[1]);
 
+        expect(mockAddMutate).toHaveBeenCalledWith(
+            'friend-2',
+            expect.objectContaining({ onSuccess: expect.any(Function) })
+        );
         expect(mockOnUserAdded).toHaveBeenCalled();
     });
 
-    it('manages user removal state', async () => {
+    it('opens a confirm dialog instead of removing immediately when toggling a member off', async () => {
         const user = userEvent.setup();
         render(<ManageUsersDrawer {...defaultProps} />);
 
-        const removeButton = screen.getByRole('button', { name: /remove user/i });
-        await user.click(removeButton);
+        const switches = screen.getAllByRole('switch');
+        await user.click(switches[0]);
 
-        // Clicking remove button should work without errors
-        expect(removeButton).toBeInTheDocument();
+        expect(screen.getByText('Remove alice from this list?')).toBeInTheDocument();
+        expect(mockRemoveMutate).not.toHaveBeenCalled();
     });
 
-    it('does not render content when drawer is closed', () => {
-        const { container } = render(<ManageUsersDrawer {...defaultProps} open={false} />);
-
-        // Container should exist but drawer content should not be visible
-        expect(container).toBeInTheDocument();
-    });
-
-    it('passes correct props to members list', () => {
+    it('removes a user and calls onUserRemoved when the removal is confirmed', async () => {
+        mockRemoveMutate.mockImplementation((_id, opts) => opts?.onSuccess?.());
+        const user = userEvent.setup();
         render(<ManageUsersDrawer {...defaultProps} />);
 
-        expect(screen.getByTestId('members-list')).toBeInTheDocument();
+        const switches = screen.getAllByRole('switch');
+        await user.click(switches[0]);
+        await user.click(screen.getByRole('button', { name: 'Remove' }));
+
+        expect(mockRemoveMutate).toHaveBeenCalledWith(
+            'friend-1',
+            expect.objectContaining({ onSuccess: expect.any(Function) })
+        );
+        expect(mockOnUserRemoved).toHaveBeenCalled();
+    });
+
+    it('does not remove the user and keeps the toggle on when the removal is cancelled', async () => {
+        const user = userEvent.setup();
+        render(<ManageUsersDrawer {...defaultProps} />);
+
+        const switches = screen.getAllByRole('switch');
+        await user.click(switches[0]);
+        await user.click(screen.getByRole('button', { name: 'Cancel' }));
+
+        expect(mockRemoveMutate).not.toHaveBeenCalled();
+        expect(mockOnUserRemoved).not.toHaveBeenCalled();
+
+        const switchesAfterCancel = screen.getAllByRole('switch');
+        expect(switchesAfterCancel[0]).toBeChecked();
     });
 });

@@ -1,8 +1,10 @@
 import type { Logger, MongoDbConnection, ObjectStoreConnection } from '@imapps/api-utils';
-import type { Label, List, PushSubscription, Recipe, Todo } from '@shoppingo/types';
+import type { Friendship, Label, List, PairingCode, PushSubscription, Recipe, Todo } from '@shoppingo/types';
 
 import type { AuthorizationService } from '../domain/AuthorizationService';
 import type { DailyReminderScheduler } from '../domain/DailyReminderScheduler';
+import type { FriendRepository } from '../domain/FriendRepository';
+import type { FriendService } from '../domain/FriendService';
 import type { IdGenerator } from '../domain/IdGenerator';
 import type { ImageService } from '../domain/ImageService';
 import type { ImageGenerator, ImageStore } from '../domain/ImageService/types';
@@ -31,6 +33,8 @@ export type Collections = {
     [CollectionNames.Todo]: Todo;
     [CollectionNames.Label]: Label;
     [CollectionNames.PushSubscription]: PushSubscription;
+    [CollectionNames.Friendship]: Friendship;
+    [CollectionNames.PairingCode]: PairingCode;
 };
 
 export enum DependencyToken {
@@ -62,6 +66,8 @@ export enum DependencyToken {
     NotificationService = 'NotificationService',
     TodoReminderService = 'TodoReminderService',
     DailyReminderScheduler = 'DailyReminderScheduler',
+    FriendRepository = 'FriendRepository',
+    FriendService = 'FriendService',
 }
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
@@ -94,6 +100,8 @@ export type Dependencies = {
     [DependencyToken.NotificationService]: NotificationService;
     [DependencyToken.TodoReminderService]: TodoReminderService;
     [DependencyToken.DailyReminderScheduler]: DailyReminderScheduler;
+    [DependencyToken.FriendRepository]: FriendRepository;
+    [DependencyToken.FriendService]: FriendService;
 };
 
 export enum CollectionNames {
@@ -102,4 +110,6 @@ export enum CollectionNames {
     Todo = 'todo',
     Label = 'label',
     PushSubscription = 'pushSubscription',
+    Friendship = 'friendships',
+    PairingCode = 'pairingCodes',
 }

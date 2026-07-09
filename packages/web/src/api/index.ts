@@ -192,12 +192,12 @@ export const updateItemQuantity = async (listTitle: string, itemId: string, quan
         }),
     });
 
-export const addUserToList = async (listTitle: string, username: string): Promise<ListResponse> => {
+export const addUserToList = async (listTitle: string, friendId: string): Promise<ListResponse> => {
     return await makeRequest({
         pathname: `/api/lists/${encodeURIComponent(listTitle)}/users`,
         method: MethodType.POST,
         operationString: 'add user to list',
-        body: JSON.stringify({ username }),
+        body: JSON.stringify({ friendId }),
     });
 };
 
@@ -357,6 +357,8 @@ export interface CreateTodoBody {
     time?: string;
     labelId?: string;
     recurrence?: Todo['recurrence'];
+    /** Friend user-ids to share this todo with. */
+    userIds?: string[];
 }
 
 export const getTodosQuery = (userId: string) => ({
@@ -500,5 +502,43 @@ export const unsubscribeFromPush = async (endpoint: string): Promise<void> => {
         method: MethodType.DELETE,
         operationString: 'unsubscribe from push',
         body: JSON.stringify({ endpoint }),
+    });
+};
+
+export const getFriendsQuery = () => ({
+    queryKey: ['friends'],
+    queryFn: async () => getFriends(),
+});
+
+const getFriends = async (): Promise<Array<User>> => {
+    return await makeRequest({
+        pathname: '/api/friends',
+        method: MethodType.GET,
+        operationString: 'get friends',
+    });
+};
+
+export const generateFriendCode = async (): Promise<{ code: string; expiresAt: string }> => {
+    return await makeRequest({
+        pathname: '/api/friends/code',
+        method: MethodType.POST,
+        operationString: 'generate friend code',
+    });
+};
+
+export const redeemFriendCode = async (code: string): Promise<{ friend: User }> => {
+    return await makeRequest({
+        pathname: '/api/friends/redeem',
+        method: MethodType.POST,
+        operationString: 'redeem friend code',
+        body: JSON.stringify({ code }),
+    });
+};
+
+export const unfriend = async (friendId: string): Promise<void> => {
+    return await makeRequest({
+        pathname: `/api/friends/${encodeURIComponent(friendId)}`,
+        method: MethodType.DELETE,
+        operationString: 'unfriend',
     });
 };

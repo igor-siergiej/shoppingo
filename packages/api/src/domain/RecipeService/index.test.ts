@@ -85,10 +85,39 @@ class MockAuthClient {
 
 const mockAuth = new MockAuthClient();
 
+class MockFriends {
+    private friendsById = new Map<string, Map<string, User>>();
+
+    add(a: User, b: User) {
+        this.link(a, b);
+        this.link(b, a);
+    }
+
+    private link(from: User, to: User) {
+        if (!this.friendsById.has(from.id)) this.friendsById.set(from.id, new Map());
+        this.friendsById.get(from.id)?.set(to.id, to);
+    }
+
+    async areFriends(a: string, b: string): Promise<boolean> {
+        return this.friendsById.get(a)?.has(b) ?? false;
+    }
+
+    async listFriends(userId: string): Promise<User[]> {
+        return [...(this.friendsById.get(userId)?.values() ?? [])];
+    }
+
+    reset() {
+        this.friendsById.clear();
+    }
+}
+
+const friends = new MockFriends();
+
 beforeEach(() => {
     repo.reset();
     ids.reset();
     mockAuth.reset();
+    friends.reset();
 });
 
 describe('RecipeService.createRecipe', () => {
@@ -109,36 +138,41 @@ describe('RecipeService.createRecipe', () => {
         expect(recipe.instructions).toBeUndefined();
     });
 
-    it('creates recipe with only owner when no selectedUsers provided', async () => {
-        const svc = new RecipeService(repo as any, ids, undefined, undefined, undefined, mockAuth as any);
+    it('creates recipe with only owner when no friend service configured', async () => {
+        const svc = new RecipeService(repo as any, ids);
         const recipe = await svc.createRecipe('Pasta', [], owner.id, owner);
         expect(recipe.users).toHaveLength(1);
         expect(recipe.users[0].id).toBe(owner.id);
     });
 
-    it('shares recipe with selected users at creation time', async () => {
-        mockAuth.users = [user2, user3];
-        const svc = new RecipeService(repo as any, ids, undefined, undefined, undefined, mockAuth as any);
-        const recipe = await svc.createRecipe('Pasta', [], owner.id, owner, undefined, undefined, ['bob', 'carol']);
+    it("creates a recipe with the owner plus the owner's friends", async () => {
+        friends.add(owner, user2);
+        friends.add(owner, user3);
+        const svc = new RecipeService(repo as any, ids, undefined, undefined, undefined, undefined, friends as any);
+        const recipe = await svc.createRecipe('Pasta', [], owner.id, owner);
         expect(recipe.users).toHaveLength(3);
-        expect(recipe.users.map((u) => u.id)).toContain(owner.id);
-        expect(recipe.users.map((u) => u.id)).toContain(user2.id);
-        expect(recipe.users.map((u) => u.id)).toContain(user3.id);
+        expect(recipe.users.map((u) => u.id).sort()).toEqual([owner.id, user2.id, user3.id].sort());
     });
 
-    it('throws 502 when selectedUsers provided but no auth service configured', async () => {
-        const svc = new RecipeService(repo as any, ids);
+    it('creates a recipe with only the explicitly selected friend subset', async () => {
+        friends.add(owner, user2);
+        friends.add(owner, user3);
+        const svc = new RecipeService(repo as any, ids, undefined, undefined, undefined, undefined, friends as any);
+        const recipe = await svc.createRecipe('Pasta', [], owner.id, owner, undefined, undefined, [user2.id]);
+        expect(recipe.users.map((u) => u.id)).toEqual([owner.id, user2.id]);
+    });
+
+    it('rejects sharing with a non-friend id (403)', async () => {
+        const svc = new RecipeService(repo as any, ids, undefined, undefined, undefined, undefined, friends as any);
         await expect(
-            svc.createRecipe('Pasta', [], owner.id, owner, undefined, undefined, ['bob'])
-        ).rejects.toMatchObject({ status: 502 });
+            svc.createRecipe('Pasta', [], owner.id, owner, undefined, undefined, ['not-a-friend'])
+        ).rejects.toMatchObject({ status: 403 });
     });
 
-    it('throws 400 when selected usernames resolve to no users', async () => {
-        mockAuth.users = [];
+    it('silently seeds the owner only when no friend service is configured, ignoring selected friend ids', async () => {
         const svc = new RecipeService(repo as any, ids, undefined, undefined, undefined, mockAuth as any);
-        await expect(
-            svc.createRecipe('Pasta', [], owner.id, owner, undefined, undefined, ['nonexistent'])
-        ).rejects.toMatchObject({ status: 400 });
+        const recipe = await svc.createRecipe('Pasta', [], owner.id, owner, undefined, undefined, [user2.id]);
+        expect(recipe.users).toEqual([owner]);
     });
 
     it('uses the caller-provided id when given', async () => {
@@ -362,53 +396,69 @@ describe('RecipeService.deleteRecipe', () => {
 });
 
 describe('RecipeService.addUserToRecipe', () => {
-    it('adds user to recipe', async () => {
-        const svc = new RecipeService(repo as any, ids);
+    it('adds a friend to the recipe', async () => {
+        const svc = new RecipeService(repo as any, ids, undefined, undefined, undefined, undefined, friends as any);
         const created = await svc.createRecipe('Pasta', [], owner.id, owner);
-        const updated = await svc.addUserToRecipe(created.id, user2, owner.id);
+        friends.add(owner, user2);
+        const updated = await svc.addUserToRecipe(created.id, user2.id, owner.id);
         expect(updated.users.some((u) => u.id === user2.id)).toBe(true);
     });
 
     it('throws 403 when non-owner tries to add user', async () => {
-        const svc = new RecipeService(repo as any, ids);
+        const svc = new RecipeService(repo as any, ids, undefined, undefined, undefined, undefined, friends as any);
         const created = await svc.createRecipe('Pasta', [], owner.id, owner);
-        await expect(svc.addUserToRecipe(created.id, user2, 'other-user')).rejects.toMatchObject({ status: 403 });
+        friends.add(owner, user2);
+        await expect(svc.addUserToRecipe(created.id, user2.id, 'other-user')).rejects.toMatchObject({ status: 403 });
+    });
+
+    it('throws 403 when the target id is not a friend', async () => {
+        const svc = new RecipeService(repo as any, ids, undefined, undefined, undefined, undefined, friends as any);
+        const created = await svc.createRecipe('Pasta', [], owner.id, owner);
+        await expect(svc.addUserToRecipe(created.id, 'not-a-friend', owner.id)).rejects.toMatchObject({
+            status: 403,
+        });
     });
 
     it('throws 400 when user already in recipe', async () => {
-        const svc = new RecipeService(repo as any, ids);
+        const svc = new RecipeService(repo as any, ids, undefined, undefined, undefined, undefined, friends as any);
         const created = await svc.createRecipe('Pasta', [], owner.id, owner);
-        await expect(svc.addUserToRecipe(created.id, owner, owner.id)).rejects.toMatchObject({ status: 400 });
+        friends.add(owner, user2);
+        await svc.addUserToRecipe(created.id, user2.id, owner.id);
+        await expect(svc.addUserToRecipe(created.id, user2.id, owner.id)).rejects.toMatchObject({ status: 400 });
     });
 
     it('throws when recipe not found', async () => {
-        const svc = new RecipeService(repo as any, ids);
-        await expect(svc.addUserToRecipe('missing', user2, owner.id)).rejects.toMatchObject({ status: 404 });
+        friends.add(owner, user2);
+        const svc = new RecipeService(repo as any, ids, undefined, undefined, undefined, undefined, friends as any);
+        await expect(svc.addUserToRecipe('missing', user2.id, owner.id)).rejects.toMatchObject({ status: 404 });
     });
 });
 
 describe('RecipeService.removeUserFromRecipe', () => {
     it('removes user from recipe', async () => {
-        const svc = new RecipeService(repo as any, ids);
+        const svc = new RecipeService(repo as any, ids, undefined, undefined, undefined, undefined, friends as any);
         const created = await svc.createRecipe('Pasta', [], owner.id, owner);
-        await svc.addUserToRecipe(created.id, user2, owner.id);
+        friends.add(owner, user2);
+        await svc.addUserToRecipe(created.id, user2.id, owner.id);
         const updated = await svc.removeUserFromRecipe(created.id, user2.id, owner.id);
         expect(updated.users.some((u) => u.id === user2.id)).toBe(false);
     });
 
     it('throws 403 when non-owner tries to remove user', async () => {
-        const svc = new RecipeService(repo as any, ids);
+        const svc = new RecipeService(repo as any, ids, undefined, undefined, undefined, undefined, friends as any);
         const created = await svc.createRecipe('Pasta', [], owner.id, owner);
-        await svc.addUserToRecipe(created.id, user2, owner.id);
+        friends.add(owner, user2);
+        await svc.addUserToRecipe(created.id, user2.id, owner.id);
         await expect(svc.removeUserFromRecipe(created.id, user2.id, 'other-user')).rejects.toMatchObject({
             status: 403,
         });
     });
 
     it('throws 400 when trying to remove owner', async () => {
-        const svc = new RecipeService(repo as any, ids);
+        const svc = new RecipeService(repo as any, ids, undefined, undefined, undefined, undefined, friends as any);
         const created = await svc.createRecipe('Pasta', [], owner.id, owner);
-        await svc.addUserToRecipe(created.id, user2, owner.id);
+        friends.add(owner, user2);
+        await svc.addUserToRecipe(created.id, user2.id, owner.id);
         await expect(svc.removeUserFromRecipe(created.id, owner.id, owner.id)).rejects.toMatchObject({ status: 400 });
     });
 
