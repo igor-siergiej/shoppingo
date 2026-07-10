@@ -9,6 +9,9 @@ import type { PageFetcher, ParsedRecipe, RecipeDraft, RecipeParser, RecipeTextEx
 const MIN_INGREDIENTS = 2;
 const MAX_ITEMS = 100;
 const LLM_TEXT_LIMIT = 6000;
+// A serialized JSON-LD recipe node is sent whole: truncating it would hand the model broken JSON.
+// Past this cap the node is pathological, so fall back to page text instead.
+const LLM_JSON_LIMIT = 24000;
 
 const collapse = (text: string): string => text.replace(/\s+/g, ' ').trim();
 
@@ -102,8 +105,9 @@ export class RecipeImportService {
     }
 
     private async importViaLlm(html: string, link: string): Promise<RecipeImportResult> {
+        const source = this.llmSource(html);
         const started = Date.now();
-        const parsed: ParsedRecipe = await (this.llmParser as RecipeParser).parse(this.llmSource(html));
+        const parsed: ParsedRecipe = await (this.llmParser as RecipeParser).parse(source);
         this.logger?.info('Recipe import parsed with LLM', {
             strategy: 'llm-first',
             ingredientCount: parsed.ingredients.length,
@@ -137,7 +141,11 @@ export class RecipeImportService {
             }
 
             const node = this.findRecipeNode(parsed);
-            if (node) return JSON.stringify(node).slice(0, LLM_TEXT_LIMIT);
+            if (node) {
+                const serialized = JSON.stringify(node);
+                if (serialized.length <= LLM_JSON_LIMIT) return serialized;
+                break;
+            }
         }
         return this.htmlToText(html).slice(0, LLM_TEXT_LIMIT);
     }

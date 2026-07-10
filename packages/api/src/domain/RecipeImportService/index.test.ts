@@ -492,5 +492,41 @@ describe('RecipeImportService', () => {
             expect(parser.calls).toHaveLength(0);
             expect(result.ingredients[0].name).toBe('spaghetti');
         });
+
+        it('sends a large JSON-LD recipe node whole rather than truncating it into broken JSON', async () => {
+            const longStep = 'Stir the pot thoroughly and keep going. '.repeat(200);
+            fetcher.html = jsonLdPage({
+                '@type': 'Recipe',
+                name: 'Long',
+                recipeIngredient: ['1 onion'],
+                recipeInstructions: [longStep, 'Serve.'],
+            });
+            parser.result = { title: 'Long', ingredients: [{ name: 'onion' }], instructions: ['Serve.'] };
+
+            await llmService().importFromUrl('https://example.com/long');
+
+            expect(parser.calls[0].length).toBeGreaterThan(6000);
+            expect(() => JSON.parse(parser.calls[0])).not.toThrow();
+            expect(JSON.parse(parser.calls[0]).name).toBe('Long');
+        });
+
+        it('falls back to page text when the JSON-LD recipe node is pathologically large', async () => {
+            const hugeStep = 'x'.repeat(30000);
+            fetcher.html = jsonLdPage(
+                {
+                    '@type': 'Recipe',
+                    name: 'Huge',
+                    recipeIngredient: ['1 onion'],
+                    recipeInstructions: [hugeStep],
+                },
+                '<p>Readable prose fallback.</p>'
+            );
+            parser.result = { title: 'Huge', ingredients: [{ name: 'onion' }], instructions: ['Do.'] };
+
+            await llmService().importFromUrl('https://example.com/huge');
+
+            expect(parser.calls[0]).toContain('Readable prose fallback.');
+            expect(parser.calls[0].length).toBeLessThanOrEqual(6000);
+        });
     });
 });
