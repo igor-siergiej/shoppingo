@@ -67,10 +67,22 @@ export class FalRecipeParser implements RecipeParser {
         }
 
         if (!response.ok) {
-            throw bad(`fal.ai any-llm error: ${await response.text()}`);
+            let detail: string;
+            try {
+                detail = await response.text();
+            } catch {
+                detail = `HTTP ${response.status}`;
+            }
+            throw bad(`fal.ai any-llm error: ${detail}`);
         }
 
-        const data = (await response.json()) as { output?: string; error?: string };
+        let data: { output?: string; error?: string };
+        try {
+            data = (await response.json()) as { output?: string; error?: string };
+        } catch {
+            throw bad('fal.ai any-llm returned a non-JSON response body');
+        }
+
         if (data.error) {
             throw bad(`fal.ai any-llm error: ${data.error}`);
         }

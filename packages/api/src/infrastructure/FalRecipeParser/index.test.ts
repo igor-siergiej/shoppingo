@@ -146,4 +146,32 @@ describe('FalRecipeParser', () => {
 
         expect(result.instructions).toEqual(['Do.', 'Then.']);
     });
+
+    it('throws 502 when a 200 response has a non-JSON body', async () => {
+        stubFetch(async () => new Response('not json at all', { headers: { 'content-type': 'text/plain' } }));
+
+        await expect(new FalRecipeParser('secret').parse('{"a":1}')).rejects.toMatchObject({ status: 502 });
+    });
+
+    it('throws 502 when a non-OK response body cannot be read', async () => {
+        stubFetch(async () => {
+            const response = new Response('boom', { status: 500 });
+            Object.defineProperty(response, 'text', {
+                value: () => Promise.reject(new Error('stream broken')),
+            });
+            return response;
+        });
+
+        await expect(new FalRecipeParser('secret').parse('{"a":1}')).rejects.toMatchObject({ status: 502 });
+    });
+
+    it('keeps a zero quantity rather than dropping it as falsy', async () => {
+        stubFetch(async () =>
+            okResponse('{"title":"X","ingredients":[{"name":"salt","quantity":0,"unit":"g"}],"instructions":["Do."]}')
+        );
+
+        const result = await new FalRecipeParser('secret').parse('{"a":1}');
+
+        expect(result.ingredients).toEqual([{ name: 'salt', quantity: 0, unit: 'g' }]);
+    });
 });
