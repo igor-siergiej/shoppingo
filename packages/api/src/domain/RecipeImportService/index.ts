@@ -4,7 +4,7 @@ import * as cheerio from 'cheerio';
 
 import type { IdGenerator } from '../IdGenerator';
 import type { IngredientStructurer } from '../IngredientStructurer/types';
-import type { PageFetcher, RecipeDraft, RecipeTextExtractor } from './types';
+import type { PageFetcher, ParsedRecipe, RecipeDraft, RecipeParser, RecipeTextExtractor } from './types';
 
 const MIN_INGREDIENTS = 2;
 const MAX_ITEMS = 100;
@@ -33,7 +33,8 @@ export class RecipeImportService {
         private readonly idGenerator: IdGenerator,
         private readonly structurer: IngredientStructurer,
         private readonly logger?: Logger,
-        private readonly llmExtractor?: RecipeTextExtractor
+        private readonly llmExtractor?: RecipeTextExtractor,
+        private readonly llmParser?: RecipeParser
     ) {}
 
     // Invoked via the DI container (getRecipeImportService().importFromUrl); fallow can't trace that indirection.
@@ -41,6 +42,11 @@ export class RecipeImportService {
     async importFromUrl(url: string): Promise<RecipeImportResult> {
         const parsed = this.parseUrl(url);
         const html = await this.fetcher.fetchPage(parsed);
+
+        // LLM-first: injection of a parser IS the flag. The three tiers never run.
+        if (this.llmParser) {
+            return this.importViaLlm(html, parsed);
+        }
 
         const draft: RecipeDraft = {
             title: '',
@@ -72,7 +78,7 @@ export class RecipeImportService {
 
         return {
             title: draft.title,
-            ingredients: structured.map((parsed) => ({ id: this.idGenerator.generate(), ...parsed })),
+            ingredients: structured.map((parsed) => ({ ...parsed, id: this.idGenerator.generate() })),
             instructions: draft.instructions,
             link: draft.link,
             ...(draft.image !== undefined && { image: draft.image }),
@@ -93,6 +99,64 @@ export class RecipeImportService {
             throw Object.assign(new Error('URL must be http or https'), { status: 400 });
         }
         return parsed.toString();
+    }
+
+    private async importViaLlm(html: string, link: string): Promise<RecipeImportResult> {
+        const started = Date.now();
+        const parsed: ParsedRecipe = await (this.llmParser as RecipeParser).parse(this.llmSource(html));
+        this.logger?.info('Recipe import parsed with LLM', {
+            strategy: 'llm-first',
+            ingredientCount: parsed.ingredients.length,
+            durationMs: Date.now() - started,
+        });
+
+        return {
+            title: parsed.title,
+            ingredients: parsed.ingredients.map((ingredient) => ({
+                ...ingredient,
+                id: this.idGenerator.generate(),
+            })),
+            instructions: parsed.instructions,
+            link,
+            ...this.metadataFrom(html),
+        };
+    }
+
+    // Prefer the page's own JSON-LD recipe node; fall back to page text so the flag never silently no-ops.
+    private llmSource(html: string): string {
+        const $ = cheerio.load(html);
+        for (const block of $('script[type="application/ld+json"]').toArray()) {
+            const raw = $(block).text();
+            if (!raw.trim()) continue;
+
+            let parsed: unknown;
+            try {
+                parsed = JSON.parse(raw);
+            } catch {
+                continue;
+            }
+
+            const node = this.findRecipeNode(parsed);
+            if (node) return JSON.stringify(node).slice(0, LLM_TEXT_LIMIT);
+        }
+        return this.htmlToText(html).slice(0, LLM_TEXT_LIMIT);
+    }
+
+    // Image and timings stay scraped: they are reliable, free, and not worth an LLM round trip.
+    private metadataFrom(html: string): Partial<RecipeDraft> {
+        const structured = this.parseJsonLd(html);
+        const scraped = this.parseHtml(html);
+        const image = structured.image ?? scraped.image;
+        const prepTime = structured.prepTime ?? scraped.prepTime;
+        const cookTime = structured.cookTime ?? scraped.cookTime;
+        const recipeYield = structured.recipeYield ?? scraped.recipeYield;
+
+        return {
+            ...(image !== undefined && { image }),
+            ...(prepTime !== undefined && { prepTime }),
+            ...(cookTime !== undefined && { cookTime }),
+            ...(recipeYield !== undefined && { recipeYield }),
+        };
     }
 
     private isInsufficient(draft: RecipeDraft): boolean {
