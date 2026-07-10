@@ -40,6 +40,7 @@ export default defineConfig(({ mode }) => {
                         params: {
                             url: 'url',
                             title: 'title',
+                            text: 'text',
                         },
                     },
                     icons: [

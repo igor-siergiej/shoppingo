@@ -26,4 +26,16 @@ test.describe('PWA Web Share Target', () => {
         // Drawer should NOT auto-open when no sharedUrl
         await expect(authenticatedPage.getByRole('heading', { name: 'Create Recipe' })).not.toBeVisible();
     });
+
+    test('opens "Create Recipe" drawer when the link only arrives in the Android `text` field', async ({
+        authenticatedPage,
+    }) => {
+        // Android's share sheet has no dedicated URL slot — the sharing app (Firefox, Chrome, etc.)
+        // puts the link in `text` instead of `url`.
+        await authenticatedPage.goto('/share?text=https://example.com/recipe&title=Test+Recipe');
+        await authenticatedPage.waitForURL(/\/recipes/, { timeout: 5000 });
+
+        await expect(authenticatedPage.getByRole('heading', { name: 'Create Recipe' })).toBeVisible({ timeout: 5000 });
+        await expect(authenticatedPage.getByPlaceholder('https://...')).toHaveValue('https://example.com/recipe');
+    });
 });
