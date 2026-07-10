@@ -28,6 +28,8 @@ export class FalRecipeParser implements RecipeParser {
         this.timeoutMs = options.timeoutMs ?? 15000;
     }
 
+    // Invoked through the RecipeParser interface via the DI container; fallow can't trace that indirection.
+    // fallow-ignore-next-line unused-class-member
     async parse(source: string): Promise<ParsedRecipe> {
         if (!this.apiKey) {
             throw Object.assign(new Error('Recipe import LLM not configured'), { status: 500 });
