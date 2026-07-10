@@ -12,12 +12,14 @@ import { NotificationService } from '../domain/NotificationService';
 import { RecipeImageService } from '../domain/RecipeImageService';
 import { RecipeImportService } from '../domain/RecipeImportService';
 import { RecipeService } from '../domain/RecipeService';
+import { RuleIngredientStructurer } from '../domain/RuleIngredientStructurer';
 import { TodoReminderService } from '../domain/TodoReminderService';
 import { TodoService } from '../domain/TodoService';
 import { HttpAuthClient } from '../infrastructure/AuthClient';
 import { BucketStore } from '../infrastructure/BucketStore';
 import { FalImageGenerator } from '../infrastructure/FalImageGenerator';
 import { FalRecipeExtractor } from '../infrastructure/FalRecipeExtractor';
+import { FalRecipeParser } from '../infrastructure/FalRecipeParser';
 import { HttpPageFetcher } from '../infrastructure/HttpPageFetcher';
 import { MongoFriendRepository } from '../infrastructure/MongoFriendRepository';
 import { MongoLabelRepository } from '../infrastructure/MongoLabelRepository';
@@ -350,6 +352,19 @@ export const registerDepdendencies = () => {
     );
 
     dependencyContainer.registerSingleton(
+        DependencyToken.RecipeParser,
+        // @ts-expect-error - Dependency injection requires constructor return override
+        class {
+            constructor() {
+                // Reuses FAL_KEY unless a dedicated import key is set, matching RecipeTextExtractor.
+                return new FalRecipeParser(config.get('recipeImportLlmApiKey') || config.get('falKey') || '', {
+                    ...(config.get('recipeImportLlmModel') && { model: config.get('recipeImportLlmModel') }),
+                });
+            }
+        }
+    );
+
+    dependencyContainer.registerSingleton(
         DependencyToken.RecipeImportService,
         // @ts-expect-error - Dependency injection requires constructor return override
         class {
@@ -358,11 +373,17 @@ export const registerDepdendencies = () => {
                 const llmExtractor = config.get('recipeImportLlmEnabled')
                     ? dependencyContainer.resolve(DependencyToken.RecipeTextExtractor)
                     : undefined;
+                // LLM-first is opt-in: injecting the parser makes it win over the three tiers.
+                const llmParser = config.get('recipeImportLlmFirst')
+                    ? dependencyContainer.resolve(DependencyToken.RecipeParser)
+                    : undefined;
                 return new RecipeImportService(
                     dependencyContainer.resolve(DependencyToken.PageFetcher),
                     dependencyContainer.resolve(DependencyToken.IdGenerator),
+                    new RuleIngredientStructurer(),
                     dependencyContainer.resolve(DependencyToken.Logger),
-                    llmExtractor
+                    llmExtractor,
+                    llmParser
                 );
             }
         }

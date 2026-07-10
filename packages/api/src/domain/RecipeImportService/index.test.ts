@@ -1,8 +1,10 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
 
 import type { IdGenerator } from '../IdGenerator';
+import type { IngredientStructurer, ParsedIngredient } from '../IngredientStructurer/types';
+import { RuleIngredientStructurer } from '../RuleIngredientStructurer';
 import { RecipeImportService } from './index';
-import type { PageFetcher, RecipeTextExtractor } from './types';
+import type { PageFetcher, ParsedRecipe, RecipeParser, RecipeTextExtractor } from './types';
 
 class MockFetcher implements PageFetcher {
     html = '';
@@ -24,6 +26,26 @@ class SequentialIdGenerator implements IdGenerator {
     }
 }
 
+class ThrowingStructurer implements IngredientStructurer {
+    readonly strategy = 'llm' as const;
+
+    async structure(): Promise<ParsedIngredient[]> {
+        throw Object.assign(new Error('LLM ingredient structuring failed'), { status: 502 });
+    }
+}
+
+class FakeRecipeParser implements RecipeParser {
+    calls: string[] = [];
+    error: Error | null = null;
+    result: ParsedRecipe = { title: '', ingredients: [], instructions: [] };
+
+    async parse(source: string): Promise<ParsedRecipe> {
+        this.calls.push(source);
+        if (this.error) throw this.error;
+        return this.result;
+    }
+}
+
 const jsonLdPage = (ld: unknown, bodyExtra = ''): string =>
     `<!doctype html><html><head><script type="application/ld+json">${JSON.stringify(ld)}</script></head><body>${bodyExtra}</body></html>`;
 
@@ -33,7 +55,7 @@ describe('RecipeImportService', () => {
 
     beforeEach(() => {
         fetcher = new MockFetcher();
-        service = new RecipeImportService(fetcher, new SequentialIdGenerator());
+        service = new RecipeImportService(fetcher, new SequentialIdGenerator(), new RuleIngredientStructurer());
     });
 
     describe('URL validation', () => {
@@ -148,7 +170,7 @@ describe('RecipeImportService', () => {
                 { id: 'id-1', name: 'salt', quantity: 0.5, unit: 'cup' },
                 { id: 'id-2', name: 'garlic', quantity: 2, unit: 'cloves' },
                 { id: 'id-3', name: 'eggs', quantity: 3, unit: 'pcs' },
-                { id: 'id-4', name: 'salt to taste' },
+                { id: 'id-4', name: 'salt' },
             ]);
         });
 
@@ -277,7 +299,13 @@ describe('RecipeImportService', () => {
                     };
                 },
             };
-            service = new RecipeImportService(fetcher, new SequentialIdGenerator(), undefined, extractor);
+            service = new RecipeImportService(
+                fetcher,
+                new SequentialIdGenerator(),
+                new RuleIngredientStructurer(),
+                undefined,
+                extractor
+            );
             fetcher.html = llmPage;
 
             const result = await service.importFromUrl('https://example.com/blog');
@@ -295,7 +323,13 @@ describe('RecipeImportService', () => {
                     throw new Error('llm down');
                 },
             };
-            service = new RecipeImportService(fetcher, new SequentialIdGenerator(), undefined, extractor);
+            service = new RecipeImportService(
+                fetcher,
+                new SequentialIdGenerator(),
+                new RuleIngredientStructurer(),
+                undefined,
+                extractor
+            );
             fetcher.html = `<html><head><meta property="og:title" content="Partial" /></head><body></body></html>`;
 
             const result = await service.importFromUrl('https://example.com/partial');
@@ -312,7 +346,13 @@ describe('RecipeImportService', () => {
                     return { title: 'x', ingredients: [], instructions: [] };
                 },
             };
-            service = new RecipeImportService(fetcher, new SequentialIdGenerator(), undefined, extractor);
+            service = new RecipeImportService(
+                fetcher,
+                new SequentialIdGenerator(),
+                new RuleIngredientStructurer(),
+                undefined,
+                extractor
+            );
             fetcher.html = jsonLdPage({
                 '@type': 'Recipe',
                 name: 'Complete',
@@ -323,6 +363,170 @@ describe('RecipeImportService', () => {
             await service.importFromUrl('https://example.com/complete');
 
             expect(called).toBe(false);
+        });
+    });
+
+    describe('ingredient structuring', () => {
+        it('propagates a structurer failure instead of swallowing it', async () => {
+            fetcher.html = jsonLdPage({
+                '@type': 'Recipe',
+                name: 'Boom',
+                recipeIngredient: ['1 onion', '2 carrots'],
+                recipeInstructions: ['Do it.'],
+            });
+            const failing = new RecipeImportService(fetcher, new SequentialIdGenerator(), new ThrowingStructurer());
+
+            await expect(failing.importFromUrl('https://example.com/boom')).rejects.toMatchObject({ status: 502 });
+        });
+    });
+
+    describe('LLM-first parsing', () => {
+        let parser: FakeRecipeParser;
+
+        const llmService = () =>
+            new RecipeImportService(
+                fetcher,
+                new SequentialIdGenerator(),
+                new RuleIngredientStructurer(),
+                undefined,
+                undefined,
+                parser
+            );
+
+        beforeEach(() => {
+            parser = new FakeRecipeParser();
+        });
+
+        it('sends the JSON-LD recipe node to the parser when the page has one', async () => {
+            fetcher.html = jsonLdPage({
+                '@type': 'Recipe',
+                name: 'Carbonara',
+                recipeIngredient: ['350 g spaghetti (- 12 oz)'],
+                recipeInstructions: ['Boil.'],
+            });
+            parser.result = {
+                title: 'Carbonara',
+                ingredients: [{ name: 'spaghetti', quantity: 350, unit: 'g' }],
+                instructions: ['Boil.'],
+            };
+
+            const result = await llmService().importFromUrl('https://example.com/c');
+
+            expect(parser.calls).toHaveLength(1);
+            expect(parser.calls[0]).toContain('recipeIngredient');
+            expect(result.ingredients).toEqual([{ id: 'id-1', name: 'spaghetti', quantity: 350, unit: 'g' }]);
+            expect(result.instructions).toEqual(['Boil.']);
+            expect(result.title).toBe('Carbonara');
+        });
+
+        it('does not clean the names the LLM returned', async () => {
+            fetcher.html = jsonLdPage({
+                '@type': 'Recipe',
+                name: 'X',
+                recipeIngredient: ['a'],
+                recipeInstructions: ['b'],
+            });
+            parser.result = {
+                title: 'X',
+                ingredients: [{ name: 'guanciale (Italian cured pork cheek)' }],
+                instructions: ['b'],
+            };
+
+            const result = await llmService().importFromUrl('https://example.com/c');
+
+            expect(result.ingredients[0].name).toBe('guanciale (Italian cured pork cheek)');
+        });
+
+        it('falls back to page text when the page has no JSON-LD recipe node', async () => {
+            fetcher.html = '<html><body><p>Some recipe prose here.</p></body></html>';
+            parser.result = { title: 'Prose', ingredients: [{ name: 'salt' }], instructions: ['Do.'] };
+
+            await llmService().importFromUrl('https://example.com/c');
+
+            expect(parser.calls[0]).toContain('Some recipe prose here.');
+        });
+
+        it('keeps image and timing metadata scraped from the page', async () => {
+            fetcher.html = jsonLdPage({
+                '@type': 'Recipe',
+                name: 'Carbonara',
+                image: 'https://img/c.jpg',
+                prepTime: 'PT10M',
+                cookTime: 'PT15M',
+                recipeYield: '4 servings',
+                recipeIngredient: ['350 g spaghetti'],
+                recipeInstructions: ['Boil.'],
+            });
+            parser.result = { title: 'Carbonara', ingredients: [{ name: 'spaghetti' }], instructions: ['Boil.'] };
+
+            const result = await llmService().importFromUrl('https://example.com/c');
+
+            expect(result.image).toBe('https://img/c.jpg');
+            expect(result.prepTime).toBe('PT10M');
+            expect(result.cookTime).toBe('PT15M');
+            expect(result.recipeYield).toBe('4 servings');
+        });
+
+        it('propagates a parser failure instead of falling back to the tiers', async () => {
+            fetcher.html = jsonLdPage({
+                '@type': 'Recipe',
+                name: 'Carbonara',
+                recipeIngredient: ['1 onion', '2 carrots'],
+                recipeInstructions: ['Boil.'],
+            });
+            parser.error = Object.assign(new Error('llm down'), { status: 502 });
+
+            await expect(llmService().importFromUrl('https://example.com/c')).rejects.toMatchObject({ status: 502 });
+        });
+
+        it('never calls the parser when no llmParser is injected', async () => {
+            fetcher.html = jsonLdPage({
+                '@type': 'Recipe',
+                name: 'Carbonara',
+                recipeIngredient: ['350 g spaghetti (- 12 oz)'],
+                recipeInstructions: ['Boil.'],
+            });
+
+            const result = await service.importFromUrl('https://example.com/c');
+
+            expect(parser.calls).toHaveLength(0);
+            expect(result.ingredients[0].name).toBe('spaghetti');
+        });
+
+        it('sends a large JSON-LD recipe node whole rather than truncating it into broken JSON', async () => {
+            const longStep = 'Stir the pot thoroughly and keep going. '.repeat(200);
+            fetcher.html = jsonLdPage({
+                '@type': 'Recipe',
+                name: 'Long',
+                recipeIngredient: ['1 onion'],
+                recipeInstructions: [longStep, 'Serve.'],
+            });
+            parser.result = { title: 'Long', ingredients: [{ name: 'onion' }], instructions: ['Serve.'] };
+
+            await llmService().importFromUrl('https://example.com/long');
+
+            expect(parser.calls[0].length).toBeGreaterThan(6000);
+            expect(() => JSON.parse(parser.calls[0])).not.toThrow();
+            expect(JSON.parse(parser.calls[0]).name).toBe('Long');
+        });
+
+        it('falls back to page text when the JSON-LD recipe node is pathologically large', async () => {
+            const hugeStep = 'x'.repeat(30000);
+            fetcher.html = jsonLdPage(
+                {
+                    '@type': 'Recipe',
+                    name: 'Huge',
+                    recipeIngredient: ['1 onion'],
+                    recipeInstructions: [hugeStep],
+                },
+                '<p>Readable prose fallback.</p>'
+            );
+            parser.result = { title: 'Huge', ingredients: [{ name: 'onion' }], instructions: ['Do.'] };
+
+            await llmService().importFromUrl('https://example.com/huge');
+
+            expect(parser.calls[0]).toContain('Readable prose fallback.');
+            expect(parser.calls[0].length).toBeLessThanOrEqual(6000);
         });
     });
 });

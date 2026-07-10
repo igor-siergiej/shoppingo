@@ -1,14 +1,17 @@
 import type { Logger } from '@imapps/api-utils';
-import type { Ingredient, RecipeImportResult } from '@shoppingo/types';
+import type { RecipeImportResult } from '@shoppingo/types';
 import * as cheerio from 'cheerio';
-import { parseIngredient } from 'parse-ingredient';
 
 import type { IdGenerator } from '../IdGenerator';
-import type { PageFetcher, RecipeDraft, RecipeTextExtractor } from './types';
+import type { IngredientStructurer } from '../IngredientStructurer/types';
+import type { PageFetcher, ParsedRecipe, RecipeDraft, RecipeParser, RecipeTextExtractor } from './types';
 
 const MIN_INGREDIENTS = 2;
 const MAX_ITEMS = 100;
 const LLM_TEXT_LIMIT = 6000;
+// A serialized JSON-LD recipe node is sent whole: truncating it would hand the model broken JSON.
+// Past this cap the node is pathological, so fall back to page text instead.
+const LLM_JSON_LIMIT = 24000;
 
 const collapse = (text: string): string => text.replace(/\s+/g, ' ').trim();
 
@@ -31,8 +34,10 @@ export class RecipeImportService {
     constructor(
         private readonly fetcher: PageFetcher,
         private readonly idGenerator: IdGenerator,
+        private readonly structurer: IngredientStructurer,
         private readonly logger?: Logger,
-        private readonly llmExtractor?: RecipeTextExtractor
+        private readonly llmExtractor?: RecipeTextExtractor,
+        private readonly llmParser?: RecipeParser
     ) {}
 
     // Invoked via the DI container (getRecipeImportService().importFromUrl); fallow can't trace that indirection.
@@ -40,6 +45,11 @@ export class RecipeImportService {
     async importFromUrl(url: string): Promise<RecipeImportResult> {
         const parsed = this.parseUrl(url);
         const html = await this.fetcher.fetchPage(parsed);
+
+        // LLM-first: injection of a parser IS the flag. The three tiers never run.
+        if (this.llmParser) {
+            return this.importViaLlm(html, parsed);
+        }
 
         const draft: RecipeDraft = {
             title: '',
@@ -61,9 +71,17 @@ export class RecipeImportService {
             await this.tryLlm(draft, html);
         }
 
+        const started = Date.now();
+        const structured = await this.structurer.structure(draft.ingredients);
+        this.logger?.info('Recipe import structured ingredients', {
+            strategy: this.structurer.strategy,
+            lineCount: draft.ingredients.length,
+            durationMs: Date.now() - started,
+        });
+
         return {
             title: draft.title,
-            ingredients: draft.ingredients.map((raw) => this.toIngredient(raw)),
+            ingredients: structured.map((parsed) => ({ ...parsed, id: this.idGenerator.generate() })),
             instructions: draft.instructions,
             link: draft.link,
             ...(draft.image !== undefined && { image: draft.image }),
@@ -86,19 +104,66 @@ export class RecipeImportService {
         return parsed.toString();
     }
 
-    // Splits a raw ingredient line ("2 cups flour") into { name, quantity, unit } so the
-    // name stays free of measurements — imports also feed the AI image prompt, which
-    // renders garbled results when numbers/units are mixed into the ingredient name.
-    private toIngredient(raw: string): Ingredient {
-        const [parsed] = parseIngredient(raw);
-        const name = parsed?.description ? collapse(parsed.description) : raw;
-        const hasQuantity = typeof parsed?.quantity === 'number';
+    private async importViaLlm(html: string, link: string): Promise<RecipeImportResult> {
+        const source = this.llmSource(html);
+        const started = Date.now();
+        const parsed: ParsedRecipe = await (this.llmParser as RecipeParser).parse(source);
+        this.logger?.info('Recipe import parsed with LLM', {
+            strategy: 'llm-first',
+            ingredientCount: parsed.ingredients.length,
+            durationMs: Date.now() - started,
+        });
 
         return {
-            id: this.idGenerator.generate(),
-            name: name || raw,
-            ...(hasQuantity && { quantity: parsed.quantity }),
-            ...(hasQuantity && { unit: parsed?.unitOfMeasure || 'pcs' }),
+            title: parsed.title,
+            ingredients: parsed.ingredients.map((ingredient) => ({
+                ...ingredient,
+                id: this.idGenerator.generate(),
+            })),
+            instructions: parsed.instructions,
+            link,
+            ...this.metadataFrom(html),
+        };
+    }
+
+    // Prefer the page's own JSON-LD recipe node; fall back to page text so the flag never silently no-ops.
+    private llmSource(html: string): string {
+        const $ = cheerio.load(html);
+        for (const block of $('script[type="application/ld+json"]').toArray()) {
+            const raw = $(block).text();
+            if (!raw.trim()) continue;
+
+            let parsed: unknown;
+            try {
+                parsed = JSON.parse(raw);
+            } catch {
+                continue;
+            }
+
+            const node = this.findRecipeNode(parsed);
+            if (node) {
+                const serialized = JSON.stringify(node);
+                if (serialized.length <= LLM_JSON_LIMIT) return serialized;
+                break;
+            }
+        }
+        return this.htmlToText(html).slice(0, LLM_TEXT_LIMIT);
+    }
+
+    // Image and timings stay scraped: they are reliable, free, and not worth an LLM round trip.
+    private metadataFrom(html: string): Partial<RecipeDraft> {
+        const structured = this.parseJsonLd(html);
+        const scraped = this.parseHtml(html);
+        const image = structured.image ?? scraped.image;
+        const prepTime = structured.prepTime ?? scraped.prepTime;
+        const cookTime = structured.cookTime ?? scraped.cookTime;
+        const recipeYield = structured.recipeYield ?? scraped.recipeYield;
+
+        return {
+            ...(image !== undefined && { image }),
+            ...(prepTime !== undefined && { prepTime }),
+            ...(cookTime !== undefined && { cookTime }),
+            ...(recipeYield !== undefined && { recipeYield }),
         };
     }
 

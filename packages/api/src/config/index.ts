@@ -9,6 +9,7 @@ const schema = {
     falModel: { parser: parsers.string, from: 'FAL_MODEL', optional: true },
     falRecipeModel: { parser: parsers.string, from: 'FAL_RECIPE_MODEL', optional: true },
     recipeImportLlmEnabled: { parser: parsers.boolean, from: 'RECIPE_IMPORT_LLM_ENABLED', optional: true },
+    recipeImportLlmFirst: { parser: parsers.boolean, from: 'RECIPE_IMPORT_LLM_FIRST', optional: true },
     recipeImportLlmApiKey: { parser: parsers.string, from: 'RECIPE_IMPORT_LLM_API_KEY', optional: true },
     recipeImportLlmModel: { parser: parsers.string, from: 'RECIPE_IMPORT_LLM_MODEL', optional: true },
     bucketName: { parser: parsers.string, from: 'BUCKET_NAME' },
