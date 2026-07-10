@@ -1,3 +1,10 @@
+## [1.58.1](https://github.com/igor-siergiej/shoppingo/compare/v1.58.0...v1.58.1) (2026-07-10)
+
+
+### Bug Fixes
+
+* **web:** recover shared recipe url from Android's text/title share fields ([#112](https://github.com/igor-siergiej/shoppingo/issues/112)) ([6dfaa9b](https://github.com/igor-siergiej/shoppingo/commit/6dfaa9bd618988343a56d19370edcf55471bd954))
+
 # [1.58.0](https://github.com/igor-siergiej/shoppingo/compare/v1.57.4...v1.58.0) (2026-07-10)
 
 
