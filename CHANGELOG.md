@@ -1,3 +1,10 @@
+# [1.58.0](https://github.com/igor-siergiej/shoppingo/compare/v1.57.4...v1.58.0) (2026-07-10)
+
+
+### Features
+
+* clean imported ingredient names, add LLM-first parsing behind a flag ([#111](https://github.com/igor-siergiej/shoppingo/issues/111)) ([0513b2e](https://github.com/igor-siergiej/shoppingo/commit/0513b2e31ef3ee18d0c092c349c4c0e38f3413cb))
+
 ## [1.57.4](https://github.com/igor-siergiej/shoppingo/compare/v1.57.3...v1.57.4) (2026-07-09)
 
 
