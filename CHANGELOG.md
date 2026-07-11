@@ -1,3 +1,10 @@
+## [1.58.2](https://github.com/igor-siergiej/shoppingo/compare/v1.58.1...v1.58.2) (2026-07-11)
+
+
+### Bug Fixes
+
+* **recipe-import:** recover JSON-LD with raw control chars in strings ([#113](https://github.com/igor-siergiej/shoppingo/issues/113)) ([f5d72d3](https://github.com/igor-siergiej/shoppingo/commit/f5d72d3d066aeaff1660859e6addce632570f771))
+
 ## [1.58.1](https://github.com/igor-siergiej/shoppingo/compare/v1.58.0...v1.58.1) (2026-07-10)
 
 
