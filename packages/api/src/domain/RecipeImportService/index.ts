@@ -133,12 +133,8 @@ export class RecipeImportService {
             const raw = $(block).text();
             if (!raw.trim()) continue;
 
-            let parsed: unknown;
-            try {
-                parsed = JSON.parse(raw);
-            } catch {
-                continue;
-            }
+            const parsed = this.parseJsonLoosely(raw);
+            if (parsed === undefined) continue;
 
             const node = this.findRecipeNode(parsed);
             if (node) {
@@ -194,12 +190,8 @@ export class RecipeImportService {
             const raw = $(block).text();
             if (!raw.trim()) continue;
 
-            let parsed: unknown;
-            try {
-                parsed = JSON.parse(raw);
-            } catch {
-                continue;
-            }
+            const parsed = this.parseJsonLoosely(raw);
+            if (parsed === undefined) continue;
 
             const recipe = this.findRecipeNode(parsed);
             if (recipe) {
@@ -207,6 +199,58 @@ export class RecipeImportService {
             }
         }
         return {};
+    }
+
+    // Some sites (e.g. Shopify recipe apps) emit JSON-LD with raw, unescaped control
+    // characters — usually literal newlines — inside string values, which is invalid
+    // JSON. A strict JSON.parse throws on the whole block, silently discarding an
+    // otherwise-complete recipe and falling through to much cruder extraction tiers.
+    // Retry with control characters escaped only where they appear inside a string.
+    private parseJsonLoosely(raw: string): unknown {
+        try {
+            return JSON.parse(raw);
+        } catch {
+            try {
+                return JSON.parse(this.sanitizeJsonControlChars(raw));
+            } catch {
+                return undefined;
+            }
+        }
+    }
+
+    private sanitizeJsonControlChars(raw: string): string {
+        let out = '';
+        let inString = false;
+        let escaped = false;
+
+        for (const ch of raw) {
+            if (!inString) {
+                if (ch === '"') inString = true;
+                out += ch;
+                continue;
+            }
+
+            const code = ch.charCodeAt(0);
+            if (escaped) {
+                out += ch;
+                escaped = false;
+            } else if (ch === '\\') {
+                out += ch;
+                escaped = true;
+            } else if (ch === '"') {
+                inString = false;
+                out += ch;
+            } else if (code < 0x20) {
+                if (ch === '\n') out += '\\n';
+                else if (ch === '\r') out += '\\r';
+                else if (ch === '\t') out += '\\t';
+                else out += `\\u${code.toString(16).padStart(4, '0')}`;
+            } else {
+                out += ch;
+            }
+        }
+
+        return out;
     }
 
     // JSON-LD may be a single object, an array of nodes, or wrap nodes in a top-level @graph.

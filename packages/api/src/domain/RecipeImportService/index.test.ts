@@ -153,6 +153,29 @@ describe('RecipeImportService', () => {
             expect(result.image).toBe('https://img/first.jpg');
             expect(result.instructions).toEqual(['Line one', 'Line two']);
         });
+
+        it('recovers a Recipe node whose JSON-LD has raw newlines inside string values', async () => {
+            // Some sites (e.g. Shopify recipe apps) emit unescaped control characters
+            // inside JSON-LD string literals, which JSON.parse rejects outright.
+            fetcher.html = `<!doctype html><html><head><script type="application/ld+json">
+                {
+                    "@type": "Recipe",
+                    "name": "Lasagna",
+                    "recipeIngredient": ["2 sticks celery", "1 large carrot"],
+                    "recipeInstructions": [
+                        { "@type": "HowToStep", "text": "Finely dice the celery, carrot and onion, then finely grate the\n     garlic." }
+                    ]
+                }
+            </script></head><body></body></html>`;
+
+            const result = await service.importFromUrl('https://example.com/lasagna');
+
+            expect(result.title).toBe('Lasagna');
+            expect(result.ingredients.map((i) => i.name)).toEqual(['celery', 'carrot']);
+            expect(result.instructions).toEqual([
+                'Finely dice the celery, carrot and onion, then finely grate the garlic.',
+            ]);
+        });
     });
 
     describe('ingredient quantity/unit parsing', () => {
@@ -444,6 +467,27 @@ describe('RecipeImportService', () => {
             await llmService().importFromUrl('https://example.com/c');
 
             expect(parser.calls[0]).toContain('Some recipe prose here.');
+        });
+
+        it('still sends the JSON-LD recipe node when it has raw newlines inside string values', async () => {
+            fetcher.html = `<!doctype html><html><head><script type="application/ld+json">
+                {
+                    "@type": "Recipe",
+                    "name": "Lasagna",
+                    "recipeIngredient": ["2 sticks celery"],
+                    "recipeInstructions": [
+                        { "@type": "HowToStep", "text": "Finely dice the celery, then finely grate the\n     garlic." }
+                    ]
+                }
+            </script></head><body></body></html>`;
+            parser.result = { title: 'Lasagna', ingredients: [{ name: 'celery' }], instructions: ['Dice.'] };
+
+            await llmService().importFromUrl('https://example.com/lasagna');
+
+            // Proves the JSON-LD node was recovered and serialized, not the htmlToText
+            // fallback (which strips <script> tags and would never contain this key).
+            expect(parser.calls[0]).toContain('recipeIngredient');
+            expect(parser.calls[0]).toContain('2 sticks celery');
         });
 
         it('keeps image and timing metadata scraped from the page', async () => {
