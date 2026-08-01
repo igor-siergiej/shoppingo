@@ -27,6 +27,24 @@ export const useItemPageMutations = (listTitle?: string) => {
             void drainOutbox();
             return id;
         },
+        onMutate: async ({ itemName, quantity, unit }) => {
+            await queryClient.cancelQueries([listTitle]);
+            const previousData = queryClient.getQueryData<{ listType: ListType; items: Item[] }>([listTitle]);
+
+            const optimisticItem: Item = {
+                id: crypto.randomUUID(),
+                name: itemName,
+                isSelected: false,
+                dateAdded: new Date(),
+                ...(quantity !== undefined && { quantity }),
+                ...(unit !== undefined && { unit }),
+            };
+            queryClient.setQueryData<{ listType: ListType; items: Item[] }>([listTitle], (old) =>
+                old ? { ...old, items: [...old.items, optimisticItem] } : old
+            );
+
+            return { previousData };
+        },
         onSuccess: (_, variables) => {
             logger.info('Item added', {
                 listTitle,
@@ -36,9 +54,12 @@ export const useItemPageMutations = (listTitle?: string) => {
             });
             void queryClient.invalidateQueries([listTitle]);
         },
-        onError: (error, variables) => {
+        onError: (error, variables, context) => {
             const errorMessage = error instanceof Error ? error.message : 'Unknown error';
             logger.error('Failed to add item', { listTitle, itemName: variables.itemName, error: errorMessage });
+            if (context?.previousData) {
+                queryClient.setQueryData([listTitle], context.previousData);
+            }
         },
     });
 
