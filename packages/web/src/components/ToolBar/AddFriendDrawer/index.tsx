@@ -63,6 +63,118 @@ const formatCountdown = (secondsLeft: number): string => {
     return `${mm}:${ss}`;
 };
 
+interface InvitePanelProps {
+    generated: { code: string; expiresAt: string } | undefined;
+    isGenerating: boolean;
+    secondsLeft: number;
+    copyFeedback: string;
+    onGenerate: () => void;
+    onShare: () => void;
+    onCopy: () => void;
+}
+
+const InvitePanel = ({
+    generated,
+    isGenerating,
+    secondsLeft,
+    copyFeedback,
+    onGenerate,
+    onShare,
+    onCopy,
+}: InvitePanelProps) => {
+    if (!generated) {
+        return (
+            <div className="space-y-3">
+                <p className="text-sm text-muted-foreground">
+                    Generates a one-time code you send to a friend. Once they enter it on their end, you're connected —
+                    no need for them to invite you back.
+                </p>
+                <Button className="w-full" disabled={isGenerating} onClick={onGenerate}>
+                    {isGenerating ? 'Generating…' : 'Generate invite code'}
+                </Button>
+            </div>
+        );
+    }
+
+    return (
+        <div className="space-y-3 text-center">
+            <p className="text-sm text-muted-foreground">
+                Send this code to your friend — they'll enter it under "Enter a code" to add you.
+            </p>
+            <p className="font-mono text-3xl tracking-widest">{generated.code}</p>
+            <p className="text-sm text-muted-foreground">Expires in {formatCountdown(secondsLeft)}</p>
+            <div className="flex gap-2">
+                <Button variant="secondary" className="flex-1" onClick={onShare}>
+                    Share code
+                </Button>
+                <Button variant="outline" className="flex-1" onClick={onCopy}>
+                    Copy
+                </Button>
+            </div>
+            {copyFeedback && <p className="text-sm text-muted-foreground">{copyFeedback}</p>}
+        </div>
+    );
+};
+
+const resolveRedeemErrorMessage = (isRedeemError: boolean, redeemError: unknown): string | null => {
+    if (!isRedeemError) return null;
+    if (!(redeemError instanceof Error)) return null;
+    return redeemError.message;
+};
+
+interface EnterCodePanelProps {
+    otp: string;
+    onOtpChange: (value: string) => void;
+    isRedeeming: boolean;
+    redeemSuccess: boolean;
+    redeemError: unknown;
+    isRedeemError: boolean;
+    onRedeem: () => void;
+}
+
+// fallow-ignore-next-line complexity
+const EnterCodePanel = ({
+    otp,
+    onOtpChange,
+    isRedeeming,
+    redeemSuccess,
+    redeemError,
+    isRedeemError,
+    onRedeem,
+}: EnterCodePanelProps) => {
+    if (redeemSuccess) {
+        return <p className="text-center text-sm text-primary">Friend added!</p>;
+    }
+
+    const redeemErrorMessage = resolveRedeemErrorMessage(isRedeemError, redeemError);
+
+    return (
+        <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">Got a code from a friend? Enter it below to add them.</p>
+            <div className="flex justify-center">
+                <InputOTP
+                    maxLength={OTP_LENGTH}
+                    value={otp}
+                    onChange={onOtpChange}
+                    pattern={REGEXP_ONLY_DIGITS_AND_CHARS}
+                    inputMode="text"
+                    pasteTransformer={sanitizeCode}
+                >
+                    <InputOTPGroup>
+                        {[0, 1, 2, 3, 4, 5].map((slotIndex) => (
+                            <InputOTPSlot key={slotIndex} index={slotIndex} />
+                        ))}
+                    </InputOTPGroup>
+                </InputOTP>
+            </div>
+            {redeemErrorMessage && <p className="text-center text-sm text-destructive">{redeemErrorMessage}</p>}
+            <Button className="w-full" disabled={otp.length !== OTP_LENGTH || isRedeeming} onClick={onRedeem}>
+                {isRedeeming ? 'Adding…' : 'Add friend'}
+            </Button>
+        </div>
+    );
+};
+
 export const AddFriendDrawer = ({ open, onOpenChange }: AddFriendDrawerProps) => {
     const [mode, setMode] = useState<Mode>('invite');
     const [otp, setOtp] = useState('');
@@ -178,77 +290,25 @@ export const AddFriendDrawer = ({ open, onOpenChange }: AddFriendDrawerProps) =>
 
                         <div className="flex min-h-[220px] flex-col justify-center">
                             {mode === 'invite' ? (
-                                !generated ? (
-                                    <div className="space-y-3">
-                                        <p className="text-sm text-muted-foreground">
-                                            Generates a one-time code you send to a friend. Once they enter it on their
-                                            end, you're connected — no need for them to invite you back.
-                                        </p>
-                                        <Button
-                                            className="w-full"
-                                            disabled={isGenerating}
-                                            onClick={() => generateCode()}
-                                        >
-                                            {isGenerating ? 'Generating…' : 'Generate invite code'}
-                                        </Button>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-3 text-center">
-                                        <p className="text-sm text-muted-foreground">
-                                            Send this code to your friend — they'll enter it under "Enter a code" to add
-                                            you.
-                                        </p>
-                                        <p className="font-mono text-3xl tracking-widest">{generated.code}</p>
-                                        <p className="text-sm text-muted-foreground">
-                                            Expires in {formatCountdown(secondsLeft)}
-                                        </p>
-                                        <div className="flex gap-2">
-                                            <Button variant="secondary" className="flex-1" onClick={handleShare}>
-                                                Share code
-                                            </Button>
-                                            <Button variant="outline" className="flex-1" onClick={handleCopy}>
-                                                Copy
-                                            </Button>
-                                        </div>
-                                        {copyFeedback && (
-                                            <p className="text-sm text-muted-foreground">{copyFeedback}</p>
-                                        )}
-                                    </div>
-                                )
-                            ) : redeemSuccess ? (
-                                <p className="text-center text-sm text-primary">Friend added!</p>
+                                <InvitePanel
+                                    generated={generated}
+                                    isGenerating={isGenerating}
+                                    secondsLeft={secondsLeft}
+                                    copyFeedback={copyFeedback}
+                                    onGenerate={() => generateCode()}
+                                    onShare={() => void handleShare()}
+                                    onCopy={() => void handleCopy()}
+                                />
                             ) : (
-                                <div className="space-y-4">
-                                    <p className="text-sm text-muted-foreground">
-                                        Got a code from a friend? Enter it below to add them.
-                                    </p>
-                                    <div className="flex justify-center">
-                                        <InputOTP
-                                            maxLength={OTP_LENGTH}
-                                            value={otp}
-                                            onChange={(value) => setOtp(sanitizeCode(value))}
-                                            pattern={REGEXP_ONLY_DIGITS_AND_CHARS}
-                                            inputMode="text"
-                                            pasteTransformer={sanitizeCode}
-                                        >
-                                            <InputOTPGroup>
-                                                {[0, 1, 2, 3, 4, 5].map((slotIndex) => (
-                                                    <InputOTPSlot key={slotIndex} index={slotIndex} />
-                                                ))}
-                                            </InputOTPGroup>
-                                        </InputOTP>
-                                    </div>
-                                    {isRedeemError && redeemError instanceof Error && (
-                                        <p className="text-center text-sm text-destructive">{redeemError.message}</p>
-                                    )}
-                                    <Button
-                                        className="w-full"
-                                        disabled={otp.length !== OTP_LENGTH || isRedeeming}
-                                        onClick={handleRedeem}
-                                    >
-                                        {isRedeeming ? 'Adding…' : 'Add friend'}
-                                    </Button>
-                                </div>
+                                <EnterCodePanel
+                                    otp={otp}
+                                    onOtpChange={(value) => setOtp(sanitizeCode(value))}
+                                    isRedeeming={isRedeeming}
+                                    redeemSuccess={redeemSuccess}
+                                    redeemError={redeemError}
+                                    isRedeemError={isRedeemError}
+                                    onRedeem={handleRedeem}
+                                />
                             )}
                         </div>
                     </div>
