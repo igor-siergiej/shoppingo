@@ -54,39 +54,6 @@ describe('ToolBarAppBar', () => {
         expect(backButton).toBeUndefined();
     });
 
-    it('shows clear selected button when handler provided', async () => {
-        const { ToolBarAppBar } = await import('./index');
-        const { container } = renderWithRouter(
-            <ToolBarAppBar isItemsPage={true} isListsPage={false} onClearSelected={() => {}} onMenuClick={() => {}} />
-        );
-
-        const buttons = container.querySelectorAll('button');
-        const clearButton = Array.from(buttons).find((btn) => btn.title === 'Clear selected items');
-        expect(clearButton).toBeDefined();
-    });
-
-    it('hides clear selected button when handler not provided', async () => {
-        const { ToolBarAppBar } = await import('./index');
-        const { container } = renderWithRouter(
-            <ToolBarAppBar isItemsPage={true} isListsPage={false} onMenuClick={() => {}} />
-        );
-
-        const buttons = container.querySelectorAll('button');
-        const clearButton = Array.from(buttons).find((btn) => btn.title === 'Clear selected items');
-        expect(clearButton).toBeUndefined();
-    });
-
-    it('shows remove all button when handler provided', async () => {
-        const { ToolBarAppBar } = await import('./index');
-        const { container } = renderWithRouter(
-            <ToolBarAppBar isItemsPage={true} isListsPage={false} onRemoveAll={() => {}} onMenuClick={() => {}} />
-        );
-
-        const buttons = container.querySelectorAll('button');
-        const removeButton = Array.from(buttons).find((btn) => btn.title === 'Remove all items');
-        expect(removeButton).toBeDefined();
-    });
-
     it('always renders menu button', async () => {
         const { ToolBarAppBar } = await import('./index');
         const { container } = renderWithRouter(
@@ -96,42 +63,6 @@ describe('ToolBarAppBar', () => {
         const buttons = container.querySelectorAll('button');
         const menuButton = Array.from(buttons).find((btn) => btn.title === 'Menu');
         expect(menuButton).toBeDefined();
-    });
-
-    it('disables clear selected button when flag is true', async () => {
-        const { ToolBarAppBar } = await import('./index');
-        const { container } = renderWithRouter(
-            <ToolBarAppBar
-                isItemsPage={true}
-                isListsPage={false}
-                onClearSelected={() => {}}
-                onMenuClick={() => {}}
-                disableClearSelected={true}
-            />
-        );
-
-        const buttons = container.querySelectorAll('button');
-        const clearButton = Array.from(buttons).find(
-            (btn) => btn.title === 'Clear selected items'
-        ) as HTMLButtonElement;
-        expect(clearButton?.disabled).toBe(true);
-    });
-
-    it('disables remove all button when flag is true', async () => {
-        const { ToolBarAppBar } = await import('./index');
-        const { container } = renderWithRouter(
-            <ToolBarAppBar
-                isItemsPage={true}
-                isListsPage={false}
-                onRemoveAll={() => {}}
-                onMenuClick={() => {}}
-                disableClearAll={true}
-            />
-        );
-
-        const buttons = container.querySelectorAll('button');
-        const removeButton = Array.from(buttons).find((btn) => btn.title === 'Remove all items') as HTMLButtonElement;
-        expect(removeButton?.disabled).toBe(true);
     });
 
     it('renders a Calendar button that navigates to /calendar', async () => {

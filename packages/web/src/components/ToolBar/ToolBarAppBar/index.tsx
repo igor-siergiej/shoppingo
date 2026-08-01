@@ -1,4 +1,4 @@
-import { ArrowLeft, BookOpen, Calendar, CheckCheck, Menu, ShoppingCart, Trash2, Users } from 'lucide-react';
+import { ArrowLeft, BookOpen, Calendar, Menu, ShoppingCart, Users } from 'lucide-react';
 import { forwardRef, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ToolBarButton } from '../ToolBarButton';
@@ -11,17 +11,11 @@ interface ToolBarAppBarProps {
     isCalendarPage?: boolean;
     isFriendsPage?: boolean;
     onGoBack?: () => void;
-    onClearSelected?: () => void;
-    onRemoveAll?: () => void;
-    onToggleSelectMode?: () => void;
     onMenuClick: () => void;
-    disableClearSelected?: boolean;
-    disableClearAll?: boolean;
     itemDrawer?: ReactNode;
     listDrawer?: ReactNode;
     recipeDrawer?: ReactNode;
     ingredientDrawer?: ReactNode;
-    recipePickerDrawer?: ReactNode;
     todoDrawer?: ReactNode;
     friendDrawer?: ReactNode;
 }
@@ -36,17 +30,11 @@ export const ToolBarAppBar = forwardRef<HTMLDivElement, ToolBarAppBarProps>(
             isCalendarPage,
             isFriendsPage,
             onGoBack,
-            onClearSelected,
-            onRemoveAll,
-            onToggleSelectMode,
             onMenuClick,
-            disableClearSelected = false,
-            disableClearAll = false,
             itemDrawer,
             listDrawer,
             recipeDrawer,
             ingredientDrawer,
-            recipePickerDrawer,
             todoDrawer,
             friendDrawer,
         },
@@ -102,10 +90,9 @@ export const ToolBarAppBar = forwardRef<HTMLDivElement, ToolBarAppBarProps>(
                     {isRecipeDetailPage && ingredientDrawer}
                     {isCalendarPage && todoDrawer}
                     {isFriendsPage && friendDrawer}
-                    {isItemsPage && recipePickerDrawer}
                 </div>
 
-                {/* Right: calendar nav + contextual actions + menu */}
+                {/* Right: calendar nav + menu — page actions live in ActionsFab, not here */}
                 <div className="flex items-center gap-1 justify-self-end">
                     <ToolBarButton
                         icon={Calendar}
@@ -113,26 +100,6 @@ export const ToolBarAppBar = forwardRef<HTMLDivElement, ToolBarAppBarProps>(
                         onClick={() => navigate('/calendar')}
                         active={isCalendarPage}
                     />
-                    {onClearSelected && (
-                        <ToolBarButton
-                            icon={CheckCheck}
-                            title="Clear selected items"
-                            onClick={onClearSelected}
-                            disabled={disableClearSelected}
-                        />
-                    )}
-                    {onRemoveAll && (
-                        <ToolBarButton
-                            icon={Trash2}
-                            title="Remove all items"
-                            onClick={onRemoveAll}
-                            disabled={disableClearAll}
-                            variant="destructive"
-                        />
-                    )}
-                    {isRecipeDetailPage && onToggleSelectMode && (
-                        <ToolBarButton icon={ShoppingCart} title="Add to shopping list" onClick={onToggleSelectMode} />
-                    )}
                     <ToolBarButton icon={Menu} title="Menu" onClick={onMenuClick} />
                 </div>
             </div>
