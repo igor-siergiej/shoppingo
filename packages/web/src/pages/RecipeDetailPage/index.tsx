@@ -92,7 +92,7 @@ const RecipeDetailPage = () => {
         const updated = [...recipe.ingredients, newIngredient];
 
         try {
-            await updateRecipe(recipeId, recipe.title, updated);
+            await updateRecipe(recipeId, recipe.title, updated, undefined, recipe.link, recipe.instructions);
             await refetch();
         } catch (error) {
             const err = error as { message?: string };
@@ -113,7 +113,7 @@ const RecipeDetailPage = () => {
         }
 
         try {
-            await updateRecipe(recipeId, editedTitle, recipe.ingredients);
+            await updateRecipe(recipeId, editedTitle, recipe.ingredients, undefined, recipe.link, recipe.instructions);
             await refetch();
             setIsEditingTitle(false);
             toast.success('Recipe title updated', {
@@ -187,7 +187,7 @@ const RecipeDetailPage = () => {
         if (!recipe) return;
 
         try {
-            await updateRecipe(recipeId, recipe.title, ingredients);
+            await updateRecipe(recipeId, recipe.title, ingredients, undefined, recipe.link, recipe.instructions);
             await refetch();
             toast.success('Ingredients updated', {
                 style: {
