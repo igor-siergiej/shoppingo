@@ -25,6 +25,7 @@ const RecipesPage = () => {
     const [sharedUrl, setSharedUrl] = useState('');
     const [autoImport, setAutoImport] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+    const [isSearchFocused, setIsSearchFocused] = useState(false);
     const generatingRef = useRef<Set<string>>(new Set());
     const { data, isLoading, isError, refetch } = useQuery({
         ...getRecipesQuery(user?.id || ''),
@@ -37,6 +38,14 @@ const RecipesPage = () => {
             await refetch();
         });
     }, [registerRefresh, refetch]);
+
+    // Reserves room in the scroll area so the floating search bar never covers the last recipe card.
+    useEffect(() => {
+        document.documentElement.style.setProperty('--layout-bottom-inset', '2.5rem');
+        return () => {
+            document.documentElement.style.removeProperty('--layout-bottom-inset');
+        };
+    }, []);
 
     useEffect(() => {
         if (user?.id) {
@@ -136,30 +145,40 @@ const RecipesPage = () => {
     };
 
     const searchBar = (
-        <div className="relative mb-6">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-            <Input
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search recipes..."
-                className="pl-9 pr-9"
-            />
-            {searchQuery && (
-                <button
-                    type="button"
-                    onClick={() => setSearchQuery('')}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    aria-label="Clear search"
-                >
-                    <X className="h-4 w-4" />
-                </button>
-            )}
+        <div className="fixed left-0 right-0 z-30 px-4" style={{ bottom: '5.5rem' }}>
+            <div className="relative mx-auto max-w-[500px]">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                <Input
+                    type="search"
+                    inputMode="search"
+                    enterKeyHint="search"
+                    autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="off"
+                    spellCheck={false}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onFocus={() => setIsSearchFocused(true)}
+                    onBlur={() => setIsSearchFocused(false)}
+                    placeholder="Search recipes..."
+                    className="pl-9 pr-9 bg-background/95 backdrop-blur-sm shadow-md"
+                />
+                {searchQuery && (
+                    <button
+                        type="button"
+                        onClick={() => setSearchQuery('')}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        aria-label="Clear search"
+                    >
+                        <X className="h-4 w-4" />
+                    </button>
+                )}
+            </div>
         </div>
     );
 
     const pageContent = (
         <div className="flex flex-col mb-auto">
-            {searchBar}
             {searchQuery.trim() ? (
                 <div>
                     <h2 className="text-lg font-semibold mb-3 text-foreground">Results ({searchResults.length})</h2>
@@ -245,20 +264,24 @@ const RecipesPage = () => {
             {isLoading && <ListsSkeleton />}
             {!isLoading && !isError && pageContent}
 
-            <ToolBar
-                onAddRecipe={handleAddRecipe}
-                placeholder="Enter recipe name..."
-                addRecipeDrawerOpen={drawerOpen}
-                onAddRecipeDrawerOpenChange={(open) => {
-                    setDrawerOpen(open);
-                    if (!open) {
-                        setSharedUrl('');
-                        setAutoImport(false);
-                    }
-                }}
-                addRecipeInitialLink={sharedUrl}
-                addRecipeAutoImport={autoImport}
-            />
+            {!isLoading && !isError && searchBar}
+
+            {!isSearchFocused && !searchQuery.trim() && (
+                <ToolBar
+                    onAddRecipe={handleAddRecipe}
+                    placeholder="Enter recipe name..."
+                    addRecipeDrawerOpen={drawerOpen}
+                    onAddRecipeDrawerOpenChange={(open) => {
+                        setDrawerOpen(open);
+                        if (!open) {
+                            setSharedUrl('');
+                            setAutoImport(false);
+                        }
+                    }}
+                    addRecipeInitialLink={sharedUrl}
+                    addRecipeAutoImport={autoImport}
+                />
+            )}
         </>
     );
 };
