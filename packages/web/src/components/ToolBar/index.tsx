@@ -187,7 +187,9 @@ const ToolBar = ({
     return (
         <>
             <div className="fixed bottom-4 left-0 right-0 z-40 px-4">
-                <div className="mx-auto max-w-[400px]">
+                <div className="relative mx-auto max-w-[400px]">
+                    <ActionsFab actionItems={actionItems} />
+
                     <MotionConfig transition={transition}>
                         {/* Menu Container - Layered Glass Effect */}
                         {isMenuOpen && (
@@ -329,8 +331,6 @@ const ToolBar = ({
                     </MotionConfig>
                 </div>
             </div>
-
-            <ActionsFab actionItems={actionItems} />
 
             {isItemsPage && currentList && listItems && (
                 <AddFromRecipeDrawer

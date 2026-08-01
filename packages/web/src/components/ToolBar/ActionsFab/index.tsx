@@ -34,7 +34,7 @@ export const ActionsFab = ({ actionItems }: ActionsFabProps) => {
     };
 
     return (
-        <div className="fixed bottom-28 left-4 z-40 flex flex-col items-start gap-3">
+        <div className="absolute bottom-24 left-2 z-40 flex flex-col items-start gap-3">
             <AnimatePresence>
                 {open && (
                     <div className="flex flex-col gap-3 mb-1">

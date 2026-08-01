@@ -54,32 +54,30 @@ export const ToolBarAppBar = forwardRef<HTMLDivElement, ToolBarAppBarProps>(
 
         return (
             <div ref={ref} className="grid grid-cols-[1fr_auto_1fr] w-full items-center py-2.5 px-3">
-                {/* Left: back or primary nav */}
+                {/* Left: primary nav — Shopping lists slot swaps for back on drill-in pages */}
                 <div className="flex items-center gap-1 justify-self-start">
                     {showBackButton ? (
                         <ToolBarButton icon={ArrowLeft} title="Go back" onClick={handleGoBack} />
                     ) : (
-                        <>
-                            <ToolBarButton
-                                icon={ShoppingCart}
-                                title="Shopping lists"
-                                onClick={() => navigate('/')}
-                                active={isListsPage}
-                            />
-                            <ToolBarButton
-                                icon={BookOpen}
-                                title="Recipes"
-                                onClick={() => navigate('/recipes')}
-                                active={isRecipesPage}
-                            />
-                            <ToolBarButton
-                                icon={Users}
-                                title="Friends"
-                                onClick={() => navigate('/friends')}
-                                active={isFriendsPage}
-                            />
-                        </>
+                        <ToolBarButton
+                            icon={ShoppingCart}
+                            title="Shopping lists"
+                            onClick={() => navigate('/')}
+                            active={isListsPage}
+                        />
                     )}
+                    <ToolBarButton
+                        icon={BookOpen}
+                        title="Recipes"
+                        onClick={() => navigate('/recipes')}
+                        active={isRecipesPage}
+                    />
+                    <ToolBarButton
+                        icon={Users}
+                        title="Friends"
+                        onClick={() => navigate('/friends')}
+                        active={isFriendsPage}
+                    />
                 </div>
 
                 {/* Center: context-aware add — always dead-center regardless of side button counts */}
@@ -92,7 +90,7 @@ export const ToolBarAppBar = forwardRef<HTMLDivElement, ToolBarAppBarProps>(
                     {isFriendsPage && friendDrawer}
                 </div>
 
-                {/* Right: calendar nav + menu — page actions live in ActionsFab, not here */}
+                {/* Right: calendar nav + menu — always present, page actions live in ActionsFab, not here */}
                 <div className="flex items-center gap-1 justify-self-end">
                     <ToolBarButton
                         icon={Calendar}
