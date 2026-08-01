@@ -147,4 +147,64 @@ test.describe('Calendar page', () => {
         await expect(todayCell.locator('[data-testid="day-dot"][data-dimmed="true"]')).toHaveCount(1);
         await expect(todayCell.locator('[data-testid="day-dot"][data-dimmed="false"]')).toHaveCount(1);
     });
+
+    // Week view (not month view) here: the month grid can run to 6 rows depending on the
+    // real calendar date, tall enough to push the day list behind the fixed Inbox bar —
+    // a separate, pre-existing layout bug (content hidden under InboxDrawer's fixed
+    // bottom-24 strip) unrelated to swipe-delete. Week view has no month grid, so it's
+    // unaffected and keeps this test deterministic regardless of what day it runs on.
+    const switchToWeekView = async (page: import('@playwright/test').Page) => {
+        await page.getByRole('combobox').filter({ hasText: 'Month' }).click();
+        await page.getByRole('option', { name: 'Week' }).click();
+    };
+
+    test('swipe left past threshold deletes a todo', async ({ authenticatedPage }) => {
+        await apiCreateTodo({ title: 'Swipe Delete Me', dueDate: todayKey });
+
+        await authenticatedPage.goto('/calendar');
+        await switchToWeekView(authenticatedPage);
+        const row = authenticatedPage.locator('li[data-todo-title="Swipe Delete Me"]');
+        await expect(row).toBeVisible();
+
+        const box = await row.boundingBox();
+        if (box) {
+            const cx = box.x + box.width / 2;
+            const cy = box.y + box.height / 2;
+            await authenticatedPage.mouse.move(cx, cy);
+            await authenticatedPage.mouse.down();
+            await authenticatedPage.mouse.move(cx - 100, cy, { steps: 10 });
+            await authenticatedPage.mouse.up();
+        }
+
+        await expect(authenticatedPage.getByText('Swipe Delete Me')).not.toBeVisible();
+    });
+
+    test('deleting a recurring todo removes all future occurrences', async ({ authenticatedPage }) => {
+        await apiCreateTodo({
+            title: 'Recurring To Delete',
+            dueDate: todayKey,
+            recurrence: { freq: 'daily', interval: 1 },
+        });
+
+        await authenticatedPage.goto('/calendar');
+        await switchToWeekView(authenticatedPage);
+        // Week view expands the recurring todo into one row per day — swiping any single
+        // occurrence deletes the underlying todo (and so every occurrence) in one call.
+        const row = authenticatedPage.locator('li[data-todo-title="Recurring To Delete"]').first();
+        await expect(row).toBeVisible();
+
+        const box = await row.boundingBox();
+        if (box) {
+            const cx = box.x + box.width / 2;
+            const cy = box.y + box.height / 2;
+            await authenticatedPage.mouse.move(cx, cy);
+            await authenticatedPage.mouse.down();
+            await authenticatedPage.mouse.move(cx - 100, cy, { steps: 10 });
+            await authenticatedPage.mouse.up();
+        }
+
+        // Week view lists every day at once, so this also confirms tomorrow's occurrence
+        // is gone — the whole recurring todo was deleted, not just today's instance.
+        await expect(authenticatedPage.getByText('Recurring To Delete')).toHaveCount(0);
+    });
 });
