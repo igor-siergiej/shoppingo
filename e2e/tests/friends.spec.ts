@@ -46,22 +46,24 @@ test.describe('Friends page', () => {
         await authenticatedPage.goto('/friends');
         await openAddFriendDrawer(authenticatedPage);
 
-        await authenticatedPage.getByRole('button', { name: 'Invite a friend' }).click();
+        await authenticatedPage.getByRole('button', { name: 'Create invite' }).click();
+        await authenticatedPage.getByRole('button', { name: 'Generate invite code' }).click();
 
         const code = authenticatedPage.locator('p.font-mono');
         await expect(code).toBeVisible();
         await expect(code).toHaveText(/^[A-Z0-9]{6}$/);
-        await expect(authenticatedPage.getByText(/^\d{2}:\d{2}$/)).toBeVisible();
+        await expect(authenticatedPage.getByText(/Expires in \d{2}:\d{2}/)).toBeVisible();
     });
 
     test('redeeming your own generated code is rejected', async ({ authenticatedPage }) => {
         await authenticatedPage.goto('/friends');
         await openAddFriendDrawer(authenticatedPage);
 
-        await authenticatedPage.getByRole('button', { name: 'Invite a friend' }).click();
+        await authenticatedPage.getByRole('button', { name: 'Create invite' }).click();
+        await authenticatedPage.getByRole('button', { name: 'Generate invite code' }).click();
         const code = await authenticatedPage.locator('p.font-mono').innerText();
 
-        await authenticatedPage.getByRole('button', { name: 'Enter code' }).click();
+        await authenticatedPage.getByRole('button', { name: 'Enter a code' }).click();
         await authenticatedPage.locator('input[data-input-otp]').fill(code);
         await authenticatedPage.getByRole('button', { name: 'Add friend' }).click();
 
@@ -72,7 +74,7 @@ test.describe('Friends page', () => {
         await authenticatedPage.goto('/friends');
         await openAddFriendDrawer(authenticatedPage);
 
-        await authenticatedPage.getByRole('button', { name: 'Enter code' }).click();
+        await authenticatedPage.getByRole('button', { name: 'Enter a code' }).click();
         await authenticatedPage.locator('input[data-input-otp]').fill('ZZZZZZ');
         await authenticatedPage.getByRole('button', { name: 'Add friend' }).click();
 

@@ -29,7 +29,7 @@ export default defineConfig(({ mode }) => {
                     description: 'Shopping list application',
                     start_url: '/',
                     display: 'standalone',
-                    background_color: '#ffffff',
+                    background_color: '#f7f1e7',
                     theme_color: '#2e7d32',
                     scope: '/',
                     orientation: 'portrait-primary',
