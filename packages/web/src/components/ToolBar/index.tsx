@@ -4,6 +4,7 @@ import { useAuth, useUser } from '@imapps/web-utils';
 import type { Item, Recipe } from '@shoppingo/types';
 import { ListType } from '@shoppingo/types';
 import { AnimatePresence, MotionConfig, motion } from 'motion/react';
+import { ChefHat, CheckCheck, ShoppingCart, Tag, Trash2, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import useMeasure from 'react-use-measure';
@@ -12,6 +13,7 @@ import { Card } from '../../components/ui/card';
 import { useToolBarState } from '../../hooks/useToolBarState';
 import { ManageLabelsDrawer } from '../ManageLabelsDrawer';
 import { ManageUsersDrawer } from '../ManageUsersDrawer';
+import { ActionsFab, type ActionItem } from './ActionsFab';
 import { AddFriendDrawer } from './AddFriendDrawer';
 import { AddFromRecipeDrawer } from './AddFromRecipeDrawer';
 import { AddIngredientDrawer } from './AddIngredientDrawer';
@@ -118,6 +120,50 @@ const ToolBar = ({
     const isCalendarPage = location.pathname === '/calendar';
     const isFriendsPage = location.pathname === '/friends';
 
+    const isOwner = !!(currentList && currentList.ownerId === userId);
+
+    const actionItems: ActionItem[] = [
+        {
+            show: isItemsPage && !!currentList && !!listItems && currentListType === ListType.SHOPPING,
+            label: 'Add from Recipe',
+            icon: ChefHat,
+            onClick: () => setIsAddFromRecipeDrawerOpen(true),
+        },
+        {
+            show: isItemsPage && !!handleClearSelected,
+            label: 'Clear Selected',
+            icon: CheckCheck,
+            onClick: () => handleClearSelected?.(),
+            disabled: disableClearSelected,
+        },
+        {
+            show: isItemsPage && !!handleRemoveAll,
+            label: 'Remove All',
+            icon: Trash2,
+            onClick: () => handleRemoveAll?.(),
+            disabled: disableClearAll,
+            variant: 'destructive',
+        },
+        {
+            show: isItemsPage && isOwner,
+            label: 'Manage Users',
+            icon: Users,
+            onClick: () => setIsManageUsersOpen(true),
+        },
+        {
+            show: isRecipeDetailPage && !!onToggleSelectMode,
+            label: 'Add to Shopping List',
+            icon: ShoppingCart,
+            onClick: () => onToggleSelectMode?.(),
+        },
+        {
+            show: isCalendarPage,
+            label: 'Manage Labels',
+            icon: Tag,
+            onClick: () => setIsManageLabelsOpen(true),
+        },
+    ];
+
     const [contentRef, { height: contentHeight }] = useMeasure();
     const [menuRef, { width: menuWidth }] = useMeasure();
     const [maxWidth, setMaxWidth] = useState(0);
@@ -178,22 +224,6 @@ const ToolBar = ({
                                             <div ref={contentRef} className="px-3 py-4">
                                                 {menuActive === 1 && (
                                                     <HamburgerMenu
-                                                        currentList={currentList}
-                                                        userId={userId}
-                                                        onManageUsers={() => {
-                                                            setIsManageUsersOpen(true);
-                                                            setIsMenuOpen(false);
-                                                            setMenuActive(null);
-                                                        }}
-                                                        onManageLabels={
-                                                            isCalendarPage
-                                                                ? () => {
-                                                                      setIsManageLabelsOpen(true);
-                                                                      setIsMenuOpen(false);
-                                                                      setMenuActive(null);
-                                                                  }
-                                                                : undefined
-                                                        }
                                                         onClose={() => {
                                                             setIsMenuOpen(false);
                                                             setMenuActive(null);
@@ -225,9 +255,6 @@ const ToolBar = ({
                                 isCalendarPage={isCalendarPage}
                                 isFriendsPage={isFriendsPage}
                                 onGoBack={handleGoBack}
-                                onClearSelected={handleClearSelected}
-                                onRemoveAll={handleRemoveAll}
-                                onToggleSelectMode={onToggleSelectMode}
                                 onMenuClick={() => {
                                     setIsMenuOpen(!isMenuOpen);
                                     if (!isMenuOpen) {
@@ -236,8 +263,6 @@ const ToolBar = ({
                                         setMenuActive(null);
                                     }
                                 }}
-                                disableClearSelected={disableClearSelected}
-                                disableClearAll={disableClearAll}
                                 todoDrawer={
                                     isCalendarPage && onAddTodo ? (
                                         <AddTodoDrawer
@@ -291,16 +316,6 @@ const ToolBar = ({
                                         />
                                     ) : undefined
                                 }
-                                recipePickerDrawer={
-                                    isItemsPage && currentList && listItems && currentListType === ListType.SHOPPING ? (
-                                        <AddFromRecipeDrawer
-                                            open={isAddFromRecipeDrawerOpen}
-                                            onOpenChange={setIsAddFromRecipeDrawerOpen}
-                                            listTitle={currentList.title}
-                                            listItems={listItems}
-                                        />
-                                    ) : undefined
-                                }
                                 friendDrawer={
                                     isFriendsPage ? (
                                         <AddFriendDrawer
@@ -314,6 +329,18 @@ const ToolBar = ({
                     </MotionConfig>
                 </div>
             </div>
+
+            <ActionsFab actionItems={actionItems} />
+
+            {isItemsPage && currentList && listItems && (
+                <AddFromRecipeDrawer
+                    open={isAddFromRecipeDrawerOpen}
+                    onOpenChange={setIsAddFromRecipeDrawerOpen}
+                    listTitle={currentList.title}
+                    listItems={listItems}
+                    hideTrigger
+                />
+            )}
 
             {/* ManageLabelsDrawer */}
             <ManageLabelsDrawer open={isManageLabelsOpen} onOpenChange={setIsManageLabelsOpen} />

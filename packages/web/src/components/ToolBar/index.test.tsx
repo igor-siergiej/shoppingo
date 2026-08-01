@@ -1,12 +1,14 @@
+import { ListType } from '@shoppingo/types';
 import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import ToolBar from './index';
 
-const { mockLogout, mockNavigate, mockUseToolBarState, mockHandleGoBack } = vi.hoisted(() => ({
+const { mockLogout, mockNavigate, mockUseToolBarState, mockHandleGoBack, mockUseLocation } = vi.hoisted(() => ({
     mockLogout: vi.fn(),
     mockNavigate: vi.fn(),
     mockHandleGoBack: vi.fn(),
     mockUseToolBarState: vi.fn(),
+    mockUseLocation: vi.fn(() => ({ pathname: '/lists' })),
 }));
 
 vi.mock('@imapps/web-utils', () => ({
@@ -19,7 +21,7 @@ vi.mock('@imapps/web-utils', () => ({
 }));
 
 vi.mock('react-router-dom', () => ({
-    useLocation: () => ({ pathname: '/lists' }),
+    useLocation: mockUseLocation,
     useNavigate: () => mockNavigate,
 }));
 
@@ -55,8 +57,25 @@ vi.mock('../ManageLabelsDrawer', () => ({
     ManageLabelsDrawer: () => <div data-testid="manage-labels-drawer">Labels</div>,
 }));
 
+vi.mock('./ActionsFab', () => ({
+    ActionsFab: ({ actionItems }: { actionItems: { show: boolean; label: string }[] }) => (
+        <div data-testid="actions-fab">
+            {actionItems
+                .filter((item) => item.show)
+                .map((item) => (
+                    <span key={item.label}>{item.label}</span>
+                ))}
+        </div>
+    ),
+}));
+
+vi.mock('./AddFromRecipeDrawer', () => ({
+    AddFromRecipeDrawer: () => <div data-testid="add-from-recipe-drawer" />,
+}));
+
 describe('ToolBar', () => {
     beforeEach(() => {
+        mockUseLocation.mockReturnValue({ pathname: '/lists' });
         mockUseToolBarState.mockReturnValue({
             isManageUsersOpen: false,
             setIsManageUsersOpen: vi.fn(),
@@ -156,5 +175,65 @@ describe('ToolBar', () => {
         render(<ToolBar disableClearAll={true} />);
 
         expect(screen.getByTestId('toolbar-appbar')).toBeInTheDocument();
+    });
+
+    it('shows Items-page actions for the list owner', () => {
+        mockUseLocation.mockReturnValue({ pathname: '/list/Groceries' });
+
+        render(
+            <ToolBar
+                handleClearSelected={() => {}}
+                handleRemoveAll={() => {}}
+                currentListType={ListType.SHOPPING}
+                currentList={{ title: 'Groceries', users: [], ownerId: 'user-1' }}
+                listItems={[]}
+            />
+        );
+
+        expect(screen.getByText('Add from Recipe')).toBeInTheDocument();
+        expect(screen.getByText('Clear Selected')).toBeInTheDocument();
+        expect(screen.getByText('Remove All')).toBeInTheDocument();
+        expect(screen.getByText('Manage Users')).toBeInTheDocument();
+    });
+
+    it('hides Manage Users for a non-owner on the Items page', () => {
+        mockUseLocation.mockReturnValue({ pathname: '/list/Groceries' });
+
+        render(
+            <ToolBar
+                currentListType={ListType.SHOPPING}
+                currentList={{ title: 'Groceries', users: [], ownerId: 'someone-else' }}
+                listItems={[]}
+            />
+        );
+
+        expect(screen.queryByText('Manage Users')).not.toBeInTheDocument();
+    });
+
+    it('shows only Add to Shopping List on the Recipe detail page', () => {
+        mockUseLocation.mockReturnValue({ pathname: '/recipes/recipe-1' });
+
+        render(<ToolBar onToggleSelectMode={() => {}} />);
+
+        expect(screen.getByText('Add to Shopping List')).toBeInTheDocument();
+        expect(screen.queryByText('Clear Selected')).not.toBeInTheDocument();
+    });
+
+    it('shows only Manage Labels on the Calendar page', () => {
+        mockUseLocation.mockReturnValue({ pathname: '/calendar' });
+
+        render(<ToolBar />);
+
+        expect(screen.getByText('Manage Labels')).toBeInTheDocument();
+        expect(screen.queryByText('Add to Shopping List')).not.toBeInTheDocument();
+    });
+
+    it('shows no actions on the Friends page', () => {
+        mockUseLocation.mockReturnValue({ pathname: '/friends' });
+
+        render(<ToolBar />);
+
+        const fab = screen.getByTestId('actions-fab');
+        expect(fab).toBeEmptyDOMElement();
     });
 });
