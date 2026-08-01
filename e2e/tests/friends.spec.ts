@@ -47,6 +47,7 @@ test.describe('Friends page', () => {
         await openAddFriendDrawer(authenticatedPage);
 
         await authenticatedPage.getByRole('button', { name: 'Create invite' }).click();
+        await authenticatedPage.getByRole('button', { name: 'Generate invite code' }).click();
 
         const code = authenticatedPage.locator('p.font-mono');
         await expect(code).toBeVisible();
@@ -59,6 +60,7 @@ test.describe('Friends page', () => {
         await openAddFriendDrawer(authenticatedPage);
 
         await authenticatedPage.getByRole('button', { name: 'Create invite' }).click();
+        await authenticatedPage.getByRole('button', { name: 'Generate invite code' }).click();
         const code = await authenticatedPage.locator('p.font-mono').innerText();
 
         await authenticatedPage.getByRole('button', { name: 'Enter a code' }).click();
