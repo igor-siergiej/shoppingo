@@ -1,4 +1,4 @@
-# Bottom Toolbar: Static Nav + Expandable Actions Panel
+# Bottom Toolbar: Static Nav + Actions Speed-Dial FAB
 
 ## Problem
 
@@ -21,9 +21,26 @@ This makes the bar:
 
 - Bottom nav row has an identical, static icon set on every page.
 - Per-page contextual actions move to a separate, clearly-labeled expandable
-  panel, opened on demand — not permanently occupying the nav row.
-- Reuse the existing slide-up panel mechanism (already built for the Menu)
-  rather than building a second animation system.
+  surface, opened on demand — not permanently occupying the nav row.
+- The presence of page actions must be discoverable without prior knowledge
+  — not hidden behind a generic icon a user has no reason to tap.
+
+## Design decision: FAB speed-dial, not a nav-row icon
+
+An earlier version of this design put a third icon ("Actions") into the nav
+row's right slot, opening a slide-up panel shared with Menu. Prototyping that
+against a real page surfaced a discoverability problem: the icon looks like
+any other toolbar button, so there's no cue that tapping it reveals page
+actions — a user switching between nav tabs has no way to know Clear
+Selected / Add from Recipe / etc. exist at all.
+
+Prototyped three alternatives (vertical speed-dial FAB, horizontal
+mini-drawer FAB, radial fan speed-dial) as a floating action button
+independent of the nav row entirely. The vertical speed-dial won: a
+persistently-visible `+` FAB, bottom-left, is itself the discoverability cue
+(it's obviously "more stuff lives here"), and tapping it stacks labeled
+action buttons upward — no ambiguity about what each one does, no icon
+guessing.
 
 ## Non-goals
 
@@ -39,7 +56,7 @@ This makes the bar:
 ### 1. Nav row (static, every page)
 
 ```
-[Lists] [Recipes] [Friends]        (+)        [Calendar|Back] [Actions?] [Menu]
+[Lists] [Recipes] [Friends]        (+)        [Calendar|Back] [Menu]
 ```
 
 - **Left** (`justify-self-start`): Lists, Recipes, Friends. Always these
@@ -47,40 +64,42 @@ This makes the bar:
 - **Center** (`justify-self-center`): the existing context-aware Add trigger
   (`itemDrawer` / `listDrawer` / `recipeDrawer` / `ingredientDrawer` /
   `todoDrawer` / `friendDrawer`) — unchanged.
-- **Right** (`justify-self-end`): three slots —
+- **Right** (`justify-self-end`): two slots —
   1. `Calendar` nav icon, replaced by `Back` only on Items and
      Recipe-detail pages (the one exception, and it's a 1-for-1 icon swap,
      not a layout restructure).
-  2. **Actions** trigger — new. Only rendered when the current page has 1+
-     items in its `actionItems` list (see below). Icon: `SlidersHorizontal`.
-     Opens the shared expand panel with Actions content.
-  3. `Menu` — always present, always last. Opens the shared expand panel
+  2. `Menu` — always present, always last. Opens the existing slide-up panel
      with Menu (settings) content. Unchanged trigger, same icon.
 
-The left group and Menu never change. The only two things that ever vary are
-the Calendar↔Back swap and the presence/absence of the Actions icon —  both
-narrowly scoped, single-icon changes instead of the current wholesale row
-swap.
+The nav row carries no page-action affordance at all — actions live entirely
+in the separate Actions FAB (below). The only thing that ever varies in the
+row itself is the Calendar↔Back swap, a narrowly scoped 1-for-1 icon change.
 
-### 2. Actions panel content, per page
+### 2. Actions FAB, per page
 
-Reuses `useToolBarState`'s existing slide-up `Card` + height-animation
-mechanism (currently hardcoded to Menu content). That state generalizes from
-a single `isMenuOpen`/`menuActive` pair to track *which* panel is open:
+A standalone floating action button, independent of the nav card:
+`fixed bottom-28 left-4`, positioned just above and to the left of the main
+toolbar card. Only rendered when the current page's `actionItems` list has
+1+ visible entries — absent entirely on Lists/Recipes/Friends.
 
-```ts
-type ExpandPanel = 'menu' | 'actions' | null;
-```
-
-Only one panel is open at a time — opening Actions closes Menu and vice
-versa, matching today's single-panel behavior.
+- **Closed state**: a `size-14` circular `+` button (`bg-fuchsia-600` in the
+  prototype — final color TBD against the app's primary palette).
+- **Open state**: tapping it rotates the `+` into an `×` and stacks each
+  action above it as a smaller circular icon button with a label pill to its
+  left, staggered in with a spring animation (fastest at the bottom, nearest
+  the FAB).
+- Tapping the FAB again, tapping an action, or navigating away collapses it.
+- Independent of the Menu panel's open state — no shared mutual-exclusion
+  requirement, since they occupy different screen regions (bottom-left FAB
+  vs. the nav card's center-anchored slide-up). Both still auto-close on
+  route change.
 
 | Page | `actionItems` |
 |---|---|
 | Items | Add from Recipe, Clear Selected, Remove All, Manage Users *(list owner only)* |
 | Recipe detail | Add to Shopping List |
 | Calendar | Manage Labels |
-| Lists / Recipes / Friends | *(empty — Actions icon not rendered)* |
+| Lists / Recipes / Friends | *(empty — FAB not rendered)* |
 
 Each item has the same shape `HamburgerMenu`'s `SimpleButtonItem` already
 uses: `{ show, label, icon, onClick, disabled?, variant? }`. Destructive
@@ -99,31 +118,32 @@ nothing page-specific.
 
 ### 3. Component changes
 
-- **`useToolBarState`**: `isMenuOpen`/`menuActive` generalize to a single
-  `ExpandPanel` state (`'menu' | 'actions' | null`) plus the open/close
-  helpers. Existing consumers of the menu-open behavior get the same
-  semantics, scoped to `panel === 'menu'`.
-- **`ToolBarAppBar`**: right group updated to
-  `[Calendar|Back]`, conditional `ActionsButton`, `Menu`. Takes a new
-  `hasActions: boolean` prop (or derives it from `actionItems.length > 0`)
-  to decide whether to render the Actions icon.
+- **`useToolBarState`**: unchanged — `isMenuOpen`/`menuActive` continue to
+  govern only the Menu panel, exactly as today. No generalization needed
+  since the FAB manages its own open state independently.
+- **`ToolBarAppBar`**: right group simplifies to `[Calendar|Back]`, `Menu` —
+  net removal of the three action buttons it currently renders
+  conditionally (`onClearSelected`, `onRemoveAll`, the Recipe-detail
+  "Add to shopping list" button), with no replacement icon added in their
+  place.
+- **`ActionsFab`** (new, `ToolBar/ActionsFab/`): self-contained component
+  owning its own `open` boolean state. Takes `actionItems` as a prop, renders
+  nothing when the filtered (`show: true`) list is empty. Renders the `+`/`×`
+  FAB and, on open, the staggered vertical stack of action buttons. Closes
+  itself when an action is clicked or the route changes.
 - **`ToolBar/index.tsx`**: builds `actionItems` per page (mirroring the
   existing `isItemsPage`/`isListsPage`/etc. branching already used to pick
-  which center drawer renders), passes both `actionItems` and the existing
-  `menuActive`-style callbacks down. Renders a new `ActionsPanel` component
-  as the alternate content of the shared expand card (sibling to
-  `HamburgerMenu`, same container).
-- **`ActionsPanel`** (new, `ToolBar/ActionsPanel/`): renders `actionItems`
-  as a list of buttons, same visual language as `HamburgerMenu`'s
-  `SimpleButtonItem` rendering (can share the button-row styling/markup).
+  which center drawer renders), passes the array to `ActionsFab`, mounted as
+  a sibling of the toolbar `Card` (not inside it — the FAB is positioned
+  independently, `fixed bottom-28 left-4`, above and outside the nav card).
 - **`AddFromRecipeDrawer`**: trigger moves from the app-bar center row into
   an `actionItems` entry ("Add from Recipe") that opens the same drawer —
   drawer component itself is unchanged, only relocates its trigger, closing
-  the Actions panel first (same pattern `onManageUsers` already follows
-  today when opening `ManageUsersDrawer`).
+  the FAB first (same pattern `onManageUsers` already follows today when
+  opening `ManageUsersDrawer`).
 - **`onToggleSelectMode`** (Recipe detail "Add to shopping list") and
-  **`onManageLabels`** (Calendar "Manage Labels") move from bar-right
-  icons / `HamburgerMenu` respectively into `actionItems` entries.
+  **`onManageLabels`** (Calendar "Manage Labels") move from bar-right icons /
+  `HamburgerMenu` respectively into `actionItems` entries.
 - No prop changes needed on `ItemsPage`, `RecipeDetailPage`, `CalendarPage`
   — they already pass the callbacks `ToolBar` needs (`handleClearSelected`,
   `handleRemoveAll`, `onToggleSelectMode`, `onManageLabels` equivalent);
@@ -133,31 +153,33 @@ nothing page-specific.
 ### 4. Error handling / edge cases
 
 - `disableClearSelected` / `disableClearAll` disabled states carry over
-  unchanged onto the corresponding Actions panel buttons.
-- Destructive styling (Remove All) preserved via the panel button's
-  `variant="destructive"`, matching `HamburgerMenu`'s Logout button.
-- Both panels (Menu, Actions) auto-close on navigation — existing behavior
-  for Menu extends to Actions via the shared `ExpandPanel` state resetting
-  on route change.
+  unchanged onto the corresponding FAB action buttons.
+- Destructive styling (Remove All) preserved via the action button's
+  destructive color treatment, matching `HamburgerMenu`'s Logout button
+  styling intent (red).
+- The FAB auto-closes on route change, same as Menu does today.
 - If a page's `actionItems` all have `show: false` (e.g. non-owner on Items
-  page with no other actions), the Actions icon does not render — same
+  page with no other actions), the FAB does not render at all — the
   "hide if empty" rule applies to the filtered list, not just the static
   per-page list.
+- FAB position (`bottom-28 left-4`) must clear the main toolbar card at all
+  supported viewport widths — verify no overlap with the card's left-side
+  nav icons (Lists/Recipes/Friends, or Back) at narrow screens during
+  implementation.
 
 ### 5. Testing
 
-Update existing `ToolBar/index.test.tsx`, `ToolBar/ToolBarAppBar/index.test.tsx`,
-`ToolBar/ToolBarButton/index.test.tsx` for:
+Update existing `ToolBar/index.test.tsx`, `ToolBar/ToolBarAppBar/index.test.tsx`
+for the simplified right-group composition (Calendar/Back, Menu only — no
+Actions icon).
 
-- New right-group composition (Calendar/Back, conditional Actions, Menu).
-- Actions icon hidden when `actionItems` is empty (Lists/Recipes/Friends
-  pages) and shown when populated (Items/Recipe-detail/Calendar).
-- Panel mutual exclusion: opening Actions while Menu is open closes Menu,
-  and vice versa.
+New test file for `ActionsFab` covering:
+
+- Not rendered when `actionItems` (post-`show` filtering) is empty.
+- Rendered closed (just the `+` FAB) when populated.
+- Expands to show all visible items on tap, collapses on second tap.
+- Clicking an item calls its `onClick` and collapses the FAB.
 - Per-page `actionItems` content: Items (owner vs non-owner), Recipe detail,
   Calendar.
-- Disabled/destructive states carry through to panel buttons
+- Disabled/destructive states carry through to the rendered buttons
   (`disableClearSelected`, `disableClearAll`).
-
-New test file for `ActionsPanel` component covering item rendering,
-`show: false` filtering, and click-through to provided `onClick` handlers.
