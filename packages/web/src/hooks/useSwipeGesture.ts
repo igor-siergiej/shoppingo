@@ -16,43 +16,54 @@ export interface UseSwipeGestureReturn {
 
 const SPRING = { type: 'spring', stiffness: 300, damping: 30 } as const;
 
+const OPEN_THRESHOLD = 60;
+const VELOCITY_THRESHOLD = 500;
+const CLOSE_THRESHOLD = 30;
+const SNAP_BACK_THRESHOLD = 20;
+const SWIPE_REVEAL_DISTANCE = 80;
+
+type SwipeState = 'closed' | 'left' | 'right';
+
+const isClosingBackPast = (swipeState: SwipeState, offset: number): boolean => {
+    if (swipeState === 'left') return offset > CLOSE_THRESHOLD;
+    if (swipeState === 'right') return offset < -CLOSE_THRESHOLD;
+    return false;
+};
+
+const isSnappingBackToCenter = (swipeState: SwipeState, offset: number): boolean =>
+    swipeState !== 'closed' && Math.abs(offset) < SNAP_BACK_THRESHOLD;
+
+const shouldCloseSwipe = (swipeState: SwipeState, offset: number): boolean =>
+    isClosingBackPast(swipeState, offset) || isSnappingBackToCenter(swipeState, offset);
+
+const exceedsOpenThreshold = (offset: number, velocity: number, direction: 1 | -1): boolean =>
+    direction * offset > OPEN_THRESHOLD || direction * velocity > VELOCITY_THRESHOLD;
+
+// fallow-ignore-next-line complexity
+const resolveSwipeDirection = (swipeState: SwipeState, offset: number, velocity: number): SwipeState | null => {
+    if (swipeState !== 'left' && exceedsOpenThreshold(offset, velocity, -1)) return 'left';
+    if (swipeState !== 'right' && exceedsOpenThreshold(offset, velocity, 1)) return 'right';
+    return null;
+};
+
+const targetXFor = (state: SwipeState): number => {
+    if (state === 'left') return -SWIPE_REVEAL_DISTANCE;
+    if (state === 'right') return SWIPE_REVEAL_DISTANCE;
+    return 0;
+};
+
 const resolveSwipeTarget = (
-    swipeState: 'closed' | 'left' | 'right',
+    swipeState: SwipeState,
     offset: number,
     velocity: number
-): { newState: 'closed' | 'left' | 'right'; targetX: number } => {
-    const threshold = 60;
-    const swipeVelocityThreshold = 500;
-    const closeThreshold = 30;
-
-    const shouldSwipeLeft = offset < -threshold || velocity < -swipeVelocityThreshold;
-    const shouldSwipeRight = offset > threshold || velocity > swipeVelocityThreshold;
-
-    if (swipeState === 'left' && offset > closeThreshold) {
+): { newState: SwipeState; targetX: number } => {
+    if (shouldCloseSwipe(swipeState, offset)) {
         return { newState: 'closed', targetX: 0 };
     }
 
-    if (swipeState === 'right' && offset < -closeThreshold) {
-        return { newState: 'closed', targetX: 0 };
-    }
-
-    if (shouldSwipeLeft && swipeState !== 'left') {
-        return { newState: 'left', targetX: -80 };
-    }
-
-    if (shouldSwipeRight && swipeState !== 'right') {
-        return { newState: 'right', targetX: 80 };
-    }
-
-    if (swipeState !== 'closed' && Math.abs(offset) < 20) {
-        return { newState: 'closed', targetX: 0 };
-    }
-
-    if (swipeState === 'closed') {
-        return { newState: 'closed', targetX: 0 };
-    }
-
-    return { newState: swipeState, targetX: swipeState === 'left' ? -80 : 80 };
+    const direction = resolveSwipeDirection(swipeState, offset, velocity);
+    const newState = direction ?? swipeState;
+    return { newState, targetX: targetXFor(newState) };
 };
 
 export function useSwipeGesture(): UseSwipeGestureReturn {

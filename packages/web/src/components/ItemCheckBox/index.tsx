@@ -1,24 +1,13 @@
 import type { Item, ListType } from '@shoppingo/types';
 import { ListType as ListTypeEnum } from '@shoppingo/types';
-import { Edit2, Loader2, Trash2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { type MouseEvent, useId, useRef, useState } from 'react';
-import { QuantityUnitField } from '../../components/QuantityUnitField';
-import { Button } from '../../components/ui/button';
-import {
-    Drawer,
-    DrawerClose,
-    DrawerContent,
-    DrawerFooter,
-    DrawerHeader,
-    DrawerTitle,
-} from '../../components/ui/drawer';
-import { Input } from '../../components/ui/input';
-import { Label } from '../../components/ui/label';
 import { useItemEditDrawer } from '../../hooks/useItemEditDrawer';
 import { useItemImage } from '../../hooks/useItemImage';
 import { useItemMutations } from '../../hooks/useItemMutations';
 import { useSwipeGesture } from '../../hooks/useSwipeGesture';
+import { EditNameQuantityDrawer } from '../EditNameQuantityDrawer';
+import { SwipeableRow } from '../SwipeableRow';
 import { ItemCheckBoxCard } from './ItemCheckBoxCard';
 
 interface ItemCheckBoxProps {
@@ -27,47 +16,16 @@ interface ItemCheckBoxProps {
     listType: ListType;
 }
 
-interface ItemCheckBoxActionButtonsProps {
-    isDeleting: boolean;
-    deleteMutation: { isLoading: boolean };
-    onDelete: (e?: MouseEvent) => void;
-    onEdit: (e?: MouseEvent) => void;
-}
+const hasNameChanged = (item: Item, name: string): boolean => Boolean(name.trim()) && name !== item.name;
 
-const ItemCheckBoxActionButtons = ({
-    isDeleting,
-    deleteMutation,
-    onDelete,
-    onEdit,
-}: ItemCheckBoxActionButtonsProps) => {
-    if (isDeleting) return null;
-
-    return (
-        <>
-            <div className="absolute inset-y-0 right-0 flex items-center justify-end w-32">
-                <Button
-                    onClick={onDelete}
-                    disabled={deleteMutation.isLoading}
-                    className="h-[calc(100%-2px)] w-full rounded-lg bg-destructive hover:bg-destructive/90 text-white border border-destructive/20 shadow-sm flex items-center justify-end mr-1"
-                >
-                    <div className="flex items-center justify-center pr-3.5">
-                        {deleteMutation.isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Trash2 size={20} />}
-                    </div>
-                </Button>
-            </div>
-
-            <div className="absolute inset-y-0 left-0 flex items-center justify-start pl-1 w-32">
-                <Button
-                    onClick={onEdit}
-                    className="h-[calc(100%-2px)] w-full rounded-lg bg-blue-500 hover:bg-blue-600 text-white border border-blue-600/20 shadow-sm flex items-center"
-                >
-                    <div className="flex items-center justify-center pr-10">
-                        <Edit2 size={20} />
-                    </div>
-                </Button>
-            </div>
-        </>
-    );
+const resolveQuantityChange = (
+    item: Item,
+    quantity: string,
+    unit: string
+): { hasChange: boolean; newQuantity?: number; newUnit?: string } => {
+    const newQuantity = quantity.trim() ? parseFloat(quantity) : undefined;
+    const newUnit = unit.trim() || undefined;
+    return { hasChange: newQuantity !== item.quantity || newUnit !== item.unit, newQuantity, newUnit };
 };
 
 const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
@@ -95,11 +53,7 @@ const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
         e?.stopPropagation();
         closeSwipe();
         void controls.start({ x: 0 });
-        drawerState.openDrawer({
-            name: item.name,
-            quantity: item.quantity,
-            unit: item.unit,
-        });
+        drawerState.openDrawer({ name: item.name, quantity: item.quantity, unit: item.unit });
         setTimeout(() => {
             drawerInputRef.current?.focus();
         }, 250);
@@ -107,18 +61,14 @@ const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
 
     const handleToggleSelected = async () => {
         if (toggleMutation.isLoading || swipeState !== 'closed') return;
-        const next = !item.isSelected;
-        toggleMutation.mutate(next);
+        toggleMutation.mutate(!item.isSelected);
     };
 
     const handleDrawerSave = () => {
-        const { values } = drawerState;
-        const hasNameChange = values.name.trim() && values.name !== item.name;
-        const newQuantity = values.quantity.trim() ? parseFloat(values.quantity) : undefined;
-        const newUnit = values.unit.trim() || undefined;
-        const hasQuantityChange = newQuantity !== item.quantity || newUnit !== item.unit;
+        const { name, quantity, unit } = drawerState.values;
+        const { hasChange: hasQuantityChange, newQuantity, newUnit } = resolveQuantityChange(item, quantity, unit);
 
-        if (hasNameChange) updateNameMutation.mutate(values.name.trim());
+        if (hasNameChanged(item, name)) updateNameMutation.mutate(name.trim());
         if (hasQuantityChange) updateQuantityMutation.mutate({ quantity: newQuantity, unit: newUnit });
 
         drawerState.closeDrawer();
@@ -126,105 +76,58 @@ const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
 
     return (
         <>
-            <motion.div
-                layout
-                className="relative mb-2 rounded-lg overflow-hidden"
-                initial={{ opacity: 1, scale: 1, height: 'auto' }}
-                animate={
-                    isDeleting
-                        ? { opacity: 0, scale: 0.9, height: 0, marginBottom: 0 }
-                        : { opacity: 1, scale: item.isSelected ? 0.97 : 1, height: 'auto' }
-                }
-                transition={{
-                    duration: 0.35,
-                    ease: [0.4, 0, 0.2, 1],
-                    layout: { duration: 0.4, ease: [0.4, 0, 0.2, 1] },
-                }}
+            <SwipeableRow
+                isDeleting={isDeleting}
+                isDeleteLoading={deleteMutation.isLoading}
+                isDragDisabled={deleteMutation.isLoading}
+                swipeState={swipeState}
+                x={x}
+                controls={controls}
+                scale={item.isSelected ? 0.97 : 1}
+                onDragEnd={handleDragEnd}
+                closeSwipe={closeSwipe}
+                onDelete={handleDeleteItem}
+                onEdit={handleEditStart}
             >
-                <ItemCheckBoxActionButtons
-                    isDeleting={isDeleting}
-                    deleteMutation={deleteMutation}
-                    onDelete={handleDeleteItem}
-                    onEdit={handleEditStart}
-                />
-
                 <motion.div
-                    drag={!deleteMutation.isLoading ? 'x' : false}
-                    dragConstraints={{ left: -80, right: 80 }}
-                    dragElastic={0.1}
-                    onDragEnd={handleDragEnd}
-                    animate={controls}
-                    style={{ x }}
-                    className="relative z-10 bg-background rounded-lg"
-                    onClick={(e) => {
-                        const target = e.target as HTMLElement;
-                        if (target.closest('button')) return;
-                        if (swipeState !== 'closed') closeSwipe();
-                    }}
+                    animate={{ opacity: toggleMutation.isLoading ? 0.5 : 1 }}
+                    transition={{ duration: 0.2, ease: 'easeInOut' }}
                 >
-                    <motion.div
-                        animate={{ opacity: toggleMutation.isLoading ? 0.5 : 1 }}
-                        transition={{ duration: 0.2, ease: 'easeInOut' }}
-                    >
-                        <ItemCheckBoxCard
-                            item={item}
-                            listType={listType}
-                            imageBlobUrl={imageBlobUrl}
-                            hasLoadedImage={hasLoadedImage}
-                            hasImageError={hasImageError}
-                            isLoading={toggleMutation.isLoading}
-                            isSelected={item.isSelected}
-                            onToggle={handleToggleSelected}
-                            onImageLoad={onImageLoad}
-                            onImageError={onImageError}
-                        />
-                    </motion.div>
+                    <ItemCheckBoxCard
+                        item={item}
+                        listType={listType}
+                        imageBlobUrl={imageBlobUrl}
+                        hasLoadedImage={hasLoadedImage}
+                        hasImageError={hasImageError}
+                        isLoading={toggleMutation.isLoading}
+                        isSelected={item.isSelected}
+                        onToggle={handleToggleSelected}
+                        onImageLoad={onImageLoad}
+                        onImageError={onImageError}
+                    />
                 </motion.div>
-            </motion.div>
+            </SwipeableRow>
 
-            <Drawer open={drawerState.isOpen} onOpenChange={(open) => !open && drawerState.closeDrawer()}>
-                <DrawerContent>
-                    <div className="mx-auto w-full max-w-sm">
-                        <DrawerHeader>
-                            <DrawerTitle>Edit Item</DrawerTitle>
-                        </DrawerHeader>
-                        <div className="p-4 space-y-4">
-                            <div>
-                                <Label htmlFor={itemNameId}>Item Name</Label>
-                                <Input
-                                    id={itemNameId}
-                                    ref={drawerInputRef}
-                                    value={drawerState.values.name}
-                                    onChange={(e) => drawerState.updateName(e.target.value)}
-                                    placeholder="Enter item name"
-                                    className="mt-2"
-                                />
-                            </div>
-
-                            {listType === ListTypeEnum.SHOPPING && (
-                                <QuantityUnitField
-                                    quantity={drawerState.values.quantity}
-                                    unit={drawerState.values.unit}
-                                    onQuantityChange={drawerState.updateQuantity}
-                                    onUnitChange={drawerState.updateUnit}
-                                    quantityId={itemQuantityId}
-                                    unitId={itemUnitId}
-                                />
-                            )}
-                        </div>
-                        <DrawerFooter>
-                            <Button onClick={handleDrawerSave} disabled={!drawerState.values.name.trim()}>
-                                Save Changes
-                            </Button>
-                            <DrawerClose asChild>
-                                <Button variant="outline" onClick={() => drawerState.closeDrawer()}>
-                                    Cancel
-                                </Button>
-                            </DrawerClose>
-                        </DrawerFooter>
-                    </div>
-                </DrawerContent>
-            </Drawer>
+            <EditNameQuantityDrawer
+                open={drawerState.isOpen}
+                onOpenChange={(open) => !open && drawerState.closeDrawer()}
+                title="Edit Item"
+                nameLabel="Item Name"
+                namePlaceholder="Enter item name"
+                nameId={itemNameId}
+                nameInputRef={drawerInputRef}
+                name={drawerState.values.name}
+                onNameChange={drawerState.updateName}
+                showQuantityUnit={listType === ListTypeEnum.SHOPPING}
+                quantity={drawerState.values.quantity}
+                unit={drawerState.values.unit}
+                onQuantityChange={drawerState.updateQuantity}
+                onUnitChange={drawerState.updateUnit}
+                quantityId={itemQuantityId}
+                unitId={itemUnitId}
+                onSave={handleDrawerSave}
+                saveDisabled={!drawerState.values.name.trim()}
+            />
         </>
     );
 };

@@ -23,8 +23,9 @@ describe('Layout', () => {
             </Layout>
         );
 
-        const layoutDiv = container.firstChild;
-        expect(layoutDiv).toHaveClass('fixed', 'top-16', 'bottom-24', 'left-0', 'right-0');
+        const layoutDiv = container.firstChild as HTMLElement;
+        expect(layoutDiv).toHaveClass('fixed', 'top-16', 'left-0', 'right-0');
+        expect(layoutDiv).not.toHaveClass('bottom-24');
     });
 
     it('applies padding and max-width', () => {

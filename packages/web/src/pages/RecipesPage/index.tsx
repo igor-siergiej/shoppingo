@@ -1,20 +1,26 @@
 import { useUser } from '@imapps/web-utils';
-import { AlertTriangle, BookOpen, ChefHat, Search, X } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import type { Recipe } from '@shoppingo/types';
+import { useRef, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { generateRecipeAiImage, getRecipesQuery, uploadRecipeImage } from '../../api';
+import { getRecipesQuery } from '../../api';
 import { ListsSkeleton } from '../../components/LoadingSkeleton';
-import { RecipesList } from '../../components/RecipesList';
+import { RetryErrorState } from '../../components/RetryErrorState';
 import ToolBar from '../../components/ToolBar';
-import { Button } from '../../components/ui/button';
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '../../components/ui/empty';
-import { Input } from '../../components/ui/input';
-import { usePullToRefreshContext } from '../../contexts/PullToRefreshContext';
+import { useAddRecipeHandler } from '../../hooks/useAddRecipeHandler';
 import { useRecipeMutations } from '../../hooks/useRecipeMutations';
 import { useRecipeSearch } from '../../hooks/useRecipeSearch';
+import { useRecipesPageEffects } from '../../hooks/useRecipesPageEffects';
 import { logger } from '../../utils/logger';
+import { RecipeMainContent } from './RecipeMainContent';
+import { RecipeSearchBar } from './RecipeSearchBar';
 
+const partitionByOwner = (recipes: Recipe[], userId: string): { yourRecipes: Recipe[]; sharedRecipes: Recipe[] } => ({
+    yourRecipes: recipes.filter((recipe) => recipe.ownerId === userId),
+    sharedRecipes: recipes.filter((recipe) => recipe.ownerId !== userId),
+});
+
+// fallow-ignore-next-line complexity
 const RecipesPage = () => {
     const { user } = useUser();
     const navigate = useNavigate();
@@ -27,257 +33,85 @@ const RecipesPage = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [isSearchFocused, setIsSearchFocused] = useState(false);
     const generatingRef = useRef<Set<string>>(new Set());
+    const userId = user?.id;
     const { data, isLoading, isError, refetch } = useQuery({
-        ...getRecipesQuery(user?.id || ''),
-        enabled: !!user?.id,
+        ...getRecipesQuery(userId || ''),
+        enabled: Boolean(userId),
     });
-    const { registerRefresh } = usePullToRefreshContext();
 
-    useEffect(() => {
-        return registerRefresh(async () => {
-            await refetch();
-        });
-    }, [registerRefresh, refetch]);
+    const handleAddRecipe = useAddRecipeHandler({ user, createRecipe, refetch, queryClient, generatingRef });
 
-    // Reserves room in the scroll area so the floating search bar never covers the last recipe card.
-    useEffect(() => {
-        document.documentElement.style.setProperty('--layout-bottom-inset', '2.5rem');
-        return () => {
-            document.documentElement.style.removeProperty('--layout-bottom-inset');
-        };
-    }, []);
+    const handleSharedUrlDetected = (url: string) => {
+        setSharedUrl(url);
+        setAutoImport(true);
+        setDrawerOpen(true);
+    };
 
-    useEffect(() => {
-        if (user?.id) {
-            logger.info('Recipes page loaded', {
-                userId: user.id,
-                username: user.username,
-                recipeCount: data?.length || 0,
-            });
-        }
-    }, [user?.id, user?.username, data?.length]);
-
-    useEffect(() => {
-        if (isError) {
-            logger.error('Failed to load recipes', { userId: user?.id });
-        }
-    }, [isError, user?.id]);
-
-    useEffect(() => {
-        if (!data || !user?.id) return;
-        const missing = data.filter((r) => !r.coverImageKey && r.ownerId === user.id);
-        for (const recipe of missing) {
-            if (generatingRef.current.has(recipe.id)) continue;
-            generatingRef.current.add(recipe.id);
-            void generateRecipeAiImage(recipe.id).then(() =>
-                queryClient.invalidateQueries(getRecipesQuery(user.id).queryKey)
-            );
-        }
-    }, [data, user?.id, queryClient]);
-
-    useEffect(() => {
-        const url = searchParams.get('sharedUrl');
-        if (url) {
-            setSharedUrl(url);
-            setAutoImport(true);
-            setDrawerOpen(true);
-            const next = new URLSearchParams(searchParams);
-            next.delete('sharedUrl');
-            next.delete('sharedTitle');
-            setSearchParams(next, { replace: true });
-        }
-    }, [searchParams, setSearchParams]);
+    useRecipesPageEffects({
+        user,
+        data,
+        isError,
+        refetch,
+        queryClient,
+        generatingRef,
+        searchParams,
+        setSearchParams,
+        onSharedUrlDetected: handleSharedUrlDetected,
+    });
 
     const recipes = data || [];
     const searchResults = useRecipeSearch(recipes, searchQuery);
 
-    if (!user?.id) {
+    if (!userId) {
         logger.warn('Recipes page accessed without user');
         return <div>User not available</div>;
     }
-
-    const yourRecipes = recipes.filter((recipe) => recipe.ownerId === user.id);
-    const sharedRecipes = recipes.filter((recipe) => recipe.ownerId !== user.id);
 
     const handleRecipeClick = (recipeId: string) => {
         navigate(`/recipes/${recipeId}`);
     };
 
-    const handleAddRecipe = async (
-        title: string,
-        ingredients: Array<{ name: string; quantity?: number; unit?: string }>,
-        _imageKey?: string,
-        selectedUsers?: string[],
-        link?: string,
-        instructions?: string[],
-        imageFile?: File
-    ) => {
-        if (!user) {
-            logger.warn('Attempted to add recipe without user');
-            return;
-        }
-
-        try {
-            const recipeId = await createRecipe(title, selectedUsers || [], ingredients, link, instructions);
-            logger.info('Recipe created successfully', { title, recipeId });
-
-            if (imageFile) {
-                await uploadRecipeImage(recipeId, imageFile);
-            } else {
-                generatingRef.current.add(recipeId);
-            }
-
-            await refetch();
-
-            if (!imageFile) {
-                void generateRecipeAiImage(recipeId).then(() =>
-                    queryClient.invalidateQueries(getRecipesQuery(user.id).queryKey)
-                );
-            }
-
-            const recipes = queryClient.getQueryData<import('@shoppingo/types').Recipe[]>(['recipes', user.id]) ?? [];
-            return recipes.find((r) => r.id === recipeId);
-        } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-            logger.error('Failed to create recipe', { title, error: errorMessage });
-            throw error;
-        }
+    const handleAddRecipeDrawerOpenChange = (open: boolean) => {
+        setDrawerOpen(open);
+        if (open) return;
+        setSharedUrl('');
+        setAutoImport(false);
     };
 
-    const searchBar = (
-        <div className="fixed left-0 right-0 z-30 px-4" style={{ bottom: '5.5rem' }}>
-            <div className="relative mx-auto max-w-[500px]">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                <Input
-                    type="search"
-                    inputMode="search"
-                    enterKeyHint="search"
-                    autoComplete="off"
-                    autoCorrect="off"
-                    autoCapitalize="off"
-                    spellCheck={false}
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onFocus={() => setIsSearchFocused(true)}
-                    onBlur={() => setIsSearchFocused(false)}
-                    placeholder="Search recipes..."
-                    className="pl-9 pr-9 bg-background/95 backdrop-blur-sm shadow-md"
-                />
-                {searchQuery && (
-                    <button
-                        type="button"
-                        onClick={() => setSearchQuery('')}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                        aria-label="Clear search"
-                    >
-                        <X className="h-4 w-4" />
-                    </button>
-                )}
-            </div>
-        </div>
-    );
-
-    const pageContent = (
-        <div className="flex flex-col mb-auto">
-            {searchQuery.trim() ? (
-                <div>
-                    <h2 className="text-lg font-semibold mb-3 text-foreground">Results ({searchResults.length})</h2>
-                    {searchResults.length > 0 ? (
-                        <RecipesList recipes={searchResults} onRecipeClick={handleRecipeClick} />
-                    ) : (
-                        <Empty className="flex-none justify-start p-4">
-                            <EmptyHeader>
-                                <EmptyMedia variant="icon">
-                                    <Search />
-                                </EmptyMedia>
-                                <EmptyTitle>No recipes found</EmptyTitle>
-                                <EmptyDescription>Try a different search term</EmptyDescription>
-                            </EmptyHeader>
-                        </Empty>
-                    )}
-                </div>
-            ) : (
-                <div className="flex flex-col space-y-6">
-                    {/* Your Recipes Section */}
-                    <div>
-                        <h2 className="text-lg font-semibold mb-3 text-foreground">Your Recipes</h2>
-                        {yourRecipes.length > 0 ? (
-                            <RecipesList recipes={yourRecipes} onRecipeClick={handleRecipeClick} />
-                        ) : (
-                            <Empty className="flex-none justify-start p-4">
-                                <EmptyHeader>
-                                    <EmptyMedia variant="icon">
-                                        <ChefHat />
-                                    </EmptyMedia>
-                                    <EmptyTitle>No recipes yet</EmptyTitle>
-                                    <EmptyDescription>Create your first recipe to get started</EmptyDescription>
-                                </EmptyHeader>
-                            </Empty>
-                        )}
-                    </div>
-
-                    {/* Shared Recipes Section */}
-                    <div>
-                        <h2 className="text-lg font-semibold mb-3 text-foreground">Shared Recipes</h2>
-                        {sharedRecipes.length > 0 ? (
-                            <RecipesList recipes={sharedRecipes} onRecipeClick={handleRecipeClick} />
-                        ) : (
-                            <Empty className="flex-none justify-start p-4">
-                                <EmptyHeader>
-                                    <EmptyMedia variant="icon">
-                                        <BookOpen />
-                                    </EmptyMedia>
-                                    <EmptyTitle>No shared recipes</EmptyTitle>
-                                    <EmptyDescription>
-                                        Shared recipes will appear here when someone shares one with you
-                                    </EmptyDescription>
-                                </EmptyHeader>
-                            </Empty>
-                        )}
-                    </div>
-                </div>
-            )}
-        </div>
-    );
-
-    const errorPageContent = (
-        <div className="flex flex-col items-center justify-center py-10 text-center">
-            <div className="flex items-center gap-3 text-destructive mb-3">
-                <AlertTriangle className="h-6 w-6" />
-                <span className="font-semibold">Unable to load your recipes</span>
-            </div>
-            <p className="text-muted-foreground mb-4 max-w-sm">Please check your connection and try again.</p>
-            <Button
-                variant="default"
-                onClick={() => {
-                    void refetch();
-                }}
-            >
-                Retry
-            </Button>
-        </div>
-    );
+    const { yourRecipes, sharedRecipes } = partitionByOwner(recipes, user.id);
+    const isSearching = Boolean(searchQuery.trim());
+    const showContent = !isLoading && !isError;
+    const showToolBar = !isSearchFocused && !isSearching;
 
     return (
         <>
-            {isError && errorPageContent}
+            {isError && <RetryErrorState message="Unable to load your recipes" onRetry={() => void refetch()} />}
             {isLoading && <ListsSkeleton />}
-            {!isLoading && !isError && pageContent}
 
-            {!isLoading && !isError && searchBar}
+            {showContent && (
+                <>
+                    <RecipeMainContent
+                        isSearching={isSearching}
+                        searchResults={searchResults}
+                        yourRecipes={yourRecipes}
+                        sharedRecipes={sharedRecipes}
+                        onRecipeClick={handleRecipeClick}
+                    />
+                    <RecipeSearchBar
+                        value={searchQuery}
+                        onChange={setSearchQuery}
+                        onFocus={() => setIsSearchFocused(true)}
+                        onBlur={() => setIsSearchFocused(false)}
+                    />
+                </>
+            )}
 
-            {!isSearchFocused && !searchQuery.trim() && (
+            {showToolBar && (
                 <ToolBar
                     onAddRecipe={handleAddRecipe}
                     placeholder="Enter recipe name..."
                     addRecipeDrawerOpen={drawerOpen}
-                    onAddRecipeDrawerOpenChange={(open) => {
-                        setDrawerOpen(open);
-                        if (!open) {
-                            setSharedUrl('');
-                            setAutoImport(false);
-                        }
-                    }}
+                    onAddRecipeDrawerOpenChange={handleAddRecipeDrawerOpenChange}
                     addRecipeInitialLink={sharedUrl}
                     addRecipeAutoImport={autoImport}
                 />
