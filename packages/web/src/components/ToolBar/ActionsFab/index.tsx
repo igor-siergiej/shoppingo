@@ -1,4 +1,4 @@
-import { SlidersHorizontal } from 'lucide-react';
+import { Ellipsis } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import type { ComponentType } from 'react';
 import { useState } from 'react';
@@ -76,7 +76,7 @@ export const ActionsFab = ({ actionItems }: ActionsFabProps) => {
                 )}
             </AnimatePresence>
 
-            <ToolBarButton icon={SlidersHorizontal} title="Actions" onClick={() => setOpen((o) => !o)} active={open} />
+            <ToolBarButton icon={Ellipsis} title="Actions" onClick={() => setOpen((o) => !o)} active={open} />
         </div>
     );
 };

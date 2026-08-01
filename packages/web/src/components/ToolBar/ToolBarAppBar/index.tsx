@@ -55,9 +55,9 @@ export const ToolBarAppBar = forwardRef<HTMLDivElement, ToolBarAppBarProps>(
         const showBackButton = isItemsPage || isRecipeDetailPage;
 
         return (
-            <div ref={ref} className="grid grid-cols-[1fr_auto_1fr] w-full items-center py-2.5 px-3">
+            <div ref={ref} className="flex w-full items-center justify-between py-2.5 px-3">
                 {/* Left: primary nav — Shopping lists slot swaps for back on drill-in pages */}
-                <div className="flex items-center gap-1 justify-self-start">
+                <div className="flex items-center gap-1">
                     {showBackButton ? (
                         <ToolBarButton icon={ArrowLeft} title="Go back" onClick={handleGoBack} />
                     ) : (
@@ -82,8 +82,8 @@ export const ToolBarAppBar = forwardRef<HTMLDivElement, ToolBarAppBarProps>(
                     />
                 </div>
 
-                {/* Center: context-aware add — always dead-center regardless of side button counts */}
-                <div className="flex items-center gap-1 justify-self-center">
+                {/* Center: context-aware add */}
+                <div className="flex items-center gap-1">
                     {isItemsPage && itemDrawer}
                     {isListsPage && listDrawer}
                     {isRecipesPage && recipeDrawer}
@@ -94,7 +94,7 @@ export const ToolBarAppBar = forwardRef<HTMLDivElement, ToolBarAppBarProps>(
                 </div>
 
                 {/* Right: calendar nav + menu — always present, page actions live in ActionsFab, not here */}
-                <div className="flex items-center gap-1 justify-self-end">
+                <div className="flex items-center gap-1">
                     <ToolBarButton
                         icon={Calendar}
                         title="Calendar"
