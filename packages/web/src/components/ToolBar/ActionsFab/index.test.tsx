@@ -5,11 +5,20 @@ import { describe, expect, it, vi } from 'vitest';
 import { ActionsFab } from './index';
 
 describe('ActionsFab', () => {
-    it('renders nothing when no action items are visible', () => {
-        const { container } = render(
+    it('renders a disabled button when no action items are visible (keeps row layout stable)', () => {
+        render(
             <ActionsFab actionItems={[{ show: false, label: 'Clear Selected', icon: CheckCheck, onClick: vi.fn() }]} />
         );
-        expect(container).toBeEmptyDOMElement();
+        expect(screen.getByTitle('Actions')).toBeDisabled();
+    });
+
+    it('does not expand when tapped with no visible action items', async () => {
+        const user = userEvent.setup();
+        render(
+            <ActionsFab actionItems={[{ show: false, label: 'Clear Selected', icon: CheckCheck, onClick: vi.fn() }]} />
+        );
+        await user.click(screen.getByTitle('Actions'));
+        expect(screen.queryByText('Clear Selected')).not.toBeInTheDocument();
     });
 
     it('renders a closed FAB when at least one action item is visible', () => {

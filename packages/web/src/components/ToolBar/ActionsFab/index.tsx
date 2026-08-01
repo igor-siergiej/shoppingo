@@ -26,8 +26,7 @@ const circleClasses = (variant: ActionItem['variant'], disabled: boolean | undef
 export const ActionsFab = ({ actionItems }: ActionsFabProps) => {
     const [open, setOpen] = useState(false);
     const visibleItems = actionItems.filter((item) => item.show);
-
-    if (visibleItems.length === 0) return null;
+    const hasActions = visibleItems.length > 0;
 
     const handleItemClick = (item: ActionItem) => {
         if (item.disabled) return;
@@ -38,7 +37,7 @@ export const ActionsFab = ({ actionItems }: ActionsFabProps) => {
     return (
         <div className="relative">
             <AnimatePresence>
-                {open && (
+                {open && hasActions && (
                     <div className="absolute bottom-full left-1/2 mb-3 flex -translate-x-1/2 flex-col items-center gap-3">
                         {visibleItems.map((item, i) => {
                             const Icon = item.icon;
@@ -76,7 +75,13 @@ export const ActionsFab = ({ actionItems }: ActionsFabProps) => {
                 )}
             </AnimatePresence>
 
-            <ToolBarButton icon={Ellipsis} title="Actions" onClick={() => setOpen((o) => !o)} active={open} />
+            <ToolBarButton
+                icon={Ellipsis}
+                title="Actions"
+                onClick={() => hasActions && setOpen((o) => !o)}
+                active={open}
+                disabled={!hasActions}
+            />
         </div>
     );
 };
