@@ -171,7 +171,7 @@ git commit -m "feat(web): add hideTrigger prop to AddFromRecipeDrawer"
 Create `packages/web/src/components/ToolBar/ActionsFab/index.test.tsx`:
 
 ```tsx
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { CheckCheck, Trash2 } from 'lucide-react';
 import { describe, expect, it, vi } from 'vitest';
@@ -224,7 +224,7 @@ describe('ActionsFab', () => {
         await user.click(screen.getByTitle('Actions'));
         await user.click(screen.getByTitle('Clear Selected'));
         expect(onClick).toHaveBeenCalledTimes(1);
-        expect(screen.queryByText('Clear Selected')).not.toBeInTheDocument();
+        await waitFor(() => expect(screen.queryByText('Clear Selected')).not.toBeInTheDocument());
     });
 
     it('collapses when the FAB is tapped a second time', async () => {
@@ -235,7 +235,7 @@ describe('ActionsFab', () => {
         await user.click(screen.getByTitle('Actions'));
         expect(screen.getByText('Clear Selected')).toBeInTheDocument();
         await user.click(screen.getByTitle('Actions'));
-        expect(screen.queryByText('Clear Selected')).not.toBeInTheDocument();
+        await waitFor(() => expect(screen.queryByText('Clear Selected')).not.toBeInTheDocument());
     });
 
     it('does not call onClick for a disabled item', async () => {
