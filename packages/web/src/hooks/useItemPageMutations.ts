@@ -40,7 +40,7 @@ export const useItemPageMutations = (listTitle?: string) => {
                 ...(unit !== undefined && { unit }),
             };
             queryClient.setQueryData<{ listType: ListType; items: Item[] }>([listTitle], (old) =>
-                old ? { ...old, items: [...old.items, optimisticItem] } : old
+                old ? { ...old, items: [...(old.items ?? []), optimisticItem] } : old
             );
 
             return { previousData };
@@ -73,7 +73,7 @@ export const useItemPageMutations = (listTitle?: string) => {
             logger.info('Clearing selected items', { listTitle, count: selectedCount });
 
             queryClient.setQueryData<{ listType: ListType; items: Item[] }>([listTitle], (old) =>
-                old ? { ...old, items: old.items.filter((i) => !i.isSelected) } : old
+                old ? { ...old, items: (old.items ?? []).filter((i) => !i.isSelected) } : old
             );
 
             return { previousData };
