@@ -18,7 +18,7 @@ import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { Skeleton } from '../../components/ui/skeleton';
 import { useItemImage } from '../../hooks/useItemImage';
-import { SWIPE_REVEAL_DISTANCE, useSwipeGesture } from '../../hooks/useSwipeGesture';
+import { useSwipeGesture } from '../../hooks/useSwipeGesture';
 
 interface IngredientItemProps {
     ingredient: Ingredient;
@@ -199,7 +199,7 @@ const IngredientItem = ({ ingredient, onDelete, onEdit, isOwner = true }: Ingred
 
                 <motion.div
                     drag={!isLoading ? 'x' : false}
-                    dragConstraints={{ left: -SWIPE_REVEAL_DISTANCE, right: SWIPE_REVEAL_DISTANCE }}
+                    dragConstraints={{ left: -80, right: 80 }}
                     dragElastic={0.1}
                     onDragEnd={handleDragEnd}
                     animate={controls}

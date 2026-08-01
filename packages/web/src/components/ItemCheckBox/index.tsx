@@ -18,7 +18,7 @@ import { Label } from '../../components/ui/label';
 import { useItemEditDrawer } from '../../hooks/useItemEditDrawer';
 import { useItemImage } from '../../hooks/useItemImage';
 import { useItemMutations } from '../../hooks/useItemMutations';
-import { SWIPE_REVEAL_DISTANCE, useSwipeGesture } from '../../hooks/useSwipeGesture';
+import { useSwipeGesture } from '../../hooks/useSwipeGesture';
 import { ItemCheckBoxCard } from './ItemCheckBoxCard';
 
 interface ItemCheckBoxProps {
@@ -150,7 +150,7 @@ const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
 
                 <motion.div
                     drag={!deleteMutation.isLoading ? 'x' : false}
-                    dragConstraints={{ left: -SWIPE_REVEAL_DISTANCE, right: SWIPE_REVEAL_DISTANCE }}
+                    dragConstraints={{ left: -80, right: 80 }}
                     dragElastic={0.1}
                     onDragEnd={handleDragEnd}
                     animate={controls}

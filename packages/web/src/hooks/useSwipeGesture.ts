@@ -16,12 +16,6 @@ export interface UseSwipeGestureReturn {
 
 const SPRING = { type: 'spring', stiffness: 300, damping: 30 } as const;
 
-// Must match the revealed action button's width (w-32 = 128px) so the swiped-open
-// card fully clears the button. A shorter reveal leaves part of the button behind
-// the still-overlapping card, so a tap there hits the card (closing the swipe)
-// instead of the button underneath — requiring a second tap to actually press it.
-export const SWIPE_REVEAL_DISTANCE = 128;
-
 const resolveSwipeTarget = (
     swipeState: 'closed' | 'left' | 'right',
     offset: number,
@@ -43,11 +37,11 @@ const resolveSwipeTarget = (
     }
 
     if (shouldSwipeLeft && swipeState !== 'left') {
-        return { newState: 'left', targetX: -SWIPE_REVEAL_DISTANCE };
+        return { newState: 'left', targetX: -80 };
     }
 
     if (shouldSwipeRight && swipeState !== 'right') {
-        return { newState: 'right', targetX: SWIPE_REVEAL_DISTANCE };
+        return { newState: 'right', targetX: 80 };
     }
 
     if (swipeState !== 'closed' && Math.abs(offset) < 20) {
@@ -58,7 +52,7 @@ const resolveSwipeTarget = (
         return { newState: 'closed', targetX: 0 };
     }
 
-    return { newState: swipeState, targetX: swipeState === 'left' ? -SWIPE_REVEAL_DISTANCE : SWIPE_REVEAL_DISTANCE };
+    return { newState: swipeState, targetX: swipeState === 'left' ? -80 : 80 };
 };
 
 export function useSwipeGesture(): UseSwipeGestureReturn {
