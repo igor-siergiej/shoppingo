@@ -52,7 +52,7 @@ test.describe('Friends page', () => {
         const code = authenticatedPage.locator('p.font-mono');
         await expect(code).toBeVisible();
         await expect(code).toHaveText(/^[A-Z0-9]{6}$/);
-        await expect(authenticatedPage.getByText(/^\d{2}:\d{2}$/)).toBeVisible();
+        await expect(authenticatedPage.getByText(/Expires in \d{2}:\d{2}/)).toBeVisible();
     });
 
     test('redeeming your own generated code is rejected', async ({ authenticatedPage }) => {
