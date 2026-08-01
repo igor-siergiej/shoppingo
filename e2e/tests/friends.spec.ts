@@ -46,7 +46,7 @@ test.describe('Friends page', () => {
         await authenticatedPage.goto('/friends');
         await openAddFriendDrawer(authenticatedPage);
 
-        await authenticatedPage.getByRole('button', { name: 'Invite a friend' }).click();
+        await authenticatedPage.getByRole('button', { name: 'Create invite' }).click();
 
         const code = authenticatedPage.locator('p.font-mono');
         await expect(code).toBeVisible();
@@ -58,10 +58,10 @@ test.describe('Friends page', () => {
         await authenticatedPage.goto('/friends');
         await openAddFriendDrawer(authenticatedPage);
 
-        await authenticatedPage.getByRole('button', { name: 'Invite a friend' }).click();
+        await authenticatedPage.getByRole('button', { name: 'Create invite' }).click();
         const code = await authenticatedPage.locator('p.font-mono').innerText();
 
-        await authenticatedPage.getByRole('button', { name: 'Enter code' }).click();
+        await authenticatedPage.getByRole('button', { name: 'Enter a code' }).click();
         await authenticatedPage.locator('input[data-input-otp]').fill(code);
         await authenticatedPage.getByRole('button', { name: 'Add friend' }).click();
 
@@ -72,7 +72,7 @@ test.describe('Friends page', () => {
         await authenticatedPage.goto('/friends');
         await openAddFriendDrawer(authenticatedPage);
 
-        await authenticatedPage.getByRole('button', { name: 'Enter code' }).click();
+        await authenticatedPage.getByRole('button', { name: 'Enter a code' }).click();
         await authenticatedPage.locator('input[data-input-otp]').fill('ZZZZZZ');
         await authenticatedPage.getByRole('button', { name: 'Add friend' }).click();
 
