@@ -187,9 +187,7 @@ const ToolBar = ({
     return (
         <>
             <div className="fixed bottom-4 left-0 right-0 z-40 px-4">
-                <div className="relative mx-auto max-w-[400px]">
-                    <ActionsFab actionItems={actionItems} />
-
+                <div className="mx-auto max-w-[400px]">
                     <MotionConfig transition={transition}>
                         {/* Menu Container - Layered Glass Effect */}
                         {isMenuOpen && (
@@ -257,6 +255,7 @@ const ToolBar = ({
                                 isCalendarPage={isCalendarPage}
                                 isFriendsPage={isFriendsPage}
                                 onGoBack={handleGoBack}
+                                actionsFab={<ActionsFab actionItems={actionItems} />}
                                 onMenuClick={() => {
                                     setIsMenuOpen(!isMenuOpen);
                                     if (!isMenuOpen) {

@@ -34,10 +34,10 @@ export const ActionsFab = ({ actionItems }: ActionsFabProps) => {
     };
 
     return (
-        <div className="absolute bottom-24 left-2 flex flex-col items-start gap-3">
+        <div className="relative">
             <AnimatePresence>
                 {open && (
-                    <div className="flex flex-col gap-3 mb-1">
+                    <div className="absolute bottom-full left-1/2 mb-3 flex -translate-x-1/2 flex-col items-center gap-3">
                         {visibleItems.map((item, i) => {
                             const Icon = item.icon;
                             const delayIndex = visibleItems.length - 1 - i;
@@ -79,7 +79,7 @@ export const ActionsFab = ({ actionItems }: ActionsFabProps) => {
                 onClick={() => setOpen((o) => !o)}
                 animate={{ rotate: open ? 45 : 0 }}
                 title="Actions"
-                className="size-14 rounded-full bg-primary text-primary-foreground shadow-xl flex items-center justify-center text-2xl font-light"
+                className="size-12 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center text-2xl font-light"
             >
                 +
             </motion.button>

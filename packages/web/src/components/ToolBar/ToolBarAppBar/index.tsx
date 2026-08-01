@@ -18,6 +18,7 @@ interface ToolBarAppBarProps {
     ingredientDrawer?: ReactNode;
     todoDrawer?: ReactNode;
     friendDrawer?: ReactNode;
+    actionsFab?: ReactNode;
 }
 
 export const ToolBarAppBar = forwardRef<HTMLDivElement, ToolBarAppBarProps>(
@@ -37,6 +38,7 @@ export const ToolBarAppBar = forwardRef<HTMLDivElement, ToolBarAppBarProps>(
             ingredientDrawer,
             todoDrawer,
             friendDrawer,
+            actionsFab,
         },
         ref
     ) => {
@@ -88,6 +90,7 @@ export const ToolBarAppBar = forwardRef<HTMLDivElement, ToolBarAppBarProps>(
                     {isRecipeDetailPage && ingredientDrawer}
                     {isCalendarPage && todoDrawer}
                     {isFriendsPage && friendDrawer}
+                    {actionsFab}
                 </div>
 
                 {/* Right: calendar nav + menu — always present, page actions live in ActionsFab, not here */}
