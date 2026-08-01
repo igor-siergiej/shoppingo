@@ -9,9 +9,7 @@ const Appbar = () => {
                     <div className="flex flex-col items-start justify-center leading-none">
                         <span className="text-lg md:text-xl font-bold text-white">Shoppingo</span>
                         {typeof __APP_VERSION__ !== 'undefined' && __APP_VERSION__ && (
-                            <span className="text-[10px] text-white/70 select-none mt-0.5">
-                                v{__APP_VERSION__}
-                            </span>
+                            <span className="text-[10px] text-white/70 select-none mt-0.5">v{__APP_VERSION__}</span>
                         )}
                     </div>
                 </div>
