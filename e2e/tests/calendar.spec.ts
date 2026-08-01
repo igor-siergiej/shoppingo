@@ -148,11 +148,8 @@ test.describe('Calendar page', () => {
         await expect(todayCell.locator('[data-testid="day-dot"][data-dimmed="false"]')).toHaveCount(1);
     });
 
-    // Week view (not month view) here: the month grid can run to 6 rows depending on the
-    // real calendar date, tall enough to push the day list behind the fixed Inbox bar —
-    // a separate, pre-existing layout bug (content hidden under InboxDrawer's fixed
-    // bottom-24 strip) unrelated to swipe-delete. Week view has no month grid, so it's
-    // unaffected and keeps this test deterministic regardless of what day it runs on.
+    // Week view rather than month view: no month grid to navigate, so the swipe target's
+    // position doesn't depend on how many rows the real calendar date happens to need.
     const switchToWeekView = async (page: import('@playwright/test').Page) => {
         await page.getByRole('combobox').filter({ hasText: 'Month' }).click();
         await page.getByRole('option', { name: 'Week' }).click();

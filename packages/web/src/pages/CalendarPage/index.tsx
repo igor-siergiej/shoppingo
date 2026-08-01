@@ -77,8 +77,18 @@ const CalendarPage = () => {
 
     return (
         <>
-            <div className="flex min-h-full flex-col">
-                <div className="sticky top-0 z-10 bg-background pb-2">
+            {/*
+                This page owns its own scroll instead of relying on the shared Layout's
+                flex-col-reverse container: that scroll direction is reversed (built for
+                chat-like lists), which interacts badly with `position: sticky` and made the
+                day list unreachable behind InboxDrawer's fixed bar on tall (6-row) months —
+                the header alone could exceed the viewport, and Playwright/real scrolling
+                couldn't land on a spot that wasn't also covered by the sticky header or the
+                Inbox bar. pb-12 on the outer box reserves room for InboxDrawer's collapsed
+                height (~37px) so the day list's own scroll area never has to render underneath it.
+            */}
+            <div className="flex h-full flex-col pb-12">
+                <div className="shrink-0 bg-background pb-2">
                     <div className="mb-2 flex items-center gap-2">
                         <Select value={view} onValueChange={(v) => setView(v as CalendarView)}>
                             <SelectTrigger className="h-9 w-32">
@@ -116,23 +126,30 @@ const CalendarPage = () => {
                     )}
                 </div>
 
-                {view === 'month' ? (
-                    <div className="mt-3 pb-44">
-                        <h3 className="text-sm font-medium text-muted-foreground">
-                            {format(selectedDay, 'EEE d MMMM')}
-                        </h3>
-                        <DayTodoList
-                            items={selectedItems}
-                            labels={labels}
-                            onToggle={handleToggle}
-                            onDelete={handleDelete}
-                        />
-                    </div>
-                ) : (
-                    <div className="mt-3">
-                        <WeekAgenda days={weekDays} labels={labels} onToggle={handleToggle} onDelete={handleDelete} />
-                    </div>
-                )}
+                <div className="min-h-0 flex-1 overflow-y-auto">
+                    {view === 'month' ? (
+                        <div className="mt-3">
+                            <h3 className="text-sm font-medium text-muted-foreground">
+                                {format(selectedDay, 'EEE d MMMM')}
+                            </h3>
+                            <DayTodoList
+                                items={selectedItems}
+                                labels={labels}
+                                onToggle={handleToggle}
+                                onDelete={handleDelete}
+                            />
+                        </div>
+                    ) : (
+                        <div className="mt-3">
+                            <WeekAgenda
+                                days={weekDays}
+                                labels={labels}
+                                onToggle={handleToggle}
+                                onDelete={handleDelete}
+                            />
+                        </div>
+                    )}
+                </div>
             </div>
 
             <InboxDrawer todos={undated} onDelete={handleDelete} />
