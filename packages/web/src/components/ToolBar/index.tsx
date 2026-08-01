@@ -3,8 +3,8 @@
 import { useAuth, useUser } from '@imapps/web-utils';
 import type { Item, Recipe } from '@shoppingo/types';
 import { ListType } from '@shoppingo/types';
+import { CheckCheck, ChefHat, ShoppingCart, Tag, Trash2, Users } from 'lucide-react';
 import { AnimatePresence, MotionConfig, motion } from 'motion/react';
-import { ChefHat, CheckCheck, ShoppingCart, Tag, Trash2, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import useMeasure from 'react-use-measure';
@@ -13,7 +13,7 @@ import { Card } from '../../components/ui/card';
 import { useToolBarState } from '../../hooks/useToolBarState';
 import { ManageLabelsDrawer } from '../ManageLabelsDrawer';
 import { ManageUsersDrawer } from '../ManageUsersDrawer';
-import { ActionsFab, type ActionItem } from './ActionsFab';
+import { type ActionItem, ActionsFab } from './ActionsFab';
 import { AddFriendDrawer } from './AddFriendDrawer';
 import { AddFromRecipeDrawer } from './AddFromRecipeDrawer';
 import { AddIngredientDrawer } from './AddIngredientDrawer';
