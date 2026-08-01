@@ -158,7 +158,7 @@ const RecipesPage = () => {
     );
 
     const pageContent = (
-        <div className="flex flex-col">
+        <div className="flex flex-col mb-auto">
             {searchBar}
             {searchQuery.trim() ? (
                 <div>

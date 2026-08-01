@@ -1,4 +1,7 @@
+import { getStorageItem, setStorageItem } from '@imapps/web-utils';
 import type { AppConfig, ConfigState } from './types';
+
+const CONFIG_STORAGE_KEY = 'shoppingo:config';
 
 const configState: ConfigState = {
     config: null,
@@ -6,6 +9,20 @@ const configState: ConfigState = {
     error: null,
 };
 
+const readCachedConfig = (): AppConfig | null => {
+    const raw = getStorageItem(CONFIG_STORAGE_KEY, 'localStorage');
+    if (!raw) return null;
+
+    try {
+        const cached = JSON.parse(raw);
+        return cached.AUTH_URL ? (cached as AppConfig) : null;
+    } catch {
+        return null;
+    }
+};
+
+// Config rarely changes, so a stale cached copy is preferable to blocking
+// launch entirely when the network fetch fails while offline.
 export const loadConfig = async (): Promise<AppConfig> => {
     configState.isLoading = true;
     configState.error = null;
@@ -25,9 +42,17 @@ export const loadConfig = async (): Promise<AppConfig> => {
 
         configState.config = configData as AppConfig;
         configState.isLoading = false;
+        setStorageItem(CONFIG_STORAGE_KEY, JSON.stringify(configState.config), 'localStorage');
 
         return configState.config;
     } catch (error) {
+        const cached = readCachedConfig();
+        if (cached) {
+            configState.config = cached;
+            configState.isLoading = false;
+            return cached;
+        }
+
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
 
         configState.error = errorMessage;

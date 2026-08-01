@@ -110,8 +110,8 @@ const ItemsPage = () => {
     return (
         <>
             {isLoading && <ItemsSkeleton />}
-            {isError && <ErrorState onRetry={() => void refetch()} />}
-            {!isLoading && !isError && data && (
+            {isError && !data && <ErrorState onRetry={() => void refetch()} />}
+            {!isLoading && data && (
                 <div className="flex flex-col">
                     {isEmpty ? (
                         <EmptyState listType={currentListType} />
