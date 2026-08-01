@@ -1,6 +1,8 @@
+import { SlidersHorizontal } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import type { ComponentType } from 'react';
 import { useState } from 'react';
+import { ToolBarButton } from '../ToolBarButton';
 
 export interface ActionItem {
     show: boolean;
@@ -74,15 +76,7 @@ export const ActionsFab = ({ actionItems }: ActionsFabProps) => {
                 )}
             </AnimatePresence>
 
-            <motion.button
-                type="button"
-                onClick={() => setOpen((o) => !o)}
-                animate={{ rotate: open ? 45 : 0 }}
-                title="Actions"
-                className="size-12 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center text-2xl font-light"
-            >
-                +
-            </motion.button>
+            <ToolBarButton icon={SlidersHorizontal} title="Actions" onClick={() => setOpen((o) => !o)} active={open} />
         </div>
     );
 };
