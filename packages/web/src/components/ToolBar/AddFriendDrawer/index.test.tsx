@@ -39,7 +39,7 @@ describe('AddFriendDrawer', () => {
         } as never);
     });
 
-    it('invite mode: clicking "Invite a friend" calls generate and shows the returned code', () => {
+    it('invite mode: clicking "Generate invite code" calls generate and shows the returned code', () => {
         generateMutate.mockImplementation(() => {
             mockedUseGenerateFriendCode.mockReturnValue({
                 mutate: generateMutate,
@@ -52,7 +52,7 @@ describe('AddFriendDrawer', () => {
         });
 
         const { rerender } = render(<AddFriendDrawer open onOpenChange={noop} />);
-        fireEvent.click(drawerContent().getByRole('button', { name: 'Invite a friend' }));
+        fireEvent.click(drawerContent().getByRole('button', { name: 'Generate invite code' }));
         expect(generateMutate).toHaveBeenCalled();
 
         rerender(<AddFriendDrawer open onOpenChange={noop} />);
@@ -65,7 +65,7 @@ describe('AddFriendDrawer', () => {
 
     it('enter mode: entering 6 chars and clicking "Add friend" calls redeem', async () => {
         render(<AddFriendDrawer open onOpenChange={noop} />);
-        fireEvent.click(drawerContent().getByRole('button', { name: 'Enter code' }));
+        fireEvent.click(drawerContent().getByRole('button', { name: 'Enter a code' }));
 
         const otpInput = document.querySelector('input[data-input-otp]') as HTMLInputElement;
         fireEvent.change(otpInput, { target: { value: 'ABC123' } });
@@ -77,7 +77,7 @@ describe('AddFriendDrawer', () => {
 
     it('enter mode: pasting a mixed-case code with stray characters sanitizes it to an uppercase code', async () => {
         render(<AddFriendDrawer open onOpenChange={noop} />);
-        fireEvent.click(drawerContent().getByRole('button', { name: 'Enter code' }));
+        fireEvent.click(drawerContent().getByRole('button', { name: 'Enter a code' }));
 
         const otpInput = document.querySelector('input[data-input-otp]') as HTMLInputElement;
         fireEvent.paste(otpInput, { clipboardData: { getData: () => 'ab-cd 12' } });
@@ -98,7 +98,7 @@ describe('AddFriendDrawer', () => {
         } as never);
 
         render(<AddFriendDrawer open onOpenChange={noop} />);
-        fireEvent.click(drawerContent().getByRole('button', { name: 'Enter code' }));
+        fireEvent.click(drawerContent().getByRole('button', { name: 'Enter a code' }));
 
         expect(drawerContent().getByText('This code has expired')).toBeInTheDocument();
         await flush();
