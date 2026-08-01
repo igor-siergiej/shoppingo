@@ -10,6 +10,12 @@ describe('Appbar', () => {
         expect(header).toBeInTheDocument();
     });
 
+    it('renders the logo', () => {
+        render(<Appbar />);
+
+        expect(screen.getByAltText('Shoppingo')).toBeInTheDocument();
+    });
+
     it('displays app title "Shoppingo"', () => {
         render(<Appbar />);
 
@@ -30,17 +36,10 @@ describe('Appbar', () => {
         expect(header).toHaveClass('bg-primary', 'shadow-md');
     });
 
-    it('centers content with proper height', () => {
+    it('has a thin, fixed-height content row', () => {
         const { container } = render(<Appbar />);
 
-        const contentDiv = container.querySelector('div[class*="h-16"]');
-        expect(contentDiv).toHaveClass('flex', 'items-center', 'justify-center', 'h-16');
-    });
-
-    it('renders title with white text color', () => {
-        render(<Appbar />);
-
-        const title = screen.getByText('Shoppingo');
-        expect(title).toHaveClass('text-white');
+        const contentDiv = container.querySelector('div[class*="h-14"]');
+        expect(contentDiv).toHaveClass('flex', 'items-center', 'justify-between', 'h-14');
     });
 });

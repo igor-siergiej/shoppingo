@@ -15,7 +15,7 @@ export const RootLayout = ({ children, showLayout = true }: RootLayoutProps) => 
     const content = children || <Outlet />;
 
     return (
-        <div className="min-h-screen bg-background flex flex-col pt-16">
+        <div className="min-h-screen bg-background flex flex-col pt-14 md:pt-16">
             <Appbar />
             <NetworkStatusAlert />
             {showLayout ? (
