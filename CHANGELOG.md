@@ -1,3 +1,10 @@
+## [1.58.3](https://github.com/igor-siergiej/shoppingo/compare/v1.58.2...v1.58.3) (2026-08-01)
+
+
+### Bug Fixes
+
+* **web:** make mobile add-friend drawer nicer ([#115](https://github.com/igor-siergiej/shoppingo/issues/115)) ([bd7058e](https://github.com/igor-siergiej/shoppingo/commit/bd7058e53b4a16b1726f90a029b732c98f6e1075))
+
 ## [1.58.2](https://github.com/igor-siergiej/shoppingo/compare/v1.58.1...v1.58.2) (2026-07-11)
 
 
