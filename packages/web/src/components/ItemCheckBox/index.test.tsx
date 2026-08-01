@@ -18,7 +18,7 @@ vi.mock('../../hooks/useItemImage', () => ({
 
 vi.mock('../../hooks/useSwipeGesture', () => ({
     useSwipeGesture: mockUseSwipeGesture,
-    SWIPE_REVEAL_DISTANCE: 128,
+    SWIPE_REVEAL_DISTANCE: 80,
 }));
 
 vi.mock('../../hooks/useItemMutations', () => ({
