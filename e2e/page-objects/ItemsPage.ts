@@ -7,12 +7,16 @@ export class ItemsPage {
         return this.page.getByText('No items yet').or(this.page.getByText('No tasks yet'));
     }
 
+    get actionsFabButton() {
+        return this.page.getByRole('button', { name: 'Actions' });
+    }
+
     get clearSelectedButton() {
-        return this.page.getByRole('button', { name: 'Clear selected items' });
+        return this.page.getByRole('button', { name: 'Clear Selected' });
     }
 
     get clearAllButton() {
-        return this.page.getByRole('button', { name: 'Remove all items' });
+        return this.page.getByRole('button', { name: 'Remove All' });
     }
 
     get goBackButton() {
@@ -84,11 +88,13 @@ export class ItemsPage {
     }
 
     async clearAllItems() {
+        await this.actionsFabButton.click();
         await this.clearAllButton.click();
         await this.page.getByRole('button', { name: 'Clear All Items' }).click();
     }
 
     async clearSelectedItems() {
+        await this.actionsFabButton.click();
         await this.clearSelectedButton.click();
         await this.page.getByRole('button', { name: 'Clear Selected' }).click();
     }
@@ -112,7 +118,8 @@ export class ItemsPage {
 
     // AddFromRecipe drawer
     async openAddFromRecipeDrawer() {
-        await this.page.getByRole('button', { name: 'Add from recipe' }).click();
+        await this.actionsFabButton.click();
+        await this.page.getByRole('button', { name: 'Add from Recipe' }).click();
     }
 
     async chooseRecipe(title: string) {

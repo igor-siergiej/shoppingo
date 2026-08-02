@@ -12,6 +12,7 @@ export default defineConfig({
     tsconfig: './e2e/tsconfig.json',
     fullyParallel: false,
     workers: 1,
+    timeout: 8000,
     forbidOnly: !!process.env.CI,
     retries: process.env.CI ? 2 : 0,
     reporter: 'html',

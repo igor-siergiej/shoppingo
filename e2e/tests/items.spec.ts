@@ -47,7 +47,8 @@ test.describe('Items page', () => {
         await apiAddItem(LIST_TITLE, 'Bread');
         await authenticatedPage.goto(`/list/${LIST_TITLE}`);
 
-        await authenticatedPage.getByRole('button', { name: 'Remove all items' }).click();
+        await authenticatedPage.getByRole('button', { name: 'Actions' }).click();
+        await authenticatedPage.getByRole('button', { name: 'Remove All' }).click();
         await expect(authenticatedPage.getByText('Clear All Items?')).toBeVisible();
         await authenticatedPage.getByRole('button', { name: 'Clear All Items' }).click();
 
@@ -62,7 +63,8 @@ test.describe('Items page', () => {
         await apiUpdateItem(LIST_TITLE, 'Milk', { isSelected: true });
         await authenticatedPage.goto(`/list/${LIST_TITLE}`);
 
-        await authenticatedPage.getByRole('button', { name: 'Clear selected items' }).click();
+        await authenticatedPage.getByRole('button', { name: 'Actions' }).click();
+        await authenticatedPage.getByRole('button', { name: 'Clear Selected' }).click();
         await expect(authenticatedPage.getByText('Clear Selected Items?')).toBeVisible();
         await authenticatedPage.getByRole('button', { name: 'Clear Selected' }).click();
 

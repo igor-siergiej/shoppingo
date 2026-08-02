@@ -8,7 +8,7 @@ const waitForListData = async (page: import('@playwright/test').Page) => {
 };
 
 const openManageUsers = async (page: import('@playwright/test').Page) => {
-    await page.getByRole('button', { name: 'Menu' }).click();
+    await page.getByRole('button', { name: 'Actions' }).click();
     await page.getByRole('button', { name: 'Manage Users' }).click();
     await expect(page.getByRole('heading', { name: 'Manage Users' })).toBeVisible();
 };

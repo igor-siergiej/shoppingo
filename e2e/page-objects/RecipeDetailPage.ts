@@ -15,8 +15,12 @@ export class RecipeDetailPage {
         return this.page.getByLabel('Delete recipe');
     }
 
+    get actionsFabButton() {
+        return this.page.getByRole('button', { name: 'Actions' });
+    }
+
     get addToShoppingListButton() {
-        return this.page.getByRole('button', { name: 'Add to shopping list' });
+        return this.page.getByRole('button', { name: 'Add to Shopping List' });
     }
 
     get goBackButton() {
@@ -94,6 +98,7 @@ export class RecipeDetailPage {
     }
 
     async enterSelectMode() {
+        await this.actionsFabButton.click();
         await this.addToShoppingListButton.click();
     }
 
