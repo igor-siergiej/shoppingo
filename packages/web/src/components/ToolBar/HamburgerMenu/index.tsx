@@ -1,4 +1,4 @@
-import { Bell, BellRing, Download, Loader2, LogOut, Moon, RefreshCw, Sun, Tag, Users } from 'lucide-react';
+import { Bell, BellRing, Download, Loader2, LogOut, Moon, RefreshCw, Sun } from 'lucide-react';
 import { motion } from 'motion/react';
 import { type ReactNode, useState } from 'react';
 import { toast } from 'sonner';
@@ -10,10 +10,6 @@ import { usePushNotifications } from '../../../hooks/usePushNotifications';
 import { usePWA } from '../../../hooks/usePWA';
 
 export interface HamburgerMenuProps {
-    currentList?: { title: string; ownerId?: string };
-    userId?: string;
-    onManageUsers: () => void;
-    onManageLabels?: () => void;
     onClose: () => void;
     onLogout: () => void;
 }
@@ -150,16 +146,8 @@ const UpdateButton = ({ hasUpdate, isCheckingForUpdate, onUpdate, onCheck }: Upd
     );
 };
 
-export const HamburgerMenu = ({
-    currentList,
-    userId,
-    onManageUsers,
-    onManageLabels,
-    onClose,
-    onLogout,
-}: HamburgerMenuProps) => {
+export const HamburgerMenu = ({ onClose, onLogout }: HamburgerMenuProps) => {
     const { canInstall, isInstalled, hasUpdate, installApp, updateApp, checkForUpdate, isCheckingForUpdate } = usePWA();
-    const isOwner = !!(currentList && currentList.ownerId === userId);
 
     const handleInstall = async () => {
         const success = await installApp();
@@ -173,23 +161,10 @@ export const HamburgerMenu = ({
 
     const conditionalButtons: SimpleButtonItem[] = [
         {
-            show: isOwner,
-            label: 'Manage Users',
-            icon: <Users className="h-4 w-4 mr-2" />,
-            onClick: onManageUsers,
-        },
-        {
-            show: !!onManageLabels,
-            label: 'Manage Labels',
-            icon: <Tag className="h-4 w-4 mr-2" />,
-            onClick: () => onManageLabels?.(),
-        },
-        {
             show: canInstall && !isInstalled,
             label: 'Install app',
             icon: <Download className="h-4 w-4 mr-2" />,
             onClick: handleInstall,
-            delay: 0.1,
         },
     ];
 
@@ -206,7 +181,7 @@ export const HamburgerMenu = ({
                     </MenuItem>
                 ))}
 
-            <MenuItem delay={isOwner ? 0.1 : 0.05}>
+            <MenuItem delay={0.05}>
                 <ThemeToggle />
             </MenuItem>
 

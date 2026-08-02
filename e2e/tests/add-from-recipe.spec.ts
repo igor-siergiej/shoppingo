@@ -9,7 +9,8 @@ test.describe('Add From Recipe drawer (items page)', () => {
         await apiCreateRecipe('Pasta');
         await authenticatedPage.goto(`/list/${LIST_TITLE}`);
 
-        await authenticatedPage.getByRole('button', { name: 'Add from recipe' }).click();
+        await authenticatedPage.getByRole('button', { name: 'Actions' }).click();
+        await authenticatedPage.getByRole('button', { name: 'Add from Recipe' }).click();
         await expect(authenticatedPage.getByText('Choose Recipe', { exact: true })).toBeVisible();
     });
 
@@ -19,7 +20,8 @@ test.describe('Add From Recipe drawer (items page)', () => {
         await apiCreateRecipe('Caesar Salad');
         await authenticatedPage.goto(`/list/${LIST_TITLE}`);
 
-        await authenticatedPage.getByRole('button', { name: 'Add from recipe' }).click();
+        await authenticatedPage.getByRole('button', { name: 'Actions' }).click();
+        await authenticatedPage.getByRole('button', { name: 'Add from Recipe' }).click();
         await authenticatedPage.getByPlaceholder('Search recipes...').fill('pasta');
 
         await expect(authenticatedPage.getByText('Pasta Bolognese')).toBeVisible();
@@ -31,7 +33,8 @@ test.describe('Add From Recipe drawer (items page)', () => {
         await apiCreateRecipe('My Soup', [{ name: 'Carrots' }, { name: 'Onion' }]);
         await authenticatedPage.goto(`/list/${LIST_TITLE}`);
 
-        await authenticatedPage.getByRole('button', { name: 'Add from recipe' }).click();
+        await authenticatedPage.getByRole('button', { name: 'Actions' }).click();
+        await authenticatedPage.getByRole('button', { name: 'Add from Recipe' }).click();
         await authenticatedPage.getByText('My Soup').click();
 
         await expect(authenticatedPage.getByText('Select from My Soup')).toBeVisible();
@@ -44,7 +47,8 @@ test.describe('Add From Recipe drawer (items page)', () => {
         await apiCreateRecipe('My Soup', [{ name: 'Carrots' }, { name: 'Onion' }, { name: 'Celery' }]);
         await authenticatedPage.goto(`/list/${LIST_TITLE}`);
 
-        await authenticatedPage.getByRole('button', { name: 'Add from recipe' }).click();
+        await authenticatedPage.getByRole('button', { name: 'Actions' }).click();
+        await authenticatedPage.getByRole('button', { name: 'Add from Recipe' }).click();
         await authenticatedPage.getByText('My Soup').click();
 
         await authenticatedPage.getByText('Carrots').click();
@@ -62,7 +66,8 @@ test.describe('Add From Recipe drawer (items page)', () => {
         await apiCreateRecipe('My Soup', [{ name: 'Carrots' }, { name: 'Onion' }]);
         await authenticatedPage.goto(`/list/${LIST_TITLE}`);
 
-        await authenticatedPage.getByRole('button', { name: 'Add from recipe' }).click();
+        await authenticatedPage.getByRole('button', { name: 'Actions' }).click();
+        await authenticatedPage.getByRole('button', { name: 'Add from Recipe' }).click();
         await authenticatedPage.getByText('My Soup').click();
 
         await expect(authenticatedPage.getByText('Already in list')).toBeVisible();
@@ -74,7 +79,8 @@ test.describe('Add From Recipe drawer (items page)', () => {
         await apiCreateRecipe('My Soup', [{ name: 'Carrots' }]);
         await authenticatedPage.goto(`/list/${LIST_TITLE}`);
 
-        await authenticatedPage.getByRole('button', { name: 'Add from recipe' }).click();
+        await authenticatedPage.getByRole('button', { name: 'Actions' }).click();
+        await authenticatedPage.getByRole('button', { name: 'Add from Recipe' }).click();
         await authenticatedPage.getByText('My Soup').click();
         await expect(authenticatedPage.getByText('Select from My Soup')).toBeVisible();
 
@@ -87,7 +93,8 @@ test.describe('Add From Recipe drawer (items page)', () => {
         await apiCreateRecipe('My Soup', [{ name: 'Carrots' }]);
         await authenticatedPage.goto(`/list/${LIST_TITLE}`);
 
-        await authenticatedPage.getByRole('button', { name: 'Add from recipe' }).click();
+        await authenticatedPage.getByRole('button', { name: 'Actions' }).click();
+        await authenticatedPage.getByRole('button', { name: 'Add from Recipe' }).click();
         await authenticatedPage.getByText('My Soup').click();
 
         await authenticatedPage.getByRole('button', { name: 'Cancel' }).click();

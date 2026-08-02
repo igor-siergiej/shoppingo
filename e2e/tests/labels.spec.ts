@@ -3,7 +3,7 @@ import { expect, test } from '../fixtures';
 
 const openManageLabels = async (page: import('@playwright/test').Page) => {
     await page.goto('/calendar');
-    await page.getByRole('button', { name: 'Menu' }).click();
+    await page.getByRole('button', { name: 'Actions' }).click();
     await page.getByRole('button', { name: 'Manage Labels' }).click();
     // Scope all further queries to the drawer — the calendar's label-filter chips behind
     // it can render the same label text and would otherwise cause strict-mode ambiguity.

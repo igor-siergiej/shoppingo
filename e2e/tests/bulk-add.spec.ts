@@ -6,7 +6,8 @@ test.describe('Bulk add ingredients to list', () => {
         const recipe = await apiCreateRecipe('My Recipe', [{ name: 'Flour' }, { name: 'Eggs' }]);
         await authenticatedPage.goto(`/recipes/${recipe.id}`);
 
-        await authenticatedPage.getByRole('button', { name: 'Add to shopping list' }).click();
+        await authenticatedPage.getByRole('button', { name: 'Actions' }).click();
+        await authenticatedPage.getByRole('button', { name: 'Add to Shopping List' }).click();
         await expect(authenticatedPage.getByRole('heading', { name: 'Select Ingredients' })).toBeVisible();
     });
 
@@ -15,7 +16,8 @@ test.describe('Bulk add ingredients to list', () => {
         await apiCreateList('Groceries');
         await authenticatedPage.goto(`/recipes/${recipe.id}`);
 
-        await authenticatedPage.getByRole('button', { name: 'Add to shopping list' }).click();
+        await authenticatedPage.getByRole('button', { name: 'Actions' }).click();
+        await authenticatedPage.getByRole('button', { name: 'Add to Shopping List' }).click();
         await expect(authenticatedPage.getByRole('heading', { name: 'Select Ingredients' })).toBeVisible();
 
         await authenticatedPage.getByText('Flour').click();
@@ -33,7 +35,8 @@ test.describe('Bulk add ingredients to list', () => {
         const recipe = await apiCreateRecipe('My Recipe', [{ name: 'Flour' }]);
         await authenticatedPage.goto(`/recipes/${recipe.id}`);
 
-        await authenticatedPage.getByRole('button', { name: 'Add to shopping list' }).click();
+        await authenticatedPage.getByRole('button', { name: 'Actions' }).click();
+        await authenticatedPage.getByRole('button', { name: 'Add to Shopping List' }).click();
         await expect(authenticatedPage.getByRole('heading', { name: 'Select Ingredients' })).toBeVisible();
         await authenticatedPage.getByRole('button', { name: 'Cancel' }).click();
 
@@ -48,7 +51,8 @@ test.describe('Bulk add ingredients to list', () => {
 
         await authenticatedPage.goto(`/recipes/${recipe.id}`);
 
-        await authenticatedPage.getByRole('button', { name: 'Add to shopping list' }).click();
+        await authenticatedPage.getByRole('button', { name: 'Actions' }).click();
+        await authenticatedPage.getByRole('button', { name: 'Add to Shopping List' }).click();
         await authenticatedPage.getByText('Flour').click();
         await authenticatedPage.getByRole('button', { name: 'Groceries' }).click();
         await authenticatedPage.getByRole('button', { name: /Add 1 items/ }).click();

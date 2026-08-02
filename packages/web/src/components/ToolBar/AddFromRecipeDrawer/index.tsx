@@ -19,9 +19,16 @@ interface AddFromRecipeDrawerProps {
     onOpenChange: (open: boolean) => void;
     listTitle: string;
     listItems: Item[];
+    hideTrigger?: boolean;
 }
 
-export const AddFromRecipeDrawer = ({ open, onOpenChange, listTitle, listItems }: AddFromRecipeDrawerProps) => {
+export const AddFromRecipeDrawer = ({
+    open,
+    onOpenChange,
+    listTitle,
+    listItems,
+    hideTrigger = false,
+}: AddFromRecipeDrawerProps) => {
     const { user } = useUser();
     const queryClient = useQueryClient();
     const [step, setStep] = useState<'recipes' | 'ingredients'>('recipes');
@@ -103,18 +110,20 @@ export const AddFromRecipeDrawer = ({ open, onOpenChange, listTitle, listItems }
 
     return (
         <Drawer open={open} onOpenChange={onOpenChange}>
-            <RippleButton
-                size="icon"
-                variant="ghost"
-                aria-label="Add from recipe"
-                className="h-12 w-12 rounded-full"
-                onClick={() => onOpenChange(true)}
-            >
-                <div className="relative w-5 h-5 flex items-center justify-center">
-                    <BookOpen className="size-5" />
-                    <Plus className="size-3 absolute bottom-0 right-0 bg-white rounded-full text-primary" />
-                </div>
-            </RippleButton>
+            {!hideTrigger && (
+                <RippleButton
+                    size="icon"
+                    variant="ghost"
+                    aria-label="Add from recipe"
+                    className="h-12 w-12 rounded-full"
+                    onClick={() => onOpenChange(true)}
+                >
+                    <div className="relative w-5 h-5 flex items-center justify-center">
+                        <BookOpen className="size-5" />
+                        <Plus className="size-3 absolute bottom-0 right-0 bg-white rounded-full text-primary" />
+                    </div>
+                </RippleButton>
+            )}
 
             <DrawerContent>
                 <div className="w-full sm:mx-auto sm:max-w-[400px]">
