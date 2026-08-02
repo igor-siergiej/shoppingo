@@ -1,3 +1,10 @@
+## [1.58.4](https://github.com/igor-siergiej/shoppingo/compare/v1.58.3...v1.58.4) (2026-08-02)
+
+
+### Bug Fixes
+
+* **web:** rework mobile toolbar, add-friend drawer, and actions FAB ([#116](https://github.com/igor-siergiej/shoppingo/issues/116)) ([c3031b9](https://github.com/igor-siergiej/shoppingo/commit/c3031b9f222f1f18c364033e1fd4336c66215c0f))
+
 ## [1.58.3](https://github.com/igor-siergiej/shoppingo/compare/v1.58.2...v1.58.3) (2026-08-01)
 
 
