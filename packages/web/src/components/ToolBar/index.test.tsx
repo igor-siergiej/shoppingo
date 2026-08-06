@@ -33,6 +33,13 @@ vi.mock('../../hooks/useToolBarState', () => ({
     useToolBarState: mockUseToolBarState,
 }));
 
+vi.mock('../../hooks/useManageUsers', () => ({
+    useManageUsers: () => ({
+        addUserMutation: { isLoading: false, mutate: vi.fn() },
+        removeUserMutation: { isLoading: false, mutate: vi.fn() },
+    }),
+}));
+
 vi.mock('./HamburgerMenu', () => ({
     HamburgerMenu: () => <div data-testid="hamburger-menu">Menu</div>,
 }));

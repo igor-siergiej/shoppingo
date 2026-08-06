@@ -13,13 +13,6 @@ vi.mock('../../hooks/useFriends', () => ({
     useFriends: mockUseFriends,
 }));
 
-vi.mock('../../hooks/useManageUsers', () => ({
-    useManageUsers: () => ({
-        addUserMutation: { isLoading: false, mutate: mockAddMutate },
-        removeUserMutation: { isLoading: false, mutate: mockRemoveMutate },
-    }),
-}));
-
 describe('ManageUsersDrawer', () => {
     const mockOnOpenChange = vi.fn();
     const mockOnUserAdded = vi.fn();
@@ -28,13 +21,15 @@ describe('ManageUsersDrawer', () => {
     const defaultProps = {
         open: true,
         onOpenChange: mockOnOpenChange,
-        listTitle: 'Shopping List',
+        title: 'Shopping List',
         currentUsers: [
             { id: 'owner-1', username: 'john' },
             { id: 'friend-1', username: 'alice' },
         ],
         ownerId: 'owner-1',
         currentUserId: 'owner-1',
+        addUserMutation: { isLoading: false, mutate: mockAddMutate },
+        removeUserMutation: { isLoading: false, mutate: mockRemoveMutate },
         onUserAdded: mockOnUserAdded,
         onUserRemoved: mockOnUserRemoved,
     };

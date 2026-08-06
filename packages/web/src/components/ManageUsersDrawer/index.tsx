@@ -24,16 +24,21 @@ import {
 import { Label } from '../../components/ui/label';
 import { useConfirmation } from '../../hooks/useConfirmation';
 import { useFriends } from '../../hooks/useFriends';
-import { useManageUsers } from '../../hooks/useManageUsers';
 import { FriendPicker } from '../FriendPicker';
+
+interface MutationLike<TVariables> {
+    mutate: (variables: TVariables, options?: { onSuccess?: () => void }) => void;
+}
 
 interface ManageUsersDrawerProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    listTitle: string;
+    title: string;
     currentUsers: Array<{ id: string; username: string }>;
     ownerId: string;
     currentUserId: string;
+    addUserMutation: MutationLike<string>;
+    removeUserMutation: MutationLike<string>;
     onUserAdded: () => void;
     onUserRemoved: () => void;
 }
@@ -44,13 +49,14 @@ const getMemberIds = (currentUsers: Array<{ id: string; username: string }>, own
 export const ManageUsersDrawer = ({
     open,
     onOpenChange,
-    listTitle,
+    title,
     currentUsers,
     ownerId,
+    addUserMutation,
+    removeUserMutation,
     onUserAdded,
     onUserRemoved,
 }: ManageUsersDrawerProps) => {
-    const { addUserMutation, removeUserMutation } = useManageUsers({ listTitle });
     const { friends } = useFriends();
     const { confirm, isOpen, config: confirmConfig, handleConfirm, handleCancel } = useConfirmation();
 
@@ -102,7 +108,7 @@ export const ManageUsersDrawer = ({
                     <div className="mx-auto w-full max-w-sm flex flex-col h-[500px] max-h-[500px]">
                         <DrawerHeader className="flex-shrink-0">
                             <DrawerTitle>Manage Users</DrawerTitle>
-                            <DrawerDescription>{listTitle}</DrawerDescription>
+                            <DrawerDescription>{title}</DrawerDescription>
                         </DrawerHeader>
 
                         <div className="flex-1 overflow-y-auto p-4">

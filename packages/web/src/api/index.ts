@@ -305,6 +305,23 @@ export const deleteRecipe = async (recipeId: string): Promise<void> => {
     });
 };
 
+export const addUserToRecipe = async (recipeId: string, friendId: string): Promise<Recipe> => {
+    return await makeRequest({
+        pathname: `/api/recipes/${encodeURIComponent(recipeId)}/users`,
+        method: MethodType.POST,
+        operationString: 'add user to recipe',
+        body: JSON.stringify({ friendId }),
+    });
+};
+
+export const removeUserFromRecipe = async (recipeId: string, userId: string): Promise<Recipe> => {
+    return await makeRequest({
+        pathname: `/api/recipes/${encodeURIComponent(recipeId)}/users/${encodeURIComponent(userId)}`,
+        method: MethodType.DELETE,
+        operationString: 'remove user from recipe',
+    });
+};
+
 export const generateRecipeAiImage = async (recipeId: string): Promise<Recipe> => {
     return await makeRequest({
         pathname: `/api/recipes/${encodeURIComponent(recipeId)}/image/generate`,
