@@ -10,6 +10,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import useMeasure from 'react-use-measure';
 
 import { Card } from '../../components/ui/card';
+import { useManageUsers } from '../../hooks/useManageUsers';
 import { useToolBarState } from '../../hooks/useToolBarState';
 import { ManageLabelsDrawer } from '../ManageLabelsDrawer';
 import { ManageUsersDrawer } from '../ManageUsersDrawer';
@@ -45,6 +46,7 @@ interface ToolBarProps {
     addRecipeInitialLink?: string;
     addRecipeAutoImport?: boolean;
     handleGoBack?: () => void;
+    onManageRecipeUsers?: () => void;
     handleClearSelected?: () => void;
     handleRemoveAll?: () => void;
     onToggleSelectMode?: () => void;
@@ -71,6 +73,7 @@ const ToolBar = ({
     addRecipeInitialLink,
     addRecipeAutoImport,
     handleGoBack,
+    onManageRecipeUsers,
     handleClearSelected,
     handleRemoveAll,
     onToggleSelectMode,
@@ -122,6 +125,10 @@ const ToolBar = ({
 
     const isOwner = !!(currentList && currentList.ownerId === userId);
 
+    const { addUserMutation: addListUserMutation, removeUserMutation: removeListUserMutation } = useManageUsers({
+        listTitle: currentList?.title ?? '',
+    });
+
     const actionItems: ActionItem[] = [
         {
             show: isItemsPage && !!currentList && !!listItems && currentListType === ListType.SHOPPING,
@@ -155,6 +162,12 @@ const ToolBar = ({
             label: 'Add to Shopping List',
             icon: ShoppingCart,
             onClick: () => onToggleSelectMode?.(),
+        },
+        {
+            show: isRecipeDetailPage && !!onManageRecipeUsers,
+            label: 'Manage Sharing',
+            icon: Users,
+            onClick: () => onManageRecipeUsers?.(),
         },
         {
             show: isCalendarPage,
@@ -349,10 +362,12 @@ const ToolBar = ({
                 <ManageUsersDrawer
                     open={isManageUsersOpen}
                     onOpenChange={setIsManageUsersOpen}
-                    listTitle={currentList.title}
+                    title={currentList.title}
                     currentUsers={currentList.users}
                     ownerId={currentList.ownerId ?? ''}
                     currentUserId={userId ?? ''}
+                    addUserMutation={addListUserMutation}
+                    removeUserMutation={removeListUserMutation}
                     onUserAdded={() => {
                         refetchList?.();
                     }}

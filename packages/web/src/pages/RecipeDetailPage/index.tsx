@@ -8,6 +8,7 @@ import { useQuery, useQueryClient } from 'react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { addItemsBulk, getListsQuery, getRecipeQuery } from '../../api';
+import { ManageUsersDrawer } from '../../components/ManageUsersDrawer';
 import ToolBar from '../../components/ToolBar';
 import {
     AlertDialog,
@@ -23,6 +24,7 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Skeleton } from '../../components/ui/skeleton';
 import { useConfirmation } from '../../hooks/useConfirmation';
+import { useManageRecipeUsers } from '../../hooks/useManageRecipeUsers';
 import { useRecipeMutations } from '../../hooks/useRecipeMutations';
 import { logger } from '../../utils/logger';
 import { CoverImageSection } from './CoverImageSection';
@@ -38,12 +40,14 @@ const RecipeDetailPage = () => {
     const queryClient = useQueryClient();
     const { updateRecipe, deleteRecipe } = useRecipeMutations(user ?? undefined);
     const { confirm, isOpen, config: confirmConfig, handleConfirm, handleCancel } = useConfirmation();
+    const { addUserMutation, removeUserMutation } = useManageRecipeUsers({ recipeId: recipeId ?? '' });
 
     const [isEditingTitle, setIsEditingTitle] = useState(false);
     const [editedTitle, setEditedTitle] = useState('');
     const [isSelectMode, setIsSelectMode] = useState(false);
     const [isEditingLink, setIsEditingLink] = useState(false);
     const [editedLink, setEditedLink] = useState('');
+    const [isManageUsersOpen, setIsManageUsersOpen] = useState(false);
 
     const {
         data: recipe,
@@ -429,7 +433,23 @@ const RecipeDetailPage = () => {
                 onAddIngredient={isOwner ? handleAddIngredient : undefined}
                 handleGoBack={handleGoBack}
                 onToggleSelectMode={() => setIsSelectMode((v) => !v)}
+                onManageRecipeUsers={isOwner ? () => setIsManageUsersOpen(true) : undefined}
             />
+
+            {recipe && isOwner && (
+                <ManageUsersDrawer
+                    open={isManageUsersOpen}
+                    onOpenChange={setIsManageUsersOpen}
+                    title={recipe.title}
+                    currentUsers={recipe.users}
+                    ownerId={recipe.ownerId ?? ''}
+                    currentUserId={user?.id ?? ''}
+                    addUserMutation={addUserMutation}
+                    removeUserMutation={removeUserMutation}
+                    onUserAdded={() => void refetch()}
+                    onUserRemoved={() => void refetch()}
+                />
+            )}
 
             <AlertDialog open={isOpen} onOpenChange={(open) => !open && handleCancel()}>
                 <AlertDialogContent>

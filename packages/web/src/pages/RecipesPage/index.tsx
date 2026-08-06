@@ -136,7 +136,7 @@ const RecipesPage = () => {
     };
 
     const searchBar = (
-        <div className="relative mb-6">
+        <div className="relative mt-6">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
             <Input
                 value={searchQuery}
@@ -159,7 +159,6 @@ const RecipesPage = () => {
 
     const pageContent = (
         <div className="flex flex-col mb-auto">
-            {searchBar}
             {searchQuery.trim() ? (
                 <div>
                     <h2 className="text-lg font-semibold mb-3 text-foreground">Results ({searchResults.length})</h2>
@@ -218,6 +217,7 @@ const RecipesPage = () => {
                     </div>
                 </div>
             )}
+            {searchBar}
         </div>
     );
 
