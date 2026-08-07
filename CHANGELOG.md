@@ -1,3 +1,10 @@
+## [1.58.5](https://github.com/igor-siergiej/shoppingo/compare/v1.58.4...v1.58.5) (2026-08-07)
+
+
+### Bug Fixes
+
+* **web:** toolbar/nav polish, add-friend rework, and recipe search/sharing fixes ([#117](https://github.com/igor-siergiej/shoppingo/issues/117)) ([fd10f98](https://github.com/igor-siergiej/shoppingo/commit/fd10f98c9105816f146d90e9b8d0eb034240ecf4))
+
 ## [1.58.4](https://github.com/igor-siergiej/shoppingo/compare/v1.58.3...v1.58.4) (2026-08-02)
 
 
