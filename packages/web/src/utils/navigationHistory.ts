@@ -13,6 +13,7 @@ export const hasInAppBackHistory = (): boolean => navigationDepth > 1;
 
 // Test-only: resets module state between test cases. Do not call from
 // application code.
+// fallow-ignore-next-line unused-export
 export const resetNavigationDepthForTests = (): void => {
     navigationDepth = 0;
 };
