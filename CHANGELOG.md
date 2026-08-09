@@ -1,3 +1,10 @@
+# [1.59.0](https://github.com/igor-siergiej/shoppingo/compare/v1.58.6...v1.59.0) (2026-08-09)
+
+
+### Features
+
+* **e2e:** add kanban-worker repo config and a real [@smoke-tagged](https://github.com/smoke-tagged) test ([#119](https://github.com/igor-siergiej/shoppingo/issues/119)) ([63d554d](https://github.com/igor-siergiej/shoppingo/commit/63d554d86b95071cbe379e510dd79c7d02a76f0f))
+
 ## [1.58.6](https://github.com/igor-siergiej/shoppingo/compare/v1.58.5...v1.58.6) (2026-08-09)
 
 
