@@ -143,6 +143,9 @@ const RecipesPage = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search recipes..."
                 className="pl-9 pr-9"
+                name="recipe-search"
+                autoComplete="off"
+                inputMode="search"
             />
             {searchQuery && (
                 <button
