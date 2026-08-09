@@ -1,3 +1,10 @@
+## [1.59.4](https://github.com/igor-siergiej/shoppingo/compare/v1.59.3...v1.59.4) (2026-08-09)
+
+
+### Bug Fixes
+
+* **web:** draw input focus ring inset so it can't be clipped by ancestor overflow ([#123](https://github.com/igor-siergiej/shoppingo/issues/123)) ([94ed270](https://github.com/igor-siergiej/shoppingo/commit/94ed270e83d56ca271c418d1002596da66e997fc))
+
 ## [1.59.3](https://github.com/igor-siergiej/shoppingo/compare/v1.59.2...v1.59.3) (2026-08-09)
 
 
