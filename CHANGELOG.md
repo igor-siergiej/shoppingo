@@ -1,3 +1,10 @@
+## [1.59.2](https://github.com/igor-siergiej/shoppingo/compare/v1.59.1...v1.59.2) (2026-08-09)
+
+
+### Bug Fixes
+
+* **web:** stop payment-autofill popup on recipe search inputs ([#121](https://github.com/igor-siergiej/shoppingo/issues/121)) ([a566283](https://github.com/igor-siergiej/shoppingo/commit/a566283f15da0905590a1d30f2d7ef3af3576af8))
+
 ## [1.59.1](https://github.com/igor-siergiej/shoppingo/compare/v1.59.0...v1.59.1) (2026-08-09)
 
 
