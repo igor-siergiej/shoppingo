@@ -1,0 +1,29 @@
+{
+  "repoName": "shoppingo",
+  "dev": {
+    "startCommand": "bun run start:web",
+    "healthCheckUrl": "http://localhost:4000",
+    "healthCheckTimeoutMs": 60000,
+    "healthCheckIntervalMs": 2000
+  },
+  "e2e": {
+    "testCommand": "bun run test:e2e",
+    "smokeGrep": "@smoke",
+    "configPath": "playwright.config.ts"
+  },
+  "ci": {
+    "workflowNames": ["PR"],
+    "checkNamesRequired": ["lint", "test", "e2e", "fallow-deadcode"]
+  },
+  "deploy": {
+    "workflowName": "CD",
+    "timeoutMs": 900000,
+    "pollIntervalMs": 15000
+  },
+  "environments": {
+    "production": { "baseUrl": "https://shoppingo.imapps.uk" }
+  },
+  "targetEnvironment": "production",
+  "retryPolicy": { "implement": 3, "e2e_local": 3, "ci": 3, "deploy": 2, "e2e_live": 1 },
+  "github": { "defaultBranch": "main", "mergeMethod": "squash" }
+}
