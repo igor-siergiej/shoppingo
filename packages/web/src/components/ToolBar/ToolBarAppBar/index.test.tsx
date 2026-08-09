@@ -78,6 +78,41 @@ describe('ToolBarAppBar', () => {
         expect(recipesButton).toBeDefined();
     });
 
+    it('shows back button on recipe detail page, in the Recipes slot', async () => {
+        const { ToolBarAppBar } = await import('./index');
+        const { container } = renderWithRouter(
+            <ToolBarAppBar isItemsPage={false} isListsPage={false} isRecipeDetailPage={true} onMenuClick={() => {}} />
+        );
+
+        const buttons = container.querySelectorAll('button');
+        const backButton = Array.from(buttons).find((btn) => btn.title.includes('back'));
+        expect(backButton).toBeDefined();
+        const recipesButton = Array.from(buttons).find((btn) => btn.title === 'Recipes');
+        expect(recipesButton).toBeUndefined();
+    });
+
+    it('still shows Shopping lists button on recipe detail page (only Recipes slot swaps)', async () => {
+        const { ToolBarAppBar } = await import('./index');
+        const { container } = renderWithRouter(
+            <ToolBarAppBar isItemsPage={false} isListsPage={false} isRecipeDetailPage={true} onMenuClick={() => {}} />
+        );
+
+        const buttons = container.querySelectorAll('button');
+        const shoppingListsButton = Array.from(buttons).find((btn) => btn.title === 'Shopping lists');
+        expect(shoppingListsButton).toBeDefined();
+    });
+
+    it('does not swap the Recipes slot for back on items page (only Shopping lists slot swaps)', async () => {
+        const { ToolBarAppBar } = await import('./index');
+        const { container } = renderWithRouter(
+            <ToolBarAppBar isItemsPage={true} isListsPage={false} onMenuClick={() => {}} />
+        );
+
+        const buttons = container.querySelectorAll('button');
+        const recipesButton = Array.from(buttons).find((btn) => btn.title === 'Recipes');
+        expect(recipesButton).toBeDefined();
+    });
+
     it('hides back button on lists page', async () => {
         const { ToolBarAppBar } = await import('./index');
         const { container } = renderWithRouter(

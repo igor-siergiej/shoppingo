@@ -75,7 +75,7 @@ describe('RecipesPage', () => {
         expect(searchInput).toHaveAttribute('autocomplete', 'off');
         expect(searchInput).toHaveAttribute('name', 'recipe-search');
         expect(searchInput).toHaveAttribute('inputmode', 'search');
-        expect(searchInput).not.toHaveAttribute('type', 'search');
+        expect(searchInput).toHaveAttribute('type', 'search');
     });
 
     it('renders the search input with an inset focus ring', () => {
