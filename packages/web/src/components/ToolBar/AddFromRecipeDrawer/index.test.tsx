@@ -33,6 +33,6 @@ describe('AddFromRecipeDrawer', () => {
         expect(searchInput).toHaveAttribute('autocomplete', 'off');
         expect(searchInput).toHaveAttribute('name', 'add-from-recipe-search');
         expect(searchInput).toHaveAttribute('inputmode', 'search');
-        expect(searchInput).not.toHaveAttribute('type', 'search');
+        expect(searchInput).toHaveAttribute('type', 'search');
     });
 });

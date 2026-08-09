@@ -52,12 +52,10 @@ export const ToolBarAppBar = forwardRef<HTMLDivElement, ToolBarAppBarProps>(
             }
         };
 
-        const showBackButton = isItemsPage || isRecipeDetailPage;
-
         return (
             <div ref={ref} className="flex w-full items-center justify-between py-2.5 px-3">
-                {/* Primary nav — Shopping lists slot swaps for back on drill-in pages */}
-                {showBackButton ? (
+                {/* Primary nav — each section's own slot swaps for back on its own drill-in page */}
+                {isItemsPage ? (
                     <ToolBarButton icon={ArrowLeft} title="Go back" onClick={handleGoBack} />
                 ) : (
                     <ToolBarButton
@@ -67,12 +65,16 @@ export const ToolBarAppBar = forwardRef<HTMLDivElement, ToolBarAppBarProps>(
                         active={isListsPage}
                     />
                 )}
-                <ToolBarButton
-                    icon={BookOpen}
-                    title="Recipes"
-                    onClick={() => navigate('/recipes')}
-                    active={isRecipesPage}
-                />
+                {isRecipeDetailPage ? (
+                    <ToolBarButton icon={ArrowLeft} title="Go back" onClick={handleGoBack} />
+                ) : (
+                    <ToolBarButton
+                        icon={BookOpen}
+                        title="Recipes"
+                        onClick={() => navigate('/recipes')}
+                        active={isRecipesPage}
+                    />
+                )}
                 <ToolBarButton
                     icon={Users}
                     title="Friends"
