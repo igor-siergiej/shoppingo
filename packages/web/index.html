@@ -20,12 +20,23 @@
                     // Set background color directly
                     const bgColor = theme === 'dark' ? '#1a1a1a' : 'oklch(0.96 0.015 80)';
                     document.documentElement.style.setProperty('--initial-bg', bgColor);
+                    // Sync the theme-color meta tag so mobile browser/PWA chrome
+                    // matches immediately, instead of waiting for ThemeProvider
+                    // to mount after the async config load resolves.
+                    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+                    if (metaThemeColor) {
+                        metaThemeColor.setAttribute('content', theme === 'dark' ? '#1a1a1a' : '#2e7d32');
+                    }
                 } catch (e) {
                     // Fallback if localStorage fails
                     const theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
                     document.documentElement.classList.add(theme);
                     const bgColor = theme === 'dark' ? '#1a1a1a' : 'oklch(0.96 0.015 80)';
                     document.documentElement.style.setProperty('--initial-bg', bgColor);
+                    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+                    if (metaThemeColor) {
+                        metaThemeColor.setAttribute('content', theme === 'dark' ? '#1a1a1a' : '#2e7d32');
+                    }
                 }
             })();
         </script>

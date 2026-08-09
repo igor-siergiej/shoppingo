@@ -1,5 +1,6 @@
 import type React from 'react';
 import { createContext, useContext, useEffect, useState } from 'react';
+import { applyManifestForTheme } from '../utils/applyManifestForTheme';
 
 type Theme = 'light' | 'dark';
 
@@ -56,6 +57,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         } catch (error) {
             console.warn('Failed to save theme preference:', error);
         }
+        applyManifestForTheme();
     };
 
     return <ThemeContext.Provider value={{ theme, toggleTheme }}>{children}</ThemeContext.Provider>;
