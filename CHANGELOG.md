@@ -1,3 +1,10 @@
+## [1.59.1](https://github.com/igor-siergiej/shoppingo/compare/v1.59.0...v1.59.1) (2026-08-09)
+
+
+### Bug Fixes
+
+* **web:** include shared friends in optimistic recipe.create cache and invalidate list on sharing changes ([#120](https://github.com/igor-siergiej/shoppingo/issues/120)) ([fcfaa6f](https://github.com/igor-siergiej/shoppingo/commit/fcfaa6f44ec001db9aa0134d4f4b9c7cad811049))
+
 # [1.59.0](https://github.com/igor-siergiej/shoppingo/compare/v1.58.6...v1.59.0) (2026-08-09)
 
 
