@@ -1,10 +1,16 @@
 import type { Recipe } from '@shoppingo/types';
+import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import RecipesPage from './index';
 
 // Mock dependencies
 vi.mock('../../api', () => ({
-    getRecipesQuery: vi.fn(),
+    getRecipesQuery: vi.fn(() => ({ queryKey: ['recipes', 'user-1'], queryFn: vi.fn() })),
+    getFriendsQuery: vi.fn(() => ({ queryKey: ['friends'], queryFn: vi.fn() })),
     addRecipe: vi.fn(),
+    generateRecipeAiImage: vi.fn(),
+    uploadRecipeImage: vi.fn(),
 }));
 
 vi.mock('@imapps/web-utils', () => ({
@@ -14,10 +20,28 @@ vi.mock('@imapps/web-utils', () => ({
             username: 'testuser',
         },
     }),
+    useAuth: () => ({ logout: vi.fn() }),
 }));
 
 vi.mock('react-query', () => ({
-    useQuery: vi.fn(),
+    useQuery: () => ({
+        data: [] as Recipe[],
+        isLoading: false,
+        isError: false,
+        refetch: vi.fn(),
+    }),
+    useQueryClient: () => ({
+        getQueryData: vi.fn(() => []),
+        invalidateQueries: vi.fn(),
+    }),
+}));
+
+vi.mock('../../contexts/PullToRefreshContext', () => ({
+    usePullToRefreshContext: () => ({ registerRefresh: () => () => {} }),
+}));
+
+vi.mock('../../components/ToolBar', () => ({
+    default: () => <div data-testid="toolbar" />,
 }));
 
 describe('RecipesPage', () => {
@@ -40,10 +64,18 @@ describe('RecipesPage', () => {
         vi.clearAllMocks();
     });
 
-    it('displays your recipes and shared recipes sections', () => {
-        // This test would need proper query mocking setup
-        // Simplified version shown here
-        expect(true).toBe(true);
+    it('renders the recipe search input with autofill-safe attributes', () => {
+        render(
+            <MemoryRouter>
+                <RecipesPage />
+            </MemoryRouter>
+        );
+
+        const searchInput = screen.getByPlaceholderText('Search recipes...');
+        expect(searchInput).toHaveAttribute('autocomplete', 'off');
+        expect(searchInput).toHaveAttribute('name', 'recipe-search');
+        expect(searchInput).toHaveAttribute('inputmode', 'search');
+        expect(searchInput).not.toHaveAttribute('type', 'search');
     });
 
     it('passes refetch function to ToolBar for recipe updates', async () => {

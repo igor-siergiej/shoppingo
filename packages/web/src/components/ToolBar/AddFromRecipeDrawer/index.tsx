@@ -153,6 +153,9 @@ export const AddFromRecipeDrawer = ({
                                         onChange={(e) => setRecipeSearch(e.target.value)}
                                         placeholder="Search recipes..."
                                         className="pl-9 pr-9"
+                                        name="add-from-recipe-search"
+                                        autoComplete="off"
+                                        inputMode="search"
                                     />
                                     {recipeSearch && (
                                         <button

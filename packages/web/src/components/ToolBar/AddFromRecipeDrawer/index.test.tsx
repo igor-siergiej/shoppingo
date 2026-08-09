@@ -25,4 +25,14 @@ describe('AddFromRecipeDrawer', () => {
         );
         expect(screen.queryByLabelText('Add from recipe')).not.toBeInTheDocument();
     });
+
+    it('renders the recipe search input with autofill-safe attributes', () => {
+        render(<AddFromRecipeDrawer open onOpenChange={noop} listTitle="Groceries" listItems={[]} />);
+
+        const searchInput = screen.getByPlaceholderText('Search recipes...');
+        expect(searchInput).toHaveAttribute('autocomplete', 'off');
+        expect(searchInput).toHaveAttribute('name', 'add-from-recipe-search');
+        expect(searchInput).toHaveAttribute('inputmode', 'search');
+        expect(searchInput).not.toHaveAttribute('type', 'search');
+    });
 });
