@@ -1,3 +1,10 @@
+## [1.58.6](https://github.com/igor-siergiej/shoppingo/compare/v1.58.5...v1.58.6) (2026-08-09)
+
+
+### Bug Fixes
+
+* **web:** use history-aware back navigation on Items and Recipe Detail pages ([#118](https://github.com/igor-siergiej/shoppingo/issues/118)) ([4878cb4](https://github.com/igor-siergiej/shoppingo/commit/4878cb4249d24578daf1dc7875375484fb15eda5))
+
 ## [1.58.5](https://github.com/igor-siergiej/shoppingo/compare/v1.58.4...v1.58.5) (2026-08-07)
 
 
