@@ -18,16 +18,19 @@ const extractBootScript = (): string => {
 const bootScript = extractBootScript();
 
 const setSystemPrefersDark = (matches: boolean) => {
-    vi.spyOn(window, 'matchMedia').mockImplementation((query: string) => ({
-        matches,
-        media: query,
-        onchange: null,
-        addListener: vi.fn(),
-        removeListener: vi.fn(),
-        addEventListener: vi.fn(),
-        removeEventListener: vi.fn(),
-        dispatchEvent: vi.fn(),
-    } as MediaQueryList));
+    vi.spyOn(window, 'matchMedia').mockImplementation(
+        (query: string) =>
+            ({
+                matches,
+                media: query,
+                onchange: null,
+                addListener: vi.fn(),
+                removeListener: vi.fn(),
+                addEventListener: vi.fn(),
+                removeEventListener: vi.fn(),
+                dispatchEvent: vi.fn(),
+            }) as MediaQueryList
+    );
 };
 
 describe('boot theme script (index.html)', () => {

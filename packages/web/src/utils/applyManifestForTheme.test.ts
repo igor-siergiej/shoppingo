@@ -2,16 +2,19 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { applyManifestForTheme } from './applyManifestForTheme';
 
 const setSystemPrefersDark = (matches: boolean) => {
-    vi.spyOn(window, 'matchMedia').mockImplementation((query: string) => ({
-        matches,
-        media: query,
-        onchange: null,
-        addListener: vi.fn(),
-        removeListener: vi.fn(),
-        addEventListener: vi.fn(),
-        removeEventListener: vi.fn(),
-        dispatchEvent: vi.fn(),
-    } as MediaQueryList));
+    vi.spyOn(window, 'matchMedia').mockImplementation(
+        (query: string) =>
+            ({
+                matches,
+                media: query,
+                onchange: null,
+                addListener: vi.fn(),
+                removeListener: vi.fn(),
+                addEventListener: vi.fn(),
+                removeEventListener: vi.fn(),
+                dispatchEvent: vi.fn(),
+            }) as MediaQueryList
+    );
 };
 
 describe('applyManifestForTheme', () => {
