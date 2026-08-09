@@ -2,16 +2,21 @@ const STORAGE_KEY = 'theme';
 
 type Theme = 'light' | 'dark';
 
-const resolveTheme = (): Theme => {
+const isTheme = (value: string | null): value is Theme => value === 'light' || value === 'dark';
+
+const getSystemTheme = (): Theme => (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+
+const readStoredTheme = (): string | null => {
     try {
-        const stored = localStorage.getItem(STORAGE_KEY);
-        if (stored === 'light' || stored === 'dark') {
-            return stored;
-        }
+        return localStorage.getItem(STORAGE_KEY);
     } catch {
-        // localStorage unavailable, fall through to system preference
+        return null;
     }
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+};
+
+const resolveTheme = (): Theme => {
+    const stored = readStoredTheme();
+    return isTheme(stored) ? stored : getSystemTheme();
 };
 
 // Points the manifest link at the theme-appropriate variant so future
