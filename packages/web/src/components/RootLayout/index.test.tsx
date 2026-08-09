@@ -2,6 +2,10 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { RootLayout } from './index';
 
+const { mockRecordInAppNavigation } = vi.hoisted(() => ({
+    mockRecordInAppNavigation: vi.fn(),
+}));
+
 vi.mock('../Appbar', () => ({
     default: () => <div data-testid="appbar">Appbar</div>,
 }));
@@ -20,6 +24,11 @@ vi.mock('sonner', () => ({
 
 vi.mock('react-router-dom', () => ({
     Outlet: () => <div data-testid="outlet">Outlet</div>,
+    useLocation: () => ({ key: 'default', pathname: '/' }),
+}));
+
+vi.mock('../../utils/navigationHistory', () => ({
+    recordInAppNavigation: mockRecordInAppNavigation,
 }));
 
 describe('RootLayout', () => {
@@ -65,5 +74,11 @@ describe('RootLayout', () => {
 
         const mainElement = container.querySelector('main');
         expect(mainElement).toHaveClass('flex-1', 'flex', 'items-center', 'justify-center');
+    });
+
+    it('records an in-app navigation on mount', () => {
+        render(<RootLayout />);
+
+        expect(mockRecordInAppNavigation).toHaveBeenCalled();
     });
 });
