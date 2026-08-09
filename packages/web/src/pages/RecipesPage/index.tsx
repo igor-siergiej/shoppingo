@@ -161,7 +161,7 @@ const RecipesPage = () => {
     );
 
     const pageContent = (
-        <div className="flex flex-col mb-auto">
+        <div className="flex flex-col">
             {searchQuery.trim() ? (
                 <div>
                     <h2 className="text-lg font-semibold mb-3 text-foreground">Results ({searchResults.length})</h2>
