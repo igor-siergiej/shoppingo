@@ -1,8 +1,6 @@
-import { Bell, BellRing, Download, Loader2, LogOut, Moon, RefreshCw, Sun } from 'lucide-react';
+import { Bell, Download, Loader2, LogOut, Moon, RefreshCw, Sun } from 'lucide-react';
 import { motion } from 'motion/react';
-import { type ReactNode, useState } from 'react';
-import { toast } from 'sonner';
-import { type ReminderRunResult, runDailyReminder } from '../../../api';
+import type { ReactNode } from 'react';
 import { Button } from '../../../components/ui/button';
 import { Switch } from '../../../components/ui/switch';
 import { useTheme } from '../../../contexts/ThemeContext';
@@ -79,45 +77,6 @@ const NotificationToggle = () => {
     );
 };
 
-const ERROR_TOAST = { style: { backgroundColor: '#ef4444', color: '#ffffff' } };
-
-const showReminderToast = (r: ReminderRunResult): void => {
-    if (!r.configured) {
-        toast.error('Push not configured on the server (VAPID keys missing).', ERROR_TOAST);
-    } else if (r.due === 0) {
-        toast('No todos due today — nothing to send.');
-    } else if (r.subscriptions === 0) {
-        toast.warning('1+ todos due, but no devices subscribed. Enable notifications on this device.');
-    } else {
-        toast.success(`Sent ${r.sent}/${r.subscriptions} push · ${r.due} due across ${r.owners} owner(s).`);
-    }
-};
-
-const TestReminderButton = () => {
-    const { isSupported, isSubscribed } = usePushNotifications();
-    const [isSending, setIsSending] = useState(false);
-    if (!isSupported || !isSubscribed) return null;
-
-    const handleClick = async () => {
-        if (isSending) return;
-        setIsSending(true);
-        try {
-            showReminderToast(await runDailyReminder());
-        } catch {
-            toast.error('Failed to trigger reminder', ERROR_TOAST);
-        } finally {
-            setIsSending(false);
-        }
-    };
-
-    return (
-        <Button variant="outline" onClick={() => void handleClick()} disabled={isSending} className={OUTLINE_BTN}>
-            {isSending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <BellRing className="h-4 w-4 mr-2" />}
-            Send test reminder
-        </Button>
-    );
-};
-
 interface UpdateButtonProps {
     hasUpdate: boolean;
     isCheckingForUpdate: boolean;
@@ -187,10 +146,6 @@ export const HamburgerMenu = ({ onClose, onLogout }: HamburgerMenuProps) => {
 
             <MenuItem delay={0.1}>
                 <NotificationToggle />
-            </MenuItem>
-
-            <MenuItem delay={0.1}>
-                <TestReminderButton />
             </MenuItem>
 
             <MenuItem delay={0.1}>
