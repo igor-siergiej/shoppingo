@@ -42,7 +42,10 @@ const RecipeDetailPage = () => {
     const queryClient = useQueryClient();
     const { updateRecipe, deleteRecipe } = useRecipeMutations(user ?? undefined);
     const { confirm, isOpen, config: confirmConfig, handleConfirm, handleCancel } = useConfirmation();
-    const { addUserMutation, removeUserMutation } = useManageRecipeUsers({ recipeId: recipeId ?? '' });
+    const { addUserMutation, removeUserMutation } = useManageRecipeUsers({
+        recipeId: recipeId ?? '',
+        userId: user?.id ?? '',
+    });
 
     const [isEditingTitle, setIsEditingTitle] = useState(false);
     const [editedTitle, setEditedTitle] = useState('');

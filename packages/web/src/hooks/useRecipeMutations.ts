@@ -3,9 +3,11 @@ import { useQueryClient } from 'react-query';
 import { drainOutbox } from '../offline/drainer';
 import { applyRecipeIntent } from '../offline/intents';
 import { type OutboxIntent, outboxStore } from '../offline/outboxStore';
+import { useFriends } from './useFriends';
 
 export const useRecipeMutations = (user: User | undefined) => {
     const queryClient = useQueryClient();
+    const { friends } = useFriends();
     const userId = user?.id ?? '';
 
     const enqueueRecipe = async (op: OutboxIntent['op'], targetId: string, payload: Record<string, unknown>) => {
@@ -39,6 +41,7 @@ export const useRecipeMutations = (user: User | undefined) => {
             instructions?: string[]
         ): Promise<string> => {
             const id = crypto.randomUUID();
+            const sharedFriends = friends.filter((f) => selectedUsers.includes(f.id));
             await enqueueRecipe('recipe.create', id, {
                 title,
                 selectedUsers,
@@ -46,7 +49,7 @@ export const useRecipeMutations = (user: User | undefined) => {
                 link,
                 instructions,
                 user,
-                users: user ? [user] : [],
+                users: user ? [user, ...sharedFriends] : sharedFriends,
                 ownerId: userId,
             });
             return id;

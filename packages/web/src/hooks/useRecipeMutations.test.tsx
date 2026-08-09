@@ -5,6 +5,12 @@ import { QueryClient, QueryClientProvider } from 'react-query';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('../offline/drainer', () => ({ drainOutbox: vi.fn().mockResolvedValue(undefined) }));
+vi.mock('./useFriends', () => ({
+    useFriends: () => ({
+        friends: [{ id: 'friend-1', username: 'alice' }],
+        isLoading: false,
+    }),
+}));
 
 import { outboxStore } from '../offline/outboxStore';
 import { useRecipeMutations } from './useRecipeMutations';
@@ -30,6 +36,22 @@ describe('useRecipeMutations', () => {
         expect(outboxStore.peekAll()[0]).toMatchObject({ op: 'recipe.create', entityType: 'recipe', scope: 'user-1' });
         const cached = client.getQueryData(['recipes', 'user-1']) as Array<{ title: string }>;
         expect(cached.map((r) => r.title)).toContain('Pasta');
+    });
+
+    it('createRecipe includes selected friends in the optimistic users list', async () => {
+        const client = new QueryClient();
+        client.setQueryData(['recipes', 'user-1'], []);
+        const { result } = renderHook(() => useRecipeMutations(user), { wrapper: wrap(client) });
+        await act(async () => {
+            await result.current.createRecipe('Pasta', ['friend-1'], []);
+        });
+        await waitFor(() => expect(outboxStore.peekAll()).toHaveLength(1));
+        const cached = client.getQueryData(['recipes', 'user-1']) as Array<{
+            title: string;
+            users: Array<{ id: string }>;
+        }>;
+        const created = cached.find((r) => r.title === 'Pasta');
+        expect(created?.users.map((u) => u.id).sort()).toEqual(['friend-1', 'user-1']);
     });
 
     it('deleteRecipe enqueues a recipe.delete intent', async () => {
