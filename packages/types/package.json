@@ -1,6 +1,6 @@
 {
   "name": "@shoppingo/types",
-  "version": "1.59.6",
+  "version": "1.59.7",
   "main": "src/index.ts",
   "exports": {
     ".": "./src/index.ts"

@@ -1,3 +1,10 @@
+## [1.59.7](https://github.com/igor-siergiej/shoppingo/compare/v1.59.6...v1.59.7) (2026-08-09)
+
+
+### Bug Fixes
+
+* **web:** swap each section's own toolbar icon for back, harden search-input autofill ([#126](https://github.com/igor-siergiej/shoppingo/issues/126)) ([acc231b](https://github.com/igor-siergiej/shoppingo/commit/acc231b319c2ecf1d19e73aab3c583a740e6cca0))
+
 ## [1.59.6](https://github.com/igor-siergiej/shoppingo/compare/v1.59.5...v1.59.6) (2026-08-09)
 
 

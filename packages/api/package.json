@@ -1,6 +1,6 @@
 {
   "name": "@shoppingo/api",
-  "version": "1.59.6",
+  "version": "1.59.7",
   "scripts": {
     "start": "bun --watch src/index.ts",
     "start:e2e": "bun src/index.ts",
