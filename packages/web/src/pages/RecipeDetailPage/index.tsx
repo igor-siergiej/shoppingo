@@ -24,6 +24,7 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Skeleton } from '../../components/ui/skeleton';
 import { useConfirmation } from '../../hooks/useConfirmation';
+import { useGoBack } from '../../hooks/useGoBack';
 import { useManageRecipeUsers } from '../../hooks/useManageRecipeUsers';
 import { useRecipeMutations } from '../../hooks/useRecipeMutations';
 import { logger } from '../../utils/logger';
@@ -36,6 +37,7 @@ import { InstructionsSection } from './InstructionsSection';
 const RecipeDetailPage = () => {
     const { recipeId } = useParams<{ recipeId: string }>();
     const navigate = useNavigate();
+    const handleGoBack = useGoBack('/recipes');
     const { user } = useUser();
     const queryClient = useQueryClient();
     const { updateRecipe, deleteRecipe } = useRecipeMutations(user ?? undefined);
@@ -78,10 +80,6 @@ const RecipeDetailPage = () => {
     if (!recipeId) {
         return <div className="text-center py-8 text-muted-foreground">Invalid recipe ID</div>;
     }
-
-    const handleGoBack = () => {
-        navigate('/recipes');
-    };
 
     const handleAddIngredient = async (name: string, quantity?: number, unit?: string) => {
         if (!recipe) return;

@@ -68,6 +68,23 @@ test.describe('Recipe detail page', () => {
         await authenticatedPage.waitForURL('/recipes');
     });
 
+    test('back button after in-app navigation does not leave the browser back button pointing at the recipe again', async ({
+        authenticatedPage,
+    }) => {
+        const recipe = await apiCreateRecipe('Back Nav Recipe');
+
+        await authenticatedPage.goto('/recipes');
+        await authenticatedPage.getByRole('button', { name: 'Back Nav Recipe' }).click();
+        await authenticatedPage.waitForURL(`/recipes/${recipe.id}`);
+        await authenticatedPage.locator('h1').last().waitFor({ timeout: 10000 });
+
+        await authenticatedPage.getByRole('button', { name: 'Go back' }).click();
+        await authenticatedPage.waitForURL('/recipes');
+
+        await authenticatedPage.goBack();
+        await expect(authenticatedPage).not.toHaveURL(`/recipes/${recipe.id}`);
+    });
+
     test('ingredient swipe left shows delete button', async ({ authenticatedPage }) => {
         const recipe = await apiCreateRecipe('My Recipe', [{ name: 'Garlic' }]);
         await authenticatedPage.goto(`/recipes/${recipe.id}`);

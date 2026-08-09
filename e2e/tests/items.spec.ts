@@ -79,6 +79,29 @@ test.describe('Items page', () => {
         await authenticatedPage.waitForURL('/');
     });
 
+    test('back button after in-app navigation does not leave the browser back button pointing at Items again', async ({
+        authenticatedPage,
+    }) => {
+        await apiCreateList(LIST_TITLE);
+
+        // Arrive at Items via real in-app navigation (not a direct goto), so
+        // there's genuine SPA history to pop into.
+        await authenticatedPage.goto('/');
+        await authenticatedPage.getByRole('button', { name: LIST_TITLE }).click();
+        await authenticatedPage.waitForURL(`/list/${LIST_TITLE}`);
+
+        await authenticatedPage.getByRole('button', { name: 'Go back' }).click();
+        await authenticatedPage.waitForURL('/');
+
+        // With the old behaviour (navigate(path) push), history was
+        // [/, /list/Groceries, /] and browser back would land back on
+        // /list/Groceries. With real back-navigation, browser back should
+        // instead leave the SPA's list history (landing wherever the page
+        // was loaded from, not back on the Items page).
+        await authenticatedPage.goBack();
+        await expect(authenticatedPage).not.toHaveURL(`/list/${LIST_TITLE}`);
+    });
+
     test('swipe left reveals delete — deletes item', async ({ authenticatedPage }) => {
         await apiCreateList(LIST_TITLE);
         await apiAddItem(LIST_TITLE, 'Butter');

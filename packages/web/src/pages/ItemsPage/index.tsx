@@ -2,7 +2,7 @@ import type { ListType } from '@shoppingo/types';
 import { ListType as ListTypeEnum } from '@shoppingo/types';
 import { useEffect, useState } from 'react';
 import { useQuery } from 'react-query';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { getListQuery } from '../../api';
 import ItemCheckBoxList from '../../components/ItemCheckBoxList';
 import { ItemsSkeleton } from '../../components/LoadingSkeleton';
@@ -19,6 +19,7 @@ import {
 } from '../../components/ui/alert-dialog';
 import { usePullToRefreshContext } from '../../contexts/PullToRefreshContext';
 import { useConfirmation } from '../../hooks/useConfirmation';
+import { useGoBack } from '../../hooks/useGoBack';
 import { useItemPageMutations } from '../../hooks/useItemPageMutations';
 import { logger } from '../../utils/logger';
 import { EmptyState } from './EmptyState';
@@ -26,7 +27,7 @@ import { ErrorState } from './ErrorState';
 
 const ItemsPage = () => {
     const { listTitle } = useParams();
-    const navigate = useNavigate();
+    const handleGoBack = useGoBack('/');
     const [currentListType, setCurrentListType] = useState<ListType>(ListTypeEnum.SHOPPING);
     const { confirm, isOpen, config: confirmConfig, handleConfirm, handleCancel } = useConfirmation();
 
@@ -101,10 +102,6 @@ const ItemsPage = () => {
                 }
             );
         });
-    };
-
-    const handleGoBack = () => {
-        navigate('/');
     };
 
     return (
