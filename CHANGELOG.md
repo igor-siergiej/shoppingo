@@ -1,3 +1,10 @@
+## [1.59.6](https://github.com/igor-siergiej/shoppingo/compare/v1.59.5...v1.59.6) (2026-08-09)
+
+
+### Bug Fixes
+
+* **web:** sync boot theme-color and add dark PWA manifest to stop flashbang ([#125](https://github.com/igor-siergiej/shoppingo/issues/125)) ([cb7ea41](https://github.com/igor-siergiej/shoppingo/commit/cb7ea411ded91bcbd0ecf6951d012ceb3f5bef36))
+
 ## [1.59.5](https://github.com/igor-siergiej/shoppingo/compare/v1.59.4...v1.59.5) (2026-08-09)
 
 
