@@ -78,6 +78,17 @@ describe('RecipesPage', () => {
         expect(searchInput).not.toHaveAttribute('type', 'search');
     });
 
+    it('renders the search input with an inset focus ring', () => {
+        render(
+            <MemoryRouter>
+                <RecipesPage />
+            </MemoryRouter>
+        );
+
+        const searchInput = screen.getByPlaceholderText('Search recipes...');
+        expect(searchInput).toHaveClass('focus-visible:ring-inset');
+    });
+
     it('passes refetch function to ToolBar for recipe updates', async () => {
         // Test that refetch is available for recipe image updates
         expect(true).toBe(true);
