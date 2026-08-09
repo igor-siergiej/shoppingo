@@ -1,3 +1,10 @@
+## [1.59.3](https://github.com/igor-siergiej/shoppingo/compare/v1.59.2...v1.59.3) (2026-08-09)
+
+
+### Bug Fixes
+
+* **web:** stop pull-to-refresh false-triggering while scrolling recipes ([#122](https://github.com/igor-siergiej/shoppingo/issues/122)) ([e4596d4](https://github.com/igor-siergiej/shoppingo/commit/e4596d49f773d0fdb2b40406984155b9be2f61eb))
+
 ## [1.59.2](https://github.com/igor-siergiej/shoppingo/compare/v1.59.1...v1.59.2) (2026-08-09)
 
 
