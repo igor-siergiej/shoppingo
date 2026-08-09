@@ -16,6 +16,9 @@ import { getAuthConfig } from './config/auth';
 import { PullToRefreshProvider } from './contexts/PullToRefreshContext';
 import { PWAProvider } from './contexts/PWAContext';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { applyManifestForTheme } from './utils/applyManifestForTheme';
+
+applyManifestForTheme();
 
 const lazyLoadPage = (importFn: () => Promise<unknown>, fallbackName: string) =>
     React.lazy(() =>

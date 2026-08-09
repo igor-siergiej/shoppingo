@@ -1,0 +1,28 @@
+const STORAGE_KEY = 'theme';
+
+type Theme = 'light' | 'dark';
+
+const resolveTheme = (): Theme => {
+    try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored === 'light' || stored === 'dark') {
+            return stored;
+        }
+    } catch {
+        // localStorage unavailable, fall through to system preference
+    }
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+};
+
+// Points the manifest link at the theme-appropriate variant so future
+// installs and browser manifest re-validations pick up matching native
+// splash-screen colors. Cannot repaint an already-cached splash for an
+// already-installed PWA instantly — browsers only revalidate periodically.
+export const applyManifestForTheme = (doc: Document = document): void => {
+    const link = doc.querySelector<HTMLLinkElement>('link[rel="manifest"]');
+    if (!link) {
+        return;
+    }
+    const theme = resolveTheme();
+    link.setAttribute('href', theme === 'dark' ? '/manifest-dark.webmanifest' : '/manifest.webmanifest');
+};
