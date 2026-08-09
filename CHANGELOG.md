@@ -1,3 +1,10 @@
+## [1.59.5](https://github.com/igor-siergiej/shoppingo/compare/v1.59.4...v1.59.5) (2026-08-09)
+
+
+### Bug Fixes
+
+* remove leftover 'send test reminder' debug trigger ([#124](https://github.com/igor-siergiej/shoppingo/issues/124)) ([380460c](https://github.com/igor-siergiej/shoppingo/commit/380460c43392345574c8807724169b1ee78c40b2))
+
 ## [1.59.4](https://github.com/igor-siergiej/shoppingo/compare/v1.59.3...v1.59.4) (2026-08-09)
 
 
