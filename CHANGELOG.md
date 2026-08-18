@@ -1,3 +1,10 @@
+## [1.59.8](https://github.com/igor-siergiej/shoppingo/compare/v1.59.7...v1.59.8) (2026-08-18)
+
+
+### Bug Fixes
+
+* **web:** recipe import UX improvements ([#127](https://github.com/igor-siergiej/shoppingo/issues/127)) ([58f0e83](https://github.com/igor-siergiej/shoppingo/commit/58f0e8338c612fa6639ed17f994ee583899c77c0))
+
 ## [1.59.7](https://github.com/igor-siergiej/shoppingo/compare/v1.59.6...v1.59.7) (2026-08-09)
 
 

@@ -17,7 +17,7 @@ import type { NotificationService } from '../domain/NotificationService';
 import type { PushSubscriptionRepository } from '../domain/PushSubscriptionRepository';
 import type { RecipeImageService } from '../domain/RecipeImageService';
 import type { RecipeImportService } from '../domain/RecipeImportService';
-import type { PageFetcher, RecipeParser, RecipeTextExtractor } from '../domain/RecipeImportService/types';
+import type { ImageFetcher, PageFetcher, RecipeParser, RecipeTextExtractor } from '../domain/RecipeImportService/types';
 import type { RecipeRepository } from '../domain/RecipeRepository';
 import type { RecipeService } from '../domain/RecipeService';
 import type { TodoReminderService } from '../domain/TodoReminderService';
@@ -55,6 +55,7 @@ export enum DependencyToken {
     RecipeImageGenerator = 'RecipeImageGenerator',
     RecipeImageService = 'RecipeImageService',
     PageFetcher = 'PageFetcher',
+    ImageFetcher = 'ImageFetcher',
     RecipeTextExtractor = 'RecipeTextExtractor',
     RecipeParser = 'RecipeParser',
     RecipeImportService = 'RecipeImportService',
@@ -90,6 +91,7 @@ export type Dependencies = {
     [DependencyToken.RecipeImageGenerator]: ImageGenerator;
     [DependencyToken.RecipeImageService]: RecipeImageService;
     [DependencyToken.PageFetcher]: PageFetcher;
+    [DependencyToken.ImageFetcher]: ImageFetcher;
     [DependencyToken.RecipeTextExtractor]: RecipeTextExtractor;
     [DependencyToken.RecipeParser]: RecipeParser;
     [DependencyToken.RecipeImportService]: RecipeImportService;
