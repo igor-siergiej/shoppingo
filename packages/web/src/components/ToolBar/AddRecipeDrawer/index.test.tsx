@@ -129,6 +129,25 @@ describe('AddRecipeDrawer', () => {
         });
     });
 
+    it('disables the instructions textarea while an import is in flight', async () => {
+        vi.mocked(importRecipe).mockImplementation(() => new Promise(() => {})); // never resolves
+        render(
+            <AddRecipeDrawer
+                open={true}
+                onOpenChange={mockOnOpenChange}
+                onAdd={mockOnAdd}
+                initialLink="https://example.com/recipe"
+            />
+        );
+
+        await userEvent.click(screen.getByRole('button', { name: /Import/ }));
+
+        const textarea = screen.getByPlaceholderText(/Paste instructions here/) as HTMLTextAreaElement;
+        await waitFor(() => {
+            expect(textarea.disabled).toBe(true);
+        });
+    });
+
     it('closes the drawer after recipe creation', async () => {
         mockOnAdd.mockResolvedValue({ id: 'recipe-123' });
 

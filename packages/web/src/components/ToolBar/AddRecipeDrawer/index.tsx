@@ -403,7 +403,7 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd, initialLink, autoIm
                                             setShowPasteArea(false);
                                         }
                                     }}
-                                    disabled={isLoading}
+                                    disabled={isLoading || isImporting}
                                     className="min-h-[80px] resize-none border border-foreground/30"
                                 />
                             ) : (
