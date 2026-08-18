@@ -30,7 +30,7 @@ test.describe('Login', () => {
         await loginPage.goto();
         await loginPage.login('testuser', 'password123');
         await page.waitForURL('/');
-        await expect(page.getByText('No lists yet')).toBeVisible();
+        await expect(page.getByRole('button', { name: 'Menu' })).toBeVisible();
     });
 
     test('link navigates to register page', async ({ page, loginPage }) => {
@@ -82,7 +82,7 @@ test.describe('Register', () => {
 test.describe('Logout', () => {
     test('logout redirects to /login', async ({ authenticatedPage }) => {
         await authenticatedPage.goto('/');
-        await expect(authenticatedPage.getByText('No lists yet')).toBeVisible();
+        await expect(authenticatedPage.getByRole('button', { name: 'Menu' })).toBeVisible();
         await authenticatedPage.getByRole('button', { name: 'Menu' }).click();
         await authenticatedPage.getByRole('button', { name: 'Log out' }).click();
         await authenticatedPage.waitForURL('/login');
