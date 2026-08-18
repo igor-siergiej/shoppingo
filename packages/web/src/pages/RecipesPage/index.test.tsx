@@ -1,5 +1,6 @@
 import type { Recipe } from '@shoppingo/types';
 import { render, screen } from '@testing-library/react';
+import { useQuery } from 'react-query';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import RecipesPage from './index';
@@ -24,12 +25,12 @@ vi.mock('@imapps/web-utils', () => ({
 }));
 
 vi.mock('react-query', () => ({
-    useQuery: () => ({
+    useQuery: vi.fn(() => ({
         data: [] as Recipe[],
         isLoading: false,
         isError: false,
         refetch: vi.fn(),
-    }),
+    })),
     useQueryClient: () => ({
         getQueryData: vi.fn(() => []),
         invalidateQueries: vi.fn(),
@@ -87,6 +88,30 @@ describe('RecipesPage', () => {
 
         const searchInput = screen.getByPlaceholderText('Search recipes...');
         expect(searchInput).toHaveClass('focus-visible:ring-inset');
+    });
+
+    it('renders owned and shared recipes together, badge distinguishing shared ones', () => {
+        vi.mocked(useQuery).mockReturnValue({
+            data: [
+                { id: 'r1', title: 'Owned Recipe', ownerId: 'user-1', ingredients: [], coverImageKey: 'img-1' },
+                { id: 'r2', title: 'Shared Recipe', ownerId: 'user-2', ingredients: [] },
+            ],
+            isLoading: false,
+            isError: false,
+            refetch: vi.fn(),
+        } as ReturnType<typeof useQuery>);
+
+        render(
+            <MemoryRouter>
+                <RecipesPage />
+            </MemoryRouter>
+        );
+
+        expect(screen.getByText('Owned Recipe')).toBeInTheDocument();
+        expect(screen.getByText('Shared Recipe')).toBeInTheDocument();
+        // Only one "Shared" badge, on the non-owned card — not a duplicated section heading.
+        expect(screen.getAllByText('Shared').length).toBe(1);
+        expect(screen.queryByText('No recipes yet')).not.toBeInTheDocument();
     });
 
     it('passes refetch function to ToolBar for recipe updates', async () => {
