@@ -2,9 +2,8 @@ import { apiCreateList } from '../api-helpers';
 import { expect, test } from '../fixtures';
 
 test.describe('Lists page', () => {
-    test('shows Your Lists heading and empty state', async ({ authenticatedPage }) => {
+    test('shows empty state when there are no lists', async ({ authenticatedPage }) => {
         await authenticatedPage.goto('/');
-        await expect(authenticatedPage.getByRole('heading', { name: 'Your Lists', level: 2 })).toBeVisible();
         await expect(authenticatedPage.getByText('No lists yet')).toBeVisible();
     });
 

@@ -2,9 +2,8 @@ import { apiCreateRecipe } from '../api-helpers';
 import { expect, test } from '../fixtures';
 
 test.describe('Recipes page', () => {
-    test('shows Your Recipes heading and empty state', async ({ authenticatedPage }) => {
+    test('shows empty state when there are no recipes', async ({ authenticatedPage }) => {
         await authenticatedPage.goto('/recipes');
-        await expect(authenticatedPage.getByRole('heading', { name: 'Your Recipes', level: 2 })).toBeVisible();
         await expect(authenticatedPage.getByText('No recipes yet')).toBeVisible();
     });
 

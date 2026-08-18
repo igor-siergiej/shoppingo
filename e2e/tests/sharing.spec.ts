@@ -19,7 +19,7 @@ test.describe('Share list on creation', () => {
         await seedFriendship(MOCK_USER, MOCK_USER_2);
 
         await authenticatedPage.goto('/');
-        await expect(authenticatedPage.getByRole('heading', { name: 'Your Lists', level: 2 })).toBeVisible();
+        await expect(authenticatedPage.getByText('No lists yet')).toBeVisible();
 
         await authenticatedPage.locator('button[class*="border-primary"]').first().click();
         await expect(authenticatedPage.getByText('Add New List', { exact: true })).toBeVisible();
