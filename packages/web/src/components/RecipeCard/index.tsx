@@ -1,15 +1,17 @@
 import type { Recipe } from '@shoppingo/types';
 import { ImageOff } from 'lucide-react';
+import { Badge } from '../ui/badge';
 import { Card, CardContent } from '../../components/ui/card';
 import { Skeleton } from '../../components/ui/skeleton';
 import { useAuthedImage } from '../../hooks/useAuthedImage';
 
 interface RecipeCardProps {
     recipe: Recipe;
+    isOwner: boolean;
     onClick: () => void;
 }
 
-export const RecipeCard = ({ recipe, onClick }: RecipeCardProps) => {
+export const RecipeCard = ({ recipe, isOwner, onClick }: RecipeCardProps) => {
     const { imageUrl, hasError: hasImageError } = useAuthedImage(recipe.coverImageKey);
 
     const ingredientCount = recipe.ingredients?.length ?? 0;
@@ -50,9 +52,12 @@ export const RecipeCard = ({ recipe, onClick }: RecipeCardProps) => {
                 <h3 className="font-semibold text-sm line-clamp-1 text-foreground group-hover:text-primary transition-colors">
                     {recipe.title}
                 </h3>
-                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-medium bg-primary/10 text-primary rounded w-fit">
-                    {ingredientCount} {ingredientLabel}
-                </span>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-medium bg-primary/10 text-primary rounded w-fit">
+                        {ingredientCount} {ingredientLabel}
+                    </span>
+                    {!isOwner && <Badge variant="secondary">Shared</Badge>}
+                </div>
             </CardContent>
         </Card>
     );
