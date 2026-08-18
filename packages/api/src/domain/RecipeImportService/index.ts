@@ -4,14 +4,7 @@ import * as cheerio from 'cheerio';
 
 import type { IdGenerator } from '../IdGenerator';
 import type { IngredientStructurer } from '../IngredientStructurer/types';
-import type {
-    ImageFetcher,
-    PageFetcher,
-    ParsedRecipe,
-    RecipeDraft,
-    RecipeParser,
-    RecipeTextExtractor,
-} from './types';
+import type { ImageFetcher, PageFetcher, ParsedRecipe, RecipeDraft, RecipeParser, RecipeTextExtractor } from './types';
 
 const MIN_INGREDIENTS = 2;
 const MAX_ITEMS = 100;

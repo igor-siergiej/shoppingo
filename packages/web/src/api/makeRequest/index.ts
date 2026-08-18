@@ -73,7 +73,14 @@ const refreshAndRetry = async (
     }
 };
 
-export const makeRequest = async ({ pathname, method, operationString, body, queryParams, signal }: MakeRequestProps) => {
+export const makeRequest = async ({
+    pathname,
+    method,
+    operationString,
+    body,
+    queryParams,
+    signal,
+}: MakeRequestProps) => {
     const authConfig = getAuthConfig();
 
     try {

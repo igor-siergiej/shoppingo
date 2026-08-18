@@ -10,9 +10,11 @@ describe('HttpImageFetcher', () => {
 
     it('returns the image bytes and content type on success', async () => {
         const bytes = new Uint8Array([1, 2, 3, 4]);
-        global.fetch = vi.fn().mockResolvedValue(
-            new Response(bytes, { status: 200, headers: { 'content-type': 'image/jpeg' } })
-        ) as unknown as typeof fetch;
+        global.fetch = vi
+            .fn()
+            .mockResolvedValue(
+                new Response(bytes, { status: 200, headers: { 'content-type': 'image/jpeg' } })
+            ) as unknown as typeof fetch;
 
         const fetcher = new HttpImageFetcher();
         const result = await fetcher.fetchImage('https://example.com/cover.jpg');
@@ -22,9 +24,11 @@ describe('HttpImageFetcher', () => {
     });
 
     it('throws a 415 when the response is not an image', async () => {
-        global.fetch = vi.fn().mockResolvedValue(
-            new Response('<html></html>', { status: 200, headers: { 'content-type': 'text/html' } })
-        ) as unknown as typeof fetch;
+        global.fetch = vi
+            .fn()
+            .mockResolvedValue(
+                new Response('<html></html>', { status: 200, headers: { 'content-type': 'text/html' } })
+            ) as unknown as typeof fetch;
 
         const fetcher = new HttpImageFetcher();
         await expect(fetcher.fetchImage('https://example.com/not-an-image')).rejects.toMatchObject({ status: 415 });
@@ -46,9 +50,11 @@ describe('HttpImageFetcher', () => {
 
     it('throws a 413 when the image exceeds the byte cap', async () => {
         const huge = new Uint8Array(20);
-        global.fetch = vi.fn().mockResolvedValue(
-            new Response(huge, { status: 200, headers: { 'content-type': 'image/png' } })
-        ) as unknown as typeof fetch;
+        global.fetch = vi
+            .fn()
+            .mockResolvedValue(
+                new Response(huge, { status: 200, headers: { 'content-type': 'image/png' } })
+            ) as unknown as typeof fetch;
 
         const fetcher = new HttpImageFetcher({ maxBytes: 10 });
         await expect(fetcher.fetchImage('https://example.com/huge.png')).rejects.toMatchObject({ status: 413 });
