@@ -93,6 +93,8 @@ export class RecipeImportService {
     }
 
     /** Proxy-fetch a scraped recipe's cover image so the browser can attach it without hitting third-party CORS. */
+    // Invoked via the DI container (getRecipeImportService().importImage); fallow can't trace that indirection.
+    // fallow-ignore-next-line unused-class-member
     async importImage(url: string): Promise<{ buffer: Buffer; contentType: string }> {
         const parsed = this.parseUrl(url);
         if (!this.imageFetcher) {
