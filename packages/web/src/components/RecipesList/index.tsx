@@ -5,11 +5,12 @@ import { RecipeCard } from '../RecipeCard';
 
 interface RecipesListProps {
     recipes: Recipe[];
+    currentUserId: string;
     onRecipeClick: (recipeId: string) => void;
     isLoading?: boolean;
 }
 
-export const RecipesList = ({ recipes, onRecipeClick, isLoading }: RecipesListProps) => {
+export const RecipesList = ({ recipes, currentUserId, onRecipeClick, isLoading }: RecipesListProps) => {
     if (isLoading) {
         return (
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 px-2">
@@ -42,7 +43,12 @@ export const RecipesList = ({ recipes, onRecipeClick, isLoading }: RecipesListPr
     return (
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 px-2">
             {recipes.map((recipe) => (
-                <RecipeCard key={recipe.id} recipe={recipe} onClick={() => onRecipeClick(recipe.id)} />
+                <RecipeCard
+                    key={recipe.id}
+                    recipe={recipe}
+                    isOwner={recipe.ownerId === currentUserId}
+                    onClick={() => onRecipeClick(recipe.id)}
+                />
             ))}
         </div>
     );
