@@ -1,3 +1,10 @@
+## [1.59.9](https://github.com/igor-siergiej/shoppingo/compare/v1.59.8...v1.59.9) (2026-08-18)
+
+
+### Bug Fixes
+
+* **web:** merge shared/personal lists and recipes into one view ([#128](https://github.com/igor-siergiej/shoppingo/issues/128)) ([2aed5b9](https://github.com/igor-siergiej/shoppingo/commit/2aed5b9e0a96a03fbb790a7934c57766e86dc7a9))
+
 ## [1.59.8](https://github.com/igor-siergiej/shoppingo/compare/v1.59.7...v1.59.8) (2026-08-18)
 
 
