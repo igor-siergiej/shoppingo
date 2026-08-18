@@ -12,5 +12,5 @@ test('login navigates to homepage', async ({ page }) => {
     await page.getByRole('button', { name: 'Login' }).click();
 
     await page.waitForURL('/');
-    await expect(page.getByRole('heading', { name: 'Your Lists', level: 2 })).toBeVisible();
+    await expect(page.getByText('No lists yet')).toBeVisible();
 });
