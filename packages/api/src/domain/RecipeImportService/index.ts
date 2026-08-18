@@ -4,7 +4,7 @@ import * as cheerio from 'cheerio';
 
 import type { IdGenerator } from '../IdGenerator';
 import type { IngredientStructurer } from '../IngredientStructurer/types';
-import type { PageFetcher, ParsedRecipe, RecipeDraft, RecipeParser, RecipeTextExtractor } from './types';
+import type { ImageFetcher, PageFetcher, ParsedRecipe, RecipeDraft, RecipeParser, RecipeTextExtractor } from './types';
 
 const MIN_INGREDIENTS = 2;
 const MAX_ITEMS = 100;
@@ -37,7 +37,8 @@ export class RecipeImportService {
         private readonly structurer: IngredientStructurer,
         private readonly logger?: Logger,
         private readonly llmExtractor?: RecipeTextExtractor,
-        private readonly llmParser?: RecipeParser
+        private readonly llmParser?: RecipeParser,
+        private readonly imageFetcher?: ImageFetcher
     ) {}
 
     // Invoked via the DI container (getRecipeImportService().importFromUrl); fallow can't trace that indirection.
@@ -89,6 +90,17 @@ export class RecipeImportService {
             ...(draft.cookTime !== undefined && { cookTime: draft.cookTime }),
             ...(draft.recipeYield !== undefined && { recipeYield: draft.recipeYield }),
         };
+    }
+
+    /** Proxy-fetch a scraped recipe's cover image so the browser can attach it without hitting third-party CORS. */
+    // Invoked via the DI container (getRecipeImportService().importImage); fallow can't trace that indirection.
+    // fallow-ignore-next-line unused-class-member
+    async importImage(url: string): Promise<{ buffer: Buffer; contentType: string }> {
+        const parsed = this.parseUrl(url);
+        if (!this.imageFetcher) {
+            throw Object.assign(new Error('Image proxy not configured'), { status: 501 });
+        }
+        return this.imageFetcher.fetchImage(parsed);
     }
 
     private parseUrl(url: string): string {

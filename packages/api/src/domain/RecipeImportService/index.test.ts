@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'bun:test';
+import { beforeEach, describe, expect, it, vi } from 'bun:test';
 
 import type { IdGenerator } from '../IdGenerator';
 import type { IngredientStructurer, ParsedIngredient } from '../IngredientStructurer/types';
@@ -571,6 +571,55 @@ describe('RecipeImportService', () => {
 
             expect(parser.calls[0]).toContain('Readable prose fallback.');
             expect(parser.calls[0].length).toBeLessThanOrEqual(6000);
+        });
+    });
+
+    describe('importImage', () => {
+        const mockFetcher = { fetchPage: vi.fn() };
+        const mockIdGenerator = { generate: vi.fn(() => 'id-1') };
+        const mockStructurer = {
+            strategy: 'rule',
+            structure: vi.fn(async (lines: string[]) => lines.map((name) => ({ name }))),
+        };
+        const mockImageFetcher = { fetchImage: vi.fn() };
+
+        it('rejects an invalid URL before calling the image fetcher', async () => {
+            const service = new RecipeImportService(
+                mockFetcher,
+                mockIdGenerator,
+                mockStructurer,
+                undefined,
+                undefined,
+                undefined,
+                mockImageFetcher
+            );
+
+            await expect(service.importImage('not-a-url')).rejects.toMatchObject({ status: 400 });
+            expect(mockImageFetcher.fetchImage).not.toHaveBeenCalled();
+        });
+
+        it('delegates to the injected image fetcher for a valid URL', async () => {
+            mockImageFetcher.fetchImage.mockResolvedValue({ buffer: Buffer.from([1, 2]), contentType: 'image/png' });
+            const service = new RecipeImportService(
+                mockFetcher,
+                mockIdGenerator,
+                mockStructurer,
+                undefined,
+                undefined,
+                undefined,
+                mockImageFetcher
+            );
+
+            const result = await service.importImage('https://example.com/cover.png');
+
+            expect(mockImageFetcher.fetchImage).toHaveBeenCalledWith('https://example.com/cover.png');
+            expect(result.contentType).toBe('image/png');
+        });
+
+        it('throws a 501 when no image fetcher is configured', async () => {
+            const service = new RecipeImportService(mockFetcher, mockIdGenerator, mockStructurer);
+
+            await expect(service.importImage('https://example.com/cover.png')).rejects.toMatchObject({ status: 501 });
         });
     });
 });

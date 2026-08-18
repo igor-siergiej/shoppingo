@@ -4,6 +4,7 @@ export interface MakeRequestProps {
     operationString: string;
     body?: BodyInit;
     queryParams?: Record<string, string>;
+    signal?: AbortSignal;
 }
 
 export enum MethodType {

@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { importRecipe } from '../../../api';
+import { importRecipe, importRecipeImage } from '../../../api';
 import { AddRecipeDrawer } from './index';
 
 vi.mock('../../../hooks/useFriends', () => ({
@@ -17,6 +17,7 @@ vi.mock('sonner', () => ({
 
 vi.mock('../../../api', () => ({
     importRecipe: vi.fn(),
+    importRecipeImage: vi.fn(),
 }));
 
 describe('AddRecipeDrawer', () => {
@@ -127,6 +128,192 @@ describe('AddRecipeDrawer', () => {
             expect(screen.getByText('Step two')).toBeTruthy();
             expect(screen.getByText('Step three')).toBeTruthy();
         });
+    });
+
+    it('disables the instructions textarea while an import is in flight', async () => {
+        vi.mocked(importRecipe).mockImplementation(() => new Promise(() => {})); // never resolves
+        render(
+            <AddRecipeDrawer
+                open={true}
+                onOpenChange={mockOnOpenChange}
+                onAdd={mockOnAdd}
+                initialLink="https://example.com/recipe"
+            />
+        );
+
+        await userEvent.click(screen.getByRole('button', { name: /Import/ }));
+
+        const textarea = screen.getByPlaceholderText(/Paste instructions here/) as HTMLTextAreaElement;
+        await waitFor(() => {
+            expect(textarea.disabled).toBe(true);
+        });
+    });
+
+    it('shows a persistent error banner with a Retry action when import fails', async () => {
+        vi.mocked(importRecipe).mockRejectedValueOnce(new Error('This site blocks automated requests'));
+        render(
+            <AddRecipeDrawer
+                open={true}
+                onOpenChange={mockOnOpenChange}
+                onAdd={mockOnAdd}
+                initialLink="https://example.com/blocked"
+            />
+        );
+
+        await userEvent.click(screen.getByRole('button', { name: /Import/ }));
+
+        await waitFor(() => {
+            expect(screen.getByText('This site blocks automated requests')).toBeTruthy();
+        });
+
+        vi.mocked(importRecipe).mockResolvedValueOnce({
+            title: 'Recovered',
+            ingredients: [],
+            instructions: [],
+            link: 'https://example.com/blocked',
+        });
+
+        await userEvent.click(screen.getByRole('button', { name: /Retry/ }));
+
+        await waitFor(() => {
+            expect(screen.queryByText('This site blocks automated requests')).toBeFalsy();
+        });
+    });
+
+    it('lets the user cancel an in-flight import', async () => {
+        let capturedSignal: AbortSignal | undefined;
+        vi.mocked(importRecipe).mockImplementation(
+            (_url: string, signal?: AbortSignal) =>
+                new Promise((_resolve, reject) => {
+                    capturedSignal = signal;
+                    signal?.addEventListener('abort', () => reject(new DOMException('Aborted', 'AbortError')));
+                })
+        );
+
+        render(
+            <AddRecipeDrawer
+                open={true}
+                onOpenChange={mockOnOpenChange}
+                onAdd={mockOnAdd}
+                initialLink="https://example.com/slow"
+            />
+        );
+
+        await userEvent.click(screen.getByRole('button', { name: /Import/ }));
+
+        const cancelButton = await screen.findByRole('button', { name: /Cancel import/ });
+        await userEvent.click(cancelButton);
+
+        await waitFor(() => {
+            expect(capturedSignal?.aborted).toBe(true);
+            expect(screen.queryByRole('button', { name: /Cancel import/ })).toBeFalsy();
+        });
+        // Cancelling is a user action, not a failure — no error banner.
+        expect(screen.queryByText('Aborted')).toBeFalsy();
+    });
+
+    it('auto-attaches the scraped cover image after a successful import', async () => {
+        vi.mocked(importRecipe).mockResolvedValue({
+            title: 'Imported With Image',
+            ingredients: [{ id: 'i1', name: 'flour' }],
+            instructions: ['Mix.'],
+            link: 'https://example.com/dish',
+            image: 'https://example.com/cover.jpg',
+        });
+        const imageFile = new File(['bytes'], 'imported-cover.jpg', { type: 'image/jpeg' });
+        vi.mocked(importRecipeImage).mockResolvedValue(imageFile);
+        mockOnAdd.mockResolvedValue({ id: 'recipe-1' });
+
+        render(
+            <AddRecipeDrawer
+                open={true}
+                onOpenChange={mockOnOpenChange}
+                onAdd={mockOnAdd}
+                initialLink="https://example.com/dish"
+            />
+        );
+
+        await userEvent.click(screen.getByRole('button', { name: /Import/ }));
+
+        await waitFor(() => {
+            expect(importRecipeImage).toHaveBeenCalledWith('https://example.com/cover.jpg');
+        });
+
+        await userEvent.click(screen.getByRole('button', { name: /Create Recipe/ }));
+
+        await waitFor(() => {
+            expect(mockOnAdd).toHaveBeenCalledWith(
+                'Imported With Image',
+                [{ name: 'flour', quantity: undefined, unit: undefined }],
+                undefined,
+                [],
+                'https://example.com/dish',
+                ['Mix.'],
+                imageFile
+            );
+        });
+    });
+
+    it('does not block the import when the cover image proxy fails', async () => {
+        vi.mocked(importRecipe).mockResolvedValue({
+            title: 'Imported No Image',
+            ingredients: [],
+            instructions: ['Mix.'],
+            link: 'https://example.com/dish2',
+            image: 'https://example.com/cover2.jpg',
+        });
+        vi.mocked(importRecipeImage).mockRejectedValue(new Error('proxy failed'));
+
+        render(
+            <AddRecipeDrawer
+                open={true}
+                onOpenChange={mockOnOpenChange}
+                onAdd={mockOnAdd}
+                initialLink="https://example.com/dish2"
+            />
+        );
+
+        await userEvent.click(screen.getByRole('button', { name: /Import/ }));
+
+        await waitFor(() => {
+            expect(screen.getByText('Mix.')).toBeTruthy();
+        });
+        // Import itself still succeeds — no error banner from the image proxy failure.
+        expect(screen.queryByText('proxy failed')).toBeFalsy();
+    });
+
+    it('shows scraped prep/cook time and yield as read-only chips after import', async () => {
+        vi.mocked(importRecipe).mockResolvedValue({
+            title: 'Timed Dish',
+            ingredients: [],
+            instructions: ['Mix.'],
+            link: 'https://example.com/timed',
+            prepTime: '10 mins',
+            cookTime: '25 mins',
+            recipeYield: '4 servings',
+        });
+
+        render(
+            <AddRecipeDrawer
+                open={true}
+                onOpenChange={mockOnOpenChange}
+                onAdd={mockOnAdd}
+                initialLink="https://example.com/timed"
+            />
+        );
+
+        await userEvent.click(screen.getByRole('button', { name: /Import/ }));
+
+        await waitFor(() => {
+            expect(screen.getByText(/Prep:\s*10 mins/)).toBeTruthy();
+            expect(screen.getByText(/Cook:\s*25 mins/)).toBeTruthy();
+            expect(screen.getByText(/Yield:\s*4 servings/)).toBeTruthy();
+        });
+    });
+
+    it('does not show metadata chips when the import has no timing info', () => {
+        render(<AddRecipeDrawer open={true} onOpenChange={mockOnOpenChange} onAdd={mockOnAdd} />);
+        expect(screen.queryByText(/Prep:/)).toBeFalsy();
     });
 
     it('closes the drawer after recipe creation', async () => {

@@ -266,13 +266,36 @@ export const addRecipe = async (
     return result as Recipe;
 };
 
-export const importRecipe = async (url: string): Promise<RecipeImportResult> => {
+export const importRecipe = async (url: string, signal?: AbortSignal): Promise<RecipeImportResult> => {
     return await makeRequest({
         pathname: '/api/recipes/import',
         method: MethodType.POST,
         operationString: 'import recipe from URL',
         body: JSON.stringify({ url }),
+        signal,
     });
+};
+
+export const importRecipeImage = async (imageUrl: string): Promise<File> => {
+    const authConfig = getAuthConfig();
+    const accessToken = getStorageItem(
+        authConfig.accessTokenKey || 'accessToken',
+        authConfig.storageType || 'localStorage'
+    );
+
+    const headers: Record<string, string> = {};
+    if (accessToken) {
+        headers.Authorization = `Bearer ${accessToken}`;
+    }
+
+    const response = await fetch(`/api/recipes/import/image?url=${encodeURIComponent(imageUrl)}`, { headers });
+    if (!response.ok) {
+        throw new Error(`Failed to fetch recipe cover image: ${response.status}`);
+    }
+
+    const blob = await response.blob();
+    const extension = blob.type.split('/')[1]?.split('+')[0] || 'jpg';
+    return new File([blob], `imported-cover.${extension}`, { type: blob.type });
 };
 
 export const updateRecipe = async (

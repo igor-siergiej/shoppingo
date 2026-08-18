@@ -30,6 +30,7 @@ const mockRecipeService = {
 
 const mockRecipeImportService = {
     importFromUrl: vi.fn(),
+    importImage: vi.fn(),
 };
 
 const mockLogger = {
@@ -59,6 +60,7 @@ type HonoVars = { Variables: { user: { id: string; username: string } | undefine
 const createMockContext = (
     overrides: {
         params?: Record<string, string>;
+        query?: Record<string, string>;
         body?: unknown;
         files?: Record<string, { name: string; type: string; arrayBuffer: () => Promise<ArrayBuffer> }>;
         user?: { id: string; username: string } | undefined;
@@ -67,10 +69,12 @@ const createMockContext = (
     const vars: Record<string, unknown> = {
         user: 'user' in overrides ? overrides.user : { id: 'user-1', username: 'testuser' },
     };
+    const headers: Record<string, string> = {};
 
     return {
         req: {
             param: (name: string) => overrides.params?.[name],
+            query: (name: string) => overrides.query?.[name],
             json: vi.fn().mockResolvedValue(overrides.body ?? {}),
             header: (_name: string): undefined => undefined,
             parseBody: vi.fn().mockResolvedValue(overrides.files ?? {}),
@@ -82,6 +86,12 @@ const createMockContext = (
                     headers: { 'Content-Type': 'application/json' },
                 })
         ),
+        header: (name: string, value: string) => {
+            headers[name] = value;
+        },
+        body: vi
+            .fn()
+            .mockImplementation((data: BodyInit, status = 200): Response => new Response(data, { status, headers })),
         get: (key: string) => vars[key],
         set: (key: string, val: unknown) => {
             vars[key] = val;
@@ -142,6 +152,38 @@ describe('RecipeHandlers', () => {
             mockRecipeImportService.importFromUrl.mockRejectedValue(Object.assign(new Error('boom'), { status: 502 }));
             const ctx = createMockContext({ body: { url: 'https://example.com/r' } });
             await expect(recipeHandlers.importRecipe(ctx)).rejects.toMatchObject({ status: 502 });
+        });
+    });
+
+    describe('importRecipeImage', () => {
+        it('returns 401 when no authenticated user', async () => {
+            const ctx = createMockContext({ user: undefined, query: { url: 'https://example.com/cover.jpg' } });
+            const response = await recipeHandlers.importRecipeImage(ctx);
+            expect(response.status).toBe(401);
+        });
+
+        it('returns 400 when url is missing', async () => {
+            const ctx = createMockContext({ query: {} });
+            const response = await recipeHandlers.importRecipeImage(ctx);
+            expect(response.status).toBe(400);
+        });
+
+        it('streams the image bytes with the upstream content type on success', async () => {
+            mockRecipeImportService.importImage.mockResolvedValue({
+                buffer: Buffer.from([1, 2, 3]),
+                contentType: 'image/png',
+            });
+            const ctx = createMockContext({ query: { url: 'https://example.com/cover.png' } });
+            const response = await recipeHandlers.importRecipeImage(ctx);
+            expect(response.status).toBe(200);
+            expect(mockRecipeImportService.importImage).toHaveBeenCalledWith('https://example.com/cover.png');
+            expect(response.headers.get('Content-Type')).toBe('image/png');
+        });
+
+        it('throws an APIError when the import service fails', async () => {
+            mockRecipeImportService.importImage.mockRejectedValue(Object.assign(new Error('boom'), { status: 415 }));
+            const ctx = createMockContext({ query: { url: 'https://example.com/cover.png' } });
+            await expect(recipeHandlers.importRecipeImage(ctx)).rejects.toMatchObject({ status: 415 });
         });
     });
 

@@ -20,6 +20,7 @@ import { BucketStore } from '../infrastructure/BucketStore';
 import { FalImageGenerator } from '../infrastructure/FalImageGenerator';
 import { FalRecipeExtractor } from '../infrastructure/FalRecipeExtractor';
 import { FalRecipeParser } from '../infrastructure/FalRecipeParser';
+import { HttpImageFetcher } from '../infrastructure/HttpImageFetcher';
 import { HttpPageFetcher } from '../infrastructure/HttpPageFetcher';
 import { MongoFriendRepository } from '../infrastructure/MongoFriendRepository';
 import { MongoLabelRepository } from '../infrastructure/MongoLabelRepository';
@@ -339,6 +340,16 @@ export const registerDepdendencies = () => {
     );
 
     dependencyContainer.registerSingleton(
+        DependencyToken.ImageFetcher,
+        // @ts-expect-error - Dependency injection requires constructor return override
+        class {
+            constructor() {
+                return new HttpImageFetcher();
+            }
+        }
+    );
+
+    dependencyContainer.registerSingleton(
         DependencyToken.RecipeTextExtractor,
         // @ts-expect-error - Dependency injection requires constructor return override
         class {
@@ -383,7 +394,8 @@ export const registerDepdendencies = () => {
                     new RuleIngredientStructurer(),
                     dependencyContainer.resolve(DependencyToken.Logger),
                     llmExtractor,
-                    llmParser
+                    llmParser,
+                    dependencyContainer.resolve(DependencyToken.ImageFetcher)
                 );
             }
         }
