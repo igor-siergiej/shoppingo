@@ -158,6 +158,32 @@ app.post('/refresh', (req, res) => {
     });
 });
 
+app.get('/verify', (req, res) => {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ success: false, message: 'Missing or invalid authorization header' });
+    }
+
+    const token = authHeader.slice('Bearer '.length);
+    const parts = token.split('.');
+
+    if (parts.length !== 3) {
+        return res.status(401).json({ success: false, message: 'Invalid token' });
+    }
+
+    try {
+        const payload = JSON.parse(atob(parts[1]));
+
+        return res.status(200).json({
+            success: true,
+            payload: { id: payload.id, username: payload.username },
+        });
+    } catch (_error) {
+        return res.status(401).json({ success: false, message: 'Invalid token' });
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`🚀 Mock authentication server running on http://localhost:${PORT}`);
 });
