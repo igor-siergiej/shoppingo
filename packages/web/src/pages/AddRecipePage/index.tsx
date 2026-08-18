@@ -172,7 +172,13 @@ const AddRecipePage = () => {
         }
 
         try {
-            const recipeId = await createRecipe(recipeTitle, selUsers || [], recipeIngredients, recipeLink, instructions);
+            const recipeId = await createRecipe(
+                recipeTitle,
+                selUsers || [],
+                recipeIngredients,
+                recipeLink,
+                instructions
+            );
             logger.info('Recipe created successfully', { title: recipeTitle, recipeId });
 
             if (imageFile) {
@@ -409,7 +415,9 @@ const AddRecipePage = () => {
                                         key={`${i}-${ingredient.name.slice(0, 20)}`}
                                         className="flex items-start gap-2 px-3 py-2 rounded-md bg-muted border border-border text-sm"
                                     >
-                                        <span className="flex-1 text-foreground">{formatIngredientLine(ingredient)}</span>
+                                        <span className="flex-1 text-foreground">
+                                            {formatIngredientLine(ingredient)}
+                                        </span>
                                         <button
                                             type="button"
                                             onClick={() => setIngredients(ingredients.filter((_, idx) => idx !== i))}
@@ -468,7 +476,9 @@ const AddRecipePage = () => {
                                         key={`${i}-${step.slice(0, 20)}`}
                                         className="flex items-start gap-2 px-3 py-2 rounded-md bg-muted border border-border text-sm"
                                     >
-                                        <span className="font-semibold text-muted-foreground min-w-[1.25rem]">{i + 1}.</span>
+                                        <span className="font-semibold text-muted-foreground min-w-[1.25rem]">
+                                            {i + 1}.
+                                        </span>
                                         <span className="flex-1 text-foreground">{step}</span>
                                         <button
                                             type="button"
