@@ -1,15 +1,16 @@
 'use client';
 
 import { useAuth, useUser } from '@imapps/web-utils';
-import type { Item, Recipe } from '@shoppingo/types';
+import type { Item } from '@shoppingo/types';
 import { ListType } from '@shoppingo/types';
-import { CheckCheck, ChefHat, ShoppingCart, Tag, Trash2, Users } from 'lucide-react';
+import { CheckCheck, ChefHat, Plus, ShoppingCart, Tag, Trash2, Users } from 'lucide-react';
 import { AnimatePresence, MotionConfig, motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import useMeasure from 'react-use-measure';
 
 import { Card } from '../../components/ui/card';
+import { RippleButton } from '../ui/ripple';
 import { useManageUsers } from '../../hooks/useManageUsers';
 import { useToolBarState } from '../../hooks/useToolBarState';
 import { ManageLabelsDrawer } from '../ManageLabelsDrawer';
@@ -20,7 +21,6 @@ import { AddFromRecipeDrawer } from './AddFromRecipeDrawer';
 import { AddIngredientDrawer } from './AddIngredientDrawer';
 import { AddItemDrawer } from './AddItemDrawer';
 import { AddListDrawer } from './AddListDrawer';
-import { AddRecipeDrawer } from './AddRecipeDrawer';
 import { AddTodoDrawer } from './AddTodoDrawer';
 import { HamburgerMenu } from './HamburgerMenu';
 import { ToolBarAppBar } from './ToolBarAppBar';
@@ -32,19 +32,6 @@ interface ToolBarProps {
     onAddTodo?: (body: import('../../api').CreateTodoBody) => Promise<void>;
     labels?: import('@shoppingo/types').Label[];
     prefillTodoDate?: Date;
-    onAddRecipe?: (
-        title: string,
-        ingredients: Array<{ name: string; quantity?: number; unit?: string }>,
-        imageKey?: string,
-        selectedUsers?: string[],
-        link?: string,
-        instructions?: string[],
-        imageFile?: File
-    ) => Promise<Recipe | undefined>;
-    addRecipeDrawerOpen?: boolean;
-    onAddRecipeDrawerOpenChange?: (open: boolean) => void;
-    addRecipeInitialLink?: string;
-    addRecipeAutoImport?: boolean;
     handleGoBack?: () => void;
     onManageRecipeUsers?: () => void;
     handleClearSelected?: () => void;
@@ -67,11 +54,6 @@ const ToolBar = ({
     onAddList,
     onAddItem,
     onAddIngredient,
-    onAddRecipe,
-    addRecipeDrawerOpen,
-    onAddRecipeDrawerOpenChange,
-    addRecipeInitialLink,
-    addRecipeAutoImport,
     handleGoBack,
     onManageRecipeUsers,
     handleClearSelected,
@@ -101,8 +83,6 @@ const ToolBar = ({
         setIsAddItemDrawerOpen,
         isAddListDrawerOpen,
         setIsAddListDrawerOpen,
-        isAddRecipeDrawerOpen,
-        setIsAddRecipeDrawerOpen,
         menuCardRef,
         menuActive,
         setMenuActive,
@@ -310,15 +290,15 @@ const ToolBar = ({
                                     ) : undefined
                                 }
                                 recipeDrawer={
-                                    isRecipesPage && onAddRecipe ? (
-                                        <AddRecipeDrawer
-                                            open={addRecipeDrawerOpen ?? isAddRecipeDrawerOpen}
-                                            onOpenChange={onAddRecipeDrawerOpenChange ?? setIsAddRecipeDrawerOpen}
-                                            onAdd={onAddRecipe}
-                                            placeholder={placeholder}
-                                            initialLink={addRecipeInitialLink}
-                                            autoImport={addRecipeAutoImport}
-                                        />
+                                    isRecipesPage ? (
+                                        <RippleButton
+                                            size="icon"
+                                            className="h-12 w-12 rounded-full border-2 border-primary/20 hover:border-primary/40 transition-colors"
+                                            aria-label="Add recipe"
+                                            onClick={() => navigate('/recipes/new')}
+                                        >
+                                            <Plus className="size-5" />
+                                        </RippleButton>
                                     ) : undefined
                                 }
                                 ingredientDrawer={
