@@ -170,6 +170,18 @@ describe('ListItem', () => {
         expect(deleteButton).toBeInTheDocument();
     });
 
+    it('shows a Shared badge when isOwner=false', () => {
+        render(<ListItem list={mockListResponse} isOwner={false} isEditing={false} editValue="" {...mockCallbacks} />);
+
+        expect(screen.getByText('Shared')).toBeInTheDocument();
+    });
+
+    it('does not show a Shared badge when isOwner=true', () => {
+        render(<ListItem list={mockListResponse} isOwner={true} isEditing={false} editValue="" {...mockCallbacks} />);
+
+        expect(screen.queryByText('Shared')).not.toBeInTheDocument();
+    });
+
     it('calls onDelete when clicking delete button', async () => {
         const user = userEvent.setup();
         render(<ListItem list={mockListResponse} isOwner={true} isEditing={false} editValue="" {...mockCallbacks} />);

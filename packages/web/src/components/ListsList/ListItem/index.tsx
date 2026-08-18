@@ -1,5 +1,6 @@
 import type { ListResponse } from '@shoppingo/types';
 import { Check, Edit2, ShoppingCart, X } from 'lucide-react';
+import { Badge } from '../../ui/badge';
 import { Button } from '../../../components/ui/button';
 import { Card, CardContent } from '../../../components/ui/card';
 import { Input } from '../../../components/ui/input';
@@ -73,6 +74,7 @@ export const ListItem = ({
                         <div className="flex items-center gap-2">
                             <ShoppingCart className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                             <span>{list.title}</span>
+                            {!isOwner && <Badge variant="secondary">Shared</Badge>}
                         </div>
                     </Button>
                 )}
