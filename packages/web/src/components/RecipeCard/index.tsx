@@ -1,9 +1,9 @@
 import type { Recipe } from '@shoppingo/types';
 import { ImageOff } from 'lucide-react';
-import { Badge } from '../ui/badge';
 import { Card, CardContent } from '../../components/ui/card';
 import { Skeleton } from '../../components/ui/skeleton';
 import { useAuthedImage } from '../../hooks/useAuthedImage';
+import { Badge } from '../ui/badge';
 
 interface RecipeCardProps {
     recipe: Recipe;
