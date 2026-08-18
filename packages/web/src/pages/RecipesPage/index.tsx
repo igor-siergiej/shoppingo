@@ -1,5 +1,5 @@
 import { useUser } from '@imapps/web-utils';
-import { AlertTriangle, BookOpen, ChefHat, Search, X } from 'lucide-react';
+import { AlertTriangle, ChefHat, Search, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -87,9 +87,6 @@ const RecipesPage = () => {
         return <div>User not available</div>;
     }
 
-    const yourRecipes = recipes.filter((recipe) => recipe.ownerId === user.id);
-    const sharedRecipes = recipes.filter((recipe) => recipe.ownerId !== user.id);
-
     const handleRecipeClick = (recipeId: string) => {
         navigate(`/recipes/${recipeId}`);
     };
@@ -167,7 +164,11 @@ const RecipesPage = () => {
                 <div>
                     <h2 className="text-lg font-semibold mb-3 text-foreground">Results ({searchResults.length})</h2>
                     {searchResults.length > 0 ? (
-                        <RecipesList recipes={searchResults} onRecipeClick={handleRecipeClick} />
+                        <RecipesList
+                            recipes={searchResults}
+                            currentUserId={user.id}
+                            onRecipeClick={handleRecipeClick}
+                        />
                     ) : (
                         <Empty className="flex-none justify-start p-4">
                             <EmptyHeader>
@@ -182,43 +183,21 @@ const RecipesPage = () => {
                 </div>
             ) : (
                 <div className="flex flex-col space-y-6">
-                    {/* Your Recipes Section */}
-                    <div>
-                        <h2 className="text-lg font-semibold mb-3 text-foreground">Your Recipes</h2>
-                        {yourRecipes.length > 0 ? (
-                            <RecipesList recipes={yourRecipes} onRecipeClick={handleRecipeClick} />
-                        ) : (
-                            <Empty className="flex-none justify-start p-4">
-                                <EmptyHeader>
-                                    <EmptyMedia variant="icon">
-                                        <ChefHat />
-                                    </EmptyMedia>
-                                    <EmptyTitle>No recipes yet</EmptyTitle>
-                                    <EmptyDescription>Create your first recipe to get started</EmptyDescription>
-                                </EmptyHeader>
-                            </Empty>
-                        )}
-                    </div>
-
-                    {/* Shared Recipes Section */}
-                    <div>
-                        <h2 className="text-lg font-semibold mb-3 text-foreground">Shared Recipes</h2>
-                        {sharedRecipes.length > 0 ? (
-                            <RecipesList recipes={sharedRecipes} onRecipeClick={handleRecipeClick} />
-                        ) : (
-                            <Empty className="flex-none justify-start p-4">
-                                <EmptyHeader>
-                                    <EmptyMedia variant="icon">
-                                        <BookOpen />
-                                    </EmptyMedia>
-                                    <EmptyTitle>No shared recipes</EmptyTitle>
-                                    <EmptyDescription>
-                                        Shared recipes will appear here when someone shares one with you
-                                    </EmptyDescription>
-                                </EmptyHeader>
-                            </Empty>
-                        )}
-                    </div>
+                    {recipes.length > 0 ? (
+                        <RecipesList recipes={recipes} currentUserId={user.id} onRecipeClick={handleRecipeClick} />
+                    ) : (
+                        <Empty className="flex-none justify-start p-4">
+                            <EmptyHeader>
+                                <EmptyMedia variant="icon">
+                                    <ChefHat />
+                                </EmptyMedia>
+                                <EmptyTitle>No recipes yet</EmptyTitle>
+                                <EmptyDescription>
+                                    Create your first recipe, or ask a friend to share one with you
+                                </EmptyDescription>
+                            </EmptyHeader>
+                        </Empty>
+                    )}
                 </div>
             )}
             {searchBar}
