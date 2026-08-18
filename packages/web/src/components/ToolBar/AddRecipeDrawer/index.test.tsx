@@ -282,6 +282,40 @@ describe('AddRecipeDrawer', () => {
         expect(screen.queryByText('proxy failed')).toBeFalsy();
     });
 
+    it('shows scraped prep/cook time and yield as read-only chips after import', async () => {
+        vi.mocked(importRecipe).mockResolvedValue({
+            title: 'Timed Dish',
+            ingredients: [],
+            instructions: ['Mix.'],
+            link: 'https://example.com/timed',
+            prepTime: '10 mins',
+            cookTime: '25 mins',
+            recipeYield: '4 servings',
+        });
+
+        render(
+            <AddRecipeDrawer
+                open={true}
+                onOpenChange={mockOnOpenChange}
+                onAdd={mockOnAdd}
+                initialLink="https://example.com/timed"
+            />
+        );
+
+        await userEvent.click(screen.getByRole('button', { name: /Import/ }));
+
+        await waitFor(() => {
+            expect(screen.getByText(/Prep:\s*10 mins/)).toBeTruthy();
+            expect(screen.getByText(/Cook:\s*25 mins/)).toBeTruthy();
+            expect(screen.getByText(/Yield:\s*4 servings/)).toBeTruthy();
+        });
+    });
+
+    it('does not show metadata chips when the import has no timing info', () => {
+        render(<AddRecipeDrawer open={true} onOpenChange={mockOnOpenChange} onAdd={mockOnAdd} />);
+        expect(screen.queryByText(/Prep:/)).toBeFalsy();
+    });
+
     it('closes the drawer after recipe creation', async () => {
         mockOnAdd.mockResolvedValue({ id: 'recipe-123' });
 

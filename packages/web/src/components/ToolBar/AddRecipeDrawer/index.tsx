@@ -76,6 +76,7 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd, initialLink, autoIm
     const [showIngredientsPaste, setShowIngredientsPaste] = useState(true);
     const [isImporting, setIsImporting] = useState(false);
     const [importError, setImportError] = useState('');
+    const [importMeta, setImportMeta] = useState<{ prepTime?: string; cookTime?: string; recipeYield?: string }>({});
     const autoImportedRef = useRef(false);
     const importAbortRef = useRef<AbortController | null>(null);
 
@@ -123,6 +124,12 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd, initialLink, autoIm
                     });
                 }
             }
+
+            setImportMeta({
+                ...(draft.prepTime && { prepTime: draft.prepTime }),
+                ...(draft.cookTime && { cookTime: draft.cookTime }),
+                ...(draft.recipeYield && { recipeYield: draft.recipeYield }),
+            });
 
             const foundCount = draft.ingredients.length + draft.instructions.length;
             if (foundCount === 0) {
@@ -222,6 +229,7 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd, initialLink, autoIm
         setShowIngredientsPaste(true);
         setIsImporting(false);
         setImportError('');
+        setImportMeta({});
         if (fileInputRef.current) fileInputRef.current.value = '';
         onOpenChange(false);
     };
@@ -357,6 +365,25 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd, initialLink, autoIm
                                     >
                                         Retry
                                     </button>
+                                </div>
+                            )}
+                            {(importMeta.prepTime || importMeta.cookTime || importMeta.recipeYield) && (
+                                <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                                    {importMeta.prepTime && (
+                                        <span className="rounded-full border border-border px-2 py-0.5">
+                                            Prep: {importMeta.prepTime}
+                                        </span>
+                                    )}
+                                    {importMeta.cookTime && (
+                                        <span className="rounded-full border border-border px-2 py-0.5">
+                                            Cook: {importMeta.cookTime}
+                                        </span>
+                                    )}
+                                    {importMeta.recipeYield && (
+                                        <span className="rounded-full border border-border px-2 py-0.5">
+                                            Yield: {importMeta.recipeYield}
+                                        </span>
+                                    )}
                                 </div>
                             )}
                         </div>
