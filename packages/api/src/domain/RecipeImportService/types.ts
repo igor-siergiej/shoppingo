@@ -7,6 +7,11 @@ export interface PageFetcher {
     fetchPage(url: string): Promise<string>;
 }
 
+export interface ImageFetcher {
+    /** Fetch an image URL and return its raw bytes and content type. Throws with a `status` field on failure. */
+    fetchImage(url: string): Promise<{ buffer: Buffer; contentType: string }>;
+}
+
 /** A draft with string ingredient lines, before ids are assigned. */
 export type RecipeDraft = Omit<RecipeImportResult, 'ingredients'> & { ingredients: string[] };
 
