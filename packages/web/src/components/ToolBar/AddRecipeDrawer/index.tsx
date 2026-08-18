@@ -1,7 +1,8 @@
 import { ChefHat, Download, Image as ImageIcon, Plus, X } from 'lucide-react';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { importRecipe } from '../../../api';
+import { importRecipe, importRecipeImage } from '../../../api';
+import { logger } from '../../../utils/logger';
 import { FriendPicker } from '../../FriendPicker';
 import { Button } from '../../ui/button';
 import {
@@ -106,6 +107,21 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd, initialLink, autoIm
             if (draft.instructions.length > 0) {
                 setSteps(draft.instructions);
                 setShowPasteArea(false);
+            }
+
+            if (draft.image) {
+                try {
+                    const file = await importRecipeImage(draft.image);
+                    setSelectedFile(file);
+                    setImageUrl(URL.createObjectURL(file));
+                } catch (imageErr) {
+                    // Soft-fail: the scraped page's image couldn't be proxied (dead link, blocked host, etc).
+                    // The rest of the import already succeeded — leave manual upload available instead of
+                    // surfacing this as an import failure.
+                    logger.warn('Failed to auto-attach scraped recipe image', {
+                        error: imageErr instanceof Error ? imageErr.message : 'Unknown error',
+                    });
+                }
             }
 
             const foundCount = draft.ingredients.length + draft.instructions.length;

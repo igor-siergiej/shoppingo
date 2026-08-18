@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { importRecipe } from '../../../api';
+import { importRecipe, importRecipeImage } from '../../../api';
 import { AddRecipeDrawer } from './index';
 
 vi.mock('../../../hooks/useFriends', () => ({
@@ -17,6 +17,7 @@ vi.mock('sonner', () => ({
 
 vi.mock('../../../api', () => ({
     importRecipe: vi.fn(),
+    importRecipeImage: vi.fn(),
 }));
 
 describe('AddRecipeDrawer', () => {
@@ -209,6 +210,76 @@ describe('AddRecipeDrawer', () => {
         });
         // Cancelling is a user action, not a failure — no error banner.
         expect(screen.queryByText('Aborted')).toBeFalsy();
+    });
+
+    it('auto-attaches the scraped cover image after a successful import', async () => {
+        vi.mocked(importRecipe).mockResolvedValue({
+            title: 'Imported With Image',
+            ingredients: [{ id: 'i1', name: 'flour' }],
+            instructions: ['Mix.'],
+            link: 'https://example.com/dish',
+            image: 'https://example.com/cover.jpg',
+        });
+        const imageFile = new File(['bytes'], 'imported-cover.jpg', { type: 'image/jpeg' });
+        vi.mocked(importRecipeImage).mockResolvedValue(imageFile);
+        mockOnAdd.mockResolvedValue({ id: 'recipe-1' });
+
+        render(
+            <AddRecipeDrawer
+                open={true}
+                onOpenChange={mockOnOpenChange}
+                onAdd={mockOnAdd}
+                initialLink="https://example.com/dish"
+            />
+        );
+
+        await userEvent.click(screen.getByRole('button', { name: /Import/ }));
+
+        await waitFor(() => {
+            expect(importRecipeImage).toHaveBeenCalledWith('https://example.com/cover.jpg');
+        });
+
+        await userEvent.click(screen.getByRole('button', { name: /Create Recipe/ }));
+
+        await waitFor(() => {
+            expect(mockOnAdd).toHaveBeenCalledWith(
+                'Imported With Image',
+                [{ name: 'flour', quantity: undefined, unit: undefined }],
+                undefined,
+                [],
+                'https://example.com/dish',
+                ['Mix.'],
+                imageFile
+            );
+        });
+    });
+
+    it('does not block the import when the cover image proxy fails', async () => {
+        vi.mocked(importRecipe).mockResolvedValue({
+            title: 'Imported No Image',
+            ingredients: [],
+            instructions: ['Mix.'],
+            link: 'https://example.com/dish2',
+            image: 'https://example.com/cover2.jpg',
+        });
+        vi.mocked(importRecipeImage).mockRejectedValue(new Error('proxy failed'));
+
+        render(
+            <AddRecipeDrawer
+                open={true}
+                onOpenChange={mockOnOpenChange}
+                onAdd={mockOnAdd}
+                initialLink="https://example.com/dish2"
+            />
+        );
+
+        await userEvent.click(screen.getByRole('button', { name: /Import/ }));
+
+        await waitFor(() => {
+            expect(screen.getByText('Mix.')).toBeTruthy();
+        });
+        // Import itself still succeeds — no error banner from the image proxy failure.
+        expect(screen.queryByText('proxy failed')).toBeFalsy();
     });
 
     it('closes the drawer after recipe creation', async () => {
