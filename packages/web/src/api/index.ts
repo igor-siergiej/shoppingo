@@ -266,12 +266,13 @@ export const addRecipe = async (
     return result as Recipe;
 };
 
-export const importRecipe = async (url: string): Promise<RecipeImportResult> => {
+export const importRecipe = async (url: string, signal?: AbortSignal): Promise<RecipeImportResult> => {
     return await makeRequest({
         pathname: '/api/recipes/import',
         method: MethodType.POST,
         operationString: 'import recipe from URL',
         body: JSON.stringify({ url }),
+        signal,
     });
 };
 

@@ -9,7 +9,8 @@ const executeRequest = async (
     method: string,
     body: string | undefined,
     token: string | null,
-    queryParams?: Record<string, string>
+    queryParams?: Record<string, string>,
+    signal?: AbortSignal
 ) => {
     let url = pathname;
 
@@ -30,6 +31,7 @@ const executeRequest = async (
         method: method,
         headers: headers,
         body: body,
+        signal: signal,
     });
 };
 
@@ -53,7 +55,8 @@ const refreshAndRetry = async (
     pathname: string,
     method: string,
     body: string | undefined,
-    queryParams?: Record<string, string>
+    queryParams?: Record<string, string>,
+    signal?: AbortSignal
 ): Promise<Response | null> => {
     logger.info('Token expired, attempting to refresh');
     const newToken = await tryRefreshToken(authConfig);
@@ -62,7 +65,7 @@ const refreshAndRetry = async (
         setStorageItem(authConfig.accessTokenKey || 'accessToken', newToken, authConfig.storageType || 'localStorage');
 
         logger.info('Token refreshed successfully, retrying request');
-        return await executeRequest(pathname, method, body, newToken, queryParams);
+        return await executeRequest(pathname, method, body, newToken, queryParams, signal);
     } else {
         logger.warn('Token refresh failed, session expired');
         window.dispatchEvent(new CustomEvent('auth:session-expired'));
@@ -70,7 +73,7 @@ const refreshAndRetry = async (
     }
 };
 
-export const makeRequest = async ({ pathname, method, operationString, body, queryParams }: MakeRequestProps) => {
+export const makeRequest = async ({ pathname, method, operationString, body, queryParams, signal }: MakeRequestProps) => {
     const authConfig = getAuthConfig();
 
     try {
@@ -79,10 +82,10 @@ export const makeRequest = async ({ pathname, method, operationString, body, que
             authConfig.storageType || 'localStorage'
         );
 
-        let response = await executeRequest(pathname, method, body, accessToken, queryParams);
+        let response = await executeRequest(pathname, method, body, accessToken, queryParams, signal);
 
         if (response.status === 401 && accessToken) {
-            const retryResponse = await refreshAndRetry(authConfig, pathname, method, body, queryParams);
+            const retryResponse = await refreshAndRetry(authConfig, pathname, method, body, queryParams, signal);
             if (retryResponse) {
                 response = retryResponse;
             }

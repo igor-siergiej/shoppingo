@@ -179,6 +179,38 @@ describe('AddRecipeDrawer', () => {
         });
     });
 
+    it('lets the user cancel an in-flight import', async () => {
+        let capturedSignal: AbortSignal | undefined;
+        vi.mocked(importRecipe).mockImplementation(
+            (_url: string, signal?: AbortSignal) =>
+                new Promise((_resolve, reject) => {
+                    capturedSignal = signal;
+                    signal?.addEventListener('abort', () => reject(new DOMException('Aborted', 'AbortError')));
+                })
+        );
+
+        render(
+            <AddRecipeDrawer
+                open={true}
+                onOpenChange={mockOnOpenChange}
+                onAdd={mockOnAdd}
+                initialLink="https://example.com/slow"
+            />
+        );
+
+        await userEvent.click(screen.getByRole('button', { name: /Import/ }));
+
+        const cancelButton = await screen.findByRole('button', { name: /Cancel import/ });
+        await userEvent.click(cancelButton);
+
+        await waitFor(() => {
+            expect(capturedSignal?.aborted).toBe(true);
+            expect(screen.queryByRole('button', { name: /Cancel import/ })).toBeFalsy();
+        });
+        // Cancelling is a user action, not a failure — no error banner.
+        expect(screen.queryByText('Aborted')).toBeFalsy();
+    });
+
     it('closes the drawer after recipe creation', async () => {
         mockOnAdd.mockResolvedValue({ id: 'recipe-123' });
 

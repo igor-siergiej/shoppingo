@@ -1,4 +1,4 @@
-import { ChefHat, Download, Image as ImageIcon, Loader2, Plus, X } from 'lucide-react';
+import { ChefHat, Download, Image as ImageIcon, Plus, X } from 'lucide-react';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { importRecipe } from '../../../api';
@@ -76,6 +76,7 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd, initialLink, autoIm
     const [isImporting, setIsImporting] = useState(false);
     const [importError, setImportError] = useState('');
     const autoImportedRef = useRef(false);
+    const importAbortRef = useRef<AbortController | null>(null);
 
     useEffect(() => {
         setLink(initialLink ?? '');
@@ -88,11 +89,13 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd, initialLink, autoIm
             return;
         }
 
+        const controller = new AbortController();
+        importAbortRef.current = controller;
         setIsImporting(true);
         setError('');
         setImportError('');
         try {
-            const draft = await importRecipe(target);
+            const draft = await importRecipe(target, controller.signal);
 
             if (draft.title) setTitle(draft.title);
             if (draft.link) setLink(draft.link);
@@ -114,13 +117,21 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd, initialLink, autoIm
                 toast.success('Recipe imported — review and edit before saving');
             }
         } catch (err) {
+            if (controller.signal.aborted) {
+                return;
+            }
             const message = err instanceof Error ? err.message : 'Failed to import recipe';
             setImportError(message);
             toast.error(message, { style: { backgroundColor: '#ef4444', color: '#ffffff' } });
         } finally {
+            importAbortRef.current = null;
             setIsImporting(false);
         }
     }, []);
+
+    const handleCancelImport = () => {
+        importAbortRef.current?.abort();
+    };
 
     // Share-target flow: run the import automatically the first time the drawer opens with a shared link.
     useEffect(() => {
@@ -298,16 +309,22 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd, initialLink, autoIm
                                 <Button
                                     type="button"
                                     variant="outline"
-                                    onClick={() => void handleImport(link)}
-                                    disabled={isLoading || isImporting || !link.trim()}
+                                    onClick={() => (isImporting ? handleCancelImport() : void handleImport(link))}
+                                    disabled={isLoading || (!isImporting && !link.trim())}
+                                    aria-label={isImporting ? 'Cancel import' : 'Import recipe from link'}
                                     className="h-10 shrink-0 gap-1.5"
                                 >
                                     {isImporting ? (
-                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                        <>
+                                            <X className="h-4 w-4" />
+                                            Cancel
+                                        </>
                                     ) : (
-                                        <Download className="h-4 w-4" />
+                                        <>
+                                            <Download className="h-4 w-4" />
+                                            Import
+                                        </>
                                     )}
-                                    {isImporting ? 'Importing…' : 'Import'}
                                 </Button>
                             </div>
                             <p className="text-xs text-muted-foreground">
