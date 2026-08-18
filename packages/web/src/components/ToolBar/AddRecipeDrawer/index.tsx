@@ -74,6 +74,7 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd, initialLink, autoIm
     const [ingredients, setIngredients] = useState<Ingredient[]>([]);
     const [showIngredientsPaste, setShowIngredientsPaste] = useState(true);
     const [isImporting, setIsImporting] = useState(false);
+    const [importError, setImportError] = useState('');
     const autoImportedRef = useRef(false);
 
     useEffect(() => {
@@ -89,6 +90,7 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd, initialLink, autoIm
 
         setIsImporting(true);
         setError('');
+        setImportError('');
         try {
             const draft = await importRecipe(target);
 
@@ -113,6 +115,7 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd, initialLink, autoIm
             }
         } catch (err) {
             const message = err instanceof Error ? err.message : 'Failed to import recipe';
+            setImportError(message);
             toast.error(message, { style: { backgroundColor: '#ef4444', color: '#ffffff' } });
         } finally {
             setIsImporting(false);
@@ -191,6 +194,7 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd, initialLink, autoIm
         setIngredients([]);
         setShowIngredientsPaste(true);
         setIsImporting(false);
+        setImportError('');
         if (fileInputRef.current) fileInputRef.current.value = '';
         onOpenChange(false);
     };
@@ -309,6 +313,19 @@ export const AddRecipeDrawer = ({ open, onOpenChange, onAdd, initialLink, autoIm
                             <p className="text-xs text-muted-foreground">
                                 Paste a recipe URL and tap Import to auto-fill the fields below.
                             </p>
+                            {importError && (
+                                <div className="flex items-center justify-between gap-2 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                                    <span>{importError}</span>
+                                    <button
+                                        type="button"
+                                        onClick={() => void handleImport(link)}
+                                        disabled={isImporting || !link.trim()}
+                                        className="shrink-0 font-medium underline disabled:opacity-50"
+                                    >
+                                        Retry
+                                    </button>
+                                </div>
+                            )}
                         </div>
 
                         {/* Ingredients */}
