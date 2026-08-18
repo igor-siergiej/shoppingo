@@ -185,6 +185,41 @@ export const importRecipe = async (c: Context<HonoVars>): Promise<Response> => {
     }
 };
 
+export const importRecipeImage = async (c: Context<HonoVars>): Promise<Response> => {
+    const url = c.req.query('url');
+    const logger = getLogger();
+    const authenticatedUser = getAuthenticatedUser(c);
+
+    if (!authenticatedUser) {
+        logger.warn('Unauthorized recipe import image attempt', { ip: c.req.header('x-forwarded-for') });
+        return c.json({ error: 'Unauthorized' }, 401);
+    }
+
+    if (!url || url.trim() === '') {
+        return c.json({ error: 'url is required and must be a non-empty string' }, 400);
+    }
+
+    try {
+        const { buffer, contentType } = await getRecipeImportService().importImage(url.trim());
+
+        logger.info('API: Recipe import image proxied', {
+            userId: authenticatedUser.id,
+            url,
+            contentType,
+            bytes: buffer.length,
+        });
+
+        c.header('Content-Type', contentType);
+        c.header('Cache-Control', 'private, max-age=300');
+        return c.body(buffer);
+    } catch (error: unknown) {
+        return failWithApiError(error, 'API: Failed to proxy recipe import image', {
+            userId: authenticatedUser.id,
+            url,
+        });
+    }
+};
+
 export const updateRecipe = async (c: Context<HonoVars>): Promise<Response> => {
     const recipeId = c.req.param('recipeId');
     const { title, ingredients, link, instructions } = await c.req.json<{
