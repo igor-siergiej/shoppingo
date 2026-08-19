@@ -1,6 +1,6 @@
 import { useUser } from '@imapps/web-utils';
 import type { Recipe } from '@shoppingo/types';
-import { ChefHat, Download, Image as ImageIcon, X } from 'lucide-react';
+import { Download, Image as ImageIcon, X } from 'lucide-react';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -13,6 +13,7 @@ import { Label } from '../../components/ui/label';
 import { Textarea } from '../../components/ui/textarea';
 import { useRecipeMutations } from '../../hooks/useRecipeMutations';
 import { logger } from '../../utils/logger';
+import { AddRecipeHeader } from './AddRecipeHeader';
 import { ChoiceScreen } from './ChoiceScreen';
 import { ImportScreen } from './ImportScreen';
 
@@ -285,15 +286,7 @@ const AddRecipePage = () => {
 
     return (
         <div className="flex flex-col min-h-[calc(100vh-3.5rem)]">
-            <div className="flex items-center justify-between px-4 py-3 border-b sticky top-0 bg-background z-10">
-                <h1 className="flex items-center gap-2 text-lg font-semibold">
-                    <ChefHat className="h-5 w-5" />
-                    Create Recipe
-                </h1>
-                <Button variant="ghost" size="icon" onClick={handleCancel} disabled={isLoading} aria-label="Cancel">
-                    <X className="h-5 w-5" />
-                </Button>
-            </div>
+            <AddRecipeHeader onCancel={handleCancel} disabled={isLoading} />
 
             <div className="flex-1 overflow-y-auto px-4">
                 <div className="space-y-4 py-4 max-w-lg mx-auto w-full">

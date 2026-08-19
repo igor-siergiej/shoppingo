@@ -1,8 +1,9 @@
-import { ChefHat, Download, X } from 'lucide-react';
+import { Download, X } from 'lucide-react';
 import { useId } from 'react';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
+import { AddRecipeHeader } from './AddRecipeHeader';
 
 interface ImportScreenProps {
     link: string;
@@ -29,15 +30,7 @@ export const ImportScreen = ({
 
     return (
         <div className="flex flex-col min-h-[calc(100vh-3.5rem)]">
-            <div className="flex items-center justify-between px-4 py-3 border-b sticky top-0 bg-background z-10">
-                <h1 className="flex items-center gap-2 text-lg font-semibold">
-                    <ChefHat className="h-5 w-5" />
-                    Create Recipe
-                </h1>
-                <Button variant="ghost" size="icon" onClick={onCancel} aria-label="Cancel">
-                    <X className="h-5 w-5" />
-                </Button>
-            </div>
+            <AddRecipeHeader onCancel={onCancel} />
 
             <div className="flex-1 overflow-y-auto px-4">
                 <div className="space-y-4 py-8 max-w-lg mx-auto w-full">
