@@ -13,6 +13,10 @@ import { Label } from '../../components/ui/label';
 import { Textarea } from '../../components/ui/textarea';
 import { useRecipeMutations } from '../../hooks/useRecipeMutations';
 import { logger } from '../../utils/logger';
+import { ChoiceScreen } from './ChoiceScreen';
+import { ImportScreen } from './ImportScreen';
+
+type Mode = 'choice' | 'import' | 'form';
 
 interface Ingredient {
     name: string;
@@ -46,6 +50,12 @@ const AddRecipePage = () => {
 
     const initialLink = searchParams.get('sharedUrl') ?? '';
     const autoImport = !!initialLink;
+
+    const [mode, setMode] = useState<Mode>(autoImport ? 'form' : 'choice');
+    const modeRef = useRef<Mode>(mode);
+    useEffect(() => {
+        modeRef.current = mode;
+    }, [mode]);
 
     const [title, setTitle] = useState('');
     const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
@@ -120,6 +130,10 @@ const AddRecipePage = () => {
                 });
             } else {
                 toast.success('Recipe imported — review and edit before saving');
+            }
+
+            if (modeRef.current === 'import') {
+                setMode('form');
             }
         } catch (err) {
             if (controller.signal.aborted) {
@@ -205,6 +219,31 @@ const AddRecipePage = () => {
     const handleCancel = () => {
         navigate('/recipes');
     };
+
+    if (mode === 'choice') {
+        return (
+            <ChoiceScreen
+                onSelectImport={() => setMode('import')}
+                onSelectManual={() => setMode('form')}
+                onCancel={handleCancel}
+            />
+        );
+    }
+
+    if (mode === 'import') {
+        return (
+            <ImportScreen
+                link={link}
+                setLink={setLink}
+                isImporting={isImporting}
+                importError={importError}
+                onImport={() => void handleImport(link)}
+                onCancelImport={handleCancelImport}
+                onSwitchToManual={() => setMode('form')}
+                onCancel={handleCancel}
+            />
+        );
+    }
 
     const handleSubmit = async () => {
         if (!title.trim()) {
