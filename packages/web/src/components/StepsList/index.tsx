@@ -1,3 +1,5 @@
+import { AddRowButton, RemoveRowButton } from './ListRowButtons';
+
 interface StepsListProps {
     steps: string[];
     onChange: (steps: string[]) => void;
@@ -13,24 +15,13 @@ export const StepsList = ({ steps, onChange, disabled }: StepsListProps) => (
             >
                 <span className="font-semibold text-muted-foreground min-w-[1.25rem]">{i + 1}.</span>
                 <span className="flex-1 text-foreground">{step}</span>
-                <button
-                    type="button"
+                <RemoveRowButton
                     onClick={() => onChange(steps.filter((_, idx) => idx !== i))}
                     disabled={disabled}
-                    className="text-destructive hover:opacity-70"
-                    aria-label={`Remove step ${i + 1}`}
-                >
-                    ×
-                </button>
+                    ariaLabel={`Remove step ${i + 1}`}
+                />
             </div>
         ))}
-        <button
-            type="button"
-            onClick={() => onChange([...steps, ''])}
-            disabled={disabled}
-            className="w-full text-sm text-muted-foreground border border-dashed border-border rounded-md py-1.5 hover:bg-muted/50 transition-colors"
-        >
-            + Add step
-        </button>
+        <AddRowButton onClick={() => onChange([...steps, ''])} disabled={disabled} label="+ Add step" />
     </div>
 );

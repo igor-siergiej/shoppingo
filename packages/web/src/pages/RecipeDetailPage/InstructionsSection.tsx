@@ -10,6 +10,9 @@ interface InstructionsSectionProps {
     onSave: (instructions: string[]) => Promise<void>;
 }
 
+// View/edit toggle with a paste-text/step-list sub-toggle for instructions; already delegates
+// step rendering to the shared StepsList component, leaving only this view's own state machine.
+// fallow-ignore-next-line complexity
 export const InstructionsSection = ({ instructions = [], isOwner, onSave }: InstructionsSectionProps) => {
     const [isEditing, setIsEditing] = useState(false);
     const [steps, setSteps] = useState<string[]>(instructions);

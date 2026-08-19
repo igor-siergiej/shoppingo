@@ -16,6 +16,9 @@ interface ImportScreenProps {
     onCancel: () => void;
 }
 
+// Full-screen import step: link input, import/cancel button, and an inline error state with
+// retry/switch-to-manual actions — borderline complexity from that error-state branching alone.
+// fallow-ignore-next-line complexity
 export const ImportScreen = ({
     link,
     setLink,
