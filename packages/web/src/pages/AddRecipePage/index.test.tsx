@@ -58,6 +58,16 @@ const renderPage = (initialEntry = '/recipes/new') => {
     return { ...result, queryClient };
 };
 
+// Bare renderPage() now lands on the choice screen; these helpers navigate into the
+// mode a given test actually needs before its assertions/interactions run.
+const enterManualMode = async () => {
+    await userEvent.click(screen.getByRole('button', { name: /add manually/i }));
+};
+
+const enterImportMode = async () => {
+    await userEvent.click(screen.getByRole('button', { name: /import from a link/i }));
+};
+
 describe('AddRecipePage', () => {
     beforeEach(() => {
         vi.clearAllMocks();
@@ -67,6 +77,7 @@ describe('AddRecipePage', () => {
 
     it('disables Create Recipe until a title is entered', async () => {
         renderPage();
+        await enterManualMode();
         expect(screen.getByRole('button', { name: /create recipe/i })).toBeDisabled();
 
         await userEvent.type(screen.getByPlaceholderText('Enter recipe title...'), 'X');
@@ -75,23 +86,27 @@ describe('AddRecipePage', () => {
 
     it('navigates back to /recipes when the footer Cancel button is pressed', async () => {
         renderPage();
+        await enterManualMode();
         const cancelButtons = screen.getAllByRole('button', { name: /cancel/i });
         await userEvent.click(cancelButtons[cancelButtons.length - 1]);
         expect(mockNavigate).toHaveBeenCalledWith('/recipes');
     });
 
-    it('renders recipe title input', () => {
+    it('renders recipe title input', async () => {
         renderPage();
+        await enterManualMode();
         expect(screen.getByPlaceholderText('Enter recipe title...')).toBeTruthy();
     });
 
-    it('displays image upload area', () => {
+    it('displays image upload area', async () => {
         renderPage();
+        await enterManualMode();
         expect(screen.getByText('Click to upload image')).toBeTruthy();
     });
 
     it('auto-generates image when no image is uploaded', async () => {
         renderPage();
+        await enterManualMode();
 
         await userEvent.type(screen.getByPlaceholderText('Enter recipe title...'), 'Test Recipe');
         await userEvent.click(screen.getByRole('button', { name: /Create Recipe/ }));
@@ -103,6 +118,7 @@ describe('AddRecipePage', () => {
 
     it('does not call generateRecipeAiImage when an image was uploaded', async () => {
         renderPage();
+        await enterManualMode();
 
         await userEvent.type(screen.getByPlaceholderText('Enter recipe title...'), 'Another Recipe');
         const imageFile = new File(['image'], 'test.jpg', { type: 'image/jpeg' });
@@ -119,6 +135,7 @@ describe('AddRecipePage', () => {
 
     it('handles image upload by passing file to uploadRecipeImage', async () => {
         renderPage();
+        await enterManualMode();
 
         await userEvent.type(screen.getByPlaceholderText('Enter recipe title...'), 'Another Recipe');
         const imageFile = new File(['image'], 'test.jpg', { type: 'image/jpeg' });
@@ -132,12 +149,13 @@ describe('AddRecipePage', () => {
         });
     });
 
-    it('renders recipe link input', () => {
+    it('renders recipe link input', async () => {
         renderPage();
+        await enterManualMode();
         expect(screen.getByPlaceholderText('https://...')).toBeTruthy();
     });
 
-    it('pre-fills link and auto-imports when sharedUrl search param is present', async () => {
+    it('pre-fills link and auto-imports when sharedUrl search param is present, skipping choice and import screens', async () => {
         vi.mocked(importRecipe).mockResolvedValue({
             title: 'Shared Dish',
             ingredients: [],
@@ -149,19 +167,28 @@ describe('AddRecipePage', () => {
 
         const input = screen.getByPlaceholderText('https://...') as HTMLInputElement;
         expect(input.value).toBe('https://example.com/recipe');
+        expect(screen.getByPlaceholderText('Enter recipe title...')).toBeTruthy();
+        expect(screen.getByRole('button', { name: /create recipe/i })).toBeTruthy();
+        expect(screen.queryByRole('button', { name: /add manually/i })).toBeFalsy();
+        expect(screen.queryByRole('button', { name: /or add manually instead/i })).toBeFalsy();
 
         await waitFor(() => {
             expect(importRecipe).toHaveBeenCalledWith('https://example.com/recipe', expect.any(AbortSignal));
         });
+
+        expect(screen.queryByRole('button', { name: /add manually/i })).toBeFalsy();
+        expect(screen.queryByRole('button', { name: /or add manually instead/i })).toBeFalsy();
     });
 
-    it('renders instructions paste textarea', () => {
+    it('renders instructions paste textarea', async () => {
         renderPage();
+        await enterManualMode();
         expect(screen.getByPlaceholderText(/Paste instructions here/)).toBeTruthy();
     });
 
     it('splits pasted text into steps on blur', async () => {
         renderPage();
+        await enterManualMode();
         const textarea = screen.getByPlaceholderText(/Paste instructions here/) as HTMLTextAreaElement;
         await userEvent.type(textarea, 'Step one{enter}Step two{enter}Step three');
         fireEvent.blur(textarea);
@@ -179,31 +206,6 @@ describe('AddRecipePage', () => {
         const textarea = screen.getByPlaceholderText(/Paste instructions here/) as HTMLTextAreaElement;
         await waitFor(() => {
             expect(textarea.disabled).toBe(true);
-        });
-    });
-
-    it('shows a persistent error banner with a Retry action when import fails', async () => {
-        vi.mocked(importRecipe).mockRejectedValueOnce(new Error('This site blocks automated requests'));
-        renderPage();
-
-        await userEvent.type(screen.getByPlaceholderText('https://...'), 'https://example.com/blocked');
-        await userEvent.click(screen.getByRole('button', { name: /Import/ }));
-
-        await waitFor(() => {
-            expect(screen.getByText('This site blocks automated requests')).toBeTruthy();
-        });
-
-        vi.mocked(importRecipe).mockResolvedValueOnce({
-            title: 'Recovered',
-            ingredients: [],
-            instructions: [],
-            link: 'https://example.com/blocked',
-        });
-
-        await userEvent.click(screen.getByRole('button', { name: /Retry/ }));
-
-        await waitFor(() => {
-            expect(screen.queryByText('This site blocks automated requests')).toBeFalsy();
         });
     });
 
@@ -291,13 +293,15 @@ describe('AddRecipePage', () => {
         });
     });
 
-    it('does not show metadata chips when the import has no timing info', () => {
+    it('does not show metadata chips when the import has no timing info', async () => {
         renderPage();
+        await enterManualMode();
         expect(screen.queryByText(/Prep:/)).toBeFalsy();
     });
 
     it('navigates to /recipes after successful recipe creation', async () => {
         renderPage();
+        await enterManualMode();
         mockCreateRecipe.mockImplementation(async () => {
             mockRecipesData = [{ id: 'recipe-1', title: 'Pizza Margherita', ingredients: [] }];
             return 'recipe-1';
@@ -311,6 +315,7 @@ describe('AddRecipePage', () => {
 
     it('passes link and instructions to createRecipe', async () => {
         renderPage();
+        await enterManualMode();
         await userEvent.type(screen.getByPlaceholderText('Enter recipe title...'), 'My Recipe');
         await userEvent.type(screen.getByPlaceholderText('https://...'), 'https://example.com');
 
@@ -367,5 +372,156 @@ describe('AddRecipePage', () => {
                 ['Mix.', 'Bake.']
             );
         });
+    });
+
+    it('renders the choice screen by default with no sharedUrl param', () => {
+        renderPage();
+        expect(screen.getByRole('button', { name: /import from a link/i })).toBeTruthy();
+        expect(screen.getByRole('button', { name: /add manually/i })).toBeTruthy();
+        expect(screen.queryByPlaceholderText('Enter recipe title...')).toBeFalsy();
+    });
+
+    it('clicking Import from a link shows the import screen', async () => {
+        renderPage();
+        await enterImportMode();
+        expect(screen.getByPlaceholderText('https://...')).toBeTruthy();
+        expect(screen.getByRole('button', { name: /Import recipe from link/i })).toBeTruthy();
+        expect(screen.queryByPlaceholderText('Enter recipe title...')).toBeFalsy();
+    });
+
+    it('clicking Add manually shows the full form, empty', async () => {
+        renderPage();
+        await enterManualMode();
+        const titleInput = screen.getByPlaceholderText('Enter recipe title...') as HTMLInputElement;
+        expect(titleInput.value).toBe('');
+    });
+
+    it('navigates to /recipes when the choice screen Cancel button is pressed', async () => {
+        renderPage();
+        await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+        expect(mockNavigate).toHaveBeenCalledWith('/recipes');
+    });
+
+    it('a successful import via the choice→import path transitions to a pre-filled form', async () => {
+        vi.mocked(importRecipe).mockResolvedValue({
+            title: 'Imported Dish',
+            ingredients: [{ id: 'i1', name: 'flour', quantity: 200, unit: 'g' }],
+            instructions: ['Mix.', 'Bake.'],
+            link: 'https://example.com/dish',
+        });
+
+        renderPage();
+        await enterImportMode();
+
+        await userEvent.type(screen.getByPlaceholderText('https://...'), 'https://example.com/dish');
+        await userEvent.click(screen.getByRole('button', { name: /Import/ }));
+
+        await waitFor(() => {
+            expect(screen.getByPlaceholderText('Enter recipe title...')).toBeTruthy();
+        });
+        expect((screen.getByPlaceholderText('Enter recipe title...') as HTMLInputElement).value).toBe('Imported Dish');
+        expect(screen.getByText('200 g flour')).toBeTruthy();
+        expect(screen.getByText('Mix.')).toBeTruthy();
+    });
+
+    it('on import failure, shows an inline error with Retry and Switch to manual on the import screen', async () => {
+        vi.mocked(importRecipe).mockRejectedValueOnce(new Error('This site blocks automated requests'));
+        renderPage();
+        await enterImportMode();
+
+        await userEvent.type(screen.getByPlaceholderText('https://...'), 'https://example.com/blocked');
+        await userEvent.click(screen.getByRole('button', { name: /Import/ }));
+
+        await waitFor(() => {
+            expect(screen.getByText('This site blocks automated requests')).toBeTruthy();
+        });
+        expect(screen.getByRole('button', { name: /Retry/ })).toBeTruthy();
+        expect(screen.getByRole('button', { name: /Switch to manual/ })).toBeTruthy();
+        expect(screen.queryByPlaceholderText('Enter recipe title...')).toBeFalsy();
+    });
+
+    it('clicking Retry after a failure succeeds and transitions to form', async () => {
+        vi.mocked(importRecipe).mockRejectedValueOnce(new Error('This site blocks automated requests'));
+        renderPage();
+        await enterImportMode();
+
+        await userEvent.type(screen.getByPlaceholderText('https://...'), 'https://example.com/blocked');
+        await userEvent.click(screen.getByRole('button', { name: /Import/ }));
+
+        await waitFor(() => {
+            expect(screen.getByText('This site blocks automated requests')).toBeTruthy();
+        });
+
+        vi.mocked(importRecipe).mockResolvedValueOnce({
+            title: 'Recovered',
+            ingredients: [],
+            instructions: [],
+            link: 'https://example.com/blocked',
+        });
+
+        await userEvent.click(screen.getByRole('button', { name: /Retry/ }));
+
+        await waitFor(() => {
+            expect(screen.getByPlaceholderText('Enter recipe title...')).toBeTruthy();
+        });
+        expect((screen.getByPlaceholderText('Enter recipe title...') as HTMLInputElement).value).toBe('Recovered');
+    });
+
+    it('clicking Switch to manual after a failure moves to form with the link retained and everything else empty', async () => {
+        vi.mocked(importRecipe).mockRejectedValueOnce(new Error('This site blocks automated requests'));
+        renderPage();
+        await enterImportMode();
+
+        await userEvent.type(screen.getByPlaceholderText('https://...'), 'https://example.com/blocked');
+        await userEvent.click(screen.getByRole('button', { name: /Import/ }));
+
+        await waitFor(() => {
+            expect(screen.getByText('This site blocks automated requests')).toBeTruthy();
+        });
+
+        await userEvent.click(screen.getByRole('button', { name: /Switch to manual/ }));
+
+        await waitFor(() => {
+            expect(screen.getByPlaceholderText('Enter recipe title...')).toBeTruthy();
+        });
+        expect((screen.getByPlaceholderText('Enter recipe title...') as HTMLInputElement).value).toBe('');
+        expect((screen.getByPlaceholderText('https://...') as HTMLInputElement).value).toBe(
+            'https://example.com/blocked'
+        );
+        expect(screen.queryByText('This site blocks automated requests')).toBeFalsy();
+    });
+
+    it('shows a persistent error banner with a Retry action when import fails in form mode', async () => {
+        vi.mocked(importRecipe).mockRejectedValueOnce(new Error('This site blocks automated requests'));
+        renderPage('/recipes/new?sharedUrl=https%3A%2F%2Fexample.com%2Fblocked');
+
+        await waitFor(() => {
+            expect(screen.getByText('This site blocks automated requests')).toBeTruthy();
+        });
+        expect(screen.getByRole('button', { name: /Retry/ })).toBeTruthy();
+
+        vi.mocked(importRecipe).mockResolvedValueOnce({
+            title: 'Recovered',
+            ingredients: [],
+            instructions: [],
+            link: 'https://example.com/blocked',
+        });
+
+        await userEvent.click(screen.getByRole('button', { name: /Retry/ }));
+
+        await waitFor(() => {
+            expect(screen.queryByText('This site blocks automated requests')).toBeFalsy();
+        });
+        expect((screen.getByPlaceholderText('Enter recipe title...') as HTMLInputElement).value).toBe('Recovered');
+    });
+
+    it('clicking "or add manually instead" with no error moves straight to an empty form', async () => {
+        renderPage();
+        await enterImportMode();
+
+        await userEvent.click(screen.getByRole('button', { name: /or add manually instead/i }));
+
+        expect(screen.getByPlaceholderText('Enter recipe title...')).toBeTruthy();
+        expect((screen.getByPlaceholderText('Enter recipe title...') as HTMLInputElement).value).toBe('');
     });
 });

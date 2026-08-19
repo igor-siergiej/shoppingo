@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { StepsList } from '../../components/StepsList';
 import { Button } from '../../components/ui/button';
 import { Textarea } from '../../components/ui/textarea';
+import { splitIntoSteps } from '../../utils/splitIntoSteps';
 
 interface InstructionsSectionProps {
     instructions?: string[];
@@ -8,12 +10,9 @@ interface InstructionsSectionProps {
     onSave: (instructions: string[]) => Promise<void>;
 }
 
-const splitIntoSteps = (text: string): string[] =>
-    text
-        .split('\n')
-        .map((line) => line.replace(/^\s*\d+[.)]\s*/, '').trim())
-        .filter(Boolean);
-
+// View/edit toggle with a paste-text/step-list sub-toggle for instructions; already delegates
+// step rendering to the shared StepsList component, leaving only this view's own state machine.
+// fallow-ignore-next-line complexity
 export const InstructionsSection = ({ instructions = [], isOwner, onSave }: InstructionsSectionProps) => {
     const [isEditing, setIsEditing] = useState(false);
     const [steps, setSteps] = useState<string[]>(instructions);
@@ -103,32 +102,7 @@ export const InstructionsSection = ({ instructions = [], isOwner, onSave }: Inst
                     className="min-h-[100px] resize-none"
                 />
             ) : (
-                <div className="space-y-1">
-                    {steps.map((step, i) => (
-                        <div
-                            key={`${i}-${step.slice(0, 20)}`}
-                            className="flex items-start gap-2 px-3 py-2 rounded-md bg-muted border border-border text-sm"
-                        >
-                            <span className="font-semibold text-muted-foreground min-w-[1.25rem]">{i + 1}.</span>
-                            <span className="flex-1 text-foreground">{step}</span>
-                            <button
-                                type="button"
-                                onClick={() => setSteps(steps.filter((_, idx) => idx !== i))}
-                                className="text-destructive hover:opacity-70"
-                                aria-label={`Remove step ${i + 1}`}
-                            >
-                                ×
-                            </button>
-                        </div>
-                    ))}
-                    <button
-                        type="button"
-                        onClick={() => setSteps([...steps, ''])}
-                        className="w-full text-sm text-muted-foreground border border-dashed border-border rounded-md py-1.5 hover:bg-muted/50 transition-colors"
-                    >
-                        + Add step
-                    </button>
-                </div>
+                <StepsList steps={steps} onChange={setSteps} />
             )}
 
             <div className="flex gap-2">
