@@ -4,19 +4,27 @@ import { useRef } from 'react';
 interface ImageUploadFieldProps {
     imageUrl: string | null;
     disabled?: boolean;
-    onFileSelected: (file: File, dataUrl: string) => void;
+    onFileSelected: (file: File) => void;
+    onPreviewReady: (dataUrl: string) => void;
     onClear: () => void;
 }
 
-export const ImageUploadField = ({ imageUrl, disabled, onFileSelected, onClear }: ImageUploadFieldProps) => {
+export const ImageUploadField = ({
+    imageUrl,
+    disabled,
+    onFileSelected,
+    onPreviewReady,
+    onClear,
+}: ImageUploadFieldProps) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
+            onFileSelected(file);
             const reader = new FileReader();
             reader.onload = (event) => {
-                onFileSelected(file, event.target?.result as string);
+                onPreviewReady(event.target?.result as string);
             };
             reader.readAsDataURL(file);
         }

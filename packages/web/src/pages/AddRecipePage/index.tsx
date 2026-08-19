@@ -282,10 +282,8 @@ const AddRecipePage = () => {
                     <ImageUploadField
                         imageUrl={imageUrl}
                         disabled={isLoading}
-                        onFileSelected={(file, dataUrl) => {
-                            setSelectedFile(file);
-                            setImageUrl(dataUrl);
-                        }}
+                        onFileSelected={setSelectedFile}
+                        onPreviewReady={setImageUrl}
                         onClear={() => {
                             setImageUrl(null);
                             setSelectedFile(null);
