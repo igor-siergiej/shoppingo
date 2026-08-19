@@ -45,6 +45,7 @@ test.describe('Recipes page', () => {
         await authenticatedPage.goto('/recipes');
         await authenticatedPage.locator('button[class*="border-primary"]').first().click();
         await expect(authenticatedPage.getByRole('heading', { name: 'Create Recipe' })).toBeVisible();
+        await authenticatedPage.getByRole('button', { name: 'Add manually' }).click();
         await authenticatedPage.getByLabel('Recipe Title').fill('New Dish');
         await authenticatedPage.getByRole('button', { name: 'Create Recipe' }).click();
         await expect(authenticatedPage.getByRole('button', { name: 'New Dish' })).toBeVisible();
