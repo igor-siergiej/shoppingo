@@ -7,12 +7,14 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { generateRecipeAiImage, getRecipesQuery, importRecipe, importRecipeImage, uploadRecipeImage } from '../../api';
 import { FriendPicker } from '../../components/FriendPicker';
+import { StepsList } from '../../components/StepsList';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { Textarea } from '../../components/ui/textarea';
 import { useRecipeMutations } from '../../hooks/useRecipeMutations';
 import { logger } from '../../utils/logger';
+import { splitIntoSteps } from '../../utils/splitIntoSteps';
 import { AddRecipeHeader } from './AddRecipeHeader';
 import { ChoiceScreen } from './ChoiceScreen';
 import { ImportScreen } from './ImportScreen';
@@ -24,12 +26,6 @@ interface Ingredient {
     quantity?: number;
     unit?: string;
 }
-
-const splitIntoSteps = (text: string): string[] =>
-    text
-        .split('\n')
-        .map((line) => line.replace(/^\s*\d+[.)]\s*/, '').trim())
-        .filter(Boolean);
 
 const formatIngredientLine = (ingredient: Ingredient): string =>
     [ingredient.quantity, ingredient.unit, ingredient.name]
@@ -506,36 +502,7 @@ const AddRecipePage = () => {
                                 className="min-h-[80px] resize-none border border-foreground/30"
                             />
                         ) : (
-                            <div className="space-y-1">
-                                {steps.map((step, i) => (
-                                    <div
-                                        key={`${i}-${step.slice(0, 20)}`}
-                                        className="flex items-start gap-2 px-3 py-2 rounded-md bg-muted border border-border text-sm"
-                                    >
-                                        <span className="font-semibold text-muted-foreground min-w-[1.25rem]">
-                                            {i + 1}.
-                                        </span>
-                                        <span className="flex-1 text-foreground">{step}</span>
-                                        <button
-                                            type="button"
-                                            onClick={() => setSteps(steps.filter((_, idx) => idx !== i))}
-                                            disabled={isLoading}
-                                            className="text-destructive hover:opacity-70"
-                                            aria-label={`Remove step ${i + 1}`}
-                                        >
-                                            ×
-                                        </button>
-                                    </div>
-                                ))}
-                                <button
-                                    type="button"
-                                    onClick={() => setSteps([...steps, ''])}
-                                    disabled={isLoading}
-                                    className="w-full text-sm text-muted-foreground border border-dashed border-border rounded-md py-1.5 hover:bg-muted/50 transition-colors"
-                                >
-                                    + Add step
-                                </button>
-                            </div>
+                            <StepsList steps={steps} onChange={setSteps} disabled={isLoading} />
                         )}
                     </div>
 
