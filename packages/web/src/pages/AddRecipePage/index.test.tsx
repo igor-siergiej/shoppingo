@@ -488,6 +488,31 @@ describe('AddRecipePage', () => {
         expect((screen.getByPlaceholderText('https://...') as HTMLInputElement).value).toBe(
             'https://example.com/blocked'
         );
+        expect(screen.queryByText('This site blocks automated requests')).toBeFalsy();
+    });
+
+    it('shows a persistent error banner with a Retry action when import fails in form mode', async () => {
+        vi.mocked(importRecipe).mockRejectedValueOnce(new Error('This site blocks automated requests'));
+        renderPage('/recipes/new?sharedUrl=https%3A%2F%2Fexample.com%2Fblocked');
+
+        await waitFor(() => {
+            expect(screen.getByText('This site blocks automated requests')).toBeTruthy();
+        });
+        expect(screen.getByRole('button', { name: /Retry/ })).toBeTruthy();
+
+        vi.mocked(importRecipe).mockResolvedValueOnce({
+            title: 'Recovered',
+            ingredients: [],
+            instructions: [],
+            link: 'https://example.com/blocked',
+        });
+
+        await userEvent.click(screen.getByRole('button', { name: /Retry/ }));
+
+        await waitFor(() => {
+            expect(screen.queryByText('This site blocks automated requests')).toBeFalsy();
+        });
+        expect((screen.getByPlaceholderText('Enter recipe title...') as HTMLInputElement).value).toBe('Recovered');
     });
 
     it('clicking "or add manually instead" with no error moves straight to an empty form', async () => {

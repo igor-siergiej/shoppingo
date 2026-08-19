@@ -239,7 +239,11 @@ const AddRecipePage = () => {
                 importError={importError}
                 onImport={() => void handleImport(link)}
                 onCancelImport={handleCancelImport}
-                onSwitchToManual={() => setMode('form')}
+                onSwitchToManual={() => {
+                    handleCancelImport();
+                    setImportError('');
+                    setMode('form');
+                }}
                 onCancel={handleCancel}
             />
         );
