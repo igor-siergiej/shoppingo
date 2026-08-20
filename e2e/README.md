@@ -8,7 +8,12 @@ Playwright suite in this directory. Run via `bun run test:e2e` (all projects) fr
 - `mobile-visual` — screenshot-diff regression tests at a mobile viewport (`devices['Pixel 7']`), matching only `e2e/tests/*.visual.spec.ts`.
 - `desktop-visual` — the same visual spec files at a desktop viewport (`devices['Desktop Chrome']`) — kept as its own project (rather than reusing `chromium`) so its screenshots land in separate `-desktop-visual-linux.png` baseline files and `chromium`'s functional tests stay screenshot-free.
 
-Currently the visual suite covers the `/recipes/new` flow (`recipe-form.visual.spec.ts`) — added after a real bug (PR #131) where that page's layout wasted vertical space and duplicated its header, only caught by manually emulating a phone.
+Currently the visual suite covers:
+- `/recipes/new` (`recipe-form.visual.spec.ts`) — added after a real bug (PR #131) where that page's layout wasted vertical space and duplicated its header, only caught by manually emulating a phone.
+- `/` (`lists.visual.spec.ts`), `/recipes` (`recipes.visual.spec.ts`), `/list/:listTitle` (`items.visual.spec.ts`), `/friends` (`friends.visual.spec.ts`) — empty + populated states each.
+- `/recipes/:recipeId` (`recipe-detail.visual.spec.ts`) — one populated state (no empty variant; the route requires an existing recipe).
+- `/calendar` (`calendar.visual.spec.ts`) — one fixed-date state (uses `page.clock.setFixedTime` so the baseline doesn't depend on which real-world day the test runs).
+- `/login`, `/register` (`auth.visual.spec.ts`) — these two don't use the `authenticatedPage` fixture (pre-auth) and render under a different layout (`RootLayout showLayout={false}`) than every other page above.
 
 ## Updating visual baselines
 
