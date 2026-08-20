@@ -16,15 +16,22 @@ interface LayoutProps {
 // no need for bottom-anchoring in the first place.
 const NORMAL_SCROLL_ROUTES = new Set(['/recipes']);
 
+// Routes with their own full-page header/footer (no bottom ToolBar) — they don't need
+// the bottom-24 space Layout normally reserves for it, or Layout's own padding.
+const FULL_BLEED_ROUTES = new Set(['/recipes/new']);
+
 export const Layout = ({ children }: LayoutProps) => {
     const { executeRefresh } = usePullToRefreshContext();
     const { scrollRef, pullY, isRefreshing, hasTriggered } = usePullToRefresh(executeRefresh);
     const { pathname } = useLocation();
 
     const flexDirectionClass = NORMAL_SCROLL_ROUTES.has(pathname) ? 'flex-col' : 'flex-col-reverse';
+    const containerClass = FULL_BLEED_ROUTES.has(pathname)
+        ? 'fixed top-14 md:top-16 bottom-0 left-0 right-0'
+        : 'fixed top-14 md:top-16 bottom-24 left-0 right-0 px-4 py-2 max-w-[500px] mx-auto';
 
     return (
-        <div className="fixed top-14 md:top-16 bottom-24 left-0 right-0 px-4 py-2 max-w-[500px] mx-auto">
+        <div className={containerClass}>
             <PullToRefreshIndicator pullY={pullY} isRefreshing={isRefreshing} hasTriggered={hasTriggered} />
             <div ref={scrollRef} className={`h-full overflow-y-auto flex ${flexDirectionClass} overscroll-y-contain`}>
                 {children}

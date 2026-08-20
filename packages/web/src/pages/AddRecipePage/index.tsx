@@ -258,7 +258,7 @@ const AddRecipePage = () => {
     };
 
     return (
-        <div className="flex flex-col min-h-[calc(100vh-3.5rem)]">
+        <div className="flex flex-col h-full">
             <AddRecipeHeader onCancel={handleCancel} disabled={isLoading} />
 
             <div className="flex-1 overflow-y-auto px-4">
@@ -267,6 +267,7 @@ const AddRecipePage = () => {
                         <Label htmlFor={recipeNameId}>Recipe Title</Label>
                         <Input
                             id={recipeNameId}
+                            name="recipe-title"
                             placeholder="Enter recipe title..."
                             value={title}
                             onChange={(e) => {
@@ -275,6 +276,7 @@ const AddRecipePage = () => {
                             }}
                             disabled={isLoading}
                             autoFocus
+                            autoComplete="off"
                             className="h-10 border border-foreground/30"
                         />
                     </div>
