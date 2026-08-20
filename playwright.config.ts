@@ -17,6 +17,12 @@ export default defineConfig({
     retries: process.env.CI ? 2 : 0,
     reporter: 'html',
     globalSetup: './e2e/global-setup.ts',
+    expect: {
+        toHaveScreenshot: {
+            animations: 'disabled',
+            maxDiffPixelRatio: 0.02,
+        },
+    },
     use: {
         baseURL: 'http://localhost:4000',
         trace: 'on-first-retry',
@@ -26,6 +32,17 @@ export default defineConfig({
         {
             name: 'chromium',
             use: { ...devices['Desktop Chrome'] },
+            testIgnore: /.*\.visual\.spec\.ts/,
+        },
+        {
+            name: 'mobile-visual',
+            use: { ...devices['Pixel 7'] },
+            testMatch: /.*\.visual\.spec\.ts/,
+        },
+        {
+            name: 'desktop-visual',
+            use: { ...devices['Desktop Chrome'] },
+            testMatch: /.*\.visual\.spec\.ts/,
         },
     ],
     webServer: [
