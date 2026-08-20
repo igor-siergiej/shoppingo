@@ -17,10 +17,11 @@ Baselines are Linux-only (they're compared against GitHub Actions' `ubuntu-lates
 To add or intentionally update a baseline:
 
 1. Push your change. Let the `e2e` CI job run and fail (missing/mismatched snapshot is expected here).
-2. Download the `playwright-report` artifact from the failed run (GitHub Actions run summary → Artifacts, or `gh run download <run-id> -n playwright-report`).
-3. Open the report, find each failed test's `*-actual.png` attachment.
-4. Copy it into `e2e/tests/recipe-form.visual.spec.ts-snapshots/`, named exactly as the failure output says the expected path should be.
-5. Commit the PNG(s) and push. CI should now pass.
+2. Download and extract the `playwright-report` artifact from the failed run (GitHub Actions run summary → Artifacts, or `gh run download <run-id> -n playwright-report`).
+3. Serve it locally with `bunx playwright show-report <extracted-dir>` — the HTML report's UI is JS-driven and does not render correctly opened directly over a plain `file://` URL.
+4. In the report UI, open each failed test and look at its attachments (actual/expected/diff images). The files on disk under the artifact's `data/` subdirectory are named by content hash, not `*-actual.png`, so identify which hashed file is which by the attachment slot it's shown under in the UI — or by cross-referencing the failure log's `Expected:`/`Received:` path lines, which do name the expected baseline path even though the actual file on disk is hash-named.
+5. Copy the identified image into `e2e/tests/recipe-form.visual.spec.ts-snapshots/`, named exactly as the failure output says the expected path should be.
+6. Commit the PNG(s) and push. CI should now pass.
 
 For local iteration (checking your test logic works, *not* for producing the commit) use:
 
