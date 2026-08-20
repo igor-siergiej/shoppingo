@@ -38,11 +38,27 @@ export default defineConfig({
             name: 'mobile-visual',
             use: { ...devices['Pixel 7'] },
             testMatch: /.*\.visual\.spec\.ts/,
+            timeout: 15000,
         },
         {
             name: 'desktop-visual',
             use: { ...devices['Desktop Chrome'] },
             testMatch: /.*\.visual\.spec\.ts/,
+            timeout: 15000,
+            // Desktop screens are mostly empty background, so the global 2%
+            // ratio (of a much larger 1280x720 canvas) is a looser absolute
+            // pixel budget than it is for the smaller mobile viewport — use
+            // a flat pixel cap here instead, roughly matching the mobile
+            // project's effective budget, so a real component-level shift
+            // can't hide under a ratio that's loose only because the canvas
+            // is big. Repeats `animations: 'disabled'` rather than relying
+            // on it merging in from the global `expect` block above.
+            expect: {
+                toHaveScreenshot: {
+                    animations: 'disabled',
+                    maxDiffPixels: 4000,
+                },
+            },
         },
     ],
     webServer: [

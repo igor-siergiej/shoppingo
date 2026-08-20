@@ -16,6 +16,7 @@
     "test:e2e": "dotenv -e .env -- playwright test",
     "test:e2e:ui": "dotenv -e .env -- playwright test --ui",
     "test:e2e:update-snapshots": "dotenv -e .env -- playwright test --project=mobile-visual --project=desktop-visual --update-snapshots",
+    "tsc:e2e": "tsc --noEmit -p e2e/tsconfig.json",
     "audit": "fallow-audit",
     "prepare": "husky"
   },
