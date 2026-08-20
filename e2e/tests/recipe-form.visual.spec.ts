@@ -1,20 +1,5 @@
-import type { Page } from '@playwright/test';
 import { expect, test } from '../fixtures';
-
-// Runs before every screenshot below, on all three screens. Waits out
-// web-font swap (Montserrat loads async via Google Fonts), then explicitly
-// asserts Montserrat actually loaded — document.fonts.ready resolves even
-// if the CDN fetch failed/was blocked, silently falling back to a default
-// sans-serif, so document.fonts.check() here doubles as an assertion that
-// the font really loaded rather than a mass, confusing pixel-diff. Also
-// blurs whatever's focused — a no-op on the choice screen (no input), but
-// on the other two screens it clears the autoFocused field's blinking text
-// caret so the screenshot doesn't capture nondeterministic caret blink.
-const settle = async (page: Page) => {
-    await page.evaluate(() => document.fonts.ready);
-    await expect.poll(() => page.evaluate(() => document.fonts.check('600 16px Montserrat'))).toBe(true);
-    await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
-};
+import { settle } from './visual-helpers';
 
 test.describe('Recipe form visual regression', () => {
     test('choice screen', async ({ authenticatedPage }) => {
