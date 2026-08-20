@@ -16,19 +16,13 @@ const settle = async (page: Page) => {
     await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
 };
 
-// The Appbar renders a `v{version}` badge that changes on every release —
-// mask it out so a routine version bump doesn't drift every baseline.
-const VERSION_BADGE = /^v\d+\.\d+\.\d+$/;
-
 test.describe('Recipe form visual regression', () => {
     test('choice screen', async ({ authenticatedPage }) => {
         await authenticatedPage.goto('/recipes/new');
         await expect(authenticatedPage.getByRole('heading', { name: 'Create Recipe' })).toBeVisible();
         await expect(authenticatedPage.getByRole('button', { name: 'Add manually' })).toBeVisible();
         await settle(authenticatedPage);
-        await expect(authenticatedPage).toHaveScreenshot('recipe-new-choice.png', {
-            mask: [authenticatedPage.getByText(VERSION_BADGE)],
-        });
+        await expect(authenticatedPage).toHaveScreenshot('recipe-new-choice.png');
     });
 
     test('manual form screen', async ({ authenticatedPage }) => {
@@ -36,9 +30,7 @@ test.describe('Recipe form visual regression', () => {
         await authenticatedPage.getByRole('button', { name: 'Add manually' }).click();
         await expect(authenticatedPage.getByLabel('Recipe Title')).toBeVisible();
         await settle(authenticatedPage);
-        await expect(authenticatedPage).toHaveScreenshot('recipe-new-form.png', {
-            mask: [authenticatedPage.getByText(VERSION_BADGE)],
-        });
+        await expect(authenticatedPage).toHaveScreenshot('recipe-new-form.png');
     });
 
     test('import screen', async ({ authenticatedPage }) => {
@@ -46,8 +38,6 @@ test.describe('Recipe form visual regression', () => {
         await authenticatedPage.getByRole('button', { name: 'Import from a link' }).click();
         await expect(authenticatedPage.getByLabel('Recipe Link')).toBeVisible();
         await settle(authenticatedPage);
-        await expect(authenticatedPage).toHaveScreenshot('recipe-new-import.png', {
-            mask: [authenticatedPage.getByText(VERSION_BADGE)],
-        });
+        await expect(authenticatedPage).toHaveScreenshot('recipe-new-import.png');
     });
 });
