@@ -41,10 +41,12 @@ export const LinkImportField = ({
         <div className="flex gap-2">
             <Input
                 type="url"
+                name="recipe-link"
                 placeholder="https://..."
                 value={link}
                 onChange={(e) => setLink(e.target.value)}
                 disabled={disabled || isImporting}
+                autoComplete="off"
                 className="h-10 border border-foreground/30"
             />
             <Button

@@ -42,11 +42,13 @@ export const ImportScreen = ({
                         <Input
                             id={linkInputId}
                             type="url"
+                            name="recipe-link"
                             placeholder="https://..."
                             value={link}
                             onChange={(e) => setLink(e.target.value)}
                             disabled={isImporting}
                             autoFocus
+                            autoComplete="off"
                             className="h-10 border border-foreground/30"
                         />
                     </div>
