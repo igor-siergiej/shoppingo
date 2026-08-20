@@ -1,3 +1,10 @@
+## [1.59.10](https://github.com/igor-siergiej/shoppingo/compare/v1.59.9...v1.59.10) (2026-08-20)
+
+
+### Bug Fixes
+
+* **web:** disable autofill on add-recipe fields and reclaim wasted layout space ([#131](https://github.com/igor-siergiej/shoppingo/issues/131)) ([63d9d79](https://github.com/igor-siergiej/shoppingo/commit/63d9d794aaca4ebf431258d4846432b55b38820a))
+
 ## [1.59.9](https://github.com/igor-siergiej/shoppingo/compare/v1.59.8...v1.59.9) (2026-08-18)
 
 
