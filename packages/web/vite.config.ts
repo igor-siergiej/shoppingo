@@ -8,7 +8,12 @@ export default defineConfig(({ mode }) => {
     const isDev = mode === 'development';
 
     const packageJson = JSON.parse(fs.readFileSync('./package.json', 'utf8'));
-    const appVersion = process.env.APP_VERSION || packageJson.version || (isDev ? 'localhost' : '');
+    // Dev server always shows a fixed 'localhost' badge instead of package.json's
+    // version — keeps it visibly distinct from a real release and stops every
+    // version bump from drifting e2e visual-regression baselines that run against
+    // this same dev server. APP_VERSION (set by the Docker build) still wins for
+    // real builds regardless of mode.
+    const appVersion = process.env.APP_VERSION || (isDev ? 'localhost' : packageJson.version) || '';
 
     return {
         plugins: [
