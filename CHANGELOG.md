@@ -1,3 +1,10 @@
+# [1.60.0](https://github.com/igor-siergiej/shoppingo/compare/v1.59.10...v1.60.0) (2026-08-26)
+
+
+### Features
+
+* **web:** replace shared-list badge with member avatar stack ([#133](https://github.com/igor-siergiej/shoppingo/issues/133)) ([8e44a32](https://github.com/igor-siergiej/shoppingo/commit/8e44a3242497a1022c69c8e0a843c7e0e6590552))
+
 ## [1.59.10](https://github.com/igor-siergiej/shoppingo/compare/v1.59.9...v1.59.10) (2026-08-20)
 
 
