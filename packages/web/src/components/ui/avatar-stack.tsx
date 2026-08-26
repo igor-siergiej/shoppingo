@@ -9,7 +9,8 @@ const AVATAR_COLORS = [
     'bg-violet-200 text-violet-800 dark:bg-violet-800 dark:text-violet-100',
 ];
 
-const hashString = (value: string) => value.split('').reduce((hash, char) => (hash << 5) - hash + char.charCodeAt(0), 0);
+const hashString = (value: string) =>
+    value.split('').reduce((hash, char) => (hash << 5) - hash + char.charCodeAt(0), 0);
 
 const getInitials = (username: string) => username.slice(0, 2).toUpperCase();
 
