@@ -90,11 +90,32 @@ describe('RecipesPage', () => {
         expect(searchInput).toHaveClass('focus-visible:ring-inset');
     });
 
-    it('renders owned and shared recipes together, badge distinguishing shared ones', () => {
+    it('renders owned and shared recipes together, with avatars for other members on each', () => {
         vi.mocked(useQuery).mockReturnValue({
             data: [
-                { id: 'r1', title: 'Owned Recipe', ownerId: 'user-1', ingredients: [], coverImageKey: 'img-1' },
-                { id: 'r2', title: 'Shared Recipe', ownerId: 'user-2', ingredients: [] },
+                {
+                    id: 'r1',
+                    title: 'Owned Recipe',
+                    ownerId: 'user-1',
+                    ingredients: [],
+                    coverImageKey: 'img-1',
+                    users: [
+                        { id: 'user-1', username: 'me' },
+                        { id: 'user-3', username: 'friend' },
+                    ],
+                    dateAdded: new Date(),
+                },
+                {
+                    id: 'r2',
+                    title: 'Shared Recipe',
+                    ownerId: 'user-2',
+                    ingredients: [],
+                    users: [
+                        { id: 'user-2', username: 'owner2' },
+                        { id: 'user-1', username: 'me' },
+                    ],
+                    dateAdded: new Date(),
+                },
             ],
             isLoading: false,
             isError: false,
@@ -109,8 +130,9 @@ describe('RecipesPage', () => {
 
         expect(screen.getByText('Owned Recipe')).toBeInTheDocument();
         expect(screen.getByText('Shared Recipe')).toBeInTheDocument();
-        // Only one "Shared" badge, on the non-owned card — not a duplicated section heading.
-        expect(screen.getAllByText('Shared').length).toBe(1);
+        // Avatars for other members show on both cards — owned or not.
+        expect(screen.getByTitle('friend')).toBeInTheDocument();
+        expect(screen.getByTitle('owner2')).toBeInTheDocument();
         expect(screen.queryByText('No recipes yet')).not.toBeInTheDocument();
     });
 

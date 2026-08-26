@@ -24,6 +24,11 @@ describe('RecipeCard', () => {
             { id: 'ing-1', name: 'Ingredient 1' },
             { id: 'ing-2', name: 'Ingredient 2' },
         ],
+        users: [
+            { id: 'user-1', username: 'owner' },
+            { id: 'user-2', username: 'friend' },
+        ],
+        dateAdded: new Date(),
     };
 
     const mockRecipeNoImage: Recipe = {
@@ -46,19 +51,19 @@ describe('RecipeCard', () => {
     });
 
     it('renders recipe card with title', () => {
-        render(<RecipeCard recipe={mockRecipe} isOwner={true} onClick={vi.fn()} />);
+        render(<RecipeCard recipe={mockRecipe} currentUserId="user-1" onClick={vi.fn()} />);
 
         expect(screen.getByText('Test Recipe')).toBeTruthy();
     });
 
     it('displays ingredient count', () => {
-        render(<RecipeCard recipe={mockRecipe} isOwner={true} onClick={vi.fn()} />);
+        render(<RecipeCard recipe={mockRecipe} currentUserId="user-1" onClick={vi.fn()} />);
 
         expect(screen.getByText('2 ingredients')).toBeTruthy();
     });
 
     it('fetches and displays image when coverImageKey is present', async () => {
-        render(<RecipeCard recipe={mockRecipe} isOwner={true} onClick={vi.fn()} />);
+        render(<RecipeCard recipe={mockRecipe} currentUserId="user-1" onClick={vi.fn()} />);
 
         await waitFor(() => {
             expect(global.fetch).toHaveBeenCalledWith(
@@ -74,7 +79,9 @@ describe('RecipeCard', () => {
     });
 
     it('shows skeleton when no coverImageKey', () => {
-        const { container } = render(<RecipeCard recipe={mockRecipeNoImage} isOwner={true} onClick={vi.fn()} />);
+        const { container } = render(
+            <RecipeCard recipe={mockRecipeNoImage} currentUserId="user-1" onClick={vi.fn()} />
+        );
 
         expect(container.querySelector('[data-slot="skeleton"]')).toBeTruthy();
     });
@@ -82,7 +89,7 @@ describe('RecipeCard', () => {
     it('calls onClick when card is clicked', () => {
         const mockClick = vi.fn();
 
-        const { container } = render(<RecipeCard recipe={mockRecipe} isOwner={true} onClick={mockClick} />);
+        const { container } = render(<RecipeCard recipe={mockRecipe} currentUserId="user-1" onClick={mockClick} />);
 
         const card = container.querySelector('[role="button"]');
         if (card) {
@@ -99,7 +106,7 @@ describe('RecipeCard', () => {
             } as Response)
         );
 
-        const { container } = render(<RecipeCard recipe={mockRecipe} isOwner={true} onClick={vi.fn()} />);
+        const { container } = render(<RecipeCard recipe={mockRecipe} currentUserId="user-1" onClick={vi.fn()} />);
 
         await waitFor(() => {
             // Should show error icon (ImageOff SVG)
@@ -107,20 +114,21 @@ describe('RecipeCard', () => {
         });
     });
 
-    it('shows a Shared badge when isOwner is false', () => {
-        render(<RecipeCard recipe={mockRecipe} isOwner={false} onClick={vi.fn()} />);
+    it('shows an avatar for each other member, including for the owner', () => {
+        render(<RecipeCard recipe={mockRecipe} currentUserId="user-1" onClick={vi.fn()} />);
 
-        expect(screen.getByText('Shared')).toBeTruthy();
+        expect(screen.getByTitle('friend')).toBeTruthy();
     });
 
-    it('does not show a Shared badge when isOwner is true', () => {
-        render(<RecipeCard recipe={mockRecipe} isOwner={true} onClick={vi.fn()} />);
+    it('excludes the current user from the avatar stack', () => {
+        render(<RecipeCard recipe={mockRecipe} currentUserId="user-2" onClick={vi.fn()} />);
 
-        expect(screen.queryByText('Shared')).toBeNull();
+        expect(screen.queryByTitle('friend')).toBeNull();
+        expect(screen.getByTitle('owner')).toBeTruthy();
     });
 
     it('cleans up object URL on unmount', async () => {
-        const { unmount } = render(<RecipeCard recipe={mockRecipe} isOwner={true} onClick={vi.fn()} />);
+        const { unmount } = render(<RecipeCard recipe={mockRecipe} currentUserId="user-1" onClick={vi.fn()} />);
 
         await waitFor(() => {
             expect(global.URL.createObjectURL).toHaveBeenCalled();

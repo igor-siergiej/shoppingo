@@ -51,6 +51,7 @@ const ListsList = ({ lists, refetch, currentUserId }: ListsListProps) => {
             key={list.title}
             list={list}
             isOwner={list.ownerId === currentUserId}
+            currentUserId={currentUserId}
             isEditing={editingList === list.title}
             editValue={editValue}
             onEditChange={setEditValue}

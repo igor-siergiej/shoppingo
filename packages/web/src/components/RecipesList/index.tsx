@@ -46,7 +46,7 @@ export const RecipesList = ({ recipes, currentUserId, onRecipeClick, isLoading }
                 <RecipeCard
                     key={recipe.id}
                     recipe={recipe}
-                    isOwner={recipe.ownerId === currentUserId}
+                    currentUserId={currentUserId}
                     onClick={() => onRecipeClick(recipe.id)}
                 />
             ))}
