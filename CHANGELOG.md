@@ -1,3 +1,10 @@
+# [1.62.0](https://github.com/igor-siergiej/shoppingo/compare/v1.61.0...v1.62.0) (2026-09-09)
+
+
+### Features
+
+* **web:** give the extra-actions menu a surface panel ([#136](https://github.com/igor-siergiej/shoppingo/issues/136)) ([8f71e4b](https://github.com/igor-siergiej/shoppingo/commit/8f71e4b25ccf94531fc6cf3c7d8768af17e08733))
+
 # [1.61.0](https://github.com/igor-siergiej/shoppingo/compare/v1.60.0...v1.61.0) (2026-09-09)
 
 
