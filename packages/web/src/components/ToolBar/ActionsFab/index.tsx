@@ -17,10 +17,10 @@ interface ActionsFabProps {
     actionItems: ActionItem[];
 }
 
-const circleClasses = (variant: ActionItem['variant'], disabled: boolean | undefined) => {
-    if (disabled) return 'bg-secondary text-muted-foreground opacity-50 cursor-not-allowed';
-    if (variant === 'destructive') return 'bg-destructive text-white';
-    return 'bg-secondary text-secondary-foreground';
+const rowClasses = (variant: ActionItem['variant'], disabled: boolean | undefined) => {
+    if (disabled) return 'text-muted-foreground opacity-50 cursor-not-allowed';
+    if (variant === 'destructive') return 'text-destructive hover:bg-destructive/10';
+    return 'text-popover-foreground hover:bg-accent hover:text-accent-foreground';
 };
 
 export const ActionsFab = ({ actionItems }: ActionsFabProps) => {
@@ -38,40 +38,32 @@ export const ActionsFab = ({ actionItems }: ActionsFabProps) => {
         <div className="relative">
             <AnimatePresence>
                 {open && hasActions && (
-                    <div className="absolute bottom-full left-1/2 mb-3 flex -translate-x-1/2 flex-col items-center gap-3">
-                        {visibleItems.map((item, i) => {
-                            const Icon = item.icon;
-                            const delayIndex = visibleItems.length - 1 - i;
-                            return (
-                                <motion.div
-                                    key={item.label}
-                                    initial={{ opacity: 0, y: 12, scale: 0.6 }}
-                                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                                    exit={{ opacity: 0, y: 12, scale: 0.6 }}
-                                    transition={{
-                                        delay: delayIndex * 0.04,
-                                        type: 'spring',
-                                        bounce: 0.3,
-                                        duration: 0.3,
-                                    }}
-                                    className="flex items-center gap-2"
-                                >
-                                    <span className="bg-foreground text-background text-xs font-medium px-2.5 py-1 rounded-md shadow-md whitespace-nowrap">
-                                        {item.label}
-                                    </span>
+                    <motion.div
+                        initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                        transition={{ type: 'spring', bounce: 0.2, duration: 0.25 }}
+                        className="absolute bottom-full left-1/2 mb-3 min-w-44 -translate-x-1/2 rounded-2xl border bg-popover/95 p-1.5 shadow-lg backdrop-blur-md"
+                    >
+                        <div className="flex flex-col gap-0.5">
+                            {visibleItems.map((item) => {
+                                const Icon = item.icon;
+                                return (
                                     <button
+                                        key={item.label}
                                         type="button"
                                         onClick={() => handleItemClick(item)}
                                         disabled={item.disabled}
                                         title={item.label}
-                                        className={`size-11 rounded-full flex items-center justify-center shadow-lg active:scale-90 transition-transform ${circleClasses(item.variant, item.disabled)}`}
+                                        className={`flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium whitespace-nowrap transition-colors ${rowClasses(item.variant, item.disabled)}`}
                                     >
-                                        <Icon className="size-5" />
+                                        <Icon className="size-4 shrink-0" />
+                                        {item.label}
                                     </button>
-                                </motion.div>
-                            );
-                        })}
-                    </div>
+                                );
+                            })}
+                        </div>
+                    </motion.div>
                 )}
             </AnimatePresence>
 
