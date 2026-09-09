@@ -18,6 +18,7 @@ import { TodoService } from '../domain/TodoService';
 import { HttpAuthClient } from '../infrastructure/AuthClient';
 import { BucketStore } from '../infrastructure/BucketStore';
 import { FalImageGenerator } from '../infrastructure/FalImageGenerator';
+import { FalLlmClient } from '../infrastructure/FalLlmClient';
 import { FalRecipeExtractor } from '../infrastructure/FalRecipeExtractor';
 import { FalRecipeParser } from '../infrastructure/FalRecipeParser';
 import { HttpImageFetcher } from '../infrastructure/HttpImageFetcher';
@@ -350,14 +351,26 @@ export const registerDepdendencies = () => {
     );
 
     dependencyContainer.registerSingleton(
-        DependencyToken.RecipeTextExtractor,
+        DependencyToken.FalLlmClient,
         // @ts-expect-error - Dependency injection requires constructor return override
         class {
             constructor() {
                 // Reuses FAL_KEY unless a dedicated import key is set.
-                return new FalRecipeExtractor(config.get('recipeImportLlmApiKey') || config.get('falKey') || '', {
-                    ...(config.get('recipeImportLlmModel') && { model: config.get('recipeImportLlmModel') }),
-                });
+                return new FalLlmClient(
+                    config.get('recipeImportLlmApiKey') || config.get('falKey') || '',
+                    dependencyContainer.resolve(DependencyToken.Logger),
+                    { model: config.get('recipeImportLlmModel') || undefined }
+                );
+            }
+        }
+    );
+
+    dependencyContainer.registerSingleton(
+        DependencyToken.RecipeTextExtractor,
+        // @ts-expect-error - Dependency injection requires constructor return override
+        class {
+            constructor() {
+                return new FalRecipeExtractor(dependencyContainer.resolve(DependencyToken.FalLlmClient));
             }
         }
     );
@@ -367,10 +380,7 @@ export const registerDepdendencies = () => {
         // @ts-expect-error - Dependency injection requires constructor return override
         class {
             constructor() {
-                // Reuses FAL_KEY unless a dedicated import key is set, matching RecipeTextExtractor.
-                return new FalRecipeParser(config.get('recipeImportLlmApiKey') || config.get('falKey') || '', {
-                    ...(config.get('recipeImportLlmModel') && { model: config.get('recipeImportLlmModel') }),
-                });
+                return new FalRecipeParser(dependencyContainer.resolve(DependencyToken.FalLlmClient));
             }
         }
     );
