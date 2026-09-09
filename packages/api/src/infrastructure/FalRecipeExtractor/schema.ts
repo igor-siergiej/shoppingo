@@ -1,7 +1,6 @@
 import { z } from 'zod';
 
-const toStringArray = (value: Array<unknown> | undefined): string[] =>
-    (value ?? []).filter((entry): entry is string => typeof entry === 'string');
+import { toStringArray } from '../zodHelpers';
 
 export const extractedRecipeSchema: z.ZodType<{ title: string; ingredients: string[]; instructions: string[] }> = z
     .object({
