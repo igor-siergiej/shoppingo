@@ -1,7 +1,16 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import type { ComponentProps } from 'react';
+import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { HamburgerMenu } from './index';
+
+const renderMenu = (props: ComponentProps<typeof HamburgerMenu>) =>
+    render(
+        <MemoryRouter>
+            <HamburgerMenu {...props} />
+        </MemoryRouter>
+    );
 
 // Mock the useTheme hook
 vi.mock('../../../contexts/ThemeContext', () => ({
@@ -41,20 +50,20 @@ describe('HamburgerMenu', () => {
     });
 
     it('renders logout button', () => {
-        render(<HamburgerMenu onClose={mockOnClose} onLogout={mockOnLogout} />);
+        renderMenu({ onClose: mockOnClose, onLogout: mockOnLogout });
 
         expect(screen.getByText('Log out')).toBeInTheDocument();
     });
 
     it('renders dark mode toggle', () => {
-        render(<HamburgerMenu onClose={mockOnClose} onLogout={mockOnLogout} />);
+        renderMenu({ onClose: mockOnClose, onLogout: mockOnLogout });
 
         expect(screen.getByText(/dark mode|light mode/i)).toBeInTheDocument();
     });
 
     it('calls onLogout when logout button is clicked', async () => {
         const user = userEvent.setup();
-        render(<HamburgerMenu onClose={mockOnClose} onLogout={mockOnLogout} />);
+        renderMenu({ onClose: mockOnClose, onLogout: mockOnLogout });
 
         const logoutButton = screen.getByText('Log out');
         await user.click(logoutButton);
@@ -63,12 +72,12 @@ describe('HamburgerMenu', () => {
     });
 
     it('renders the notifications toggle when push is supported', () => {
-        render(<HamburgerMenu onClose={() => {}} onLogout={() => {}} />);
+        renderMenu({ onClose: () => {}, onLogout: () => {} });
         expect(screen.getByText(/notifications/i)).toBeInTheDocument();
     });
 
     it('has proper button variants', () => {
-        render(<HamburgerMenu onClose={mockOnClose} onLogout={mockOnLogout} />);
+        renderMenu({ onClose: mockOnClose, onLogout: mockOnLogout });
 
         const logoutButton = screen.getByText('Log out').closest('button');
         expect(logoutButton).toHaveClass('bg-destructive', 'text-white');

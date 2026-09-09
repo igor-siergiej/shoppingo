@@ -14,7 +14,7 @@ interface LayoutProps {
 // why flex-col-reverse's scrollTop behavior can't be trusted once content overflows:
 // it broke pull-to-refresh's "am I at the top" check on the Recipes page, which has
 // no need for bottom-anchoring in the first place.
-const NORMAL_SCROLL_ROUTES = new Set(['/recipes']);
+const NORMAL_SCROLL_ROUTES = new Set(['/recipes', '/settings']);
 
 // Routes with their own full-page header/footer (no bottom ToolBar) — they don't need
 // the bottom-24 space Layout normally reserves for it, or Layout's own padding.

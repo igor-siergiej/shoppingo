@@ -10,6 +10,7 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { Textarea } from '../../components/ui/textarea';
+import { useUnitSystem } from '../../contexts/UnitSystemContext';
 import { useRecipeMutations } from '../../hooks/useRecipeMutations';
 import { logger } from '../../utils/logger';
 import { splitIntoSteps } from '../../utils/splitIntoSteps';
@@ -58,6 +59,12 @@ const AddRecipePage = () => {
         modeRef.current = mode;
     }, [mode]);
 
+    const { unitSystem } = useUnitSystem();
+    const unitSystemRef = useRef(unitSystem);
+    useEffect(() => {
+        unitSystemRef.current = unitSystem;
+    }, [unitSystem]);
+
     const [title, setTitle] = useState('');
     const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
     const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -96,17 +103,21 @@ const AddRecipePage = () => {
         try {
             const draft = await importRecipe(target, controller.signal);
 
-            await applyImportedDraft(draft, {
-                setTitle,
-                setLink,
-                setIngredients,
-                setShowIngredientsPaste,
-                setSteps,
-                setShowPasteArea,
-                setSelectedFile,
-                setImageUrl,
-                setImportMeta,
-            });
+            await applyImportedDraft(
+                draft,
+                {
+                    setTitle,
+                    setLink,
+                    setIngredients,
+                    setShowIngredientsPaste,
+                    setSteps,
+                    setShowPasteArea,
+                    setSelectedFile,
+                    setImageUrl,
+                    setImportMeta,
+                },
+                unitSystemRef.current
+            );
 
             notifyImportResult(draft.ingredients.length + draft.instructions.length);
 
