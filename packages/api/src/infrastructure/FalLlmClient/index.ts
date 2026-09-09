@@ -62,6 +62,10 @@ export class FalLlmClient {
     ) {}
 
     async completeStructured<T>(opts: CompleteStructuredOptions<T>): Promise<LlmResult<T>> {
+        if (!this.apiKey) {
+            throw Object.assign(new Error('Recipe import LLM not configured'), { status: 500 });
+        }
+
         const model = opts.model ?? this.defaults.model ?? DEFAULT_MODEL;
         const temperature = opts.temperature ?? DEFAULT_TEMPERATURE;
         const timeoutMs = opts.timeoutMs ?? DEFAULT_TIMEOUT_MS;
@@ -128,51 +132,49 @@ export class FalLlmClient {
         temperature: number,
         timeoutMs: number
     ): Promise<string> {
-        if (!this.apiKey) {
-            throw Object.assign(new Error('Recipe import LLM not configured'), { status: 500 });
-        }
-
         const controller = new AbortController();
         const timer = setTimeout(() => controller.abort(), timeoutMs);
 
-        let response: Response;
         try {
-            response = await fetch(FAL_ANY_LLM_URL, {
-                method: 'POST',
-                signal: controller.signal,
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Key ${this.apiKey}`,
-                },
-                body: JSON.stringify({ model, system_prompt: system, prompt, temperature }),
-            });
-        } catch (error) {
-            throw fail(`fal.ai any-llm request failed: ${(error as Error).message}`);
+            let response: Response;
+            try {
+                response = await fetch(FAL_ANY_LLM_URL, {
+                    method: 'POST',
+                    signal: controller.signal,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Key ${this.apiKey}`,
+                    },
+                    body: JSON.stringify({ model, system_prompt: system, prompt, temperature }),
+                });
+            } catch (error) {
+                throw fail(`fal.ai any-llm request failed: ${(error as Error).message}`);
+            }
+
+            if (!response.ok) {
+                let detail: string;
+                try {
+                    detail = (await response.text()).slice(0, 200);
+                } catch {
+                    detail = `HTTP ${response.status}`;
+                }
+                throw fail(`fal.ai any-llm error: ${detail}`);
+            }
+
+            let data: { output?: string; error?: string };
+            try {
+                data = (await response.json()) as { output?: string; error?: string };
+            } catch {
+                throw fail('fal.ai any-llm returned a non-JSON response body');
+            }
+
+            if (data.error) {
+                throw fail(`fal.ai any-llm error: ${String(data.error).slice(0, 200)}`);
+            }
+            return data.output ?? '';
         } finally {
             clearTimeout(timer);
         }
-
-        if (!response.ok) {
-            let detail: string;
-            try {
-                detail = await response.text();
-            } catch {
-                detail = `HTTP ${response.status}`;
-            }
-            throw fail(`fal.ai any-llm error: ${detail}`);
-        }
-
-        let data: { output?: string; error?: string };
-        try {
-            data = (await response.json()) as { output?: string; error?: string };
-        } catch {
-            throw fail('fal.ai any-llm returned a non-JSON response body');
-        }
-
-        if (data.error) {
-            throw fail(`fal.ai any-llm error: ${data.error}`);
-        }
-        return data.output ?? '';
     }
 
     private log(

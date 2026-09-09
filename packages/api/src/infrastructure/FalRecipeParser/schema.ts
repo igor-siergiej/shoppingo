@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import type { ParsedRecipe } from '../../domain/RecipeImportService/types';
-import { toStringArray } from '../zodHelpers';
+import { stringArrayField } from '../zodHelpers';
 
 const ingredientSchema = z
     .object({
@@ -20,7 +20,7 @@ const ingredientSchema = z
         if (raw.quantity === undefined) {
             return { name };
         }
-        const unit = raw.unit && raw.unit.trim() ? raw.unit.trim() : 'pcs';
+        const unit = raw.unit?.trim() || 'pcs';
         return { name, quantity: raw.quantity, unit };
     });
 
@@ -28,10 +28,7 @@ export const parsedRecipeSchema: z.ZodType<ParsedRecipe> = z
     .object({
         title: z.preprocess((value) => (typeof value === 'string' ? value.trim() : ''), z.string()),
         ingredients: z.array(ingredientSchema).min(1),
-        instructions: z.preprocess(
-            (value) => (Array.isArray(value) ? value : []),
-            z.array(z.unknown()).transform(toStringArray)
-        ),
+        instructions: stringArrayField(),
     })
     .transform(
         (recipe): ParsedRecipe => ({

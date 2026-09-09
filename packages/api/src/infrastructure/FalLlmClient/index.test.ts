@@ -82,6 +82,42 @@ describe('FalLlmClient', () => {
         });
     });
 
+    it('never calls the logger on the empty-key path', async () => {
+        stubFetch(async () => okResponse('{"title":"x","count":1}'));
+        const logs: unknown[][] = [];
+        const logger = {
+            info: (...a: unknown[]) => {
+                logs.push(a);
+            },
+        } as unknown as Logger;
+
+        await expect(call(new FalLlmClient('', logger))).rejects.toMatchObject({ status: 500 });
+        expect(logs).toHaveLength(0);
+    });
+
+    it('bounds the thrown message when a non-OK body is huge', async () => {
+        stubFetch(async () => new Response('x'.repeat(5000), { status: 500 }));
+
+        const error = await call(new FalLlmClient('secret')).catch((e: Error) => e);
+
+        expect(error).toMatchObject({ status: 502 });
+        expect((error as Error).message.length).toBeLessThan(260);
+    });
+
+    it('bounds the thrown message when the error field is huge', async () => {
+        stubFetch(
+            async () =>
+                new Response(JSON.stringify({ error: 'y'.repeat(5000) }), {
+                    headers: { 'content-type': 'application/json' },
+                })
+        );
+
+        const error = await call(new FalLlmClient('secret')).catch((e: Error) => e);
+
+        expect(error).toMatchObject({ status: 502 });
+        expect((error as Error).message.length).toBeLessThan(260);
+    });
+
     it('throws 502 on a non-OK response, without retrying', async () => {
         let calls = 0;
         stubFetch(async () => {
