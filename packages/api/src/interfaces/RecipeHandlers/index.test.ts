@@ -7,7 +7,7 @@ const mockDependencyContainer = {
     resolve: vi.fn(),
 };
 
-vi.mock('../../dependencies', () => ({
+vi.mock('../../dependencies/container', () => ({
     dependencyContainer: mockDependencyContainer,
 }));
 
