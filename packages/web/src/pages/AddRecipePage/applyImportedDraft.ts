@@ -1,5 +1,6 @@
 import type { RecipeImportResult } from '@shoppingo/types';
 import { importRecipeImage } from '../../api';
+import { convertIngredients, type UnitSystem } from '../../utils/convertUnits';
 import { logger } from '../../utils/logger';
 import type { Ingredient } from './IngredientsField';
 
@@ -26,9 +27,14 @@ const applyBasicFields = (draft: RecipeImportResult, setters: DraftSetters): voi
     if (draft.link) setters.setLink(draft.link);
 };
 
-const applyIngredientsAndInstructions = (draft: RecipeImportResult, setters: DraftSetters): void => {
+const applyIngredientsAndInstructions = (
+    draft: RecipeImportResult,
+    setters: DraftSetters,
+    unitSystem: UnitSystem
+): void => {
     if (draft.ingredients.length > 0) {
-        setters.setIngredients(draft.ingredients.map(({ name, quantity, unit }) => ({ name, quantity, unit })));
+        const ingredients = draft.ingredients.map(({ name, quantity, unit }) => ({ name, quantity, unit }));
+        setters.setIngredients(convertIngredients(ingredients, unitSystem));
         setters.setShowIngredientsPaste(false);
     }
     if (draft.instructions.length > 0) {
@@ -64,9 +70,13 @@ const applyImportMeta = (draft: RecipeImportResult, setters: DraftSetters): void
 
 // Applies a successfully-fetched recipe draft to form state. Only touches fields the
 // draft actually found, leaving anything else the user may have already entered intact.
-export const applyImportedDraft = async (draft: RecipeImportResult, setters: DraftSetters): Promise<void> => {
+export const applyImportedDraft = async (
+    draft: RecipeImportResult,
+    setters: DraftSetters,
+    unitSystem: UnitSystem = 'original'
+): Promise<void> => {
     applyBasicFields(draft, setters);
-    applyIngredientsAndInstructions(draft, setters);
+    applyIngredientsAndInstructions(draft, setters, unitSystem);
     await applyScrapedImage(draft, setters);
     applyImportMeta(draft, setters);
 };

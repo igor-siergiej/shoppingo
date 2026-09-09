@@ -1,6 +1,7 @@
-import { Bell, Download, Loader2, LogOut, Moon, RefreshCw, Sun } from 'lucide-react';
+import { Bell, Download, Loader2, LogOut, Moon, RefreshCw, Settings, Sun } from 'lucide-react';
 import { motion } from 'motion/react';
 import type { ReactNode } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '../../../components/ui/button';
 import { Switch } from '../../../components/ui/switch';
 import { useTheme } from '../../../contexts/ThemeContext';
@@ -107,6 +108,7 @@ const UpdateButton = ({ hasUpdate, isCheckingForUpdate, onUpdate, onCheck }: Upd
 
 export const HamburgerMenu = ({ onClose, onLogout }: HamburgerMenuProps) => {
     const { canInstall, isInstalled, hasUpdate, installApp, updateApp, checkForUpdate, isCheckingForUpdate } = usePWA();
+    const navigate = useNavigate();
 
     const handleInstall = async () => {
         const success = await installApp();
@@ -155,6 +157,20 @@ export const HamburgerMenu = ({ onClose, onLogout }: HamburgerMenuProps) => {
                     onUpdate={handleUpdate}
                     onCheck={() => void checkForUpdate()}
                 />
+            </MenuItem>
+
+            <MenuItem delay={0.12}>
+                <Button
+                    variant="outline"
+                    onClick={() => {
+                        onClose();
+                        navigate('/settings');
+                    }}
+                    className={OUTLINE_BTN}
+                >
+                    <Settings className="h-4 w-4 mr-2" />
+                    Settings
+                </Button>
             </MenuItem>
 
             <MenuItem delay={0.15}>

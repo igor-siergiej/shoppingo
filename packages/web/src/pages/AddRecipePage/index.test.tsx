@@ -20,6 +20,10 @@ vi.mock('../../hooks/useFriends', () => ({
     useFriends: vi.fn(() => ({ friends: [], isLoading: false })),
 }));
 
+vi.mock('../../contexts/UnitSystemContext', () => ({
+    useUnitSystem: () => ({ unitSystem: 'original', setUnitSystem: vi.fn() }),
+}));
+
 vi.mock('sonner', () => ({
     toast: Object.assign(vi.fn(), {
         success: vi.fn(),

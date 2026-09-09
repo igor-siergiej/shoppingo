@@ -16,6 +16,7 @@ import { getAuthConfig } from './config/auth';
 import { PullToRefreshProvider } from './contexts/PullToRefreshContext';
 import { PWAProvider } from './contexts/PWAContext';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { UnitSystemProvider } from './contexts/UnitSystemContext';
 import { applyManifestForTheme } from './utils/applyManifestForTheme';
 
 applyManifestForTheme();
@@ -47,6 +48,7 @@ const RecipeDetailPage = lazyLoadPage(() => import('./pages/RecipeDetailPage'), 
 const ShareTargetPage = lazyLoadPage(() => import('./pages/ShareTargetPage'), 'share target page');
 const CalendarPage = lazyLoadPage(() => import('./pages/CalendarPage'), 'calendar page');
 const FriendsPage = lazyLoadPage(() => import('./pages/FriendsPage'), 'friends page');
+const SettingsPage = lazyLoadPage(() => import('./pages/SettingsPage'), 'settings page');
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -155,6 +157,14 @@ const router = createBrowserRouter([
                     </Suspense>
                 ),
             },
+            {
+                path: 'settings',
+                element: (
+                    <Suspense fallback={<LoadingPage />}>
+                        <SettingsPage />
+                    </Suspense>
+                ),
+            },
         ],
     },
 ]);
@@ -166,11 +176,13 @@ const AppContent: React.FC = () => {
                 <UserProvider>
                     <AuthProvider>
                         <ThemeProvider>
-                            <PullToRefreshProvider>
-                                <PWAProvider>
-                                    <RouterProvider router={router} />
-                                </PWAProvider>
-                            </PullToRefreshProvider>
+                            <UnitSystemProvider>
+                                <PullToRefreshProvider>
+                                    <PWAProvider>
+                                        <RouterProvider router={router} />
+                                    </PWAProvider>
+                                </PullToRefreshProvider>
+                            </UnitSystemProvider>
                         </ThemeProvider>
                     </AuthProvider>
                 </UserProvider>
