@@ -24,8 +24,19 @@ const ingredientSchema = z
 const toStringArray = (value: Array<unknown> | undefined): string[] =>
     (value ?? []).filter((entry): entry is string => typeof entry === 'string');
 
-export const parsedRecipeSchema: z.ZodType<ParsedRecipe> = z.object({
-    title: z.unknown().transform((value) => (typeof value === 'string' ? value.trim() : '')),
-    ingredients: z.array(ingredientSchema).min(1),
-    instructions: z.array(z.unknown()).optional().catch(undefined).transform(toStringArray),
-});
+export const parsedRecipeSchema: z.ZodType<ParsedRecipe> = z
+    .object({
+        title: z.preprocess((value) => (typeof value === 'string' ? value.trim() : ''), z.string()),
+        ingredients: z.array(ingredientSchema).min(1),
+        instructions: z.preprocess(
+            (value) => (Array.isArray(value) ? value : []),
+            z.array(z.unknown()).transform(toStringArray)
+        ),
+    })
+    .transform(
+        (recipe): ParsedRecipe => ({
+            title: recipe.title,
+            ingredients: recipe.ingredients,
+            instructions: recipe.instructions,
+        })
+    );

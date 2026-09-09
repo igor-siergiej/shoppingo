@@ -36,18 +36,18 @@ export interface LlmResult<T> {
 
 type Outcome = 'ok' | 'invalid' | 'error';
 
-type JsonExtraction = { ok: true; value: unknown } | { ok: false; issues: string };
+type JsonExtraction = { value: unknown } | { issues: string };
 
 const extractJsonObject = (output: string): JsonExtraction => {
     const start = output.indexOf('{');
     const end = output.lastIndexOf('}');
     if (start === -1 || end === -1 || end <= start) {
-        return { ok: false, issues: 'no JSON object found in the reply' };
+        return { issues: 'no JSON object found in the reply' };
     }
     try {
-        return { ok: true, value: JSON.parse(output.slice(start, end + 1)) as unknown };
+        return { value: JSON.parse(output.slice(start, end + 1)) as unknown };
     } catch {
-        return { ok: false, issues: 'the JSON object was malformed' };
+        return { issues: 'the JSON object was malformed' };
     }
 };
 
@@ -95,7 +95,7 @@ export class FalLlmClient {
             lastOutput = output;
 
             const json = extractJsonObject(output);
-            if (!json.ok) {
+            if ('issues' in json) {
                 lastIssues = json.issues;
                 continue;
             }
