@@ -130,4 +130,73 @@ describe('FalLlmClient', () => {
 
         expect(result.value).toEqual({ name: 'spaced' });
     });
+
+    it('retries once when the first reply has no JSON, then succeeds', async () => {
+        const bodies: string[] = [];
+        let n = 0;
+        stubFetch(async (_u, init) => {
+            bodies.push((JSON.parse(init?.body as string) as { prompt: string }).prompt);
+            n += 1;
+            return okResponse(n === 1 ? 'I could not do that' : '{"title":"x","count":1}');
+        });
+
+        const result = await call(new FalLlmClient('secret'));
+
+        expect(result.value).toEqual({ title: 'x', count: 1 });
+        expect(result.meta.attempts).toBe(2);
+        expect(bodies).toHaveLength(2);
+        expect(bodies[1]).toContain('failed validation');
+        expect(bodies[1]).toContain('no JSON object found');
+    });
+
+    it('retries when the reply is valid JSON but fails the schema, feeding back the zod issue', async () => {
+        const bodies: string[] = [];
+        let n = 0;
+        stubFetch(async (_u, init) => {
+            bodies.push((JSON.parse(init?.body as string) as { prompt: string }).prompt);
+            n += 1;
+            return okResponse(n === 1 ? '{"title":"x"}' : '{"title":"x","count":2}');
+        });
+
+        const result = await call(new FalLlmClient('secret'));
+
+        expect(result.value).toEqual({ title: 'x', count: 2 });
+        expect(bodies[1]).toContain('count');
+    });
+
+    it('throws 502 after maxAttempts invalid replies, message names the attempt count', async () => {
+        let n = 0;
+        stubFetch(async () => {
+            n += 1;
+            return okResponse('{"title":"x"}');
+        });
+
+        await expect(call(new FalLlmClient('secret'))).rejects.toMatchObject({
+            status: 502,
+            message: expect.stringContaining('failed validation after 2 attempts'),
+        });
+        expect(n).toBe(2);
+    });
+
+    it('honours an explicit maxAttempts', async () => {
+        let n = 0;
+        stubFetch(async () => {
+            n += 1;
+            return okResponse('nope');
+        });
+
+        await expect(call(new FalLlmClient('secret'), { maxAttempts: 3 })).rejects.toMatchObject({ status: 502 });
+        expect(n).toBe(3);
+    });
+
+    it('does not retry a transport error', async () => {
+        let n = 0;
+        stubFetch(async () => {
+            n += 1;
+            return new Response('boom', { status: 503 });
+        });
+
+        await expect(call(new FalLlmClient('secret'))).rejects.toMatchObject({ status: 502 });
+        expect(n).toBe(1);
+    });
 });
