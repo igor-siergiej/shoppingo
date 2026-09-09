@@ -1,3 +1,10 @@
+# [1.63.0](https://github.com/igor-siergiej/shoppingo/compare/v1.62.0...v1.63.0) (2026-09-09)
+
+
+### Features
+
+* **web:** convert imported recipe units to a preferred system ([#137](https://github.com/igor-siergiej/shoppingo/issues/137)) ([4431f59](https://github.com/igor-siergiej/shoppingo/commit/4431f59f76b8fbd98f8d5057897e6723c20589b4))
+
 # [1.62.0](https://github.com/igor-siergiej/shoppingo/compare/v1.61.0...v1.62.0) (2026-09-09)
 
 
