@@ -212,23 +212,30 @@ No new keys. The client is constructed from existing config:
 
 ### Dependency wiring
 
-`packages/api/src/dependencies/types.ts` — one new token, `FalLlmClient`.
+`packages/api/src/dependencies/types.ts` — one new token, `FalLlmClient`, plus its entry in
+the `Dependencies` type map.
 
-`packages/api/src/dependencies/index.ts`, following the existing `useFactory` +
-`dependencyContainer.resolve(DependencyToken.Logger)` pattern:
+`packages/api/src/dependencies/index.ts`, following the existing
+`registerSingleton(token, class { constructor() { return <instance>; } })` pattern:
 
 ```ts
-dependencyContainer.register(DependencyToken.FalLlmClient, {
-    useFactory: () => new FalLlmClient(
-        config.get('recipeImportLlmApiKey') || config.get('falKey') || '',
-        dependencyContainer.resolve(DependencyToken.Logger),
-        { model: config.get('recipeImportLlmModel') },
-    ),
-});
+dependencyContainer.registerSingleton(
+    DependencyToken.FalLlmClient,
+    // @ts-expect-error - Dependency injection requires constructor return override
+    class {
+        constructor() {
+            return new FalLlmClient(
+                config.get('recipeImportLlmApiKey') || config.get('falKey') || '',
+                dependencyContainer.resolve(DependencyToken.Logger),
+                { model: config.get('recipeImportLlmModel') },
+            );
+        }
+    }
+);
 ```
 
-The `RecipeTextExtractor` and `RecipeParser` factories resolve `FalLlmClient` and pass it to
-the constructor instead of the api key.
+The `RecipeTextExtractor` and `RecipeParser` singletons resolve `DependencyToken.FalLlmClient`
+and pass it to the constructor instead of the api key string.
 
 ### Error handling
 
