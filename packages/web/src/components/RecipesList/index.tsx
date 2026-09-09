@@ -13,15 +13,16 @@ interface RecipesListProps {
 export const RecipesList = ({ recipes, currentUserId, onRecipeClick, isLoading }: RecipesListProps) => {
     if (isLoading) {
         return (
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 px-2">
+            <div className="flex flex-col gap-3 px-2 sm:grid sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
                 {[1, 2, 3, 4, 5, 6].map((value) => (
-                    <Card key={value} className="overflow-hidden h-full">
-                        <CardContent className="p-0 h-40 bg-muted flex items-center justify-center">
-                            <Skeleton className="h-full w-full" />
-                        </CardContent>
-                        <CardContent className="p-3">
-                            <Skeleton className="h-5 w-3/4 mb-3" />
-                            <Skeleton className="h-6 w-24" />
+                    <Card key={value} className="overflow-hidden">
+                        <CardContent className="flex gap-3 p-3">
+                            <Skeleton className="h-32 w-32 flex-shrink-0 rounded-xl" />
+                            <div className="flex flex-1 flex-col justify-between py-0.5">
+                                <Skeleton className="h-5 w-3/4" />
+                                <Skeleton className="h-4 w-1/2" />
+                                <Skeleton className="h-6 w-24" />
+                            </div>
                         </CardContent>
                     </Card>
                 ))}
@@ -41,7 +42,7 @@ export const RecipesList = ({ recipes, currentUserId, onRecipeClick, isLoading }
     }
 
     return (
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 px-2">
+        <div className="flex flex-col gap-3 px-2 sm:grid sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
             {recipes.map((recipe) => (
                 <RecipeCard
                     key={recipe.id}
