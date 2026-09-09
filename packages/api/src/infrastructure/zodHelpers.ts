@@ -1,7 +1,6 @@
 import { z } from 'zod';
 
-// fallow-ignore-next-line unused-export
-export const toStringArray = (value: Array<unknown> | undefined): string[] =>
+const toStringArray = (value: Array<unknown> | undefined): string[] =>
     (value ?? []).filter((entry): entry is string => typeof entry === 'string');
 
 export const stringArrayField = () =>
