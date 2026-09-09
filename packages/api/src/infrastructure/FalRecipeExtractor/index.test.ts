@@ -2,6 +2,7 @@ import { describe, expect, it, mock } from 'bun:test';
 
 import type { FalLlmClient, LlmResult } from '../FalLlmClient';
 import { FalRecipeExtractor } from './index';
+import { extractedRecipeSchema } from './schema';
 
 type CompleteArgs = Parameters<FalLlmClient['completeStructured']>[0];
 
@@ -26,7 +27,7 @@ describe('FalRecipeExtractor', () => {
         expect(seen?.operation).toBe('recipe.extract');
         expect(seen?.system).toContain('extract a single recipe');
         expect(seen?.prompt).toContain('page text here');
-        expect(seen?.schema).toBeDefined();
+        expect(seen?.schema).toBe(extractedRecipeSchema);
         expect(extracted).toEqual({ title: 'Soup', ingredients: ['1 onion'], instructions: ['Boil.'] });
     });
 

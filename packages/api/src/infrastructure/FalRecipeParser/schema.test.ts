@@ -39,6 +39,32 @@ describe('parsedRecipeSchema', () => {
         expect(result.ingredients).toEqual([{ name: 'onion' }]);
     });
 
+    it('drops a non-finite numeric quantity rather than emitting NaN or Infinity', () => {
+        expect(
+            parse({
+                title: 'X',
+                ingredients: [{ name: 'flour', quantity: Number.POSITIVE_INFINITY, unit: 'g' }],
+                instructions: ['Do.'],
+            }).ingredients
+        ).toEqual([{ name: 'flour' }]);
+        expect(
+            parse({
+                title: 'X',
+                ingredients: [{ name: 'flour', quantity: Number.NaN, unit: 'g' }],
+                instructions: ['Do.'],
+            }).ingredients
+        ).toEqual([{ name: 'flour' }]);
+    });
+
+    it('defaults a blank-string unit to pcs when a quantity is given', () => {
+        const result = parse({
+            title: 'X',
+            ingredients: [{ name: 'eggs', quantity: 3, unit: '   ' }],
+            instructions: ['Do.'],
+        });
+        expect(result.ingredients).toEqual([{ name: 'eggs', quantity: 3, unit: 'pcs' }]);
+    });
+
     it('keeps a zero quantity rather than dropping it as falsy', () => {
         const result = parse({
             title: 'X',

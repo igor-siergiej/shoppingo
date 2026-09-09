@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it } from 'bun:test';
+import type { Logger } from '@imapps/api-utils';
 import { z } from 'zod';
 
 import { FalLlmClient } from './index';
@@ -198,5 +199,33 @@ describe('FalLlmClient', () => {
 
         await expect(call(new FalLlmClient('secret'))).rejects.toMatchObject({ status: 502 });
         expect(n).toBe(1);
+    });
+
+    it('aborts at timeoutMs and throws 502', async () => {
+        stubFetch(
+            ((_u, init) =>
+                new Promise((_resolve, reject) => {
+                    (init?.signal as AbortSignal | undefined)?.addEventListener('abort', () => {
+                        reject(new DOMException('aborted', 'AbortError'));
+                    });
+                })) as typeof fetch
+        );
+
+        await expect(call(new FalLlmClient('secret'), { timeoutMs: 20 })).rejects.toMatchObject({ status: 502 });
+    });
+
+    it('logs exactly once per completeStructured call, with outcome ok', async () => {
+        stubFetch((async () => okResponse('{"title":"x","count":1}')) as unknown as typeof fetch);
+        const logs: unknown[][] = [];
+        const logger = {
+            info: (...a: unknown[]) => {
+                logs.push(a);
+            },
+        } as unknown as Logger;
+
+        await call(new FalLlmClient('secret', logger));
+
+        expect(logs).toHaveLength(1);
+        expect(logs[0]?.[1]).toMatchObject({ outcome: 'ok' });
     });
 });

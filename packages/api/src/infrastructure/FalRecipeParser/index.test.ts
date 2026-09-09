@@ -2,6 +2,7 @@ import { describe, expect, it, mock } from 'bun:test';
 
 import type { FalLlmClient, LlmResult } from '../FalLlmClient';
 import { FalRecipeParser } from './index';
+import { parsedRecipeSchema } from './schema';
 
 type CompleteArgs = Parameters<FalLlmClient['completeStructured']>[0];
 
@@ -38,7 +39,7 @@ describe('FalRecipeParser', () => {
         expect(seen?.operation).toBe('recipe.parse');
         expect(seen?.system).toContain('extract a single recipe');
         expect(seen?.prompt).toContain('{"@type":"Recipe"}');
-        expect(seen?.schema).toBeDefined();
+        expect(seen?.schema).toBe(parsedRecipeSchema);
         expect(parsed).toEqual({
             title: 'Carbonara',
             ingredients: [{ name: 'spaghetti', quantity: 350, unit: 'g' }],
