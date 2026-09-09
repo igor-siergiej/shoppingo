@@ -1,84 +1,53 @@
-import { afterEach, describe, expect, it } from 'bun:test';
+import { describe, expect, it, mock } from 'bun:test';
 
+import type { FalLlmClient, LlmResult } from '../FalLlmClient';
 import { FalRecipeExtractor } from './index';
 
-const originalFetch = globalThis.fetch;
+type CompleteArgs = Parameters<FalLlmClient['completeStructured']>[0];
 
-const stubFetch = (impl: typeof fetch) => {
-    globalThis.fetch = impl as typeof fetch;
-};
+const fakeClient = (impl: (args: CompleteArgs) => Promise<LlmResult<unknown>>) =>
+    ({ completeStructured: mock(impl) }) as unknown as FalLlmClient;
 
-const okResponse = (output: string) =>
-    new Response(JSON.stringify({ output }), { headers: { 'content-type': 'application/json' } });
+const result = <T>(value: T): LlmResult<T> => ({
+    value,
+    meta: { operation: 'recipe.extract', model: 'm', attempts: 1, latencyMs: 1 },
+});
 
 describe('FalRecipeExtractor', () => {
-    afterEach(() => {
-        globalThis.fetch = originalFetch;
-    });
-
-    it('throws 500 when no api key is configured', async () => {
-        await expect(new FalRecipeExtractor('').extract('text')).rejects.toMatchObject({ status: 500 });
-    });
-
-    it('sends the model and Key auth header and parses clean JSON', async () => {
-        let sentBody: Record<string, unknown> = {};
-        let authHeader: string | null = null;
-        stubFetch(async (_url, init) => {
-            authHeader = new Headers(init?.headers).get('authorization');
-            sentBody = JSON.parse(init?.body as string);
-            return okResponse(
-                JSON.stringify({ title: 'Soup', ingredients: ['1 onion', '2 carrots'], instructions: ['Boil.'] })
-            );
+    it('calls the client with operation recipe.extract, the extracted-recipe schema and the page text in the prompt', async () => {
+        let seen: CompleteArgs | undefined;
+        const client = fakeClient(async (args) => {
+            seen = args;
+            return result({ title: 'Soup', ingredients: ['1 onion'], instructions: ['Boil.'] });
         });
 
-        const result = await new FalRecipeExtractor('secret', { model: 'google/gemini-2.5-flash-lite' }).extract(
-            'page text'
-        );
+        const extracted = await new FalRecipeExtractor(client).extract('page text here');
 
-        expect(authHeader).toBe('Key secret');
-        expect(sentBody.model).toBe('google/gemini-2.5-flash-lite');
-        expect(result).toEqual({ title: 'Soup', ingredients: ['1 onion', '2 carrots'], instructions: ['Boil.'] });
+        expect(seen?.operation).toBe('recipe.extract');
+        expect(seen?.system).toContain('extract a single recipe');
+        expect(seen?.prompt).toContain('page text here');
+        expect(seen?.schema).toBeDefined();
+        expect(extracted).toEqual({ title: 'Soup', ingredients: ['1 onion'], instructions: ['Boil.'] });
     });
 
-    it('extracts JSON wrapped in prose or code fences', async () => {
-        stubFetch(async () =>
-            okResponse('Here you go:\n```json\n{"title":"X","ingredients":["a"],"instructions":["b"]}\n```')
-        );
+    it('propagates a client error unchanged', async () => {
+        const client = fakeClient(async () => {
+            throw Object.assign(new Error('fal.ai any-llm error: boom'), { status: 502 });
+        });
 
-        const result = await new FalRecipeExtractor('secret').extract('text');
-
-        expect(result.title).toBe('X');
-        expect(result.ingredients).toEqual(['a']);
+        await expect(new FalRecipeExtractor(client).extract('text')).rejects.toMatchObject({ status: 502 });
     });
 
-    it('coerces missing/wrong-typed fields to safe defaults', async () => {
-        stubFetch(async () => okResponse('{"ingredients":"not-an-array"}'));
+    it('passes an explicit model and timeout through to the client', async () => {
+        let seen: CompleteArgs | undefined;
+        const client = fakeClient(async (args) => {
+            seen = args;
+            return result({ title: '', ingredients: [], instructions: [] });
+        });
 
-        const result = await new FalRecipeExtractor('secret').extract('text');
+        await new FalRecipeExtractor(client, { model: 'x/y', timeoutMs: 9000 }).extract('text');
 
-        expect(result).toEqual({ title: '', ingredients: [], instructions: [] });
-    });
-
-    it('throws 502 on a non-ok response', async () => {
-        stubFetch(async () => new Response('boom', { status: 500 }));
-
-        await expect(new FalRecipeExtractor('secret').extract('text')).rejects.toMatchObject({ status: 502 });
-    });
-
-    it('throws 502 when the model returns an error field', async () => {
-        stubFetch(
-            async () =>
-                new Response(JSON.stringify({ error: 'rate limited' }), {
-                    headers: { 'content-type': 'application/json' },
-                })
-        );
-
-        await expect(new FalRecipeExtractor('secret').extract('text')).rejects.toMatchObject({ status: 502 });
-    });
-
-    it('throws 502 when the output contains no JSON object', async () => {
-        stubFetch(async () => okResponse('sorry, I cannot help'));
-
-        await expect(new FalRecipeExtractor('secret').extract('text')).rejects.toMatchObject({ status: 502 });
+        expect(seen?.model).toBe('x/y');
+        expect(seen?.timeoutMs).toBe(9000);
     });
 });
