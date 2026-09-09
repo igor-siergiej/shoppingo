@@ -5,13 +5,13 @@ import type { Item, Recipe } from '@shoppingo/types';
 import { ArrowLeft, BookOpen, Plus, Search, X } from 'lucide-react';
 import { useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
-import { toast } from 'sonner';
 import { addItemsBulk, getRecipesQuery } from '../../../api';
 import { Button } from '../../../components/ui/button';
 import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from '../../../components/ui/drawer';
 import { Input } from '../../../components/ui/input';
 import { RippleButton } from '../../../components/ui/ripple';
 import { useRecipeSearch } from '../../../hooks/useRecipeSearch';
+import { notifyError, notifySuccess } from '../../../utils/toast';
 import { IngredientSelectRow } from '../../IngredientSelectRow';
 
 interface AddFromRecipeDrawerProps {
@@ -76,25 +76,13 @@ export const AddFromRecipeDrawer = ({
                 }))
             );
 
-            toast.success(`${result.added} items added, ${result.skipped} skipped`, {
-                style: {
-                    backgroundColor: '#10b981',
-                    color: '#ffffff',
-                    border: 'none',
-                },
-            });
+            notifySuccess(`${result.added} items added, ${result.skipped} skipped`);
 
             await queryClient.invalidateQueries([listTitle]);
             handleClose();
         } catch (error) {
             const err = error as { message?: string };
-            toast.error(err.message || 'Failed to add ingredients', {
-                style: {
-                    backgroundColor: '#ef4444',
-                    color: '#ffffff',
-                    border: 'none',
-                },
-            });
+            notifyError(err.message || 'Failed to add ingredients');
         } finally {
             setIsLoading(false);
         }

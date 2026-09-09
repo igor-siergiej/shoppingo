@@ -3,7 +3,6 @@ import type { Recipe } from '@shoppingo/types';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { toast } from 'sonner';
 import { generateRecipeAiImage, getRecipesQuery, importRecipe, uploadRecipeImage } from '../../api';
 import { FriendPicker } from '../../components/FriendPicker';
 import { StepsList } from '../../components/StepsList';
@@ -14,6 +13,7 @@ import { Textarea } from '../../components/ui/textarea';
 import { useRecipeMutations } from '../../hooks/useRecipeMutations';
 import { logger } from '../../utils/logger';
 import { splitIntoSteps } from '../../utils/splitIntoSteps';
+import { notifyError, notifySuccess, notifyWarning } from '../../utils/toast';
 import { AddRecipeHeader } from './AddRecipeHeader';
 import { applyImportedDraft, type ImportMeta } from './applyImportedDraft';
 import { ChoiceScreen } from './ChoiceScreen';
@@ -26,11 +26,9 @@ type Mode = 'choice' | 'import' | 'form';
 
 const notifyImportResult = (foundCount: number): void => {
     if (foundCount === 0) {
-        toast('Couldn’t find recipe details — fill them in manually', {
-            style: { backgroundColor: '#f59e0b', color: '#ffffff' },
-        });
+        notifyWarning('Couldn’t find recipe details — fill them in manually');
     } else {
-        toast.success('Recipe imported — review and edit before saving');
+        notifySuccess('Recipe imported — review and edit before saving');
     }
 };
 
@@ -86,7 +84,7 @@ const AddRecipePage = () => {
     const handleImport = useCallback(async (importUrl: string) => {
         const target = importUrl.trim();
         if (!target) {
-            toast.error('Enter a recipe link to import');
+            notifyError('Enter a recipe link to import');
             return;
         }
 
@@ -121,7 +119,7 @@ const AddRecipePage = () => {
             }
             const message = err instanceof Error ? err.message : 'Failed to import recipe';
             setImportError(message);
-            toast.error(message, { style: { backgroundColor: '#ef4444', color: '#ffffff' } });
+            notifyError(message);
         } finally {
             importAbortRef.current = null;
             setIsImporting(false);
@@ -250,7 +248,7 @@ const AddRecipePage = () => {
             navigate('/recipes');
         } catch (err) {
             const message = err instanceof Error ? err.message : 'Failed to create recipe';
-            toast.error(message, { style: { backgroundColor: '#ef4444', color: '#ffffff' } });
+            notifyError(message);
             setError(message);
         } finally {
             setIsLoading(false);

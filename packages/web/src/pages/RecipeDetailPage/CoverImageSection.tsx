@@ -1,20 +1,17 @@
 import type { Recipe } from '@shoppingo/types';
 import { ImageIcon, ImageOff, Sparkles } from 'lucide-react';
 import { useId, useRef, useState } from 'react';
-import { toast } from 'sonner';
 import { revertRecipeAiImage, uploadRecipeImage } from '../../api';
 import { Button } from '../../components/ui/button';
 import { Skeleton } from '../../components/ui/skeleton';
 import { useAuthedImage } from '../../hooks/useAuthedImage';
+import { notifyError, notifySuccess } from '../../utils/toast';
 
 interface CoverImageSectionProps {
     recipe: Recipe;
     isOwner?: boolean;
     onImageChange?: () => void;
 }
-
-const successToast = { style: { backgroundColor: '#10b981', color: '#ffffff' } };
-const errorToast = { style: { backgroundColor: '#ef4444', color: '#ffffff' } };
 
 const useImageAction = (onImageChange?: () => void) => {
     const [isBusy, setIsBusy] = useState(false);
@@ -23,10 +20,10 @@ const useImageAction = (onImageChange?: () => void) => {
         setIsBusy(true);
         try {
             await action();
-            toast.success(success, successToast);
+            notifySuccess(success);
             onImageChange?.();
         } catch (err) {
-            toast.error(err instanceof Error ? err.message : fallbackError, errorToast);
+            notifyError(err instanceof Error ? err.message : fallbackError);
         } finally {
             setIsBusy(false);
         }

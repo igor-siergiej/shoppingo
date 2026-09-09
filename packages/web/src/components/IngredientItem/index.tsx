@@ -2,7 +2,6 @@ import type { Ingredient } from '@shoppingo/types';
 import { Edit2, ImageOff, Loader2, Trash2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { type MouseEvent, useId, useRef, useState } from 'react';
-import { toast } from 'sonner';
 import { QuantityBadge } from '../../components/ItemCheckBox/QuantityBadge';
 import { QuantityUnitField } from '../../components/QuantityUnitField';
 import { Button } from '../../components/ui/button';
@@ -19,6 +18,7 @@ import { Label } from '../../components/ui/label';
 import { Skeleton } from '../../components/ui/skeleton';
 import { useItemImage } from '../../hooks/useItemImage';
 import { SWIPE_REVEAL_DISTANCE, useSwipeGesture } from '../../hooks/useSwipeGesture';
+import { notifyError, notifySuccess } from '../../utils/toast';
 
 interface IngredientItemProps {
     ingredient: Ingredient;
@@ -86,22 +86,10 @@ const IngredientItem = ({ ingredient, onDelete, onEdit, isOwner = true }: Ingred
         setIsLoading(true);
         try {
             await onDelete(ingredient.id);
-            toast.success('Ingredient deleted', {
-                style: {
-                    backgroundColor: '#10b981',
-                    color: '#ffffff',
-                    border: 'none',
-                },
-            });
+            notifySuccess('Ingredient deleted');
         } catch (error) {
             const err = error as { message?: string };
-            toast.error(err.message || 'Failed to delete ingredient', {
-                style: {
-                    backgroundColor: '#ef4444',
-                    color: '#ffffff',
-                    border: 'none',
-                },
-            });
+            notifyError(err.message || 'Failed to delete ingredient');
             setIsDeleting(false);
             setIsLoading(false);
         }
