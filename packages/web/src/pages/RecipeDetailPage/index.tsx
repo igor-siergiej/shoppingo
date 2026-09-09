@@ -6,7 +6,6 @@ import { ExternalLink, Pencil, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { useNavigate, useParams } from 'react-router-dom';
-import { toast } from 'sonner';
 import { addItemsBulk, getListsQuery, getRecipeQuery } from '../../api';
 import { ManageUsersDrawer } from '../../components/ManageUsersDrawer';
 import ToolBar from '../../components/ToolBar';
@@ -28,6 +27,7 @@ import { useGoBack } from '../../hooks/useGoBack';
 import { useManageRecipeUsers } from '../../hooks/useManageRecipeUsers';
 import { useRecipeMutations } from '../../hooks/useRecipeMutations';
 import { logger } from '../../utils/logger';
+import { notifyError, notifySuccess } from '../../utils/toast';
 import { CoverImageSection } from './CoverImageSection';
 import { ErrorState } from './ErrorState';
 import { IngredientSelectSection } from './IngredientSelectSection';
@@ -101,13 +101,7 @@ const RecipeDetailPage = () => {
             await refetch();
         } catch (error) {
             const err = error as { message?: string };
-            toast.error(err.message || 'Failed to add ingredient', {
-                style: {
-                    backgroundColor: '#ef4444',
-                    color: '#ffffff',
-                    border: 'none',
-                },
-            });
+            notifyError(err.message || 'Failed to add ingredient');
         }
     };
 
@@ -121,23 +115,11 @@ const RecipeDetailPage = () => {
             await updateRecipe(recipeId, editedTitle, recipe.ingredients, undefined, recipe.link, recipe.instructions);
             await refetch();
             setIsEditingTitle(false);
-            toast.success('Recipe title updated', {
-                style: {
-                    backgroundColor: '#10b981',
-                    color: '#ffffff',
-                    border: 'none',
-                },
-            });
+            notifySuccess('Recipe title updated');
             logger.info('Recipe title updated', { recipeId, newTitle: editedTitle });
         } catch (error) {
             const err = error as { message?: string };
-            toast.error(err.message || 'Failed to update recipe title', {
-                style: {
-                    backgroundColor: '#ef4444',
-                    color: '#ffffff',
-                    border: 'none',
-                },
-            });
+            notifyError(err.message || 'Failed to update recipe title');
         }
     };
 
@@ -154,14 +136,10 @@ const RecipeDetailPage = () => {
             );
             await refetch();
             setIsEditingLink(false);
-            toast.success('Recipe link updated', {
-                style: { backgroundColor: '#10b981', color: '#ffffff', border: 'none' },
-            });
+            notifySuccess('Recipe link updated');
         } catch (error) {
             const err = error as { message?: string };
-            toast.error(err.message || 'Failed to update link', {
-                style: { backgroundColor: '#ef4444', color: '#ffffff', border: 'none' },
-            });
+            notifyError(err.message || 'Failed to update link');
         }
     };
 
@@ -177,14 +155,10 @@ const RecipeDetailPage = () => {
                 instructions.length > 0 ? instructions : undefined
             );
             await refetch();
-            toast.success('Instructions updated', {
-                style: { backgroundColor: '#10b981', color: '#ffffff', border: 'none' },
-            });
+            notifySuccess('Instructions updated');
         } catch (error) {
             const err = error as { message?: string };
-            toast.error(err.message || 'Failed to update instructions', {
-                style: { backgroundColor: '#ef4444', color: '#ffffff', border: 'none' },
-            });
+            notifyError(err.message || 'Failed to update instructions');
         }
     };
 
@@ -194,23 +168,11 @@ const RecipeDetailPage = () => {
         try {
             await updateRecipe(recipeId, recipe.title, ingredients, undefined, recipe.link, recipe.instructions);
             await refetch();
-            toast.success('Ingredients updated', {
-                style: {
-                    backgroundColor: '#10b981',
-                    color: '#ffffff',
-                    border: 'none',
-                },
-            });
+            notifySuccess('Ingredients updated');
             logger.info('Recipe ingredients updated', { recipeId, ingredientCount: ingredients.length });
         } catch (error) {
             const err = error as { message?: string };
-            toast.error(err.message || 'Failed to update ingredients', {
-                style: {
-                    backgroundColor: '#ef4444',
-                    color: '#ffffff',
-                    border: 'none',
-                },
-            });
+            notifyError(err.message || 'Failed to update ingredients');
         }
     };
 
@@ -225,23 +187,11 @@ const RecipeDetailPage = () => {
                 try {
                     await deleteRecipe(recipeId);
                     logger.info('Recipe deleted', { recipeId, title: recipe.title });
-                    toast.success('Recipe deleted successfully', {
-                        style: {
-                            backgroundColor: '#10b981',
-                            color: '#ffffff',
-                            border: 'none',
-                        },
-                    });
+                    notifySuccess('Recipe deleted successfully');
                     navigate('/recipes');
                 } catch (error) {
                     const err = error as { message?: string };
-                    toast.error(err.message || 'Failed to delete recipe', {
-                        style: {
-                            backgroundColor: '#ef4444',
-                            color: '#ffffff',
-                            border: 'none',
-                        },
-                    });
+                    notifyError(err.message || 'Failed to delete recipe');
                 }
             },
         });
@@ -262,13 +212,7 @@ const RecipeDetailPage = () => {
                 }))
             );
 
-            toast.success(`${result.added} items added, ${result.skipped} skipped`, {
-                style: {
-                    backgroundColor: '#10b981',
-                    color: '#ffffff',
-                    border: 'none',
-                },
-            });
+            notifySuccess(`${result.added} items added, ${result.skipped} skipped`);
 
             await queryClient.invalidateQueries([listTitle]);
             setIsSelectMode(false);
@@ -280,13 +224,7 @@ const RecipeDetailPage = () => {
             });
         } catch (error) {
             const err = error as { message?: string };
-            toast.error(err.message || 'Failed to add ingredients to list', {
-                style: {
-                    backgroundColor: '#ef4444',
-                    color: '#ffffff',
-                    border: 'none',
-                },
-            });
+            notifyError(err.message || 'Failed to add ingredients to list');
         }
     };
 
@@ -338,7 +276,7 @@ const RecipeDetailPage = () => {
                                 <>
                                     <button
                                         onClick={() => setIsEditingTitle(true)}
-                                        className="p-1 hover:bg-muted rounded-md transition-colors"
+                                        className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-muted transition-colors"
                                         aria-label="Edit recipe title"
                                         type="button"
                                     >
@@ -346,7 +284,7 @@ const RecipeDetailPage = () => {
                                     </button>
                                     <button
                                         onClick={handleDeleteRecipe}
-                                        className="p-1 hover:bg-destructive hover:bg-opacity-10 rounded-md transition-colors text-destructive"
+                                        className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-destructive hover:bg-opacity-10 transition-colors text-destructive"
                                         aria-label="Delete recipe"
                                         type="button"
                                     >

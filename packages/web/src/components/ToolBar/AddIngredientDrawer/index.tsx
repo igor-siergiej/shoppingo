@@ -1,6 +1,7 @@
 import { Plus } from 'lucide-react';
 import { useId, useState } from 'react';
 import { QuantityUnitField } from '../../../components/QuantityUnitField';
+import { notifyError } from '../../../utils/toast';
 import { Button } from '../../ui/button';
 import {
     Drawer,
@@ -54,13 +55,7 @@ export const AddIngredientDrawer = ({ open, onOpenChange, onAdd }: AddIngredient
         } catch (err) {
             const errorMsg = err instanceof Error ? err.message : 'Failed to add ingredient';
             setError(errorMsg);
-            toast.error(errorMsg, {
-                style: {
-                    backgroundColor: '#ef4444',
-                    color: '#ffffff',
-                    border: 'none',
-                },
-            });
+            notifyError(errorMsg);
         } finally {
             setIsLoading(false);
         }

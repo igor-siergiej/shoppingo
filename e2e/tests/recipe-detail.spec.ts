@@ -27,6 +27,20 @@ test.describe('Recipe detail page', () => {
         await expect(authenticatedPage.locator('h1').filter({ hasText: 'New Title' })).toBeVisible();
     });
 
+    test('editing the title surfaces a success toast', async ({ authenticatedPage }) => {
+        const recipe = await apiCreateRecipe('Toast Recipe');
+        await authenticatedPage.goto(`/recipes/${recipe.id}`);
+        await authenticatedPage.locator('h1').last().waitFor({ timeout: 10000 });
+
+        await authenticatedPage.getByLabel('Edit recipe title').click();
+        const input = authenticatedPage.locator('input').first();
+        await input.clear();
+        await input.fill('Toast Recipe Renamed');
+        await authenticatedPage.getByRole('button', { name: 'Save' }).first().click();
+
+        await expect(authenticatedPage.getByText('Recipe title updated')).toBeVisible();
+    });
+
     test('owner can add a link', async ({ authenticatedPage }) => {
         const recipe = await apiCreateRecipe('My Recipe');
         await authenticatedPage.goto(`/recipes/${recipe.id}`);
