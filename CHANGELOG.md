@@ -1,3 +1,10 @@
+# [1.61.0](https://github.com/igor-siergiej/shoppingo/compare/v1.60.0...v1.61.0) (2026-09-09)
+
+
+### Features
+
+* **web:** redesign recipe card with mobile single-column layout ([#134](https://github.com/igor-siergiej/shoppingo/issues/134)) ([735fc97](https://github.com/igor-siergiej/shoppingo/commit/735fc97af844f44de2fa3c7c3272d4c8115532e2))
+
 # [1.60.0](https://github.com/igor-siergiej/shoppingo/compare/v1.59.10...v1.60.0) (2026-08-26)
 
 
