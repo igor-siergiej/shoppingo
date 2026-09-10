@@ -27,6 +27,7 @@
     "packages/api/src/infrastructure/UuidGenerator/index.ts",
     "packages/api/src/infrastructure/metrics.ts",
     "packages/api/src/infrastructure/FalImageGenerator/index.ts",
+    "packages/api/src/infrastructure/FalLlmClient/index.ts",
     "packages/api/src/infrastructure/imageProcessor.ts",
     "**/dist/**",
     "**/coverage/**",

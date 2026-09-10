@@ -1,177 +1,70 @@
-import { afterEach, describe, expect, it } from 'bun:test';
+import { describe, expect, it, mock } from 'bun:test';
 
+import type { FalLlmClient, LlmResult } from '../FalLlmClient';
 import { FalRecipeParser } from './index';
+import { parsedRecipeSchema } from './schema';
 
-const originalFetch = globalThis.fetch;
+type CompleteArgs = Parameters<FalLlmClient['completeStructured']>[0];
 
-const stubFetch = (impl: typeof fetch) => {
-    globalThis.fetch = impl as typeof fetch;
-};
+const fakeClient = (impl: (args: CompleteArgs) => Promise<LlmResult<unknown>>) =>
+    ({ completeStructured: mock(impl) }) as unknown as FalLlmClient;
 
-const okResponse = (output: string) =>
-    new Response(JSON.stringify({ output }), { headers: { 'content-type': 'application/json' } });
-
-const CLEAN = JSON.stringify({
-    title: 'Spaghetti Carbonara',
-    ingredients: [{ name: 'spaghetti', quantity: 350, unit: 'g' }, { name: 'freshly ground black pepper' }],
-    instructions: ['Boil the pasta.', 'Fry the guanciale.'],
+const result = <T>(value: T): LlmResult<T> => ({
+    value,
+    meta: { operation: 'recipe.parse', model: 'm', attempts: 1, latencyMs: 1 },
 });
 
 describe('FalRecipeParser', () => {
-    afterEach(() => {
-        globalThis.fetch = originalFetch;
+    it('throws 502 when the source is empty, without calling the client', async () => {
+        const complete = mock(async () => result({}));
+        const parser = new FalRecipeParser({ completeStructured: complete } as unknown as FalLlmClient);
+
+        await expect(parser.parse('   ')).rejects.toMatchObject({ status: 502 });
+        expect(complete).not.toHaveBeenCalled();
     });
 
-    it('throws 500 when no api key is configured', async () => {
-        await expect(new FalRecipeParser('').parse('{}')).rejects.toMatchObject({ status: 500 });
-    });
-
-    it('throws 502 when the source is empty', async () => {
-        await expect(new FalRecipeParser('secret').parse('   ')).rejects.toMatchObject({ status: 502 });
-    });
-
-    it('sends the model and Key auth header and parses clean JSON', async () => {
-        let sentBody: Record<string, unknown> = {};
-        let authHeader: string | null = null;
-        stubFetch(async (_url, init) => {
-            authHeader = new Headers(init?.headers).get('authorization');
-            sentBody = JSON.parse(init?.body as string);
-            return okResponse(CLEAN);
-        });
-
-        const result = await new FalRecipeParser('secret', { model: 'google/gemini-2.5-flash-lite' }).parse('{"a":1}');
-
-        expect(authHeader).toBe('Key secret');
-        expect(sentBody.model).toBe('google/gemini-2.5-flash-lite');
-        expect(sentBody.temperature).toBe(0);
-        expect(result).toEqual({
-            title: 'Spaghetti Carbonara',
-            ingredients: [{ name: 'spaghetti', quantity: 350, unit: 'g' }, { name: 'freshly ground black pepper' }],
-            instructions: ['Boil the pasta.', 'Fry the guanciale.'],
-        });
-    });
-
-    it('extracts JSON wrapped in prose or code fences', async () => {
-        stubFetch(async () => okResponse(`Here you go:\n\`\`\`json\n${CLEAN}\n\`\`\``));
-
-        const result = await new FalRecipeParser('secret').parse('{"a":1}');
-
-        expect(result.title).toBe('Spaghetti Carbonara');
-        expect(result.ingredients).toHaveLength(2);
-    });
-
-    it('defaults unit to pcs when a quantity is given without a unit', async () => {
-        stubFetch(async () =>
-            okResponse('{"title":"X","ingredients":[{"name":"eggs","quantity":4}],"instructions":["Do."]}')
-        );
-
-        const result = await new FalRecipeParser('secret').parse('{"a":1}');
-
-        expect(result.ingredients).toEqual([{ name: 'eggs', quantity: 4, unit: 'pcs' }]);
-    });
-
-    it('drops a non-numeric quantity rather than emitting NaN', async () => {
-        stubFetch(async () =>
-            okResponse(
-                '{"title":"X","ingredients":[{"name":"onion","quantity":"one","unit":"pcs"}],"instructions":["Do."]}'
-            )
-        );
-
-        const result = await new FalRecipeParser('secret').parse('{"a":1}');
-
-        expect(result.ingredients).toEqual([{ name: 'onion' }]);
-    });
-
-    it('throws 502 when the response contains no JSON object', async () => {
-        stubFetch(async () => okResponse('I could not parse that.'));
-
-        await expect(new FalRecipeParser('secret').parse('{"a":1}')).rejects.toMatchObject({ status: 502 });
-    });
-
-    it('throws 502 when the JSON is malformed', async () => {
-        stubFetch(async () => okResponse('{"title":"X","ingredients":[}'));
-
-        await expect(new FalRecipeParser('secret').parse('{"a":1}')).rejects.toMatchObject({ status: 502 });
-    });
-
-    it('throws 502 when ingredients is not an array', async () => {
-        stubFetch(async () => okResponse('{"title":"X","ingredients":"nope","instructions":["Do."]}'));
-
-        await expect(new FalRecipeParser('secret').parse('{"a":1}')).rejects.toMatchObject({ status: 502 });
-    });
-
-    it('throws 502 when ingredients is empty', async () => {
-        stubFetch(async () => okResponse('{"title":"X","ingredients":[],"instructions":["Do."]}'));
-
-        await expect(new FalRecipeParser('secret').parse('{"a":1}')).rejects.toMatchObject({ status: 502 });
-    });
-
-    it('throws 502 when an ingredient has no usable name', async () => {
-        stubFetch(async () => okResponse('{"title":"X","ingredients":[{"quantity":1}],"instructions":["Do."]}'));
-
-        await expect(new FalRecipeParser('secret').parse('{"a":1}')).rejects.toMatchObject({ status: 502 });
-    });
-
-    it('throws 502 on a non-OK response', async () => {
-        stubFetch(async () => new Response('upstream boom', { status: 500 }));
-
-        await expect(new FalRecipeParser('secret').parse('{"a":1}')).rejects.toMatchObject({ status: 502 });
-    });
-
-    it('throws 502 when the api reports an error in the body', async () => {
-        stubFetch(
-            async () =>
-                new Response(JSON.stringify({ error: 'rate limited' }), {
-                    headers: { 'content-type': 'application/json' },
-                })
-        );
-
-        await expect(new FalRecipeParser('secret').parse('{"a":1}')).rejects.toMatchObject({ status: 502 });
-    });
-
-    it('throws 502 when fetch rejects', async () => {
-        stubFetch(async () => {
-            throw new Error('network down');
-        });
-
-        await expect(new FalRecipeParser('secret').parse('{"a":1}')).rejects.toMatchObject({ status: 502 });
-    });
-
-    it('keeps instructions as strings and drops non-string entries', async () => {
-        stubFetch(async () =>
-            okResponse('{"title":"X","ingredients":[{"name":"salt"}],"instructions":["Do.",5,"Then."]}')
-        );
-
-        const result = await new FalRecipeParser('secret').parse('{"a":1}');
-
-        expect(result.instructions).toEqual(['Do.', 'Then.']);
-    });
-
-    it('throws 502 when a 200 response has a non-JSON body', async () => {
-        stubFetch(async () => new Response('not json at all', { headers: { 'content-type': 'text/plain' } }));
-
-        await expect(new FalRecipeParser('secret').parse('{"a":1}')).rejects.toMatchObject({ status: 502 });
-    });
-
-    it('throws 502 when a non-OK response body cannot be read', async () => {
-        stubFetch(async () => {
-            const response = new Response('boom', { status: 500 });
-            Object.defineProperty(response, 'text', {
-                value: () => Promise.reject(new Error('stream broken')),
+    it('calls the client with operation recipe.parse, the parsed-recipe schema and the source in the prompt', async () => {
+        let seen: CompleteArgs | undefined;
+        const client = fakeClient(async (args) => {
+            seen = args;
+            return result({
+                title: 'Carbonara',
+                ingredients: [{ name: 'spaghetti', quantity: 350, unit: 'g' }],
+                instructions: ['Boil.'],
             });
-            return response;
         });
 
-        await expect(new FalRecipeParser('secret').parse('{"a":1}')).rejects.toMatchObject({ status: 502 });
+        const parsed = await new FalRecipeParser(client).parse('{"@type":"Recipe"}');
+
+        expect(seen?.operation).toBe('recipe.parse');
+        expect(seen?.system).toContain('extract a single recipe');
+        expect(seen?.prompt).toContain('{"@type":"Recipe"}');
+        expect(seen?.schema).toBe(parsedRecipeSchema);
+        expect(parsed).toEqual({
+            title: 'Carbonara',
+            ingredients: [{ name: 'spaghetti', quantity: 350, unit: 'g' }],
+            instructions: ['Boil.'],
+        });
     });
 
-    it('keeps a zero quantity rather than dropping it as falsy', async () => {
-        stubFetch(async () =>
-            okResponse('{"title":"X","ingredients":[{"name":"salt","quantity":0,"unit":"g"}],"instructions":["Do."]}')
-        );
+    it('propagates a client error unchanged', async () => {
+        const client = fakeClient(async () => {
+            throw Object.assign(new Error('fal.ai any-llm error: rate limited'), { status: 502 });
+        });
 
-        const result = await new FalRecipeParser('secret').parse('{"a":1}');
+        await expect(new FalRecipeParser(client).parse('src')).rejects.toMatchObject({ status: 502 });
+    });
 
-        expect(result.ingredients).toEqual([{ name: 'salt', quantity: 0, unit: 'g' }]);
+    it('passes an explicit model and timeout through to the client', async () => {
+        let seen: CompleteArgs | undefined;
+        const client = fakeClient(async (args) => {
+            seen = args;
+            return result({ title: 'X', ingredients: [{ name: 'salt' }], instructions: [] });
+        });
+
+        await new FalRecipeParser(client, { model: 'anthropic/claude-3-haiku', timeoutMs: 8000 }).parse('src');
+
+        expect(seen?.model).toBe('anthropic/claude-3-haiku');
+        expect(seen?.timeoutMs).toBe(8000);
     });
 });
