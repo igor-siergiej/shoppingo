@@ -15,6 +15,29 @@ Currently the visual suite covers:
 - `/calendar` (`calendar.visual.spec.ts`) — one fixed-date state (uses `page.clock.setFixedTime` so the baseline doesn't depend on which real-world day the test runs).
 - `/login`, `/register` (`auth.visual.spec.ts`) — these two don't use the `authenticatedPage` fixture (pre-auth) and render under a different layout (`RootLayout showLayout={false}`) than every other page above.
 
+## Functional coverage (auth + data-write audit, 2026-09)
+
+The functional suite (`chromium` project) covers the security- and
+data-integrity-critical paths:
+
+- **Auth** — `auth.spec.ts`: login (valid credentials, validation errors, short
+  username), register (valid, password mismatch), logout, and the
+  unauthenticated `/` → `/login` redirect. `token-refresh.spec.ts`: a `401` from
+  the API triggers a token refresh and retry rather than an immediate session
+  drop (`packages/web/src/api/makeRequest`).
+- **List data-write** — `lists.spec.ts` (add / rename / delete), `items.spec.ts`
+  (add, toggle, edit name + quantity + unit, clear all, clear selected,
+  swipe-to-delete), `bulk-add.spec.ts`, `labels.spec.ts`.
+- **Recipe data-write** — `recipe-detail.spec.ts` (edit title / link /
+  instructions, delete), `add-from-recipe.spec.ts` (recipe → list),
+  `recipes.spec.ts`.
+- **Sharing / authorization** — `sharing.spec.ts` (add + remove members, owner
+  badge, confirmation), `friends.spec.ts`, `share-target.spec.ts`.
+- **Offline** — `offline-sync.spec.ts` (queued writes reconcile on reconnect).
+
+API-side authorization and validation are unit-tested under
+`packages/api/src/**/*.test.ts` (Bun runner, 90% coverage threshold).
+
 ## Updating visual baselines
 
 Baselines are Linux-only (they're compared against GitHub Actions' `ubuntu-latest` runner) — **never commit a baseline generated on your own machine**, even if tests pass locally. Font rendering/anti-aliasing differs enough between Linux distros to cause spurious CI failures.
