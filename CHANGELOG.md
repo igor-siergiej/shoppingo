@@ -1,3 +1,10 @@
+## [1.63.2](https://github.com/igor-siergiej/shoppingo/compare/v1.63.1...v1.63.2) (2026-09-12)
+
+
+### Bug Fixes
+
+* **web:** schedule undated todos by tapping a day, not just dragging ([#143](https://github.com/igor-siergiej/shoppingo/issues/143)) ([6bd6d38](https://github.com/igor-siergiej/shoppingo/commit/6bd6d3832e78ec5d513055da79c38cd6bc88ab20))
+
 ## [1.63.1](https://github.com/igor-siergiej/shoppingo/compare/v1.63.0...v1.63.1) (2026-09-12)
 
 
