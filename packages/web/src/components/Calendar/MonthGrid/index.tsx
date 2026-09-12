@@ -9,6 +9,7 @@ import {
     startOfWeek,
 } from 'date-fns';
 import { motion, type PanInfo } from 'motion/react';
+import { DayDots } from './DayDots';
 
 export const dayKey = (date: Date): string => format(date, 'yyyy-MM-dd');
 
@@ -20,6 +21,16 @@ const resolveMonthSwipe = (offsetX: number, velocityX: number): -1 | 0 | 1 => {
     if (effective < -SWIPE_THRESHOLD) return 1; // swipe left -> next month
     if (effective > SWIPE_THRESHOLD) return -1; // swipe right -> prev month
     return 0;
+};
+
+const getDraggedTodoId = (e: React.DragEvent): string =>
+    e.dataTransfer.getData('text/plain') || e.dataTransfer.getData('todoId');
+
+const dayCellClassName = (inMonth: boolean, selected: boolean, schedulingActive: boolean): string => {
+    const colorClass = inMonth ? 'text-foreground' : 'text-muted-foreground/40';
+    const bgClass = selected ? 'bg-primary text-primary-foreground' : 'bg-muted/40';
+    const schedulingClass = schedulingActive ? 'ring-1 ring-primary/40' : '';
+    return `aspect-square rounded-lg flex flex-col items-center justify-center text-sm relative ${colorClass} ${bgClass} ${schedulingClass}`;
 };
 
 export interface DayDot {
@@ -51,13 +62,10 @@ const WEEKDAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
 const DayCell = ({ day, dots, selected, inMonth, schedulingActive, onSelect, onDrop }: DayCellProps) => {
     const key = dayKey(day);
-    const colorClass = inMonth ? 'text-foreground' : 'text-muted-foreground/40';
-    const bgClass = selected ? 'bg-primary text-primary-foreground' : 'bg-muted/40';
-    const schedulingClass = schedulingActive ? 'ring-1 ring-primary/40' : '';
 
     const handleDrop = (e: React.DragEvent) => {
         e.preventDefault();
-        const id = e.dataTransfer.getData('text/plain') || e.dataTransfer.getData('todoId');
+        const id = getDraggedTodoId(e);
         if (id) onDrop(id);
     };
 
@@ -69,22 +77,10 @@ const DayCell = ({ day, dots, selected, inMonth, schedulingActive, onSelect, onD
             onClick={onSelect}
             onDragOver={(e) => e.preventDefault()}
             onDrop={handleDrop}
-            className={`aspect-square rounded-lg flex flex-col items-center justify-center text-sm relative ${colorClass} ${bgClass} ${schedulingClass}`}
+            className={dayCellClassName(inMonth, selected, schedulingActive)}
         >
             <span>{day.getDate()}</span>
-            {dots.length > 0 && (
-                <span className="flex gap-0.5 mt-0.5">
-                    {dots.slice(0, 3).map((dot, i) => (
-                        <span
-                            key={`${key}-dot-${i}-${dot.color}`}
-                            data-testid="day-dot"
-                            data-dimmed={dot.dimmed}
-                            className={`h-1.5 w-1.5 rounded-full ${dot.dimmed ? 'opacity-30' : ''}`}
-                            style={{ backgroundColor: selected ? '#fff' : dot.color }}
-                        />
-                    ))}
-                </span>
-            )}
+            <DayDots dots={dots} dayKeyPrefix={key} selected={selected} />
         </button>
     );
 };
