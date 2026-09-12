@@ -171,6 +171,7 @@ export const applyRecipeIntent = (recipes: Recipe[], intent: OutboxIntent): Reci
                     dateAdded: new Date(),
                     ...(p.link !== undefined && { link: String(p.link) }),
                     ...(p.instructions !== undefined && { instructions: p.instructions as string[] }),
+                    ...(p.tags !== undefined && { tags: p.tags as string[] }),
                 } as Recipe,
             ];
         }
@@ -183,6 +184,7 @@ export const applyRecipeIntent = (recipes: Recipe[], intent: OutboxIntent): Reci
                           ...(p.ingredients !== undefined && { ingredients: p.ingredients as Ingredient[] }),
                           ...(p.link !== undefined && { link: String(p.link) }),
                           ...(p.instructions !== undefined && { instructions: p.instructions as string[] }),
+                          ...(p.tags !== undefined && { tags: p.tags as string[] }),
                       }
                     : r
             );

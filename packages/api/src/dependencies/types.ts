@@ -24,6 +24,7 @@ import type { TodoReminderService } from '../domain/TodoReminderService';
 import type { TodoRepository } from '../domain/TodoRepository';
 import type { TodoService } from '../domain/TodoService';
 import type { FalLlmClient } from '../infrastructure/FalLlmClient';
+import type { FalRecipeTagger } from '../infrastructure/FalRecipeTagger';
 import type { WebPushSender } from '../infrastructure/WebPushSender';
 import type { RecipeHandlers } from '../interfaces/RecipeHandlers';
 
@@ -58,6 +59,7 @@ export enum DependencyToken {
     PageFetcher = 'PageFetcher',
     ImageFetcher = 'ImageFetcher',
     FalLlmClient = 'FalLlmClient',
+    RecipeTagger = 'RecipeTagger',
     RecipeTextExtractor = 'RecipeTextExtractor',
     RecipeParser = 'RecipeParser',
     RecipeImportService = 'RecipeImportService',
@@ -95,6 +97,7 @@ export type Dependencies = {
     [DependencyToken.PageFetcher]: PageFetcher;
     [DependencyToken.ImageFetcher]: ImageFetcher;
     [DependencyToken.FalLlmClient]: FalLlmClient;
+    [DependencyToken.RecipeTagger]: FalRecipeTagger;
     [DependencyToken.RecipeTextExtractor]: RecipeTextExtractor;
     [DependencyToken.RecipeParser]: RecipeParser;
     [DependencyToken.RecipeImportService]: RecipeImportService;

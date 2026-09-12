@@ -93,13 +93,14 @@ export const getRecipe = async (c: Context<HonoVars>): Promise<Response> => {
 };
 
 export const createRecipe = async (c: Context<HonoVars>): Promise<Response> => {
-    const { title, ingredients, link, instructions, selectedUsers, id } = await c.req.json<{
+    const { title, ingredients, link, instructions, selectedUsers, id, tags } = await c.req.json<{
         title: string;
         ingredients: Ingredient[];
         link?: string;
         instructions?: string[];
         selectedUsers?: string[];
         id?: string;
+        tags?: string[];
     }>();
     const logger = getLogger();
     const authenticatedUser = getAuthenticatedUser(c);
@@ -126,7 +127,8 @@ export const createRecipe = async (c: Context<HonoVars>): Promise<Response> => {
             link,
             instructions,
             selectedUsers,
-            id
+            id,
+            tags
         );
 
         logger.info('API: Recipe created', {
@@ -222,11 +224,12 @@ export const importRecipeImage = async (c: Context<HonoVars>): Promise<Response>
 
 export const updateRecipe = async (c: Context<HonoVars>): Promise<Response> => {
     const recipeId = c.req.param('recipeId');
-    const { title, ingredients, link, instructions } = await c.req.json<{
+    const { title, ingredients, link, instructions, tags } = await c.req.json<{
         title: string;
         ingredients: Ingredient[];
         link?: string;
         instructions?: string[];
+        tags?: string[];
     }>();
     const logger = getLogger();
     const authenticatedUser = getAuthenticatedUser(c);
@@ -249,7 +252,8 @@ export const updateRecipe = async (c: Context<HonoVars>): Promise<Response> => {
             ingredients,
             authenticatedUser.id,
             link,
-            instructions
+            instructions,
+            tags
         );
 
         logger.info('API: Recipe updated', { userId: authenticatedUser.id, recipeId, recipeTitle: title });

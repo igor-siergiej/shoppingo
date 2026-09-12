@@ -9,6 +9,25 @@ interface AuthClient {
     getUsersByUsernames(usernames: Array<string>): Promise<Array<User>>;
 }
 
+interface RecipeTagger {
+    generateTags(title: string, ingredients: Ingredient[], instructions?: string[]): Promise<string[]>;
+}
+
+const normalizeTag = (t: string) => t.trim().toLowerCase();
+
+const mergeTags = (manual: string[], aiTags: string[]): string[] => {
+    const normalizedManual = manual.map(normalizeTag).filter(Boolean);
+    const seen = new Set(normalizedManual);
+    const merged = [...normalizedManual];
+    for (const tag of aiTags.map(normalizeTag).filter(Boolean)) {
+        if (!seen.has(tag)) {
+            seen.add(tag);
+            merged.push(tag);
+        }
+    }
+    return merged;
+};
+
 export class RecipeService {
     private readonly authorizationService: AuthorizationService;
 
@@ -18,10 +37,26 @@ export class RecipeService {
         private logger?: Logger,
         authorizationService?: AuthorizationService,
         private recipeImageService?: RecipeImageService,
-        private readonly _auth?: AuthClient,
-        private readonly friendService?: FriendService
+        readonly _auth?: AuthClient,
+        private readonly friendService?: FriendService,
+        private readonly tagger?: RecipeTagger
     ) {
         this.authorizationService = authorizationService ?? new AuthorizationService();
+    }
+
+    private async resolveTags(title: string, ingredients: Ingredient[], instructions?: string[], manual?: string[]) {
+        let aiTags: string[] = [];
+        if (this.tagger) {
+            try {
+                aiTags = await this.tagger.generateTags(title, ingredients, instructions);
+            } catch (error) {
+                this.logger?.warn('Recipe tag generation failed, continuing without AI tags', {
+                    recipeTitle: title,
+                    error,
+                });
+            }
+        }
+        return mergeTags(manual ?? [], aiTags);
     }
 
     /** Seeds shared members: owner plus all current friends by default, or an explicit friend subset (403 on non-friends). */
@@ -73,7 +108,8 @@ export class RecipeService {
         link?: string,
         instructions?: string[],
         selectedUsers?: string[],
-        id?: string
+        id?: string,
+        tags?: string[]
     ): Promise<Recipe> {
         try {
             if (id) {
@@ -83,6 +119,7 @@ export class RecipeService {
                 }
             }
             const users = await this.resolveSharedUsers(title, owner, selectedUsers);
+            const mergedTags = await this.resolveTags(title, ingredients, instructions, tags);
             const recipe: Recipe = {
                 id: id ?? this.idGenerator.generate(),
                 title,
@@ -95,6 +132,7 @@ export class RecipeService {
                 dateAdded: new Date(),
                 ...(link !== undefined && { link }),
                 ...(instructions !== undefined && { instructions }),
+                ...(mergedTags.length > 0 && { tags: mergedTags }),
             };
             const created = await this.recipeRepository.insert(recipe);
             this.logger?.info('Recipe created', {
@@ -134,7 +172,8 @@ export class RecipeService {
         ingredients: Ingredient[],
         ownerId: string,
         link?: string,
-        instructions?: string[]
+        instructions?: string[],
+        tags?: string[]
     ): Promise<Recipe> {
         try {
             const recipe = await this.getRecipe(recipeId);
@@ -150,6 +189,7 @@ export class RecipeService {
             }));
             recipe.link = link;
             recipe.instructions = instructions;
+            recipe.tags = tags;
             const updated = await this.recipeRepository.update(recipeId, recipe);
             this.logger?.info('Recipe updated', {
                 recipeId,

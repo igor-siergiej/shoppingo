@@ -21,6 +21,7 @@ import { FalImageGenerator } from '../infrastructure/FalImageGenerator';
 import { FalLlmClient } from '../infrastructure/FalLlmClient';
 import { FalRecipeExtractor } from '../infrastructure/FalRecipeExtractor';
 import { FalRecipeParser } from '../infrastructure/FalRecipeParser';
+import { FalRecipeTagger } from '../infrastructure/FalRecipeTagger';
 import { HttpImageFetcher } from '../infrastructure/HttpImageFetcher';
 import { HttpPageFetcher } from '../infrastructure/HttpPageFetcher';
 import { MongoFriendRepository } from '../infrastructure/MongoFriendRepository';
@@ -137,7 +138,8 @@ export const registerDepdendencies = () => {
                     dependencyContainer.resolve(DependencyToken.AuthorizationService),
                     dependencyContainer.resolve(DependencyToken.RecipeImageService),
                     dependencyContainer.resolve(DependencyToken.AuthClient),
-                    dependencyContainer.resolve(DependencyToken.FriendService)
+                    dependencyContainer.resolve(DependencyToken.FriendService),
+                    dependencyContainer.resolve(DependencyToken.RecipeTagger)
                 );
             }
         }
@@ -371,6 +373,16 @@ export const registerDepdendencies = () => {
         class {
             constructor() {
                 return new FalRecipeExtractor(dependencyContainer.resolve(DependencyToken.FalLlmClient));
+            }
+        }
+    );
+
+    dependencyContainer.registerSingleton(
+        DependencyToken.RecipeTagger,
+        // @ts-expect-error - Dependency injection requires constructor return override
+        class {
+            constructor() {
+                return new FalRecipeTagger(dependencyContainer.resolve(DependencyToken.FalLlmClient));
             }
         }
     );

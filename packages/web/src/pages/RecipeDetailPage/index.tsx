@@ -33,6 +33,7 @@ import { ErrorState } from './ErrorState';
 import { IngredientSelectSection } from './IngredientSelectSection';
 import { IngredientsSection } from './IngredientsSection';
 import { InstructionsSection } from './InstructionsSection';
+import { TagsSection } from './TagsSection';
 
 const RecipeDetailPage = () => {
     const { recipeId } = useParams<{ recipeId: string }>();
@@ -97,7 +98,15 @@ const RecipeDetailPage = () => {
         const updated = [...recipe.ingredients, newIngredient];
 
         try {
-            await updateRecipe(recipeId, recipe.title, updated, undefined, recipe.link, recipe.instructions);
+            await updateRecipe(
+                recipeId,
+                recipe.title,
+                updated,
+                undefined,
+                recipe.link,
+                recipe.instructions,
+                recipe.tags
+            );
             await refetch();
         } catch (error) {
             const err = error as { message?: string };
@@ -112,7 +121,15 @@ const RecipeDetailPage = () => {
         }
 
         try {
-            await updateRecipe(recipeId, editedTitle, recipe.ingredients, undefined, recipe.link, recipe.instructions);
+            await updateRecipe(
+                recipeId,
+                editedTitle,
+                recipe.ingredients,
+                undefined,
+                recipe.link,
+                recipe.instructions,
+                recipe.tags
+            );
             await refetch();
             setIsEditingTitle(false);
             notifySuccess('Recipe title updated');
@@ -132,7 +149,8 @@ const RecipeDetailPage = () => {
                 recipe.ingredients,
                 undefined,
                 editedLink.trim() || undefined,
-                recipe.instructions
+                recipe.instructions,
+                recipe.tags
             );
             await refetch();
             setIsEditingLink(false);
@@ -152,7 +170,8 @@ const RecipeDetailPage = () => {
                 recipe.ingredients,
                 undefined,
                 recipe.link,
-                instructions.length > 0 ? instructions : undefined
+                instructions.length > 0 ? instructions : undefined,
+                recipe.tags
             );
             await refetch();
             notifySuccess('Instructions updated');
@@ -166,13 +185,41 @@ const RecipeDetailPage = () => {
         if (!recipe) return;
 
         try {
-            await updateRecipe(recipeId, recipe.title, ingredients, undefined, recipe.link, recipe.instructions);
+            await updateRecipe(
+                recipeId,
+                recipe.title,
+                ingredients,
+                undefined,
+                recipe.link,
+                recipe.instructions,
+                recipe.tags
+            );
             await refetch();
             notifySuccess('Ingredients updated');
             logger.info('Recipe ingredients updated', { recipeId, ingredientCount: ingredients.length });
         } catch (error) {
             const err = error as { message?: string };
             notifyError(err.message || 'Failed to update ingredients');
+        }
+    };
+
+    const handleDeleteTag = async (tag: string) => {
+        if (!recipe) return;
+        const nextTags = (recipe.tags ?? []).filter((t) => t !== tag);
+        try {
+            await updateRecipe(
+                recipeId,
+                recipe.title,
+                recipe.ingredients,
+                undefined,
+                recipe.link,
+                recipe.instructions,
+                nextTags
+            );
+            await refetch();
+        } catch (error) {
+            const err = error as { message?: string };
+            notifyError(err.message || 'Failed to remove tag');
         }
     };
 
@@ -349,6 +396,8 @@ const RecipeDetailPage = () => {
                                             )}
                                         </div>
                                     )}
+
+                                    <TagsSection tags={recipe.tags} isOwner={isOwner} onDeleteTag={handleDeleteTag} />
 
                                     <IngredientsSection
                                         recipe={recipe}
