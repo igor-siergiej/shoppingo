@@ -9,7 +9,7 @@ export const RemoveRowButton = ({ onClick, disabled, ariaLabel }: RemoveRowButto
         type="button"
         onClick={onClick}
         disabled={disabled}
-        className="text-destructive hover:opacity-70"
+        className="flex h-11 w-11 shrink-0 items-center justify-center text-lg text-destructive hover:opacity-70"
         aria-label={ariaLabel}
     >
         ×
@@ -27,7 +27,7 @@ export const AddRowButton = ({ onClick, disabled, label }: AddRowButtonProps) =>
         type="button"
         onClick={onClick}
         disabled={disabled}
-        className="w-full text-sm text-muted-foreground border border-dashed border-border rounded-md py-1.5 hover:bg-muted/50 transition-colors"
+        className="w-full text-sm text-muted-foreground border border-dashed border-border rounded-md py-3 hover:bg-muted/50 transition-colors"
     >
         {label}
     </button>
