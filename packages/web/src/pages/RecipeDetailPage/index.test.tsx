@@ -1,5 +1,5 @@
 import type { Recipe } from '@shoppingo/types';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
@@ -17,7 +17,17 @@ vi.mock('../../hooks/useManageRecipeUsers', () => ({
     useManageRecipeUsers: () => ({ addUserMutation: {}, removeUserMutation: {} }),
 }));
 
-vi.mock('../../components/ToolBar', () => ({ default: () => <div data-testid="toolbar" /> }));
+// Real ToolBar has no direct "select mode" prop for tests to flip; expose a button
+// that calls the callback the page wires up, so tests can trigger select mode like a user would.
+vi.mock('../../components/ToolBar', () => ({
+    default: ({ onToggleSelectMode }: { onToggleSelectMode: () => void }) => (
+        <div data-testid="toolbar">
+            <button type="button" onClick={onToggleSelectMode}>
+                Toggle Select Mode
+            </button>
+        </div>
+    ),
+}));
 vi.mock('../../components/ManageUsersDrawer', () => ({ ManageUsersDrawer: () => null }));
 vi.mock('./CoverImageSection', () => ({ CoverImageSection: () => <div data-testid="cover-image" /> }));
 vi.mock('./IngredientSelectSection', () => ({ IngredientSelectSection: () => null }));
@@ -79,5 +89,25 @@ describe('RecipeDetailPage', () => {
         await screen.findByRole('heading', { name: 'Pasta' });
         expect(screen.getByLabelText('Edit recipe title')).toBeInTheDocument();
         expect(screen.getByLabelText('Delete recipe')).toBeInTheDocument();
+    });
+
+    it('hides the cover image while in ingredient-select mode', async () => {
+        mockRecipe = {
+            id: 'recipe-1',
+            title: 'Pasta',
+            ingredients: [],
+            ownerId: 'user-1',
+            users: [{ id: 'user-1', username: 'testuser' }],
+            dateAdded: new Date(),
+        };
+
+        renderPage();
+
+        await screen.findByRole('heading', { name: 'Pasta' });
+        expect(screen.getByTestId('cover-image')).toBeInTheDocument();
+
+        fireEvent.click(screen.getByText('Toggle Select Mode'));
+
+        expect(screen.queryByTestId('cover-image')).not.toBeInTheDocument();
     });
 });
