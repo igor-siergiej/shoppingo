@@ -14,8 +14,7 @@ test.describe('Recipe detail page', () => {
     });
 
     test('a long title renders in full without clipping', async ({ authenticatedPage }) => {
-        const longTitle =
-            "Grandma's Slow-Cooked Beef Bourguignon With Red Wine, Root Vegetables And Fresh Herbs";
+        const longTitle = "Grandma's Slow-Cooked Beef Bourguignon With Red Wine, Root Vegetables And Fresh Herbs";
         const recipe = await apiCreateRecipe(longTitle);
         await authenticatedPage.goto(`/recipes/${recipe.id}`);
         await authenticatedPage.locator('h1').last().waitFor({ timeout: 10000 });
