@@ -1,5 +1,4 @@
 import { AddRowButton, RemoveRowButton } from '../../components/StepsList/ListRowButtons';
-import { Label } from '../../components/ui/label';
 import { Textarea } from '../../components/ui/textarea';
 import { splitIntoSteps } from '../../utils/splitIntoSteps';
 
@@ -40,9 +39,8 @@ export const IngredientsField = ({
     isImporting,
 }: IngredientsFieldProps) => (
     <div className="space-y-2">
-        <div className="flex items-center justify-between">
-            <Label>Ingredients</Label>
-            {ingredients.length > 0 && (
+        {ingredients.length > 0 && (
+            <div className="flex justify-end">
                 <button
                     type="button"
                     onClick={() => setShowIngredientsPaste(true)}
@@ -50,8 +48,8 @@ export const IngredientsField = ({
                 >
                     edit text ↩
                 </button>
-            )}
-        </div>
+            </div>
+        )}
         {showIngredientsPaste || ingredients.length === 0 ? (
             <Textarea
                 placeholder="Paste ingredients here — each line becomes an item automatically..."
@@ -72,7 +70,7 @@ export const IngredientsField = ({
                 {ingredients.map((ingredient, i) => (
                     <div
                         key={`${i}-${ingredient.name.slice(0, 20)}`}
-                        className="flex items-start gap-2 px-3 py-2 rounded-md bg-muted border border-border text-sm"
+                        className="flex items-center gap-2 px-3 py-3 rounded-md bg-muted border border-border text-sm"
                     >
                         <span className="flex-1 text-foreground">{formatIngredientLine(ingredient)}</span>
                         <RemoveRowButton
