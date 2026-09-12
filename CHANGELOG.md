@@ -1,3 +1,10 @@
+## [1.63.1](https://github.com/igor-siergiej/shoppingo/compare/v1.63.0...v1.63.1) (2026-09-12)
+
+
+### Bug Fixes
+
+* **web:** stop recipe image skeleton sticking and 403 on first import-add ([#142](https://github.com/igor-siergiej/shoppingo/issues/142)) ([b218b52](https://github.com/igor-siergiej/shoppingo/commit/b218b5214b2439db2e6baf10aaa0f25fd030b269))
+
 # [1.63.0](https://github.com/igor-siergiej/shoppingo/compare/v1.62.0...v1.63.0) (2026-09-09)
 
 
