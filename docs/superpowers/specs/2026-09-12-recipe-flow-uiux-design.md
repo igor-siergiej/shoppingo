@@ -142,6 +142,14 @@ is web-only.
 **Modified**
 - `packages/web/src/pages/AddRecipePage/index.tsx` — wrap fields in `FormSection`s; sizing/spacing
   pass on inputs and row buttons
+- `packages/web/src/pages/AddRecipePage/IngredientsField.tsx`,
+  `packages/web/src/pages/AddRecipePage/TagsField.tsx` — each renders its own internal
+  `<Label>Ingredients</Label>`/`<Label>Tags</Label>` heading today. Wrapping them in a titled
+  `FormSection` would double that heading, so their internal `<Label>` is removed (the "edit
+  text ↩" toggle in `IngredientsField` stays, just without the adjacent label text) — the
+  `FormSection` title is now the only heading. No prop or behavior change.
+- `packages/web/src/components/StepsList/ListRowButtons.tsx` — larger tap targets on
+  `RemoveRowButton`/`AddRowButton` (shared by `IngredientsField` and `StepsList`)
 - `packages/web/src/pages/RecipeDetailPage/index.tsx` — reorder header: image → title (wrapping,
   no truncate) → icon action row
 - `e2e/tests/recipe-detail.spec.ts` — add a long-title-doesn't-clip regression case
@@ -150,9 +158,8 @@ is web-only.
 
 **Unmodified (confirmed, not touched)**
 - `ChoiceScreen.tsx`, `ImportScreen.tsx`, `ShareTargetPage/index.tsx`, `RecipesPage`'s `sharedUrl`
-  redirect, `IngredientsField.tsx`, `TagsField.tsx`, `CoverImageSection.tsx`,
-  `IngredientsSection.tsx`, `InstructionsSection.tsx`, `TagsSection.tsx` — all logic as-is, only
-  consumed by the reorganized parent JSX.
+  redirect, `CoverImageSection.tsx`, `IngredientsSection.tsx`, `InstructionsSection.tsx`,
+  `TagsSection.tsx` — all logic as-is, only consumed by the reorganized parent JSX.
 
 ## Dependency
 
