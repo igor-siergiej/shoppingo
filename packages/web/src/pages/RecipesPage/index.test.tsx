@@ -137,19 +137,19 @@ describe('RecipesPage', () => {
         expect(screen.queryByText('No recipes yet')).not.toBeInTheDocument();
     });
 
-    it('narrows results with a tag chip on top of a text search', async () => {
+    it('matches a recipe by tag with no visible tag UI on the page', async () => {
         const user = userEvent.setup();
         vi.mocked(useQuery).mockReturnValue({
             data: [
                 {
                     id: 'r1',
-                    title: 'Chicken Soup',
+                    title: "Grandma's Bourguignon",
                     ownerId: 'user-1',
                     ingredients: [],
                     users: [],
                     dateAdded: new Date(),
                     coverImageKey: 'img-1',
-                    tags: ['comfort-food'],
+                    tags: ['beef', 'stew', 'french'],
                 },
                 {
                     id: 'r2',
@@ -173,13 +173,14 @@ describe('RecipesPage', () => {
             </MemoryRouter>
         );
 
-        await user.type(screen.getByPlaceholderText('Search recipes...'), 'chicken');
-        expect(screen.getByText('Chicken Soup')).toBeInTheDocument();
-        expect(screen.getByText('Chicken Curry')).toBeInTheDocument();
+        // No chip/filter button for any tag is ever rendered.
+        expect(screen.queryByRole('button', { name: 'beef' })).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'stew' })).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'spicy' })).not.toBeInTheDocument();
 
-        await user.click(screen.getByRole('button', { name: 'comfort-food' }));
+        await user.type(screen.getByPlaceholderText('Search recipes...'), 'beef');
 
-        expect(screen.getByText('Chicken Soup')).toBeInTheDocument();
+        expect(screen.getByText("Grandma's Bourguignon")).toBeInTheDocument();
         expect(screen.queryByText('Chicken Curry')).not.toBeInTheDocument();
     });
 

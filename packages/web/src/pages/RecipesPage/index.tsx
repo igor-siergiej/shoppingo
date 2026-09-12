@@ -1,6 +1,6 @@
 import { useUser } from '@imapps/web-utils';
 import { AlertTriangle, ChefHat, Search, X } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { generateRecipeAiImage, getRecipesQuery } from '../../api';
@@ -15,7 +15,7 @@ import { useRecipeSearch } from '../../hooks/useRecipeSearch';
 import { logger } from '../../utils/logger';
 
 // Several independent effects (logging, error logging, background AI-image backfill, shared-url
-// redirect) plus search/tag-filter state; each effect is already a single, separately-testable concern.
+// redirect) plus search state; each effect is already a single, separately-testable concern.
 // fallow-ignore-next-line complexity
 const RecipesPage = () => {
     const { user } = useUser();
@@ -23,7 +23,6 @@ const RecipesPage = () => {
     const queryClient = useQueryClient();
     const [searchParams] = useSearchParams();
     const [searchQuery, setSearchQuery] = useState('');
-    const [selectedTags, setSelectedTags] = useState<string[]>([]);
     const generatingRef = useRef<Set<string>>(new Set());
     const { data, isLoading, isError, refetch } = useQuery({
         ...getRecipesQuery(user?.id || ''),
@@ -75,20 +74,9 @@ const RecipesPage = () => {
     }, [searchParams, navigate]);
 
     const recipes = data || [];
-    const textFiltered = useRecipeSearch(recipes, searchQuery);
-    const allTags = useMemo(() => {
-        const set = new Set<string>();
-        for (const recipe of recipes) {
-            for (const tag of recipe.tags ?? []) set.add(tag);
-        }
-        return Array.from(set).sort();
-    }, [recipes]);
-    const searchResults =
-        selectedTags.length === 0
-            ? textFiltered
-            : textFiltered.filter((recipe) => selectedTags.every((tag) => recipe.tags?.includes(tag)));
-    const toggleTag = (tag: string) =>
-        setSelectedTags((prev) => (prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]));
+    // Tags feed this search silently (see useRecipeSearch) — no chip filter or other tag UI here;
+    // AI tagging yields 4-8 tags per recipe, too many to render as a filter row.
+    const searchResults = useRecipeSearch(recipes, searchQuery);
 
     if (!user?.id) {
         logger.warn('Recipes page accessed without user');
@@ -125,27 +113,6 @@ const RecipesPage = () => {
         </div>
     );
 
-    const tagFilterRow = allTags.length > 0 && (
-        <div className="mt-3 flex flex-wrap gap-1.5">
-            {allTags.map((tag) => {
-                const active = selectedTags.includes(tag);
-                return (
-                    <button
-                        key={tag}
-                        type="button"
-                        aria-pressed={active}
-                        onClick={() => toggleTag(tag)}
-                        className={`rounded-full px-3 py-1 text-xs ${
-                            active ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'
-                        }`}
-                    >
-                        {tag}
-                    </button>
-                );
-            })}
-        </div>
-    );
-
     const pageContent = (
         <div className="flex flex-col">
             {searchQuery.trim() ? (
@@ -177,7 +144,7 @@ const RecipesPage = () => {
                             currentUserId={user.id}
                             onRecipeClick={handleRecipeClick}
                         />
-                    ) : recipes.length === 0 ? (
+                    ) : (
                         <Empty className="flex-none justify-start p-4">
                             <EmptyHeader>
                                 <EmptyMedia variant="icon">
@@ -189,21 +156,10 @@ const RecipesPage = () => {
                                 </EmptyDescription>
                             </EmptyHeader>
                         </Empty>
-                    ) : (
-                        <Empty className="flex-none justify-start p-4">
-                            <EmptyHeader>
-                                <EmptyMedia variant="icon">
-                                    <ChefHat />
-                                </EmptyMedia>
-                                <EmptyTitle>No recipes match these tags</EmptyTitle>
-                                <EmptyDescription>Clear a tag filter to see more recipes</EmptyDescription>
-                            </EmptyHeader>
-                        </Empty>
                     )}
                 </div>
             )}
             {searchBar}
-            {tagFilterRow}
         </div>
     );
 
