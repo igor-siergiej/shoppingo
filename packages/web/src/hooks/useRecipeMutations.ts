@@ -29,7 +29,11 @@ export const useRecipeMutations = (user: User | undefined) => {
             );
         }
         await outboxStore.enqueue(intent);
-        void drainOutbox();
+        if (op === 'recipe.create') {
+            await drainOutbox();
+        } else {
+            void drainOutbox();
+        }
     };
 
     return {

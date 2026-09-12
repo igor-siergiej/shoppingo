@@ -12,6 +12,7 @@ vi.mock('./useFriends', () => ({
     }),
 }));
 
+import { drainOutbox } from '../offline/drainer';
 import { outboxStore } from '../offline/outboxStore';
 import { useRecipeMutations } from './useRecipeMutations';
 
@@ -66,6 +67,34 @@ describe('useRecipeMutations', () => {
         });
         await waitFor(() => expect(outboxStore.peekAll()).toHaveLength(1));
         expect(outboxStore.peekAll()[0]).toMatchObject({ op: 'recipe.delete', targetId: 'R1' });
+    });
+
+    it('createRecipe does not resolve until the create intent has drained', async () => {
+        let resolveDrain: () => void = () => {};
+        vi.mocked(drainOutbox).mockImplementation(
+            () =>
+                new Promise((resolve) => {
+                    resolveDrain = resolve;
+                })
+        );
+
+        const client = new QueryClient();
+        client.setQueryData(['recipes', 'user-1'], []);
+        const { result } = renderHook(() => useRecipeMutations(user), { wrapper: wrap(client) });
+
+        let created = false;
+        const createPromise = result.current.createRecipe('Pasta', [], []).then(() => {
+            created = true;
+        });
+
+        await waitFor(() => expect(outboxStore.peekAll()).toHaveLength(1));
+        expect(created).toBe(false);
+
+        resolveDrain();
+        await createPromise;
+        expect(created).toBe(true);
+
+        vi.mocked(drainOutbox).mockResolvedValue(undefined);
     });
 
     it('updateRecipe enqueues a recipe.update intent and patches list + detail caches', async () => {
