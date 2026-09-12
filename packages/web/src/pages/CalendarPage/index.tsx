@@ -27,6 +27,7 @@ const CalendarPage = () => {
     const [month, setMonth] = useState<Date>(startOfMonth(new Date()));
     const [selectedDay, setSelectedDay] = useState<Date>(new Date());
     const [activeLabels, setActiveLabels] = useState<Set<string>>(new Set());
+    const [schedulingTodoId, setSchedulingTodoId] = useState<string | null>(null);
 
     useEffect(
         () =>
@@ -62,6 +63,16 @@ const CalendarPage = () => {
         await createTodo(body);
     };
     const handleDropOnDay = (todoId: string, day: Date) => void updateTodo(todoId, { dueDate: isoDay(day) });
+    const handleToggleScheduling = (todoId: string) => setSchedulingTodoId((prev) => (prev === todoId ? null : todoId));
+    const handleSelectDay = (day: Date) => {
+        if (schedulingTodoId) {
+            handleDropOnDay(schedulingTodoId, day);
+            setSchedulingTodoId(null);
+            setSelectedDay(day);
+            return;
+        }
+        setSelectedDay(day);
+    };
     const handleToggle = (todoId: string, occurrenceDay: string) => {
         const todo = todos.find((t) => t.id === todoId);
         void completeTodo(todoId, todo?.recurrence ? occurrenceDay : undefined);
@@ -119,9 +130,10 @@ const CalendarPage = () => {
                             month={month}
                             dotsByDay={dotsByDay}
                             selectedDay={selectedDay}
-                            onSelectDay={setSelectedDay}
+                            onSelectDay={handleSelectDay}
                             onDropTodoOnDay={handleDropOnDay}
                             onChangeMonth={(dir) => setMonth((m) => addMonths(m, dir))}
+                            schedulingActive={schedulingTodoId !== null}
                         />
                     )}
                 </div>
@@ -146,13 +158,24 @@ const CalendarPage = () => {
                                 labels={labels}
                                 onToggle={handleToggle}
                                 onDelete={handleDelete}
+                                schedulingTodoId={schedulingTodoId}
+                                onScheduleDay={(day) => {
+                                    if (!schedulingTodoId) return;
+                                    handleDropOnDay(schedulingTodoId, day);
+                                    setSchedulingTodoId(null);
+                                }}
                             />
                         </div>
                     )}
                 </div>
             </div>
 
-            <InboxDrawer todos={undated} onDelete={handleDelete} />
+            <InboxDrawer
+                todos={undated}
+                onDelete={handleDelete}
+                schedulingTodoId={schedulingTodoId}
+                onToggleScheduling={handleToggleScheduling}
+            />
 
             <ToolBar onAddTodo={handleAddTodo} labels={labels} prefillTodoDate={selectedDay} />
         </>

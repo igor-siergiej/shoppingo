@@ -8,20 +8,37 @@ export interface WeekAgendaProps {
     labels: Label[];
     onToggle: (todoId: string, occurrenceDay: string) => void;
     onDelete: (todoId: string) => void;
+    schedulingTodoId?: string | null;
+    onScheduleDay?: (day: Date) => void;
 }
 
-export const WeekAgenda = ({ days, labels, onToggle, onDelete }: WeekAgendaProps) => {
+export const WeekAgenda = ({ days, labels, onToggle, onDelete, schedulingTodoId, onScheduleDay }: WeekAgendaProps) => {
     const withItems = days.filter((d) => d.items.length > 0);
+    const scheduling = Boolean(schedulingTodoId);
 
-    if (withItems.length === 0) {
+    // While scheduling, every day (not just ones with existing items) is a valid drop target.
+    const visibleDays = scheduling ? days : withItems;
+
+    if (visibleDays.length === 0) {
         return <p className="text-sm text-muted-foreground py-6 text-center">No upcoming todos this week</p>;
     }
 
     return (
         <div className="space-y-3 pb-44">
-            {withItems.map(({ day, items }) => (
+            {visibleDays.map(({ day, items }) => (
                 <div key={day.toISOString()}>
-                    <h3 className="text-sm font-medium text-muted-foreground">{format(day, 'EEE d MMM')}</h3>
+                    {scheduling ? (
+                        <button
+                            type="button"
+                            data-testid={`week-day-${format(day, 'yyyy-MM-dd')}`}
+                            onClick={() => onScheduleDay?.(day)}
+                            className="w-full rounded-md py-0.5 text-left text-sm font-medium text-primary ring-1 ring-primary/40"
+                        >
+                            {format(day, 'EEE d MMM')}
+                        </button>
+                    ) : (
+                        <h3 className="text-sm font-medium text-muted-foreground">{format(day, 'EEE d MMM')}</h3>
+                    )}
                     <DayTodoList items={items} labels={labels} onToggle={onToggle} onDelete={onDelete} />
                 </div>
             ))}

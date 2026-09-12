@@ -34,6 +34,7 @@ export interface MonthGridProps {
     onSelectDay: (day: Date) => void;
     onDropTodoOnDay: (todoId: string, day: Date) => void;
     onChangeMonth?: (direction: -1 | 1) => void;
+    schedulingActive?: boolean;
 }
 
 interface DayCellProps {
@@ -41,16 +42,18 @@ interface DayCellProps {
     dots: DayDot[];
     selected: boolean;
     inMonth: boolean;
+    schedulingActive: boolean;
     onSelect: () => void;
     onDrop: (id: string) => void;
 }
 
 const WEEKDAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
-const DayCell = ({ day, dots, selected, inMonth, onSelect, onDrop }: DayCellProps) => {
+const DayCell = ({ day, dots, selected, inMonth, schedulingActive, onSelect, onDrop }: DayCellProps) => {
     const key = dayKey(day);
     const colorClass = inMonth ? 'text-foreground' : 'text-muted-foreground/40';
     const bgClass = selected ? 'bg-primary text-primary-foreground' : 'bg-muted/40';
+    const schedulingClass = schedulingActive ? 'ring-1 ring-primary/40' : '';
 
     const handleDrop = (e: React.DragEvent) => {
         e.preventDefault();
@@ -66,7 +69,7 @@ const DayCell = ({ day, dots, selected, inMonth, onSelect, onDrop }: DayCellProp
             onClick={onSelect}
             onDragOver={(e) => e.preventDefault()}
             onDrop={handleDrop}
-            className={`aspect-square rounded-lg flex flex-col items-center justify-center text-sm relative ${colorClass} ${bgClass}`}
+            className={`aspect-square rounded-lg flex flex-col items-center justify-center text-sm relative ${colorClass} ${bgClass} ${schedulingClass}`}
         >
             <span>{day.getDate()}</span>
             {dots.length > 0 && (
@@ -93,6 +96,7 @@ export const MonthGrid = ({
     onSelectDay,
     onDropTodoOnDay,
     onChangeMonth,
+    schedulingActive = false,
 }: MonthGridProps) => {
     const gridStart = startOfWeek(startOfMonth(month), { weekStartsOn: 1 });
     const gridEnd = endOfWeek(endOfMonth(month), { weekStartsOn: 1 });
@@ -132,6 +136,7 @@ export const MonthGrid = ({
                             dots={dotsByDay[key] ?? []}
                             selected={selectedDay ? isSameDay(day, selectedDay) : false}
                             inMonth={isSameMonth(day, month)}
+                            schedulingActive={schedulingActive}
                             onSelect={() => onSelectDay(day)}
                             onDrop={(id) => onDropTodoOnDay(id, day)}
                         />
