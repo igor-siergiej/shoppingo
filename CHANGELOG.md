@@ -1,3 +1,10 @@
+## [1.64.2](https://github.com/igor-siergiej/shoppingo/compare/v1.64.1...v1.64.2) (2026-09-12)
+
+
+### Bug Fixes
+
+* **ci:** make the PR workflow trigger on branches with slashes ([#147](https://github.com/igor-siergiej/shoppingo/issues/147)) ([37b104b](https://github.com/igor-siergiej/shoppingo/commit/37b104bcc536a2a09ee8b405f202f3ecdc18625a))
+
 ## [1.64.1](https://github.com/igor-siergiej/shoppingo/compare/v1.64.0...v1.64.1) (2026-09-12)
 
 
