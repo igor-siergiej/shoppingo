@@ -56,18 +56,46 @@ test.describe('Calendar page', () => {
         await expect(inboxItem).toBeVisible();
 
         const dayCell = authenticatedPage.getByTestId(`day-${todayKey}`);
+        await inboxItem.dragTo(dayCell);
 
-        // Attempt HTML5 DnD via dragTo
-        try {
-            await inboxItem.dragTo(dayCell);
-            await authenticatedPage.waitForTimeout(500);
-            // After drop the todo should now appear in today's day list (it gains dueDate=today)
-            await expect(authenticatedPage.getByText('Drag Me')).toBeVisible();
-        } catch {
-            // Playwright HTML5 DnD may not fire the dataTransfer events on all builds;
-            // assert the item is at least visible in the inbox as a fallback.
-            await expect(inboxItem).toBeVisible();
-        }
+        // After drop the todo should now appear in today's day list (it gains dueDate=today)
+        await expect(authenticatedPage.getByText('Drag Me')).toBeVisible();
+    });
+
+    // HTML5 drag-and-drop (used above) doesn't fire on touch devices, so tap-to-schedule
+    // is the reliable path on mobile: tap the inbox row, then tap a day to assign it.
+    test('inbox tap-to-schedule: undated todo can be scheduled onto a day by tapping', async ({
+        authenticatedPage,
+    }) => {
+        const todo = await apiCreateTodo({ title: 'Tap To Schedule Me' });
+
+        await authenticatedPage.goto('/calendar');
+
+        await authenticatedPage.getByTestId('inbox-toggle').click();
+        await authenticatedPage.getByTestId(`inbox-item-schedule-${todo.id}`).click();
+
+        // Drawer auto-collapses and the day grid becomes tappable.
+        await expect(authenticatedPage.getByText('Tap a day to schedule it')).toBeVisible();
+        await authenticatedPage.getByTestId(`day-${tomorrowKey}`).click();
+
+        await expect(authenticatedPage.getByText('Tap a day to schedule it')).not.toBeVisible();
+        await authenticatedPage.getByTestId(`day-${tomorrowKey}`).click();
+        await expect(authenticatedPage.getByText('Tap To Schedule Me')).toBeVisible();
+    });
+
+    test('inbox tap-to-schedule: works from week view too', async ({ authenticatedPage }) => {
+        const todo = await apiCreateTodo({ title: 'Week Schedule Me' });
+
+        await authenticatedPage.goto('/calendar');
+        await authenticatedPage.getByRole('combobox').filter({ hasText: 'Month' }).click();
+        await authenticatedPage.getByRole('option', { name: 'Week' }).click();
+
+        await authenticatedPage.getByTestId('inbox-toggle').click();
+        await authenticatedPage.getByTestId(`inbox-item-schedule-${todo.id}`).click();
+
+        await authenticatedPage.getByTestId(`week-day-${todayKey}`).click();
+
+        await expect(authenticatedPage.getByText('Week Schedule Me')).toBeVisible();
     });
 
     test('complete single todo: checkbox toggles line-through', async ({ authenticatedPage }) => {
