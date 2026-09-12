@@ -75,6 +75,7 @@ export interface Recipe {
     dateAdded: Date;
     link?: string;
     instructions?: string[];
+    tags?: string[];
 }
 
 export interface RecipeResponse {
@@ -88,6 +89,7 @@ export interface RecipeResponse {
     dateAdded: Date;
     link?: string;
     instructions?: string[];
+    tags?: string[];
 }
 
 export interface RecipeImportResult {

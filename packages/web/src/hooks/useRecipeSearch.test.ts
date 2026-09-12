@@ -34,6 +34,7 @@ const recipes: Recipe[] = [
             { id: 'i5', name: 'beef' },
             { id: 'i6', name: 'carrot' },
         ],
+        tags: ['comfort-food', 'hearty'],
     }),
 ];
 
@@ -80,6 +81,12 @@ describe('useRecipeSearch', () => {
 
     it('is case-insensitive', () => {
         const { result } = renderHook(() => useRecipeSearch(recipes, 'BEEF'));
+        expect(result.current).toHaveLength(1);
+        expect(result.current[0].title).toBe('Beef Stew');
+    });
+
+    it('matches recipes by tag, even when the tag is absent from title and ingredients', () => {
+        const { result } = renderHook(() => useRecipeSearch(recipes, 'comfort-food'));
         expect(result.current).toHaveLength(1);
         expect(result.current[0].title).toBe('Beef Stew');
     });

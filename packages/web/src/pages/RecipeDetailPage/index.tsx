@@ -33,7 +33,11 @@ import { ErrorState } from './ErrorState';
 import { IngredientSelectSection } from './IngredientSelectSection';
 import { IngredientsSection } from './IngredientsSection';
 import { InstructionsSection } from './InstructionsSection';
+import { TagsSection } from './TagsSection';
 
+// Extensive per-field state (title/link/ingredients/instructions/tags/sharing/select-mode) backs a
+// single detail+edit page; each concern already has its own section component and handler below.
+// fallow-ignore-next-line complexity
 const RecipeDetailPage = () => {
     const { recipeId } = useParams<{ recipeId: string }>();
     const navigate = useNavigate();
@@ -84,6 +88,7 @@ const RecipeDetailPage = () => {
         return <div className="text-center py-8 text-muted-foreground">Invalid recipe ID</div>;
     }
 
+    // fallow-ignore-next-line complexity
     const handleAddIngredient = async (name: string, quantity?: number, unit?: string) => {
         if (!recipe) return;
 
@@ -97,7 +102,15 @@ const RecipeDetailPage = () => {
         const updated = [...recipe.ingredients, newIngredient];
 
         try {
-            await updateRecipe(recipeId, recipe.title, updated, undefined, recipe.link, recipe.instructions);
+            await updateRecipe(
+                recipeId,
+                recipe.title,
+                updated,
+                undefined,
+                recipe.link,
+                recipe.instructions,
+                recipe.tags
+            );
             await refetch();
         } catch (error) {
             const err = error as { message?: string };
@@ -105,6 +118,7 @@ const RecipeDetailPage = () => {
         }
     };
 
+    // fallow-ignore-next-line complexity
     const handleSaveTitle = async () => {
         if (!recipe || editedTitle.trim() === recipe.title) {
             setIsEditingTitle(false);
@@ -112,7 +126,15 @@ const RecipeDetailPage = () => {
         }
 
         try {
-            await updateRecipe(recipeId, editedTitle, recipe.ingredients, undefined, recipe.link, recipe.instructions);
+            await updateRecipe(
+                recipeId,
+                editedTitle,
+                recipe.ingredients,
+                undefined,
+                recipe.link,
+                recipe.instructions,
+                recipe.tags
+            );
             await refetch();
             setIsEditingTitle(false);
             notifySuccess('Recipe title updated');
@@ -123,6 +145,7 @@ const RecipeDetailPage = () => {
         }
     };
 
+    // fallow-ignore-next-line complexity
     const handleSaveLink = async () => {
         if (!recipe) return;
         try {
@@ -132,7 +155,8 @@ const RecipeDetailPage = () => {
                 recipe.ingredients,
                 undefined,
                 editedLink.trim() || undefined,
-                recipe.instructions
+                recipe.instructions,
+                recipe.tags
             );
             await refetch();
             setIsEditingLink(false);
@@ -143,6 +167,7 @@ const RecipeDetailPage = () => {
         }
     };
 
+    // fallow-ignore-next-line complexity
     const handleSaveInstructions = async (instructions: string[]) => {
         if (!recipe) return;
         try {
@@ -152,7 +177,8 @@ const RecipeDetailPage = () => {
                 recipe.ingredients,
                 undefined,
                 recipe.link,
-                instructions.length > 0 ? instructions : undefined
+                instructions.length > 0 ? instructions : undefined,
+                recipe.tags
             );
             await refetch();
             notifySuccess('Instructions updated');
@@ -166,13 +192,42 @@ const RecipeDetailPage = () => {
         if (!recipe) return;
 
         try {
-            await updateRecipe(recipeId, recipe.title, ingredients, undefined, recipe.link, recipe.instructions);
+            await updateRecipe(
+                recipeId,
+                recipe.title,
+                ingredients,
+                undefined,
+                recipe.link,
+                recipe.instructions,
+                recipe.tags
+            );
             await refetch();
             notifySuccess('Ingredients updated');
             logger.info('Recipe ingredients updated', { recipeId, ingredientCount: ingredients.length });
         } catch (error) {
             const err = error as { message?: string };
             notifyError(err.message || 'Failed to update ingredients');
+        }
+    };
+
+    // fallow-ignore-next-line complexity
+    const handleDeleteTag = async (tag: string) => {
+        if (!recipe) return;
+        const nextTags = (recipe.tags ?? []).filter((t) => t !== tag);
+        try {
+            await updateRecipe(
+                recipeId,
+                recipe.title,
+                recipe.ingredients,
+                undefined,
+                recipe.link,
+                recipe.instructions,
+                nextTags
+            );
+            await refetch();
+        } catch (error) {
+            const err = error as { message?: string };
+            notifyError(err.message || 'Failed to remove tag');
         }
     };
 
@@ -349,6 +404,8 @@ const RecipeDetailPage = () => {
                                             )}
                                         </div>
                                     )}
+
+                                    <TagsSection tags={recipe.tags} isOwner={isOwner} onDeleteTag={handleDeleteTag} />
 
                                     <IngredientsSection
                                         recipe={recipe}

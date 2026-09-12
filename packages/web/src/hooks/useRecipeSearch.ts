@@ -8,7 +8,7 @@ export const useRecipeSearch = (recipes: Recipe[], query: string): Recipe[] => {
     const fuse = useMemo(
         () =>
             new Fuse(recipes, {
-                keys: ['title', 'ingredients.name'],
+                keys: ['title', 'ingredients.name', 'tags'],
                 threshold: 0.4,
             }),
         [recipes]

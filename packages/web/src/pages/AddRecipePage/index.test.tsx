@@ -335,10 +335,14 @@ describe('AddRecipePage', () => {
         await userEvent.click(screen.getByRole('button', { name: /Create Recipe/ }));
 
         await waitFor(() => {
-            expect(mockCreateRecipe).toHaveBeenCalledWith('My Recipe', [], [], 'https://example.com', [
-                'Step one',
-                'Step two',
-            ]);
+            expect(mockCreateRecipe).toHaveBeenCalledWith(
+                'My Recipe',
+                [],
+                [],
+                'https://example.com',
+                ['Step one', 'Step two'],
+                undefined
+            );
         });
     });
 
@@ -374,7 +378,8 @@ describe('AddRecipePage', () => {
                     { name: 'salt', quantity: undefined, unit: undefined },
                 ],
                 'https://example.com/dish',
-                ['Mix.', 'Bake.']
+                ['Mix.', 'Bake.'],
+                undefined
             );
         });
     });

@@ -22,6 +22,7 @@ import { ImageUploadField } from './ImageUploadField';
 import { ImportScreen } from './ImportScreen';
 import { type Ingredient, IngredientsField } from './IngredientsField';
 import { LinkImportField } from './LinkImportField';
+import { TagsField } from './TagsField';
 
 type Mode = 'choice' | 'import' | 'form';
 
@@ -78,6 +79,7 @@ const AddRecipePage = () => {
     const [ingredientsPasteText, setIngredientsPasteText] = useState('');
     const [ingredients, setIngredients] = useState<Ingredient[]>([]);
     const [showIngredientsPaste, setShowIngredientsPaste] = useState(true);
+    const [tags, setTags] = useState<string[]>([]);
     const [isImporting, setIsImporting] = useState(false);
     const [importError, setImportError] = useState('');
     const [importMeta, setImportMeta] = useState<ImportMeta>({});
@@ -158,7 +160,8 @@ const AddRecipePage = () => {
         selUsers?: string[],
         recipeLink?: string,
         instructions?: string[],
-        imageFile?: File
+        imageFile?: File,
+        recipeTags?: string[]
     ): Promise<Recipe | undefined> => {
         if (!user) {
             logger.warn('Attempted to add recipe without user');
@@ -171,7 +174,8 @@ const AddRecipePage = () => {
                 selUsers || [],
                 recipeIngredients,
                 recipeLink,
-                instructions
+                instructions,
+                recipeTags
             );
             logger.info('Recipe created successfully', { title: recipeTitle, recipeId });
 
@@ -252,7 +256,8 @@ const AddRecipePage = () => {
                 selectedUsers,
                 link.trim() || undefined,
                 steps.length > 0 ? steps : undefined,
-                selectedFile || undefined
+                selectedFile || undefined,
+                tags.length > 0 ? tags : undefined
             );
             if (!recipe) {
                 throw new Error('Failed to create recipe');
@@ -324,6 +329,8 @@ const AddRecipePage = () => {
                         disabled={isLoading}
                         isImporting={isImporting}
                     />
+
+                    <TagsField tags={tags} onChange={setTags} disabled={isLoading} />
 
                     <div className="space-y-2">
                         <div className="flex items-center justify-between">

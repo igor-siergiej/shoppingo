@@ -1,5 +1,6 @@
 import type { Recipe } from '@shoppingo/types';
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { useQuery } from 'react-query';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -134,6 +135,52 @@ describe('RecipesPage', () => {
         expect(screen.getByTitle('friend')).toBeInTheDocument();
         expect(screen.getByTitle('owner2')).toBeInTheDocument();
         expect(screen.queryByText('No recipes yet')).not.toBeInTheDocument();
+    });
+
+    it('narrows results with a tag chip on top of a text search', async () => {
+        const user = userEvent.setup();
+        vi.mocked(useQuery).mockReturnValue({
+            data: [
+                {
+                    id: 'r1',
+                    title: 'Chicken Soup',
+                    ownerId: 'user-1',
+                    ingredients: [],
+                    users: [],
+                    dateAdded: new Date(),
+                    coverImageKey: 'img-1',
+                    tags: ['comfort-food'],
+                },
+                {
+                    id: 'r2',
+                    title: 'Chicken Curry',
+                    ownerId: 'user-1',
+                    ingredients: [],
+                    users: [],
+                    dateAdded: new Date(),
+                    coverImageKey: 'img-2',
+                    tags: ['spicy'],
+                },
+            ],
+            isLoading: false,
+            isError: false,
+            refetch: vi.fn(),
+        } as ReturnType<typeof useQuery>);
+
+        render(
+            <MemoryRouter>
+                <RecipesPage />
+            </MemoryRouter>
+        );
+
+        await user.type(screen.getByPlaceholderText('Search recipes...'), 'chicken');
+        expect(screen.getByText('Chicken Soup')).toBeInTheDocument();
+        expect(screen.getByText('Chicken Curry')).toBeInTheDocument();
+
+        await user.click(screen.getByRole('button', { name: 'comfort-food' }));
+
+        expect(screen.getByText('Chicken Soup')).toBeInTheDocument();
+        expect(screen.queryByText('Chicken Curry')).not.toBeInTheDocument();
     });
 
     it('passes refetch function to ToolBar for recipe updates', async () => {

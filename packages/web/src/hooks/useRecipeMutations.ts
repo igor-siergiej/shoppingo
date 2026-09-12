@@ -42,7 +42,8 @@ export const useRecipeMutations = (user: User | undefined) => {
             selectedUsers: string[],
             ingredients?: Array<{ name: string; quantity?: number; unit?: string }>,
             link?: string,
-            instructions?: string[]
+            instructions?: string[],
+            tags?: string[]
         ): Promise<string> => {
             const id = crypto.randomUUID();
             const sharedFriends = friends.filter((f) => selectedUsers.includes(f.id));
@@ -52,6 +53,7 @@ export const useRecipeMutations = (user: User | undefined) => {
                 ingredients,
                 link,
                 instructions,
+                tags,
                 user,
                 users: user ? [user, ...sharedFriends] : sharedFriends,
                 ownerId: userId,
@@ -59,13 +61,15 @@ export const useRecipeMutations = (user: User | undefined) => {
             return id;
         },
 
+        // fallow-ignore-next-line complexity
         updateRecipe: async (
             recipeId: string,
             title: string,
             ingredients: Ingredient[],
             coverImageKey?: string,
             link?: string,
-            instructions?: string[]
+            instructions?: string[],
+            tags?: string[]
         ): Promise<void> => {
             await enqueueRecipe('recipe.update', recipeId, {
                 title,
@@ -73,6 +77,7 @@ export const useRecipeMutations = (user: User | undefined) => {
                 ...(coverImageKey !== undefined && { coverImageKey }),
                 ...(link !== undefined && { link }),
                 ...(instructions !== undefined && { instructions }),
+                ...(tags !== undefined && { tags }),
             });
         },
 

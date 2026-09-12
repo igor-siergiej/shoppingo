@@ -161,6 +161,30 @@ describe('applyRecipeIntent', () => {
             applyRecipeIntent(existing as never, recipeIntent('recipe.update', 'R1', { title: 'Risotto' }))[0].title
         ).toBe('Risotto');
     });
+    it('recipe.create carries tags through', () => {
+        const r = applyRecipeIntent(
+            [],
+            recipeIntent('recipe.create', 'R1', { title: 'Pasta', ownerId: 'user-1', tags: ['dinner', 'quick'] })
+        );
+        expect(r[0].tags).toEqual(['dinner', 'quick']);
+    });
+    it('recipe.update merges tags by id', () => {
+        const existing = [
+            {
+                id: 'R1',
+                title: 'Pasta',
+                ingredients: [],
+                ownerId: 'user-1',
+                users: [],
+                dateAdded: new Date(),
+                tags: ['dinner'],
+            },
+        ];
+        expect(
+            applyRecipeIntent(existing as never, recipeIntent('recipe.update', 'R1', { tags: ['dinner', 'quick'] }))[0]
+                .tags
+        ).toEqual(['dinner', 'quick']);
+    });
     it('recipe.delete removes by id', () => {
         const existing = [
             { id: 'R1', title: 'Pasta', ingredients: [], ownerId: 'user-1', users: [], dateAdded: new Date() },

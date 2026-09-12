@@ -217,6 +217,118 @@ describe('RecipeService.createRecipe', () => {
     });
 });
 
+class MockRecipeTagger {
+    calls: Array<{ title: string; ingredients: Ingredient[]; instructions?: string[] }> = [];
+    tags: string[] = [];
+    shouldReject = false;
+
+    async generateTags(title: string, ingredients: Ingredient[], instructions?: string[]): Promise<string[]> {
+        this.calls.push({ title, ingredients, instructions });
+        if (this.shouldReject) throw new Error('tagging failed');
+        return this.tags;
+    }
+
+    reset() {
+        this.calls = [];
+        this.tags = [];
+        this.shouldReject = false;
+    }
+}
+
+const mockTagger = new MockRecipeTagger();
+
+beforeEach(() => {
+    mockTagger.reset();
+});
+
+describe('RecipeService.createRecipe tags', () => {
+    it('stores only manual tags when no tagger is configured', async () => {
+        const svc = new RecipeService(repo as any, ids);
+        const recipe = await svc.createRecipe(
+            'Pasta',
+            [],
+            owner.id,
+            owner,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            ['Dinner', 'quick']
+        );
+        expect(recipe.tags).toEqual(['dinner', 'quick']);
+    });
+
+    it('merges manual and AI tags, deduping case-insensitively', async () => {
+        mockTagger.tags = ['Pasta', 'egg', 'pork'];
+        const svc = new RecipeService(
+            repo as any,
+            ids,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            mockTagger as any
+        );
+        const recipe = await svc.createRecipe(
+            'Carbonara',
+            [{ id: '1', name: 'egg' }],
+            owner.id,
+            owner,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            ['PASTA', 'creamy']
+        );
+        expect(recipe.tags).toEqual(['pasta', 'creamy', 'egg', 'pork']);
+        expect(mockTagger.calls).toEqual([
+            { title: 'Carbonara', ingredients: [{ id: '1', name: 'egg' }], instructions: undefined },
+        ]);
+    });
+
+    it('falls back to manual tags only when the tagger throws', async () => {
+        mockTagger.shouldReject = true;
+        const svc = new RecipeService(
+            repo as any,
+            ids,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            mockTagger as any
+        );
+        const recipe = await svc.createRecipe(
+            'Pasta',
+            [],
+            owner.id,
+            owner,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            ['dinner']
+        );
+        expect(recipe.tags).toEqual(['dinner']);
+    });
+
+    it('creates a recipe with no tags when none are manual and the tagger returns none', async () => {
+        const svc = new RecipeService(
+            repo as any,
+            ids,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            mockTagger as any
+        );
+        const recipe = await svc.createRecipe('Pasta', [], owner.id, owner);
+        expect(recipe.tags).toBeUndefined();
+    });
+});
+
 class MockRecipeImageService {
     calls: Array<{ recipeId: string; title: string; ingredients: Ingredient[] }> = [];
     shouldReject = false;
@@ -372,6 +484,33 @@ describe('RecipeService.updateRecipe', () => {
     it('throws when recipe not found', async () => {
         const svc = new RecipeService(repo as any, ids);
         await expect(svc.updateRecipe('missing', 'Pasta', [], owner.id)).rejects.toMatchObject({ status: 404 });
+    });
+
+    it('passes tags through on update', async () => {
+        const svc = new RecipeService(repo as any, ids);
+        const created = await svc.createRecipe('Pasta', [], owner.id, owner);
+        const updated = await svc.updateRecipe(created.id, 'Pasta', [], owner.id, undefined, undefined, [
+            'dinner',
+            'quick',
+        ]);
+        expect(updated.tags).toEqual(['dinner', 'quick']);
+    });
+
+    it('removes a tag by omitting it from the passed-through array', async () => {
+        const svc = new RecipeService(repo as any, ids);
+        const created = await svc.createRecipe(
+            'Pasta',
+            [],
+            owner.id,
+            owner,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            ['dinner', 'quick']
+        );
+        const updated = await svc.updateRecipe(created.id, 'Pasta', [], owner.id, undefined, undefined, ['dinner']);
+        expect(updated.tags).toEqual(['dinner']);
     });
 });
 
