@@ -27,6 +27,8 @@ export class FalRecipeTagger {
         this.timeoutMs = options.timeoutMs;
     }
 
+    // Invoked through the RecipeTagger interface via the DI container; fallow can't trace that indirection.
+    // fallow-ignore-next-line unused-class-member
     async generateTags(title: string, ingredients: Ingredient[], instructions?: string[]): Promise<string[]> {
         const { value } = await this.client.completeStructured({
             operation: 'recipe.tag',

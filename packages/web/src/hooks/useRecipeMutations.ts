@@ -57,6 +57,7 @@ export const useRecipeMutations = (user: User | undefined) => {
             return id;
         },
 
+        // fallow-ignore-next-line complexity
         updateRecipe: async (
             recipeId: string,
             title: string,

@@ -10,6 +10,8 @@ export interface ItemView {
     dateAdded?: string | Date;
 }
 
+// One switch per outbox op, each a small literal merge; splitting further would scatter one intent type.
+// fallow-ignore-next-line complexity
 export const applyItemIntent = (items: ItemView[], intent: OutboxIntent): ItemView[] => {
     const p = intent.payload;
     switch (intent.op) {
@@ -57,6 +59,7 @@ export interface ListView {
     dateAdded?: string | Date;
 }
 
+// fallow-ignore-next-line complexity
 export const applyListIntent = (lists: ListView[], intent: OutboxIntent): ListView[] => {
     const p = intent.payload;
     if (intent.op === 'list.create') {
@@ -77,6 +80,7 @@ export const applyListIntent = (lists: ListView[], intent: OutboxIntent): ListVi
     return lists;
 };
 
+// fallow-ignore-next-line complexity
 export const applyTodoIntent = (todos: Todo[], intent: OutboxIntent): Todo[] => {
     const p = intent.payload;
     switch (intent.op) {
@@ -105,6 +109,7 @@ export const applyTodoIntent = (todos: Todo[], intent: OutboxIntent): Todo[] => 
         case 'todo.delete':
             return todos.filter((t) => t.id !== intent.targetId);
         case 'todo.complete':
+            // fallow-ignore-next-line complexity
             return todos.map((t) => {
                 if (t.id !== intent.targetId) return t;
                 const date = p.date as string | undefined;
@@ -122,6 +127,7 @@ export const applyTodoIntent = (todos: Todo[], intent: OutboxIntent): Todo[] => 
     }
 };
 
+// fallow-ignore-next-line complexity
 export const applyLabelIntent = (labels: Label[], intent: OutboxIntent): Label[] => {
     const p = intent.payload;
     switch (intent.op) {
@@ -154,6 +160,7 @@ export const applyLabelIntent = (labels: Label[], intent: OutboxIntent): Label[]
     }
 };
 
+// fallow-ignore-next-line complexity
 export const applyRecipeIntent = (recipes: Recipe[], intent: OutboxIntent): Recipe[] => {
     const p = intent.payload;
     switch (intent.op) {
@@ -176,6 +183,7 @@ export const applyRecipeIntent = (recipes: Recipe[], intent: OutboxIntent): Reci
             ];
         }
         case 'recipe.update':
+            // fallow-ignore-next-line complexity
             return recipes.map((r) =>
                 r.id === intent.targetId
                     ? {

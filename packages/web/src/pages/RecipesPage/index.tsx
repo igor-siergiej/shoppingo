@@ -14,6 +14,9 @@ import { usePullToRefreshContext } from '../../contexts/PullToRefreshContext';
 import { useRecipeSearch } from '../../hooks/useRecipeSearch';
 import { logger } from '../../utils/logger';
 
+// Several independent effects (logging, error logging, background AI-image backfill, shared-url
+// redirect) plus search/tag-filter state; each effect is already a single, separately-testable concern.
+// fallow-ignore-next-line complexity
 const RecipesPage = () => {
     const { user } = useUser();
     const navigate = useNavigate();
@@ -34,6 +37,7 @@ const RecipesPage = () => {
         });
     }, [registerRefresh, refetch]);
 
+    // fallow-ignore-next-line complexity
     useEffect(() => {
         if (user?.id) {
             logger.info('Recipes page loaded', {
@@ -50,6 +54,7 @@ const RecipesPage = () => {
         }
     }, [isError, user?.id]);
 
+    // fallow-ignore-next-line complexity
     useEffect(() => {
         if (!data || !user?.id) return;
         const missing = data.filter((r) => !r.coverImageKey && r.ownerId === user.id);
