@@ -3,7 +3,7 @@ import type { Recipe } from '@shoppingo/types';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { generateRecipeAiImage, getRecipesQuery, importRecipe, uploadRecipeImage } from '../../api';
+import { generateRecipeAiImage, getRecipeQuery, getRecipesQuery, importRecipe, uploadRecipeImage } from '../../api';
 import { FriendPicker } from '../../components/FriendPicker';
 import { StepsList } from '../../components/StepsList';
 import { Button } from '../../components/ui/button';
@@ -177,14 +177,16 @@ const AddRecipePage = () => {
 
             if (imageFile) {
                 await uploadRecipeImage(recipeId, imageFile);
+                await queryClient.invalidateQueries(getRecipeQuery(recipeId).queryKey);
             }
 
             await refetch();
 
             if (!imageFile) {
-                void generateRecipeAiImage(recipeId).then(() =>
-                    queryClient.invalidateQueries(getRecipesQuery(user.id).queryKey)
-                );
+                void generateRecipeAiImage(recipeId).then((updatedRecipe) => {
+                    queryClient.setQueryData(getRecipeQuery(recipeId).queryKey, updatedRecipe);
+                    return queryClient.invalidateQueries(getRecipesQuery(user.id).queryKey);
+                });
             }
 
             const recipes = queryClient.getQueryData<Recipe[]>(['recipes', user.id]) ?? [];

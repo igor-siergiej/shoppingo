@@ -46,6 +46,7 @@ vi.mock('../../api', () => ({
     uploadRecipeImage: vi.fn(),
     generateRecipeAiImage: vi.fn().mockResolvedValue(undefined),
     getRecipesQuery: vi.fn(() => ({ queryKey: ['recipes', 'user-1'], queryFn: async () => mockRecipesData })),
+    getRecipeQuery: vi.fn((recipeId: string) => ({ queryKey: ['recipe', recipeId], queryFn: async () => undefined })),
 }));
 
 const renderPage = (initialEntry = '/recipes/new') => {
@@ -527,5 +528,36 @@ describe('AddRecipePage', () => {
 
         expect(screen.getByPlaceholderText('Enter recipe title...')).toBeTruthy();
         expect((screen.getByPlaceholderText('Enter recipe title...') as HTMLInputElement).value).toBe('');
+    });
+
+    it('invalidates the single-recipe query cache after uploading an image', async () => {
+        vi.mocked(uploadRecipeImage).mockResolvedValue({ imageKey: 'recipe-upload/u1/recipe-1/1.jpg' });
+        const { queryClient } = renderPage();
+        await enterManualMode();
+        const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
+
+        await userEvent.type(screen.getByPlaceholderText('Enter recipe title...'), 'Another Recipe');
+        const imageFile = new File(['image'], 'test.jpg', { type: 'image/jpeg' });
+        const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+        fireEvent.change(fileInput, { target: { files: [imageFile] } });
+        await userEvent.click(screen.getByRole('button', { name: /Create Recipe/ }));
+
+        await waitFor(() => {
+            expect(invalidateSpy).toHaveBeenCalledWith(['recipe', 'recipe-1']);
+        });
+    });
+
+    it('writes the AI-generated recipe straight into the single-recipe query cache', async () => {
+        const aiGenerated = { id: 'recipe-1', title: 'Test Recipe', coverImageKey: 'recipe-image/recipe-1/ai.jpg' };
+        vi.mocked(generateRecipeAiImage).mockResolvedValue(aiGenerated as never);
+        const { queryClient } = renderPage();
+        await enterManualMode();
+
+        await userEvent.type(screen.getByPlaceholderText('Enter recipe title...'), 'Test Recipe');
+        await userEvent.click(screen.getByRole('button', { name: /Create Recipe/ }));
+
+        await waitFor(() => {
+            expect(queryClient.getQueryData(['recipe', 'recipe-1'])).toEqual(aiGenerated);
+        });
     });
 });
