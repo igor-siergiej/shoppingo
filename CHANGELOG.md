@@ -1,3 +1,10 @@
+## [1.64.1](https://github.com/igor-siergiej/shoppingo/compare/v1.64.0...v1.64.1) (2026-09-12)
+
+
+### Bug Fixes
+
+* **web:** drop recipe tag-chip filter, keep search hidden-only ([#145](https://github.com/igor-siergiej/shoppingo/issues/145)) ([0e48d03](https://github.com/igor-siergiej/shoppingo/commit/0e48d03ae39125a35a69e3644efe3818b9f1d890)), closes [#144](https://github.com/igor-siergiej/shoppingo/issues/144)
+
 # [1.64.0](https://github.com/igor-siergiej/shoppingo/compare/v1.63.2...v1.64.0) (2026-09-12)
 
 
