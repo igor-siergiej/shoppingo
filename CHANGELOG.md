@@ -1,3 +1,10 @@
+# [1.64.0](https://github.com/igor-siergiej/shoppingo/compare/v1.63.2...v1.64.0) (2026-09-12)
+
+
+### Features
+
+* **recipes:** add manual + AI-generated tags, searchable and filterable ([#144](https://github.com/igor-siergiej/shoppingo/issues/144)) ([c804430](https://github.com/igor-siergiej/shoppingo/commit/c804430b9bb2fb7a7fd57fa2f6390a48c985ccd9))
+
 ## [1.63.2](https://github.com/igor-siergiej/shoppingo/compare/v1.63.1...v1.63.2) (2026-09-12)
 
 
