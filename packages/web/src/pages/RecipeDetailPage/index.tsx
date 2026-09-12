@@ -307,6 +307,7 @@ const RecipeDetailPage = () => {
                                     onChange={(e) => setEditedTitle(e.target.value)}
                                     className="flex-1"
                                     autoFocus
+                                    aria-label="Recipe title"
                                 />
                                 <Button size="sm" onClick={handleSaveTitle}>
                                     Save

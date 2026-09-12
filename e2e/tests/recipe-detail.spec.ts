@@ -13,13 +13,27 @@ test.describe('Recipe detail page', () => {
         await expect(authenticatedPage.getByText('Beef', { exact: true })).toBeVisible();
     });
 
+    test('a long title renders in full without clipping', async ({ authenticatedPage }) => {
+        const longTitle =
+            "Grandma's Slow-Cooked Beef Bourguignon With Red Wine, Root Vegetables And Fresh Herbs";
+        const recipe = await apiCreateRecipe(longTitle);
+        await authenticatedPage.goto(`/recipes/${recipe.id}`);
+        await authenticatedPage.locator('h1').last().waitFor({ timeout: 10000 });
+
+        const heading = authenticatedPage.locator('h1').filter({ hasText: longTitle });
+        await expect(heading).toBeVisible();
+        await expect(heading).toHaveText(longTitle);
+        const classAttr = (await heading.getAttribute('class')) ?? '';
+        expect(classAttr).not.toContain('truncate');
+    });
+
     test('owner can edit title', async ({ authenticatedPage }) => {
         const recipe = await apiCreateRecipe('Old Title');
         await authenticatedPage.goto(`/recipes/${recipe.id}`);
         await authenticatedPage.locator('h1').last().waitFor({ timeout: 10000 });
 
         await authenticatedPage.getByLabel('Edit recipe title').click();
-        const input = authenticatedPage.locator('input').first();
+        const input = authenticatedPage.getByLabel('Recipe title');
         await input.clear();
         await input.fill('New Title');
         await authenticatedPage.getByRole('button', { name: 'Save' }).first().click();
@@ -33,7 +47,7 @@ test.describe('Recipe detail page', () => {
         await authenticatedPage.locator('h1').last().waitFor({ timeout: 10000 });
 
         await authenticatedPage.getByLabel('Edit recipe title').click();
-        const input = authenticatedPage.locator('input').first();
+        const input = authenticatedPage.getByLabel('Recipe title');
         await input.clear();
         await input.fill('Toast Recipe Renamed');
         await authenticatedPage.getByRole('button', { name: 'Save' }).first().click();
