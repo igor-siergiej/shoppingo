@@ -1,3 +1,10 @@
+## [1.65.3](https://github.com/igor-siergiej/shoppingo/compare/v1.65.2...v1.65.3) (2026-09-13)
+
+
+### Bug Fixes
+
+* **web:** stop payment-autofill popups on Add Recipe form fields ([#149](https://github.com/igor-siergiej/shoppingo/issues/149)) ([90bf1ff](https://github.com/igor-siergiej/shoppingo/commit/90bf1ffa09a54b1cf1201c60c32e18f2f37ec1ff))
+
 ## [1.65.2](https://github.com/igor-siergiej/shoppingo/compare/v1.65.1...v1.65.2) (2026-09-13)
 
 
