@@ -193,6 +193,22 @@ describe('AddRecipePage', () => {
         });
     });
 
+    it('typing into the manual link field does not trigger import', async () => {
+        renderPage();
+        await enterManualMode();
+        await userEvent.type(screen.getByPlaceholderText('https://...'), 'https://example.com/recipe');
+        expect(importRecipe).not.toHaveBeenCalled();
+    });
+
+    it('pasting into the manual link field does not trigger import', async () => {
+        renderPage();
+        await enterManualMode();
+        const linkInput = screen.getByPlaceholderText('https://...');
+        await userEvent.click(linkInput);
+        await userEvent.paste('https://example.com/recipe');
+        expect(importRecipe).not.toHaveBeenCalled();
+    });
+
     it('renders recipe link input', async () => {
         renderPage();
         await enterManualMode();

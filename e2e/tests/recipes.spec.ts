@@ -101,6 +101,21 @@ test.describe('Recipes page', () => {
         await expect(authenticatedPage.getByRole('button', { name: 'New Dish' })).toBeVisible();
     });
 
+    test('typing a URL into the manual link field does not trigger import', async ({ authenticatedPage }) => {
+        await authenticatedPage.goto('/recipes');
+        await authenticatedPage.locator('button[class*="border-primary"]').first().click();
+        await authenticatedPage.getByRole('button', { name: 'Add manually' }).click();
+        await authenticatedPage.getByLabel('Recipe Title').fill('URL Field Test');
+        await authenticatedPage.getByPlaceholder('https://...').fill('https://example.com/some-recipe');
+
+        // No import UI (spinner/error banner/metadata chips) fires as a side effect of typing.
+        await expect(authenticatedPage.getByRole('button', { name: 'Cancel import' })).not.toBeVisible();
+        await expect(authenticatedPage.getByText(/failed to import/i)).not.toBeVisible();
+
+        await authenticatedPage.getByRole('button', { name: 'Create Recipe' }).click();
+        await expect(authenticatedPage.getByRole('button', { name: 'URL Field Test' })).toBeVisible();
+    });
+
     test('navigate to lists via toolbar', async ({ authenticatedPage }) => {
         await authenticatedPage.goto('/recipes');
         await authenticatedPage.getByRole('button', { name: 'Shopping lists' }).click();
