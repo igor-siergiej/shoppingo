@@ -136,4 +136,25 @@ test.describe('Recipe detail page', () => {
             }
         }
     });
+
+    test('deleting an ingredient shows no toast', async ({ authenticatedPage }) => {
+        const recipe = await apiCreateRecipe('My Recipe', [{ name: 'Basil' }]);
+        await authenticatedPage.goto(`/recipes/${recipe.id}`);
+        await expect(authenticatedPage.getByText('Basil')).toBeVisible();
+
+        const item = authenticatedPage.getByText('Basil');
+        const box = await item.boundingBox();
+        if (!box) throw new Error('ingredient row has no bounding box');
+        const cx = box.x + box.width / 2;
+        const cy = box.y + box.height / 2;
+        await authenticatedPage.mouse.move(cx, cy);
+        await authenticatedPage.mouse.down();
+        await authenticatedPage.mouse.move(cx - 90, cy, { steps: 10 });
+        await authenticatedPage.mouse.up();
+
+        await authenticatedPage.getByLabel('Delete Basil').click();
+
+        await expect(authenticatedPage.getByText('Basil', { exact: true })).not.toBeVisible({ timeout: 5000 });
+        await expect(authenticatedPage.locator('[data-sonner-toast]')).toHaveCount(0);
+    });
 });

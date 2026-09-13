@@ -18,7 +18,6 @@ import { Label } from '../../components/ui/label';
 import { Skeleton } from '../../components/ui/skeleton';
 import { useItemImage } from '../../hooks/useItemImage';
 import { SWIPE_REVEAL_DISTANCE, useSwipeGesture } from '../../hooks/useSwipeGesture';
-import { notifyError, notifySuccess } from '../../utils/toast';
 
 interface IngredientItemProps {
     ingredient: Ingredient;
@@ -28,11 +27,13 @@ interface IngredientItemProps {
 }
 
 const IngredientItemActionButtons = ({
+    ingredientName,
     isDeleting,
     isLoading,
     onDelete,
     onEdit,
 }: {
+    ingredientName: string;
     isDeleting: boolean;
     isLoading: boolean;
     onDelete: (e?: MouseEvent) => void;
@@ -46,6 +47,7 @@ const IngredientItemActionButtons = ({
                 <Button
                     onClick={onDelete}
                     disabled={isLoading}
+                    aria-label={`Delete ${ingredientName}`}
                     className="h-[calc(100%-2px)] w-full rounded-lg bg-destructive hover:bg-destructive/90 text-white border border-destructive/20 shadow-sm flex items-center justify-center mr-1"
                 >
                     {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Trash2 size={20} />}
@@ -55,6 +57,7 @@ const IngredientItemActionButtons = ({
             <div className="absolute inset-y-0 left-0 flex items-center justify-start pl-1 w-20">
                 <Button
                     onClick={onEdit}
+                    aria-label={`Edit ${ingredientName}`}
                     className="h-[calc(100%-2px)] w-full rounded-lg bg-blue-500 hover:bg-blue-600 text-white border border-blue-600/20 shadow-sm flex items-center justify-center"
                 >
                     <Edit2 size={20} />
@@ -85,11 +88,10 @@ const IngredientItem = ({ ingredient, onDelete, onEdit, isOwner = true }: Ingred
         setIsDeleting(true);
         setIsLoading(true);
         try {
+            // onDelete's own caller shows the error toast on failure and no toast on success
+            // (see RecipeDetailPage/IngredientsSection) — this just drives the fade-out animation.
             await onDelete(ingredient.id);
-            notifySuccess('Ingredient deleted');
-        } catch (error) {
-            const err = error as { message?: string };
-            notifyError(err.message || 'Failed to delete ingredient');
+        } catch {
             setIsDeleting(false);
             setIsLoading(false);
         }
@@ -175,6 +177,7 @@ const IngredientItem = ({ ingredient, onDelete, onEdit, isOwner = true }: Ingred
                 }}
             >
                 <IngredientItemActionButtons
+                    ingredientName={ingredient.name}
                     isDeleting={isDeleting}
                     isLoading={isLoading}
                     onDelete={handleDeleteClick}

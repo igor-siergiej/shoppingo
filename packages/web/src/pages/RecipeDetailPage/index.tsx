@@ -188,7 +188,10 @@ const RecipeDetailPage = () => {
         }
     };
 
-    const handleUpdateIngredients = async (ingredients: Ingredient[]) => {
+    // silent skips the success toast — deleting a single ingredient shows no toast on
+    // success (only on failure); adding/editing keeps the existing "Ingredients updated" toast.
+    // fallow-ignore-next-line complexity
+    const handleUpdateIngredients = async (ingredients: Ingredient[], options?: { silent?: boolean }) => {
         if (!recipe) return;
 
         try {
@@ -202,11 +205,12 @@ const RecipeDetailPage = () => {
                 recipe.tags
             );
             await refetch();
-            notifySuccess('Ingredients updated');
+            if (!options?.silent) notifySuccess('Ingredients updated');
             logger.info('Recipe ingredients updated', { recipeId, ingredientCount: ingredients.length });
         } catch (error) {
             const err = error as { message?: string };
             notifyError(err.message || 'Failed to update ingredients');
+            throw error;
         }
     };
 
