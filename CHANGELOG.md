@@ -1,3 +1,10 @@
+# [1.66.0](https://github.com/igor-siergiej/shoppingo/compare/v1.65.3...v1.66.0) (2026-09-13)
+
+
+### Features
+
+* **recipes:** Waste Warrior — find recipes that use a given ingredient ([#152](https://github.com/igor-siergiej/shoppingo/issues/152)) ([65d8070](https://github.com/igor-siergiej/shoppingo/commit/65d8070fc05f935929feedb7024d26ca89c07a87))
+
 ## [1.65.3](https://github.com/igor-siergiej/shoppingo/compare/v1.65.2...v1.65.3) (2026-09-13)
 
 
