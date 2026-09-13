@@ -81,6 +81,10 @@ vi.mock('./AddFromRecipeDrawer', () => ({
     AddFromRecipeDrawer: () => <div data-testid="add-from-recipe-drawer" />,
 }));
 
+vi.mock('./WasteWarriorDrawer', () => ({
+    WasteWarriorDrawer: () => <div data-testid="waste-warrior-drawer" />,
+}));
+
 describe('ToolBar', () => {
     beforeEach(() => {
         mockUseLocation.mockReturnValue({ pathname: '/lists' });
@@ -234,6 +238,16 @@ describe('ToolBar', () => {
 
         expect(screen.getByText('Manage Labels')).toBeInTheDocument();
         expect(screen.queryByText('Add to Shopping List')).not.toBeInTheDocument();
+    });
+
+    it('shows only Use Up Ingredient on the Recipes list page', () => {
+        mockUseLocation.mockReturnValue({ pathname: '/recipes' });
+
+        render(<ToolBar />);
+
+        expect(screen.getByText('Use Up Ingredient')).toBeInTheDocument();
+        expect(screen.queryByText('Manage Labels')).not.toBeInTheDocument();
+        expect(screen.getByTestId('waste-warrior-drawer')).toBeInTheDocument();
     });
 
     it('shows no actions on the Friends page', () => {

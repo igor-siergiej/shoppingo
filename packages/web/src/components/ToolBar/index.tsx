@@ -3,7 +3,7 @@
 import { useAuth, useUser } from '@imapps/web-utils';
 import type { Item } from '@shoppingo/types';
 import { ListType } from '@shoppingo/types';
-import { CheckCheck, ChefHat, Plus, ShoppingCart, Tag, Trash2, Users } from 'lucide-react';
+import { CheckCheck, ChefHat, Plus, Recycle, ShoppingCart, Tag, Trash2, Users } from 'lucide-react';
 import { AnimatePresence, MotionConfig, motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -24,6 +24,7 @@ import { AddListDrawer } from './AddListDrawer';
 import { AddTodoDrawer } from './AddTodoDrawer';
 import { HamburgerMenu } from './HamburgerMenu';
 import { ToolBarAppBar } from './ToolBarAppBar';
+import { WasteWarriorDrawer } from './WasteWarriorDrawer';
 
 interface ToolBarProps {
     onAddList?: (name: string, listType: ListType, users: string[]) => Promise<void>;
@@ -95,6 +96,7 @@ const ToolBar = ({
     const [isAddTodoDrawerOpen, setIsAddTodoDrawerOpen] = useState(false);
     const [isManageLabelsOpen, setIsManageLabelsOpen] = useState(false);
     const [isAddFriendDrawerOpen, setIsAddFriendDrawerOpen] = useState(false);
+    const [isWasteWarriorOpen, setIsWasteWarriorOpen] = useState(false);
 
     const isItemsPage = location.pathname.includes('/list/');
     const isListsPage = location.pathname === '/';
@@ -154,6 +156,12 @@ const ToolBar = ({
             label: 'Manage Labels',
             icon: Tag,
             onClick: () => setIsManageLabelsOpen(true),
+        },
+        {
+            show: isRecipesPage,
+            label: 'Use Up Ingredient',
+            icon: Recycle,
+            onClick: () => setIsWasteWarriorOpen(true),
         },
     ];
 
@@ -336,6 +344,8 @@ const ToolBar = ({
 
             {/* ManageLabelsDrawer */}
             <ManageLabelsDrawer open={isManageLabelsOpen} onOpenChange={setIsManageLabelsOpen} />
+
+            {isRecipesPage && <WasteWarriorDrawer open={isWasteWarriorOpen} onOpenChange={setIsWasteWarriorOpen} />}
 
             {/* ManageUsersDrawer and Drawer backdrop */}
             {currentList && isItemsPage && (
