@@ -103,6 +103,36 @@ describe('AddRecipePage', () => {
         expect(screen.getByPlaceholderText('Enter recipe title...')).toBeTruthy();
     });
 
+    it('gives every text field explicit autofill-safe attributes so mobile keyboards do not show a payment/address autosuggest bar', async () => {
+        renderPage();
+        await enterManualMode();
+
+        const titleInput = screen.getByPlaceholderText('Enter recipe title...');
+        expect(titleInput).toHaveAttribute('autocomplete', 'off');
+        expect(titleInput).toHaveAttribute('name', 'recipe-title');
+        expect(titleInput).toHaveAttribute('inputmode', 'text');
+
+        const linkInput = screen.getByPlaceholderText('https://...');
+        expect(linkInput).toHaveAttribute('autocomplete', 'off');
+        expect(linkInput).toHaveAttribute('name', 'recipe-link');
+        expect(linkInput).toHaveAttribute('inputmode', 'url');
+
+        const ingredientsTextarea = screen.getByPlaceholderText(/Paste ingredients here/);
+        expect(ingredientsTextarea).toHaveAttribute('autocomplete', 'off');
+        expect(ingredientsTextarea).toHaveAttribute('name', 'recipe-ingredients');
+        expect(ingredientsTextarea).toHaveAttribute('inputmode', 'text');
+
+        const instructionsTextarea = screen.getByPlaceholderText(/Paste instructions here/);
+        expect(instructionsTextarea).toHaveAttribute('autocomplete', 'off');
+        expect(instructionsTextarea).toHaveAttribute('name', 'recipe-instructions');
+        expect(instructionsTextarea).toHaveAttribute('inputmode', 'text');
+
+        const tagInput = screen.getByPlaceholderText('Add a tag and press Enter...');
+        expect(tagInput).toHaveAttribute('autocomplete', 'off');
+        expect(tagInput).toHaveAttribute('name', 'recipe-tag');
+        expect(tagInput).toHaveAttribute('inputmode', 'text');
+    });
+
     it('groups fields into labeled sections', async () => {
         renderPage();
         await enterManualMode();

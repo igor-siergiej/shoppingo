@@ -63,6 +63,9 @@ export const IngredientsField = ({
                     }
                 }}
                 disabled={disabled || isImporting}
+                name="recipe-ingredients"
+                autoComplete="off"
+                inputMode="text"
                 className="min-h-[80px] resize-none border border-foreground/30"
             />
         ) : (

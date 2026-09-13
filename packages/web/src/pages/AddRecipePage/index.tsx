@@ -308,6 +308,7 @@ const AddRecipePage = () => {
                                 disabled={isLoading}
                                 autoFocus
                                 autoComplete="off"
+                                inputMode="text"
                                 className="h-12 border border-foreground/30 text-base"
                             />
                         </div>
@@ -363,6 +364,9 @@ const AddRecipePage = () => {
                                         }
                                     }}
                                     disabled={isLoading || isImporting}
+                                    name="recipe-instructions"
+                                    autoComplete="off"
+                                    inputMode="text"
                                     className="min-h-[100px] resize-none border border-foreground/30 text-base"
                                 />
                             ) : (
