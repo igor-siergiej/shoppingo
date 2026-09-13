@@ -41,9 +41,9 @@ test.describe('Recipes page', () => {
 
         const searchInput = authenticatedPage.getByPlaceholder('Search recipes...');
         const box = await searchInput.boundingBox();
-        expect(box).not.toBeNull();
+        if (!box) throw new Error('search input has no bounding box');
         // Pinned to the bottom of the page, not scrolled away above the fold.
-        expect(box?.y).toBeGreaterThan(500);
+        expect(box.y).toBeGreaterThan(500);
     });
 
     test('best search match renders closest to the bottom-pinned search field', async ({ authenticatedPage }) => {
@@ -62,9 +62,9 @@ test.describe('Recipes page', () => {
 
         const bestBox = await bestMatch.boundingBox();
         const worseBox = await worseMatch.boundingBox();
-        expect(bestBox).not.toBeNull();
-        expect(worseBox).not.toBeNull();
-        expect(bestBox?.y).toBeGreaterThan(worseBox?.y);
+        if (!bestBox) throw new Error('best match has no bounding box');
+        if (!worseBox) throw new Error('worse match has no bounding box');
+        expect(bestBox.y).toBeGreaterThan(worseBox.y);
     });
 
     test('clearing search scrolls the page back to the bottom', async ({ authenticatedPage }) => {
