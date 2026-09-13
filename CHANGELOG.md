@@ -1,3 +1,10 @@
+## [1.66.1](https://github.com/igor-siergiej/shoppingo/compare/v1.66.0...v1.66.1) (2026-09-13)
+
+
+### Bug Fixes
+
+* **web:** stop double toast on ingredient delete, show zero on success ([#153](https://github.com/igor-siergiej/shoppingo/issues/153)) ([322b865](https://github.com/igor-siergiej/shoppingo/commit/322b86519ec89a21adda612460d5971ad6003ffd))
+
 # [1.66.0](https://github.com/igor-siergiej/shoppingo/compare/v1.65.3...v1.66.0) (2026-09-13)
 
 
