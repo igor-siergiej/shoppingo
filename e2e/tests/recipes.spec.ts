@@ -43,7 +43,7 @@ test.describe('Recipes page', () => {
         const box = await searchInput.boundingBox();
         expect(box).not.toBeNull();
         // Pinned to the bottom of the page, not scrolled away above the fold.
-        expect(box!.y).toBeGreaterThan(500);
+        expect(box?.y).toBeGreaterThan(500);
     });
 
     test('best search match renders closest to the bottom-pinned search field', async ({ authenticatedPage }) => {
@@ -64,7 +64,7 @@ test.describe('Recipes page', () => {
         const worseBox = await worseMatch.boundingBox();
         expect(bestBox).not.toBeNull();
         expect(worseBox).not.toBeNull();
-        expect(bestBox!.y).toBeGreaterThan(worseBox!.y);
+        expect(bestBox?.y).toBeGreaterThan(worseBox?.y);
     });
 
     test('clearing search scrolls the page back to the bottom', async ({ authenticatedPage }) => {
