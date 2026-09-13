@@ -1,10 +1,16 @@
 import type { Recipe } from '@shoppingo/types';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useQuery } from 'react-query';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { useRecipeSearch } from '../../hooks/useRecipeSearch';
 import RecipesPage from './index';
+
+vi.mock('../../hooks/useRecipeSearch', async () => {
+    const actual = await vi.importActual<typeof import('../../hooks/useRecipeSearch')>('../../hooks/useRecipeSearch');
+    return { useRecipeSearch: vi.fn(actual.useRecipeSearch) };
+});
 
 // Mock dependencies
 vi.mock('../../api', () => ({
@@ -44,6 +50,12 @@ vi.mock('../../contexts/PullToRefreshContext', () => ({
 
 vi.mock('../../components/ToolBar', () => ({
     default: () => <div data-testid="toolbar" />,
+}));
+
+const mockScrollTo = vi.fn();
+const mockScrollContainerRef = { current: { scrollTo: mockScrollTo, scrollHeight: 1234 } };
+vi.mock('../../contexts/ScrollContainerContext', () => ({
+    useScrollContainer: () => mockScrollContainerRef,
 }));
 
 describe('RecipesPage', () => {
@@ -182,6 +194,82 @@ describe('RecipesPage', () => {
 
         expect(screen.getByText("Grandma's Bourguignon")).toBeInTheDocument();
         expect(screen.queryByText('Chicken Curry')).not.toBeInTheDocument();
+    });
+
+    it('renders the best search match closest to the bottom-pinned search field', () => {
+        const bestMatch: Recipe = {
+            id: 'r1',
+            title: 'Best Match',
+            ownerId: 'user-1',
+            ingredients: [],
+            users: [],
+            dateAdded: new Date(),
+            coverImageKey: 'img-1',
+        };
+        const worseMatch: Recipe = {
+            id: 'r2',
+            title: 'Worse Match',
+            ownerId: 'user-1',
+            ingredients: [],
+            users: [],
+            dateAdded: new Date(),
+            coverImageKey: 'img-2',
+        };
+        vi.mocked(useQuery).mockReturnValue({
+            data: [bestMatch, worseMatch],
+            isLoading: false,
+            isError: false,
+            refetch: vi.fn(),
+        } as ReturnType<typeof useQuery>);
+
+        render(
+            <MemoryRouter>
+                <RecipesPage />
+            </MemoryRouter>
+        );
+
+        // useRecipeSearch ranks best match first; the component must reverse that for
+        // display so the best match lands last in the DOM, closest to the search field.
+        vi.mocked(useRecipeSearch).mockReturnValueOnce([bestMatch, worseMatch]);
+        fireEvent.change(screen.getByPlaceholderText('Search recipes...'), { target: { value: 'match' } });
+
+        const best = screen.getByText('Best Match');
+        const worse = screen.getByText('Worse Match');
+        // Best match must be last in the DOM (closest to the search field below it).
+        expect(worse.compareDocumentPosition(best) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+
+    it('scrolls back to the bottom-pinned search field when the search is cleared', async () => {
+        const user = userEvent.setup();
+        vi.mocked(useQuery).mockReturnValue({
+            data: [
+                {
+                    id: 'r1',
+                    title: 'Recipe 1',
+                    ownerId: 'user-1',
+                    ingredients: [],
+                    users: [],
+                    dateAdded: new Date(),
+                    coverImageKey: 'img-1',
+                },
+            ],
+            isLoading: false,
+            isError: false,
+            refetch: vi.fn(),
+        } as ReturnType<typeof useQuery>);
+
+        render(
+            <MemoryRouter>
+                <RecipesPage />
+            </MemoryRouter>
+        );
+
+        await user.type(screen.getByPlaceholderText('Search recipes...'), 'Recipe 1');
+        expect(mockScrollTo).not.toHaveBeenCalled();
+
+        await user.click(screen.getByLabelText('Clear search'));
+
+        expect(mockScrollTo).toHaveBeenCalledWith({ top: 1234, behavior: 'smooth' });
     });
 
     it('passes refetch function to ToolBar for recipe updates', async () => {

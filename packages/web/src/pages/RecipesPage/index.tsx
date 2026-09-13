@@ -11,6 +11,7 @@ import { Button } from '../../components/ui/button';
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '../../components/ui/empty';
 import { Input } from '../../components/ui/input';
 import { usePullToRefreshContext } from '../../contexts/PullToRefreshContext';
+import { useScrollContainer } from '../../contexts/ScrollContainerContext';
 import { useRecipeSearch } from '../../hooks/useRecipeSearch';
 import { logger } from '../../utils/logger';
 
@@ -24,6 +25,8 @@ const RecipesPage = () => {
     const [searchParams] = useSearchParams();
     const [searchQuery, setSearchQuery] = useState('');
     const generatingRef = useRef<Set<string>>(new Set());
+    const prevSearchQueryRef = useRef(searchQuery);
+    const scrollContainerRef = useScrollContainer();
     const { data, isLoading, isError, refetch } = useQuery({
         ...getRecipesQuery(user?.id || ''),
         enabled: !!user?.id,
@@ -73,6 +76,16 @@ const RecipesPage = () => {
         }
     }, [searchParams, navigate]);
 
+    // Search results build upward from the bottom-pinned search field; clearing the
+    // search should scroll back down to it rather than leaving the view scrolled up.
+    useEffect(() => {
+        if (prevSearchQueryRef.current && !searchQuery) {
+            const container = scrollContainerRef?.current;
+            container?.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+        }
+        prevSearchQueryRef.current = searchQuery;
+    }, [searchQuery, scrollContainerRef]);
+
     const recipes = data || [];
     // Tags feed this search silently (see useRecipeSearch) — no chip filter or other tag UI here;
     // AI tagging yields 4-8 tags per recipe, too many to render as a filter row.
@@ -88,7 +101,10 @@ const RecipesPage = () => {
     };
 
     const searchBar = (
-        <div className="relative mt-6">
+        <div
+            className="sticky bottom-0 mt-6 py-2 bg-background z-10"
+            style={{ bottom: 'env(keyboard-inset-height, 0px)' }}
+        >
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
             <Input
                 type="search"
@@ -114,13 +130,15 @@ const RecipesPage = () => {
     );
 
     const pageContent = (
-        <div className="flex flex-col">
+        <div className="flex flex-col min-h-full justify-between">
             {searchQuery.trim() ? (
                 <div>
                     <h2 className="text-lg font-semibold mb-3 text-foreground">Results ({searchResults.length})</h2>
                     {searchResults.length > 0 ? (
+                        // Best match rendered last so it lands visually closest to the
+                        // bottom-pinned search field (results "build upward" toward it).
                         <RecipesList
-                            recipes={searchResults}
+                            recipes={[...searchResults].reverse()}
                             currentUserId={user.id}
                             onRecipeClick={handleRecipeClick}
                         />

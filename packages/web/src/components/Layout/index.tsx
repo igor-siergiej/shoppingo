@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { useLocation } from 'react-router-dom';
 import { usePullToRefreshContext } from '../../contexts/PullToRefreshContext';
+import { ScrollContainerProvider } from '../../contexts/ScrollContainerContext';
 import { usePullToRefresh } from '../../hooks/usePullToRefresh';
 import { PullToRefreshIndicator } from '../PullToRefreshIndicator';
 
@@ -34,7 +35,7 @@ export const Layout = ({ children }: LayoutProps) => {
         <div className={containerClass}>
             <PullToRefreshIndicator pullY={pullY} isRefreshing={isRefreshing} hasTriggered={hasTriggered} />
             <div ref={scrollRef} className={`h-full overflow-y-auto flex ${flexDirectionClass} overscroll-y-contain`}>
-                {children}
+                <ScrollContainerProvider scrollRef={scrollRef}>{children}</ScrollContainerProvider>
             </div>
         </div>
     );
