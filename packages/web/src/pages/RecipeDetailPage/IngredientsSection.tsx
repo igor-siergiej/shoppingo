@@ -5,7 +5,7 @@ import IngredientItem from '../../components/IngredientItem';
 interface IngredientsSectionProps {
     recipe: Recipe;
     isOwner?: boolean;
-    onUpdateIngredients: (ingredients: Ingredient[]) => Promise<void>;
+    onUpdateIngredients: (ingredients: Ingredient[], options?: { silent?: boolean }) => Promise<void>;
 }
 
 export const IngredientsSection = ({ recipe, isOwner = false, onUpdateIngredients }: IngredientsSectionProps) => {
@@ -19,7 +19,9 @@ export const IngredientsSection = ({ recipe, isOwner = false, onUpdateIngredient
         const updated = ingredients.filter((ing) => ing.id !== id);
         setIngredients(updated);
         try {
-            await onUpdateIngredients(updated);
+            // No success toast for a single-ingredient delete — the error toast (on failure)
+            // already comes from onUpdateIngredients, so this stays silent on the happy path.
+            await onUpdateIngredients(updated, { silent: true });
         } catch (error) {
             // Restore the original ingredients on error
             setIngredients(ingredients);
@@ -30,7 +32,11 @@ export const IngredientsSection = ({ recipe, isOwner = false, onUpdateIngredient
     const handleEditIngredient = async (id: string, updated: Ingredient) => {
         const newIngredients = ingredients.map((ing) => (ing.id === id ? updated : ing));
         setIngredients(newIngredients);
-        await onUpdateIngredients(newIngredients);
+        try {
+            await onUpdateIngredients(newIngredients);
+        } catch {
+            setIngredients(ingredients);
+        }
     };
 
     return (
