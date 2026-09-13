@@ -1,3 +1,10 @@
+## [1.65.1](https://github.com/igor-siergiej/shoppingo/compare/v1.65.0...v1.65.1) (2026-09-13)
+
+
+### Bug Fixes
+
+* **web:** pin recipe search field to bottom, results build upward ([#148](https://github.com/igor-siergiej/shoppingo/issues/148)) ([48e084d](https://github.com/igor-siergiej/shoppingo/commit/48e084d5ff44c0374961b2372eec6676c0a1d728))
+
 # [1.65.0](https://github.com/igor-siergiej/shoppingo/compare/v1.64.2...v1.65.0) (2026-09-13)
 
 
