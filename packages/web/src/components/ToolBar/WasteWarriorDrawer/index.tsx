@@ -9,12 +9,14 @@ import { getRecipesQuery } from '../../../api';
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from '../../../components/ui/drawer';
 import { Input } from '../../../components/ui/input';
 import { useIngredientWasteSearch } from '../../../hooks/useIngredientWasteSearch';
+import { RecipeResultCard } from '../RecipeResultCard';
 
 export interface WasteWarriorDrawerProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
 }
 
+// fallow-ignore-next-line complexity
 export const WasteWarriorDrawer = ({ open, onOpenChange }: WasteWarriorDrawerProps) => {
     const { user } = useUser();
     const navigate = useNavigate();
@@ -83,28 +85,16 @@ export const WasteWarriorDrawer = ({ open, onOpenChange }: WasteWarriorDrawerPro
                         ) : (
                             <div className="space-y-2">
                                 {matches.map(({ recipe, matchedIngredientName }) => (
-                                    <button
+                                    <RecipeResultCard
                                         key={recipe.id}
+                                        recipe={recipe}
                                         onClick={() => handleSelectRecipe(recipe.id)}
-                                        className="w-full p-3 rounded-lg border border-muted-foreground/20 hover:bg-muted/50 transition-colors text-left"
-                                        type="button"
-                                    >
-                                        <div className="flex items-start gap-3">
-                                            {recipe.coverImageKey && (
-                                                <img
-                                                    src={`/api/image/${encodeURIComponent(recipe.coverImageKey)}`}
-                                                    alt={recipe.title}
-                                                    className="w-12 h-12 rounded object-cover flex-shrink-0"
-                                                />
-                                            )}
-                                            <div className="flex-1 min-w-0">
-                                                <h3 className="font-medium truncate">{recipe.title}</h3>
-                                                <span className="inline-block mt-1 text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
-                                                    uses {matchedIngredientName}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </button>
+                                        subtitle={
+                                            <span className="inline-block mt-1 text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
+                                                uses {matchedIngredientName}
+                                            </span>
+                                        }
+                                    />
                                 ))}
                             </div>
                         )}
