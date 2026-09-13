@@ -13,6 +13,7 @@ import { RippleButton } from '../../../components/ui/ripple';
 import { useRecipeSearch } from '../../../hooks/useRecipeSearch';
 import { notifyError, notifySuccess } from '../../../utils/toast';
 import { IngredientSelectRow } from '../../IngredientSelectRow';
+import { RecipeResultCard } from '../RecipeResultCard';
 
 interface AddFromRecipeDrawerProps {
     open: boolean;
@@ -161,28 +162,16 @@ export const AddFromRecipeDrawer = ({
                                     <p className="text-muted-foreground text-sm py-3">No recipes found</p>
                                 ) : (
                                     recipes.map((recipe) => (
-                                        <button
+                                        <RecipeResultCard
                                             key={recipe.id}
+                                            recipe={recipe}
                                             onClick={() => handleSelectRecipe(recipe)}
-                                            className="w-full p-3 rounded-lg border border-muted-foreground/20 hover:bg-muted/50 transition-colors text-left"
-                                            type="button"
-                                        >
-                                            <div className="flex items-start gap-3">
-                                                {recipe.coverImageKey && (
-                                                    <img
-                                                        src={`/api/image/${encodeURIComponent(recipe.coverImageKey)}`}
-                                                        alt={recipe.title}
-                                                        className="w-12 h-12 rounded object-cover flex-shrink-0"
-                                                    />
-                                                )}
-                                                <div className="flex-1 min-w-0">
-                                                    <h3 className="font-medium truncate">{recipe.title}</h3>
-                                                    <p className="text-sm text-muted-foreground">
-                                                        {recipe.ingredients.length} ingredients
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </button>
+                                            subtitle={
+                                                <p className="text-sm text-muted-foreground">
+                                                    {recipe.ingredients.length} ingredients
+                                                </p>
+                                            }
+                                        />
                                     ))
                                 )}
                             </div>
