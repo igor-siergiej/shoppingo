@@ -1,3 +1,10 @@
+## [1.65.2](https://github.com/igor-siergiej/shoppingo/compare/v1.65.1...v1.65.2) (2026-09-13)
+
+
+### Bug Fixes
+
+* **ci:** pass mongo credentials to the e2e test step ([#150](https://github.com/igor-siergiej/shoppingo/issues/150)) ([5adcb74](https://github.com/igor-siergiej/shoppingo/commit/5adcb74c005439d2d63ef641e6130d204ec6cace))
+
 ## [1.65.1](https://github.com/igor-siergiej/shoppingo/compare/v1.65.0...v1.65.1) (2026-09-13)
 
 
