@@ -77,6 +77,8 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.GH_TOKEN }}
       - run: bunx playwright install --with-deps chromium
       - run: bun run test:e2e
+        env:
+          CONNECTION_URI: mongodb://devuser:devpassword@localhost:27017/shoppingo_e2e?authSource=admin
       - uses: actions/upload-artifact@v4
         if: always()
         with:
