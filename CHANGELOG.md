@@ -1,3 +1,10 @@
+# [1.65.0](https://github.com/igor-siergiej/shoppingo/compare/v1.64.2...v1.65.0) (2026-09-13)
+
+
+### Features
+
+* **web:** recipe UI/UX rework — sectioned Add Recipe, hero-image Recipe Detail ([#146](https://github.com/igor-siergiej/shoppingo/issues/146)) ([513e7ab](https://github.com/igor-siergiej/shoppingo/commit/513e7abc4e1af657e8e64d91568db269be5c5f2b))
+
 ## [1.64.2](https://github.com/igor-siergiej/shoppingo/compare/v1.64.1...v1.64.2) (2026-09-12)
 
 
