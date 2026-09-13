@@ -45,6 +45,9 @@ export const TagsField = ({ tags, onChange, disabled }: TagsFieldProps) => {
                     commit();
                 }}
                 onBlur={commit}
+                name="recipe-tag"
+                autoComplete="off"
+                inputMode="text"
                 className="h-10 border border-foreground/30"
             />
             {tags.length > 0 && (

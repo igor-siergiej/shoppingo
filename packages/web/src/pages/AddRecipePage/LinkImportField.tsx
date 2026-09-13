@@ -47,6 +47,7 @@ export const LinkImportField = ({
                 onChange={(e) => setLink(e.target.value)}
                 disabled={disabled || isImporting}
                 autoComplete="off"
+                inputMode="url"
                 className="h-10 border border-foreground/30"
             />
             <Button
