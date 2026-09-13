@@ -296,131 +296,126 @@ const RecipeDetailPage = () => {
             {isError && <ErrorState onRetry={() => void refetch()} />}
 
             {!isLoading && !isError && recipe && (
-                <div className="flex flex-col flex-1 overflow-hidden">
-                    {isEditingTitle ? (
-                        <div className="flex items-center gap-2 p-4 border-b flex-shrink-0">
-                            <Input
-                                value={editedTitle}
-                                onChange={(e) => setEditedTitle(e.target.value)}
-                                className="flex-1"
-                                autoFocus
-                            />
-                            <Button size="sm" onClick={handleSaveTitle}>
-                                Save
-                            </Button>
-                            <Button size="sm" variant="outline" onClick={() => setIsEditingTitle(false)}>
-                                Cancel
-                            </Button>
-                        </div>
-                    ) : (
-                        <div className="flex items-center gap-3 p-4 border-b flex-shrink-0">
-                            <h1 className="text-xl font-semibold truncate flex-1">{recipe.title}</h1>
-                            {recipe.link && (
-                                <a
-                                    href={recipe.link}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-border bg-muted text-sm font-medium text-foreground hover:bg-muted/80 transition-colors"
-                                    aria-label="Open original recipe"
-                                >
-                                    <ExternalLink className="h-4 w-4" />
-                                    Recipe
-                                </a>
-                            )}
-                            {isOwner && (
-                                <>
-                                    <button
-                                        onClick={() => setIsEditingTitle(true)}
-                                        className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-muted transition-colors"
-                                        aria-label="Edit recipe title"
-                                        type="button"
-                                    >
-                                        <Pencil className="h-5 w-5" />
-                                    </button>
-                                    <button
-                                        onClick={handleDeleteRecipe}
-                                        className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-destructive hover:bg-opacity-10 transition-colors text-destructive"
-                                        aria-label="Delete recipe"
-                                        type="button"
-                                    >
-                                        <Trash2 className="h-5 w-5" />
-                                    </button>
-                                </>
-                            )}
-                        </div>
+                <div className="flex-1 overflow-y-auto">
+                    {!isSelectMode && (
+                        <CoverImageSection recipe={recipe} isOwner={isOwner} onImageChange={() => void refetch()} />
                     )}
 
-                    <div className="flex-1 overflow-y-auto">
-                        <div className="p-4 space-y-6">
-                            {isSelectMode ? (
-                                <IngredientSelectSection
-                                    recipe={recipe}
-                                    lists={lists}
-                                    onCancel={() => setIsSelectMode(false)}
-                                    onConfirm={handleConfirmAddToList}
+                    <div className="p-4 space-y-6">
+                        {isEditingTitle ? (
+                            <div className="flex items-center gap-2">
+                                <Input
+                                    value={editedTitle}
+                                    onChange={(e) => setEditedTitle(e.target.value)}
+                                    className="flex-1"
+                                    autoFocus
+                                    aria-label="Recipe title"
                                 />
-                            ) : (
-                                <>
-                                    <CoverImageSection
-                                        recipe={recipe}
-                                        isOwner={isOwner}
-                                        onImageChange={() => void refetch()}
-                                    />
-
-                                    {isOwner && (
-                                        <div className="space-y-2">
-                                            <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
-                                                Recipe Link
-                                            </p>
-                                            {isEditingLink ? (
-                                                <div className="flex gap-2">
-                                                    <Input
-                                                        type="url"
-                                                        value={editedLink}
-                                                        onChange={(e) => setEditedLink(e.target.value)}
-                                                        placeholder="https://..."
-                                                        className="flex-1"
-                                                        autoFocus
-                                                    />
-                                                    <Button size="sm" onClick={handleSaveLink}>
-                                                        Save
-                                                    </Button>
-                                                    <Button
-                                                        size="sm"
-                                                        variant="outline"
-                                                        onClick={() => setIsEditingLink(false)}
-                                                    >
-                                                        Cancel
-                                                    </Button>
-                                                </div>
-                                            ) : (
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => setIsEditingLink(true)}
-                                                >
-                                                    {recipe.link ? 'Edit Link' : 'Add Link'}
-                                                </Button>
-                                            )}
-                                        </div>
+                                <Button size="sm" onClick={handleSaveTitle}>
+                                    Save
+                                </Button>
+                                <Button size="sm" variant="outline" onClick={() => setIsEditingTitle(false)}>
+                                    Cancel
+                                </Button>
+                            </div>
+                        ) : (
+                            <div className="space-y-2">
+                                <h1 className="text-xl font-semibold leading-snug">{recipe.title}</h1>
+                                <div className="flex items-center gap-2">
+                                    {recipe.link && (
+                                        <a
+                                            href={recipe.link}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-border bg-muted text-sm font-medium text-foreground hover:bg-muted/80 transition-colors"
+                                            aria-label="Open original recipe"
+                                        >
+                                            <ExternalLink className="h-4 w-4" />
+                                            Recipe
+                                        </a>
                                     )}
+                                    {isOwner && (
+                                        <>
+                                            <button
+                                                onClick={() => setIsEditingTitle(true)}
+                                                className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-muted transition-colors"
+                                                aria-label="Edit recipe title"
+                                                type="button"
+                                            >
+                                                <Pencil className="h-5 w-5" />
+                                            </button>
+                                            <button
+                                                onClick={handleDeleteRecipe}
+                                                className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-destructive hover:bg-opacity-10 transition-colors text-destructive"
+                                                aria-label="Delete recipe"
+                                                type="button"
+                                            >
+                                                <Trash2 className="h-5 w-5" />
+                                            </button>
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+                        )}
 
-                                    <TagsSection tags={recipe.tags} isOwner={isOwner} onDeleteTag={handleDeleteTag} />
+                        {isSelectMode ? (
+                            <IngredientSelectSection
+                                recipe={recipe}
+                                lists={lists}
+                                onCancel={() => setIsSelectMode(false)}
+                                onConfirm={handleConfirmAddToList}
+                            />
+                        ) : (
+                            <>
+                                {isOwner && (
+                                    <div className="space-y-2">
+                                        <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
+                                            Recipe Link
+                                        </p>
+                                        {isEditingLink ? (
+                                            <div className="flex gap-2">
+                                                <Input
+                                                    type="url"
+                                                    value={editedLink}
+                                                    onChange={(e) => setEditedLink(e.target.value)}
+                                                    placeholder="https://..."
+                                                    className="flex-1"
+                                                    autoFocus
+                                                />
+                                                <Button size="sm" onClick={handleSaveLink}>
+                                                    Save
+                                                </Button>
+                                                <Button
+                                                    size="sm"
+                                                    variant="outline"
+                                                    onClick={() => setIsEditingLink(false)}
+                                                >
+                                                    Cancel
+                                                </Button>
+                                            </div>
+                                        ) : (
+                                            <Button variant="outline" size="sm" onClick={() => setIsEditingLink(true)}>
+                                                {recipe.link ? 'Edit Link' : 'Add Link'}
+                                            </Button>
+                                        )}
+                                    </div>
+                                )}
 
-                                    <IngredientsSection
-                                        recipe={recipe}
-                                        isOwner={isOwner}
-                                        onUpdateIngredients={handleUpdateIngredients}
-                                    />
+                                <TagsSection tags={recipe.tags} isOwner={isOwner} onDeleteTag={handleDeleteTag} />
 
-                                    <InstructionsSection
-                                        instructions={recipe.instructions ?? undefined}
-                                        isOwner={isOwner}
-                                        onSave={handleSaveInstructions}
-                                    />
-                                </>
-                            )}
-                        </div>
+                                <IngredientsSection
+                                    recipe={recipe}
+                                    isOwner={isOwner}
+                                    onUpdateIngredients={handleUpdateIngredients}
+                                />
+
+                                <InstructionsSection
+                                    instructions={recipe.instructions ?? undefined}
+                                    isOwner={isOwner}
+                                    onSave={handleSaveInstructions}
+                                />
+                            </>
+                        )}
                     </div>
                 </div>
             )}

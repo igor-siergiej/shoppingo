@@ -103,6 +103,15 @@ describe('AddRecipePage', () => {
         expect(screen.getByPlaceholderText('Enter recipe title...')).toBeTruthy();
     });
 
+    it('groups fields into labeled sections', async () => {
+        renderPage();
+        await enterManualMode();
+
+        for (const heading of ['Photo', 'Basics', 'Ingredients', 'Instructions', 'Tags', 'Share']) {
+            expect(screen.getByRole('heading', { name: heading })).toBeInTheDocument();
+        }
+    });
+
     it('displays image upload area', async () => {
         renderPage();
         await enterManualMode();

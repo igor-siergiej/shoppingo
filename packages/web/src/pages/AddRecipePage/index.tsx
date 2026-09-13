@@ -18,6 +18,7 @@ import { notifyError, notifySuccess, notifyWarning } from '../../utils/toast';
 import { AddRecipeHeader } from './AddRecipeHeader';
 import { applyImportedDraft, type ImportMeta } from './applyImportedDraft';
 import { ChoiceScreen } from './ChoiceScreen';
+import { FormSection } from './FormSection';
 import { ImageUploadField } from './ImageUploadField';
 import { ImportScreen } from './ImportScreen';
 import { type Ingredient, IngredientsField } from './IngredientsField';
@@ -279,96 +280,104 @@ const AddRecipePage = () => {
 
             <div className="flex-1 overflow-y-auto px-4">
                 <div className="space-y-4 py-4 max-w-lg mx-auto w-full">
-                    <div className="space-y-2">
-                        <Label htmlFor={recipeNameId}>Recipe Title</Label>
-                        <Input
-                            id={recipeNameId}
-                            name="recipe-title"
-                            placeholder="Enter recipe title..."
-                            value={title}
-                            onChange={(e) => {
-                                setTitle(e.target.value);
-                                setError('');
-                            }}
+                    <FormSection title="Photo">
+                        <ImageUploadField
+                            imageUrl={imageUrl}
                             disabled={isLoading}
-                            autoFocus
-                            autoComplete="off"
-                            className="h-10 border border-foreground/30"
+                            onFileSelected={setSelectedFile}
+                            onPreviewReady={setImageUrl}
+                            onClear={() => {
+                                setImageUrl(null);
+                                setSelectedFile(null);
+                            }}
                         />
-                    </div>
+                    </FormSection>
 
-                    <ImageUploadField
-                        imageUrl={imageUrl}
-                        disabled={isLoading}
-                        onFileSelected={setSelectedFile}
-                        onPreviewReady={setImageUrl}
-                        onClear={() => {
-                            setImageUrl(null);
-                            setSelectedFile(null);
-                        }}
-                    />
+                    <FormSection title="Basics">
+                        <div className="space-y-2">
+                            <Label htmlFor={recipeNameId}>Recipe Title</Label>
+                            <Input
+                                id={recipeNameId}
+                                name="recipe-title"
+                                placeholder="Enter recipe title..."
+                                value={title}
+                                onChange={(e) => {
+                                    setTitle(e.target.value);
+                                    setError('');
+                                }}
+                                disabled={isLoading}
+                                autoFocus
+                                autoComplete="off"
+                                className="h-12 border border-foreground/30 text-base"
+                            />
+                        </div>
 
-                    <LinkImportField
-                        link={link}
-                        setLink={setLink}
-                        isImporting={isImporting}
-                        importError={importError}
-                        importMeta={importMeta}
-                        disabled={isLoading}
-                        onImport={() => void handleImport(link)}
-                        onCancelImport={handleCancelImport}
-                    />
+                        <LinkImportField
+                            link={link}
+                            setLink={setLink}
+                            isImporting={isImporting}
+                            importError={importError}
+                            importMeta={importMeta}
+                            disabled={isLoading}
+                            onImport={() => void handleImport(link)}
+                            onCancelImport={handleCancelImport}
+                        />
+                    </FormSection>
 
-                    <IngredientsField
-                        ingredients={ingredients}
-                        ingredientsPasteText={ingredientsPasteText}
-                        setIngredientsPasteText={setIngredientsPasteText}
-                        showIngredientsPaste={showIngredientsPaste}
-                        setShowIngredientsPaste={setShowIngredientsPaste}
-                        onChange={setIngredients}
-                        disabled={isLoading}
-                        isImporting={isImporting}
-                    />
+                    <FormSection title="Ingredients">
+                        <IngredientsField
+                            ingredients={ingredients}
+                            ingredientsPasteText={ingredientsPasteText}
+                            setIngredientsPasteText={setIngredientsPasteText}
+                            showIngredientsPaste={showIngredientsPaste}
+                            setShowIngredientsPaste={setShowIngredientsPaste}
+                            onChange={setIngredients}
+                            disabled={isLoading}
+                            isImporting={isImporting}
+                        />
+                    </FormSection>
 
-                    <TagsField tags={tags} onChange={setTags} disabled={isLoading} />
-
-                    <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                            <Label>Instructions</Label>
+                    <FormSection title="Instructions">
+                        <div className="space-y-2">
                             {steps.length > 0 && (
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPasteArea(true)}
-                                    className="text-xs text-muted-foreground underline"
-                                >
-                                    edit text ↩
-                                </button>
+                                <div className="flex justify-end">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPasteArea(true)}
+                                        className="text-xs text-muted-foreground underline"
+                                    >
+                                        edit text ↩
+                                    </button>
+                                </div>
+                            )}
+                            {showPasteArea || steps.length === 0 ? (
+                                <Textarea
+                                    placeholder="Paste instructions here — each line becomes a step automatically..."
+                                    value={instructionsPasteText}
+                                    onChange={(e) => setInstructionsPasteText(e.target.value)}
+                                    onBlur={() => {
+                                        const parsed = splitIntoSteps(instructionsPasteText);
+                                        if (parsed.length > 0) {
+                                            setSteps(parsed);
+                                            setShowPasteArea(false);
+                                        }
+                                    }}
+                                    disabled={isLoading || isImporting}
+                                    className="min-h-[100px] resize-none border border-foreground/30 text-base"
+                                />
+                            ) : (
+                                <StepsList steps={steps} onChange={setSteps} disabled={isLoading} />
                             )}
                         </div>
-                        {showPasteArea || steps.length === 0 ? (
-                            <Textarea
-                                placeholder="Paste instructions here — each line becomes a step automatically..."
-                                value={instructionsPasteText}
-                                onChange={(e) => setInstructionsPasteText(e.target.value)}
-                                onBlur={() => {
-                                    const parsed = splitIntoSteps(instructionsPasteText);
-                                    if (parsed.length > 0) {
-                                        setSteps(parsed);
-                                        setShowPasteArea(false);
-                                    }
-                                }}
-                                disabled={isLoading || isImporting}
-                                className="min-h-[80px] resize-none border border-foreground/30"
-                            />
-                        ) : (
-                            <StepsList steps={steps} onChange={setSteps} disabled={isLoading} />
-                        )}
-                    </div>
+                    </FormSection>
 
-                    <div className="space-y-3 border-t pt-4">
-                        <Label className="text-sm font-semibold">Share With Users</Label>
+                    <FormSection title="Tags">
+                        <TagsField tags={tags} onChange={setTags} disabled={isLoading} />
+                    </FormSection>
+
+                    <FormSection title="Share">
                         <FriendPicker value={selectedUsers} onChange={setSelectedUsers} seedAllByDefault />
-                    </div>
+                    </FormSection>
 
                     {error && <p className="text-sm text-destructive">{error}</p>}
                 </div>

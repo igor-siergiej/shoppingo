@@ -1,7 +1,6 @@
 import { X } from 'lucide-react';
 import { useState } from 'react';
 import { Input } from '../../components/ui/input';
-import { Label } from '../../components/ui/label';
 
 interface TagsFieldProps {
     tags: string[];
@@ -27,7 +26,6 @@ export const TagsField = ({ tags, onChange, disabled }: TagsFieldProps) => {
 
     return (
         <div className="space-y-2">
-            <Label>Tags</Label>
             <Input
                 placeholder="Add a tag and press Enter..."
                 value={draft}
