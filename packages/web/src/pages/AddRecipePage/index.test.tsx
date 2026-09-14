@@ -47,6 +47,7 @@ vi.mock('../../api', () => ({
     generateRecipeAiImage: vi.fn().mockResolvedValue(undefined),
     getRecipesQuery: vi.fn(() => ({ queryKey: ['recipes', 'user-1'], queryFn: async () => mockRecipesData })),
     getRecipeQuery: vi.fn((recipeId: string) => ({ queryKey: ['recipe', recipeId], queryFn: async () => undefined })),
+    getListsQuery: vi.fn(() => ({ queryKey: ['lists', 'user-1'], queryFn: async () => [] })),
 }));
 
 const renderPage = (initialEntry = '/recipes/new') => {

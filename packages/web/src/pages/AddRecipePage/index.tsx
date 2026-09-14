@@ -3,7 +3,14 @@ import type { Recipe } from '@shoppingo/types';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { generateRecipeAiImage, getRecipeQuery, getRecipesQuery, importRecipe, uploadRecipeImage } from '../../api';
+import {
+    generateRecipeAiImage,
+    getListsQuery,
+    getRecipeQuery,
+    getRecipesQuery,
+    importRecipe,
+    uploadRecipeImage,
+} from '../../api';
 import { FriendPicker } from '../../components/FriendPicker';
 import { StepsList } from '../../components/StepsList';
 import { Button } from '../../components/ui/button';
@@ -15,6 +22,7 @@ import { useRecipeMutations } from '../../hooks/useRecipeMutations';
 import { logger } from '../../utils/logger';
 import { splitIntoSteps } from '../../utils/splitIntoSteps';
 import { notifyError, notifySuccess, notifyWarning } from '../../utils/toast';
+import { AddIngredientsFromListDrawer } from './AddIngredientsFromListDrawer';
 import { AddRecipeHeader } from './AddRecipeHeader';
 import { applyImportedDraft, type ImportMeta } from './applyImportedDraft';
 import { ChoiceScreen } from './ChoiceScreen';
@@ -51,6 +59,9 @@ const AddRecipePage = () => {
         ...getRecipesQuery(user?.id || ''),
         enabled: false,
     });
+    const { data: lists = [] } = useQuery(
+        user?.id ? getListsQuery(user.id) : { queryKey: [], queryFn: async () => [] }
+    );
 
     const initialLink = searchParams.get('sharedUrl') ?? '';
     const autoImport = !!initialLink;
@@ -335,6 +346,11 @@ const AddRecipePage = () => {
                             onChange={setIngredients}
                             disabled={isLoading}
                             isImporting={isImporting}
+                        />
+                        <AddIngredientsFromListDrawer
+                            lists={lists}
+                            disabled={isLoading}
+                            onAdd={(picked) => setIngredients((prev) => [...prev, ...picked])}
                         />
                     </FormSection>
 
