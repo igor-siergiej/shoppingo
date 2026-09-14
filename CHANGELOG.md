@@ -1,3 +1,10 @@
+# [1.67.0](https://github.com/igor-siergiej/shoppingo/compare/v1.66.1...v1.67.0) (2026-09-14)
+
+
+### Features
+
+* **recipes:** pick ingredients from an existing shopping list on manual create ([#154](https://github.com/igor-siergiej/shoppingo/issues/154)) ([35c993e](https://github.com/igor-siergiej/shoppingo/commit/35c993eb064a23d24e4b9cddbc93a381c1006330))
+
 ## [1.66.1](https://github.com/igor-siergiej/shoppingo/compare/v1.66.0...v1.66.1) (2026-09-13)
 
 
