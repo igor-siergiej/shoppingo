@@ -15,6 +15,11 @@ interface UnitDef {
     toBase: number;
     /** Canonical label emitted when converting *to* this unit. */
     label: string;
+    /**
+     * tsp/tbsp/cup are used regardless of measurement system, so they're excluded from
+     * conversion entirely: never converted away from, never picked as a conversion target.
+     */
+    convertible?: boolean;
 }
 
 // Aliases are matched case-insensitively against the trimmed unit string with any
@@ -39,12 +44,18 @@ const UNIT_TABLE: Record<string, UnitDef> = {
     l: { dimension: 'volume', system: 'metric', toBase: 1000, label: 'l' },
     liter: { dimension: 'volume', system: 'metric', toBase: 1000, label: 'l' },
     litre: { dimension: 'volume', system: 'metric', toBase: 1000, label: 'l' },
-    tsp: { dimension: 'volume', system: 'imperial', toBase: 4.92892159375, label: 'tsp' },
-    teaspoon: { dimension: 'volume', system: 'imperial', toBase: 4.92892159375, label: 'tsp' },
-    tbsp: { dimension: 'volume', system: 'imperial', toBase: 14.78676478125, label: 'tbsp' },
-    tbs: { dimension: 'volume', system: 'imperial', toBase: 14.78676478125, label: 'tbsp' },
-    tablespoon: { dimension: 'volume', system: 'imperial', toBase: 14.78676478125, label: 'tbsp' },
-    cup: { dimension: 'volume', system: 'imperial', toBase: 236.5882365, label: 'cup' },
+    tsp: { dimension: 'volume', system: 'imperial', toBase: 4.92892159375, label: 'tsp', convertible: false },
+    teaspoon: { dimension: 'volume', system: 'imperial', toBase: 4.92892159375, label: 'tsp', convertible: false },
+    tbsp: { dimension: 'volume', system: 'imperial', toBase: 14.78676478125, label: 'tbsp', convertible: false },
+    tbs: { dimension: 'volume', system: 'imperial', toBase: 14.78676478125, label: 'tbsp', convertible: false },
+    tablespoon: {
+        dimension: 'volume',
+        system: 'imperial',
+        toBase: 14.78676478125,
+        label: 'tbsp',
+        convertible: false,
+    },
+    cup: { dimension: 'volume', system: 'imperial', toBase: 236.5882365, label: 'cup', convertible: false },
     'fl oz': { dimension: 'volume', system: 'imperial', toBase: 29.5735295625, label: 'fl oz' },
     'fluid ounce': { dimension: 'volume', system: 'imperial', toBase: 29.5735295625, label: 'fl oz' },
     pint: { dimension: 'volume', system: 'imperial', toBase: 473.176473, label: 'pint' },
@@ -55,7 +66,7 @@ const UNIT_TABLE: Record<string, UnitDef> = {
 // first that keeps the amount readable (>= 1, or the smallest unit as a last resort).
 const PREFERRED: Record<System, Record<Dimension, string[]>> = {
     metric: { mass: ['kg', 'g'], volume: ['l', 'ml'] },
-    imperial: { mass: ['lb', 'oz'], volume: ['cup', 'tbsp', 'tsp'] },
+    imperial: { mass: ['lb', 'oz'], volume: ['quart', 'pint', 'fl oz'] },
 };
 
 const normalizeUnit = (unit: string): string => unit.trim().toLowerCase().replace(/\.$/, '').replace(/s$/, '') || '';
@@ -92,13 +103,15 @@ const pickUnit = (base: number, candidateKeys: string[]): Measurement => {
  * Convert a single quantity+unit into the target system. Returns null when the unit
  * is unknown, dimensionless (e.g. "clove", "pinch"), or already in the target system.
  */
+const canConvertTo = (def: UnitDef, target: System): boolean => def.system !== target && def.convertible !== false;
+
 const convertMeasurement = (
     quantity: number | undefined,
     unit: string | undefined,
     target: System
 ): Measurement | null => {
     const def = lookupUnit(unit);
-    if (!hasUsableQuantity(quantity) || !def || def.system === target) return null;
+    if (!hasUsableQuantity(quantity) || !def || !canConvertTo(def, target)) return null;
 
     return pickUnit(quantity * def.toBase, PREFERRED[target][def.dimension]);
 };
