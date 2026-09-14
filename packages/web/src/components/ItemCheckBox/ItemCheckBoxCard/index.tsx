@@ -1,4 +1,4 @@
-import type { Item, ListType } from '@shoppingo/types';
+import type { ListType } from '@shoppingo/types';
 import { ListType as ListTypeEnum } from '@shoppingo/types';
 import { ImageOff, Loader2 } from 'lucide-react';
 import { motion } from 'motion/react';
@@ -7,8 +7,16 @@ import { Label } from '../../../components/ui/label';
 import { Skeleton } from '../../../components/ui/skeleton';
 import { QuantityBadge } from '../QuantityBadge';
 
+// name/quantity/unit only, so this also covers draft (not-yet-persisted) rows like
+// recipe ingredients that don't have an Item's id/isSelected/dateAdded.
+interface ItemCheckBoxCardItem {
+    name: string;
+    quantity?: number;
+    unit?: string;
+}
+
 interface ItemCheckBoxCardProps {
-    item: Item;
+    item: ItemCheckBoxCardItem;
     listType: ListType;
     imageBlobUrl: string | null;
     hasLoadedImage: boolean;

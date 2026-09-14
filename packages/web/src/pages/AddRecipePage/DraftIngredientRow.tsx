@@ -1,5 +1,8 @@
+import { ListType } from '@shoppingo/types';
 import { Edit2, Trash2 } from 'lucide-react';
 import { motion } from 'motion/react';
+import { ItemCheckBoxCard } from '../../components/ItemCheckBox/ItemCheckBoxCard';
+import { useItemImage } from '../../hooks/useItemImage';
 import { SWIPE_REVEAL_DISTANCE, useSwipeGesture } from '../../hooks/useSwipeGesture';
 import type { Ingredient } from './IngredientsField';
 
@@ -9,25 +12,26 @@ export interface DraftIngredientRowProps {
     onDelete: () => void;
 }
 
-const quantityLabel = (ingredient: Ingredient): string =>
-    [ingredient.quantity, ingredient.unit].filter((part) => part !== undefined && part !== '').join(' ');
+const noop = () => {};
 
-// Mirrors ItemCheckBox's swipe-reveal edit/delete shell, but for draft (not-yet-persisted)
-// recipe ingredients: no useItemMutations, no isSelected/image — edit/delete are local callbacks.
+// Swipe-reveal edit/delete shell for draft (not-yet-persisted) recipe ingredients: reuses
+// the shopping list's ItemCheckBoxCard for the image/name/quantity presentation (same feel,
+// same image lookup by name) but edit/delete are local callbacks, not useItemMutations —
+// recipe ingredients are draft-only local state until the whole recipe is submitted.
 export const DraftIngredientRow = ({ ingredient, onEdit, onDelete }: DraftIngredientRowProps) => {
     const { x, controls, swipeState, handleDragEnd, closeSwipe } = useSwipeGesture();
-    const label = quantityLabel(ingredient);
+    const { imageBlobUrl, hasLoadedImage, hasImageError, onImageLoad, onImageError } = useItemImage(ingredient.name);
 
     return (
-        <div className="relative rounded-md overflow-hidden">
+        <div className="relative rounded-lg overflow-hidden">
             <div className="absolute inset-y-0 right-0 flex items-center justify-end w-20">
                 <button
                     type="button"
                     onClick={onDelete}
                     aria-label={`Delete ${ingredient.name}`}
-                    className="h-[calc(100%-2px)] w-full rounded-md bg-destructive hover:bg-destructive/90 text-white flex items-center justify-center mr-1"
+                    className="h-[calc(100%-2px)] w-full rounded-lg bg-destructive hover:bg-destructive/90 text-white flex items-center justify-center mr-1"
                 >
-                    <Trash2 size={18} />
+                    <Trash2 size={20} />
                 </button>
             </div>
             <div className="absolute inset-y-0 left-0 flex items-center justify-start pl-1 w-20">
@@ -35,9 +39,9 @@ export const DraftIngredientRow = ({ ingredient, onEdit, onDelete }: DraftIngred
                     type="button"
                     onClick={onEdit}
                     aria-label={`Edit ${ingredient.name}`}
-                    className="h-[calc(100%-2px)] w-full rounded-md bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center"
+                    className="h-[calc(100%-2px)] w-full rounded-lg bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center"
                 >
-                    <Edit2 size={18} />
+                    <Edit2 size={20} />
                 </button>
             </div>
 
@@ -48,11 +52,21 @@ export const DraftIngredientRow = ({ ingredient, onEdit, onDelete }: DraftIngred
                 onDragEnd={handleDragEnd}
                 animate={controls}
                 style={{ x }}
-                className="relative z-10 flex items-center gap-2 px-3 py-3 rounded-md bg-muted border border-border text-sm"
+                className="relative z-10"
                 onClick={() => swipeState !== 'closed' && closeSwipe()}
             >
-                <span className="flex-1 text-foreground">{ingredient.name}</span>
-                {label && <span className="text-muted-foreground">{label}</span>}
+                <ItemCheckBoxCard
+                    item={ingredient}
+                    listType={ListType.SHOPPING}
+                    imageBlobUrl={imageBlobUrl}
+                    hasLoadedImage={hasLoadedImage}
+                    hasImageError={hasImageError}
+                    isLoading={false}
+                    isSelected={false}
+                    onToggle={noop}
+                    onImageLoad={onImageLoad}
+                    onImageError={onImageError}
+                />
             </motion.div>
         </div>
     );
