@@ -1,3 +1,10 @@
+# [1.68.0](https://github.com/igor-siergiej/shoppingo/compare/v1.67.0...v1.68.0) (2026-09-14)
+
+
+### Features
+
+* **recipes:** shopping-list-style add/edit/delete drawer for manual ingredients ([#155](https://github.com/igor-siergiej/shoppingo/issues/155)) ([656a3d7](https://github.com/igor-siergiej/shoppingo/commit/656a3d7674564e52b1df2f702ee213cd15ac7d09))
+
 # [1.67.0](https://github.com/igor-siergiej/shoppingo/compare/v1.66.1...v1.67.0) (2026-09-14)
 
 
