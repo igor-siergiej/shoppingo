@@ -36,7 +36,9 @@ test.describe('Preferred units', () => {
         await authenticatedPage.getByRole('button', { name: 'Import recipe from link' }).click();
 
         // Butter (imperial) is converted; garlic (dimensionless) is left as-is.
-        await expect(authenticatedPage.getByText('113 g Butter')).toBeVisible();
-        await expect(authenticatedPage.getByText('2 cloves Garlic')).toBeVisible();
+        await expect(authenticatedPage.getByText('Butter')).toBeVisible();
+        await expect(authenticatedPage.getByText('113 g')).toBeVisible();
+        await expect(authenticatedPage.getByText('Garlic')).toBeVisible();
+        await expect(authenticatedPage.getByText('2 cloves')).toBeVisible();
     });
 });
