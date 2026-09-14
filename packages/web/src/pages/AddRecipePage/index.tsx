@@ -350,7 +350,10 @@ const AddRecipePage = () => {
                         <AddIngredientsFromListDrawer
                             lists={lists}
                             disabled={isLoading}
-                            onAdd={(picked) => setIngredients((prev) => [...prev, ...picked])}
+                            onAdd={(picked) => {
+                                setIngredients((prev) => [...prev, ...picked]);
+                                setShowIngredientsPaste(false);
+                            }}
                         />
                     </FormSection>
 
