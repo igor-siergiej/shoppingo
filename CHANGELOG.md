@@ -1,3 +1,10 @@
+# [1.69.0](https://github.com/igor-siergiej/shoppingo/compare/v1.68.1...v1.69.0) (2026-09-14)
+
+
+### Features
+
+* **recipes:** reuse ItemCheckBoxCard for manual ingredient rows ([#157](https://github.com/igor-siergiej/shoppingo/issues/157)) ([e5dfc3a](https://github.com/igor-siergiej/shoppingo/commit/e5dfc3af62a6d0317c512e2604e1d47318254e4b))
+
 ## [1.68.1](https://github.com/igor-siergiej/shoppingo/compare/v1.68.0...v1.68.1) (2026-09-14)
 
 
