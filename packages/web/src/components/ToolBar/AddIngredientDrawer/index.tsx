@@ -1,4 +1,5 @@
 import { Plus } from 'lucide-react';
+import type { ReactNode } from 'react';
 import { useId, useState } from 'react';
 import { QuantityUnitField } from '../../../components/QuantityUnitField';
 import { notifyError } from '../../../utils/toast';
@@ -20,9 +21,21 @@ export interface AddIngredientDrawerProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     onAdd: (name: string, quantity?: number, unit?: string) => Promise<void>;
+    /** Custom trigger element; defaults to the round FAB-style button used in the ToolBar. */
+    trigger?: ReactNode;
 }
 
-export const AddIngredientDrawer = ({ open, onOpenChange, onAdd }: AddIngredientDrawerProps) => {
+const defaultTrigger = (
+    <RippleButton
+        size="icon"
+        className="h-12 w-12 rounded-full border-2 border-primary/20 hover:border-primary/40 transition-colors"
+        aria-label="Add ingredient"
+    >
+        <Plus className="size-5" />
+    </RippleButton>
+);
+
+export const AddIngredientDrawer = ({ open, onOpenChange, onAdd, trigger }: AddIngredientDrawerProps) => {
     const ingredientNameId = useId();
     const quantityId = useId();
     const unitId = useId();
@@ -71,15 +84,7 @@ export const AddIngredientDrawer = ({ open, onOpenChange, onAdd }: AddIngredient
 
     return (
         <Drawer open={open} onOpenChange={onOpenChange}>
-            <DrawerTrigger asChild>
-                <RippleButton
-                    size="icon"
-                    className="h-12 w-12 rounded-full border-2 border-primary/20 hover:border-primary/40 transition-colors"
-                    aria-label="Add ingredient"
-                >
-                    <Plus className="size-5" />
-                </RippleButton>
-            </DrawerTrigger>
+            <DrawerTrigger asChild>{trigger ?? defaultTrigger}</DrawerTrigger>
             <DrawerContent>
                 <div className="w-full sm:mx-auto sm:max-w-[400px]">
                     <DrawerHeader>

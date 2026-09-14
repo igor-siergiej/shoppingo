@@ -417,8 +417,10 @@ describe('AddRecipePage', () => {
         renderPage('/recipes/new?sharedUrl=https%3A%2F%2Fexample.com%2Fdish');
 
         await waitFor(() => {
-            expect(screen.getByText('200 g flour')).toBeTruthy();
-            expect(screen.getByText('3 eggs')).toBeTruthy();
+            expect(screen.getByText('flour')).toBeTruthy();
+            expect(screen.getByText('200 g')).toBeTruthy();
+            expect(screen.getByText('eggs')).toBeTruthy();
+            expect(screen.getByText('3')).toBeTruthy();
             expect(screen.getByText('salt')).toBeTruthy();
         });
 
@@ -486,7 +488,8 @@ describe('AddRecipePage', () => {
             expect(screen.getByPlaceholderText('Enter recipe title...')).toBeTruthy();
         });
         expect((screen.getByPlaceholderText('Enter recipe title...') as HTMLInputElement).value).toBe('Imported Dish');
-        expect(screen.getByText('200 g flour')).toBeTruthy();
+        expect(screen.getByText('flour')).toBeTruthy();
+        expect(screen.getByText('200 g')).toBeTruthy();
         expect(screen.getByText('Mix.')).toBeTruthy();
     });
 
