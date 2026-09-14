@@ -5,7 +5,13 @@ import { DraftIngredientRow } from './DraftIngredientRow';
 
 describe('DraftIngredientRow', () => {
     it('shows the ingredient name with quantity and unit', () => {
-        render(<DraftIngredientRow ingredient={{ name: 'Flour', quantity: 500, unit: 'g' }} onEdit={vi.fn()} onDelete={vi.fn()} />);
+        render(
+            <DraftIngredientRow
+                ingredient={{ name: 'Flour', quantity: 500, unit: 'g' }}
+                onEdit={vi.fn()}
+                onDelete={vi.fn()}
+            />
+        );
 
         expect(screen.getByText('Flour')).toBeInTheDocument();
         expect(screen.getByText('500 g')).toBeInTheDocument();
