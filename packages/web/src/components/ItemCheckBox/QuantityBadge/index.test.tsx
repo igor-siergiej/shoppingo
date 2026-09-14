@@ -21,13 +21,18 @@ describe('QuantityBadge', () => {
         expect(getByText('2.5 kg')).toBeInTheDocument();
     });
 
-    it('renders null when quantity is undefined', () => {
-        const { container } = render(<QuantityBadge quantity={undefined} unit="kg" />);
-        expect(container.firstChild).toBeNull();
+    it('renders unit alone when quantity is undefined', () => {
+        const { getByText } = render(<QuantityBadge quantity={undefined} unit="kg" />);
+        expect(getByText('kg')).toBeInTheDocument();
     });
 
-    it('renders null when unit is undefined', () => {
-        const { container } = render(<QuantityBadge quantity={5} unit={undefined} />);
+    it('renders quantity alone when unit is undefined', () => {
+        const { getByText } = render(<QuantityBadge quantity={5} unit={undefined} />);
+        expect(getByText('5')).toBeInTheDocument();
+    });
+
+    it('renders null when both quantity and unit are undefined', () => {
+        const { container } = render(<QuantityBadge quantity={undefined} unit={undefined} />);
         expect(container.firstChild).toBeNull();
     });
 

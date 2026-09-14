@@ -3,6 +3,16 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { DraftIngredientRow } from './DraftIngredientRow';
 
+vi.mock('../../hooks/useItemImage', () => ({
+    useItemImage: () => ({
+        imageBlobUrl: null,
+        hasLoadedImage: false,
+        hasImageError: false,
+        onImageLoad: vi.fn(),
+        onImageError: vi.fn(),
+    }),
+}));
+
 describe('DraftIngredientRow', () => {
     it('shows the ingredient name with quantity and unit', () => {
         render(
