@@ -1,3 +1,10 @@
+## [1.68.1](https://github.com/igor-siergiej/shoppingo/compare/v1.68.0...v1.68.1) (2026-09-14)
+
+
+### Bug Fixes
+
+* **web:** stop auto-converting tsp/tbsp/cup on unit-system conversion ([#156](https://github.com/igor-siergiej/shoppingo/issues/156)) ([202c256](https://github.com/igor-siergiej/shoppingo/commit/202c25695e66a2150229d0eac3b6edf1f71f5950))
+
 # [1.68.0](https://github.com/igor-siergiej/shoppingo/compare/v1.67.0...v1.68.0) (2026-09-14)
 
 
