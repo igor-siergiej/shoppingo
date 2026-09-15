@@ -112,13 +112,23 @@ export class TodoService {
         return [...byId.values()];
     }
 
-    async updateTodo(todoId: string, actorId: string, rawInput: UpdateTodoInput): Promise<Todo> {
+    async updateTodo(todoId: string, actorId: string, rawInput: UpdateTodoInput, actor?: User): Promise<Todo> {
         const existing = await this.getOwnedOrMember(todoId, actorId);
         const input = normalizeDays(rawInput);
         // Membership (sharing) is owner-only; a member editing content must not re-scope who it's shared with.
         if (existing.ownerId !== actorId) delete input.users;
         const merged: Todo = { ...existing, ...input };
-        return this.repo.update(todoId, merged);
+        const updated = await this.repo.update(todoId, merged);
+
+        if (actor && input.users) {
+            const previousIds = new Set((existing.users ?? []).map((u) => u.id));
+            const newlyAdded = input.users.filter((u) => !previousIds.has(u.id));
+            if (newlyAdded.length > 0) {
+                void this.notificationService?.notifyTodoShared({ ...updated, users: newlyAdded }, actor);
+            }
+        }
+
+        return updated;
     }
 
     async deleteTodo(todoId: string, ownerId: string): Promise<void> {

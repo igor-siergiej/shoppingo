@@ -1,18 +1,16 @@
 import type { Label } from '@shoppingo/types';
 import { format } from 'date-fns';
 import type { AgendaDay } from '../../../utils/calendar';
-import { DayTodoList } from '../DayTodoList';
+import { DayTodoList, type TodoRowHandlers } from '../DayTodoList';
 
-export interface WeekAgendaProps {
+export interface WeekAgendaProps extends TodoRowHandlers {
     days: AgendaDay[];
     labels: Label[];
-    onToggle: (todoId: string, occurrenceDay: string) => void;
-    onDelete: (todoId: string) => void;
     schedulingTodoId?: string | null;
     onScheduleDay?: (day: Date) => void;
 }
 
-export const WeekAgenda = ({ days, labels, onToggle, onDelete, schedulingTodoId, onScheduleDay }: WeekAgendaProps) => {
+export const WeekAgenda = ({ days, labels, schedulingTodoId, onScheduleDay, ...handlers }: WeekAgendaProps) => {
     const withItems = days.filter((d) => d.items.length > 0);
     const scheduling = Boolean(schedulingTodoId);
 
@@ -39,7 +37,7 @@ export const WeekAgenda = ({ days, labels, onToggle, onDelete, schedulingTodoId,
                     ) : (
                         <h3 className="text-sm font-medium text-muted-foreground">{format(day, 'EEE d MMM')}</h3>
                     )}
-                    <DayTodoList items={items} labels={labels} onToggle={onToggle} onDelete={onDelete} />
+                    <DayTodoList items={items} labels={labels} {...handlers} />
                 </div>
             ))}
         </div>

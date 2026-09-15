@@ -17,7 +17,7 @@ export const createTodo = withAuth(async (c, user) => {
 export const updateTodo = withAuth(async (c, user) => {
     const id = c.req.param('id');
     const body = await c.req.json<UpdateTodoInput>();
-    return c.json(await getTodoService().updateTodo(id, user.id, body), 200);
+    return c.json(await getTodoService().updateTodo(id, user.id, body, user), 200);
 });
 
 export const deleteTodo = withAuth(async (c, user) => {
