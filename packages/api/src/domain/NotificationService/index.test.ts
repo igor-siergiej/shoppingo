@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, mock } from 'bun:test';
-import type { Item, List, PushSubscription, User } from '@shoppingo/types';
+import type { Item, List, PushSubscription, Todo, User } from '@shoppingo/types';
 import { ListType } from '@shoppingo/types';
 import { formatAddedBody, NotificationService } from './index';
 
@@ -120,5 +120,62 @@ describe('NotificationService coalescing', () => {
         await tick();
 
         expect(JSON.parse(sender.send.mock.calls[0][1] as string).body).toBe('owner added A, B, C and 1 more');
+    });
+});
+
+describe('NotificationService.notifyTodoShared', () => {
+    let repo: ReturnType<typeof makeRepo>;
+    let sender: { send: ReturnType<typeof mock>; isConfigured: () => boolean };
+
+    const todo = (over: Partial<Todo>): Todo => ({
+        id: 't1',
+        ownerId: 'u1',
+        title: 'Pay rent',
+        done: false,
+        dateAdded: new Date(),
+        ...over,
+    });
+
+    beforeEach(() => {
+        repo = makeRepo([subFor('u2', 'e2')]);
+        sender = { send: mock(async () => 'ok' as const), isConfigured: () => true };
+    });
+
+    it('pushes an immediate notification to shared members, excluding the actor', async () => {
+        const service = new NotificationService(repo as never, sender as never);
+        await service.notifyTodoShared(todo({ users: [owner, member] }), owner);
+
+        expect(repo.findByUserIds).toHaveBeenCalledWith(['u2']);
+        expect(sender.send).toHaveBeenCalledTimes(1);
+        const [, payload] = sender.send.mock.calls[0];
+        expect(JSON.parse(payload as string)).toEqual({
+            title: 'Shared todo',
+            body: 'owner shared a todo: Pay rent',
+            data: { url: '/calendar' },
+        });
+    });
+
+    it('does nothing when there are no shared members', async () => {
+        const service = new NotificationService(repo as never, sender as never);
+        await service.notifyTodoShared(todo({}), owner);
+
+        expect(repo.findByUserIds).not.toHaveBeenCalled();
+        expect(sender.send).not.toHaveBeenCalled();
+    });
+
+    it('skips entirely when the sender is unconfigured', async () => {
+        sender.isConfigured = () => false;
+        const service = new NotificationService(repo as never, sender as never);
+        await service.notifyTodoShared(todo({ users: [owner, member] }), owner);
+
+        expect(repo.findByUserIds).not.toHaveBeenCalled();
+    });
+
+    it('never throws when the sender rejects', async () => {
+        sender.send = mock(async () => {
+            throw new Error('boom');
+        });
+        const service = new NotificationService(repo as never, sender as never);
+        await expect(service.notifyTodoShared(todo({ users: [owner, member] }), owner)).resolves.toBeUndefined();
     });
 });

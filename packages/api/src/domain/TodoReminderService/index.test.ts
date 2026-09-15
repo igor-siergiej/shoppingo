@@ -69,13 +69,13 @@ describe('TodoReminderService.sendDailyReminders', () => {
             body: 'Pay rent, Call dentist',
             data: { url: '/calendar' },
         });
-        expect(summary).toEqual({ configured: true, due: 2, owners: 1, subscriptions: 1, sent: 1 });
+        expect(summary).toEqual({ configured: true, due: 2, recipients: 1, subscriptions: 1, sent: 1 });
     });
 
     it('reports configured:false without touching the repo', async () => {
         sender.isConfigured = () => false;
         const summary = await service([todo({})]).sendDailyReminders(NOW);
-        expect(summary).toEqual({ configured: false, due: 0, owners: 0, subscriptions: 0, sent: 0 });
+        expect(summary).toEqual({ configured: false, due: 0, recipients: 0, subscriptions: 0, sent: 0 });
     });
 
     it('groups by owner — one push each', async () => {
@@ -113,7 +113,7 @@ describe('TodoReminderService.sendDailyReminders', () => {
         expect(pushRepo.deleteByEndpoints).toHaveBeenCalledWith(['e1']);
     });
 
-    it('notifies only the owner, never shared members, for a shared todo', async () => {
+    it('notifies both the owner and shared members, for a shared todo', async () => {
         pushRepo = makePushRepo([subFor('u1', 'e1'), subFor('u2', 'e2')]);
         await new TodoReminderService(
             {
@@ -126,8 +126,10 @@ describe('TodoReminderService.sendDailyReminders', () => {
         ).sendDailyReminders(NOW);
 
         expect(pushRepo.findByUserIds).toHaveBeenCalledWith(['u1']);
-        expect(sender.send).toHaveBeenCalledTimes(1);
+        expect(pushRepo.findByUserIds).toHaveBeenCalledWith(['u2']);
+        expect(sender.send).toHaveBeenCalledTimes(2);
         expect(sender.send).toHaveBeenCalledWith(expect.objectContaining({ userId: 'u1' }), expect.any(String));
+        expect(sender.send).toHaveBeenCalledWith(expect.objectContaining({ userId: 'u2' }), expect.any(String));
     });
 
     it('skips owners with no subscriptions', async () => {
@@ -153,6 +155,6 @@ describe('TodoReminderService.sendDailyReminders', () => {
             throw new Error('boom');
         });
         const summary = await service([todo({})]).sendDailyReminders(NOW);
-        expect(summary).toEqual({ configured: true, due: 1, owners: 1, subscriptions: 0, sent: 0 });
+        expect(summary).toEqual({ configured: true, due: 1, recipients: 1, subscriptions: 0, sent: 0 });
     });
 });

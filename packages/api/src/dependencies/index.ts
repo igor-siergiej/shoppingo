@@ -165,7 +165,8 @@ export const registerDepdendencies = () => {
                     dependencyContainer.resolve(DependencyToken.TodoRepository),
                     dependencyContainer.resolve(DependencyToken.IdGenerator),
                     dependencyContainer.resolve(DependencyToken.Logger),
-                    dependencyContainer.resolve(DependencyToken.FriendService)
+                    dependencyContainer.resolve(DependencyToken.FriendService),
+                    dependencyContainer.resolve(DependencyToken.NotificationService)
                 );
             }
         }

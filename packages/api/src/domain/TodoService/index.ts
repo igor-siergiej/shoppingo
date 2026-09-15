@@ -2,6 +2,7 @@ import type { IdGenerator, Logger } from '@imapps/api-utils';
 import type { Recurrence, Todo, User } from '@shoppingo/types';
 
 import type { FriendService } from '../FriendService';
+import type { NotificationService } from '../NotificationService';
 import type { TodoRepository } from '../TodoRepository';
 
 export interface CreateTodoInput {
@@ -39,7 +40,8 @@ export class TodoService {
         private readonly repo: TodoRepository,
         private readonly idGenerator: IdGenerator,
         private readonly logger?: Logger,
-        private readonly friendService?: FriendService
+        private readonly friendService?: FriendService,
+        private readonly notificationService?: NotificationService
     ) {}
 
     private async getOwned(todoId: string, ownerId: string): Promise<Todo> {
@@ -69,7 +71,7 @@ export class TodoService {
         return friends.filter((f) => explicit.includes(f.id));
     }
 
-    async createTodo(ownerId: string, rawInput: CreateTodoInput): Promise<Todo> {
+    async createTodo(ownerId: string, rawInput: CreateTodoInput, actor?: User): Promise<Todo> {
         const input = normalizeDays(rawInput);
         if (input.id) {
             const existing = await this.repo.getById(input.id);
@@ -92,6 +94,9 @@ export class TodoService {
         };
         await this.repo.insert(todo);
         this.logger?.info('Todo created', { todoId: todo.id, ownerId });
+        if (actor && todo.users && todo.users.length > 0) {
+            void this.notificationService?.notifyTodoShared(todo, actor);
+        }
         return todo;
     }
 
