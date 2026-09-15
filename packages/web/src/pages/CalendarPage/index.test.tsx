@@ -5,6 +5,10 @@ import CalendarPage from './index';
 
 // ToolBar pulls in auth/user/router providers; stub it for this unit test.
 vi.mock('../../components/ToolBar', () => ({ default: () => null }));
+vi.mock('@imapps/web-utils', async () => {
+    const actual = await vi.importActual<object>('@imapps/web-utils');
+    return { ...actual, useUser: () => ({ user: { id: 'u', username: 'owner' } }) };
+});
 vi.mock('../../contexts/PullToRefreshContext', () => ({
     usePullToRefreshContext: () => ({ registerRefresh: () => () => {} }),
 }));
