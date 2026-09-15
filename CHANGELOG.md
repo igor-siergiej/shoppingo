@@ -1,3 +1,10 @@
+# [1.70.0](https://github.com/igor-siergiej/shoppingo/compare/v1.69.0...v1.70.0) (2026-09-15)
+
+
+### Features
+
+* **api:** push notifications for todo sharing, fan out daily reminders to shared members ([#158](https://github.com/igor-siergiej/shoppingo/issues/158)) ([e9553c0](https://github.com/igor-siergiej/shoppingo/commit/e9553c047275126ba75cc5be4ca6b07f636783a5))
+
 # [1.69.0](https://github.com/igor-siergiej/shoppingo/compare/v1.68.1...v1.69.0) (2026-09-14)
 
 
