@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'bun:test';
+import { beforeEach, describe, expect, it, mock } from 'bun:test';
 import type { Todo } from '@shoppingo/types';
 import { TodoService } from './index';
 
@@ -190,6 +190,50 @@ describe('TodoService', () => {
             await svc.createTodo('u2', { title: 'Owned by u2' });
             const forU2 = await svc.getTodosForUser('u2');
             expect(forU2.map((t) => t.title).sort()).toEqual(['Owned by u1, shared to u2', 'Owned by u2']);
+        });
+    });
+
+    describe('share notification', () => {
+        it('notifies shared members when created with an actor', async () => {
+            friends.add('u1', 'u2');
+            const notify = { notifyTodoShared: mock(async () => {}) };
+            const svcWithNotify = new TodoService(
+                repo as never,
+                new MockIds() as never,
+                undefined,
+                friends as never,
+                notify as never
+            );
+            const actor = { id: 'u1', username: 'user-u1' };
+            const todo = await svcWithNotify.createTodo('u1', { title: 'Plan trip' }, actor);
+            expect(notify.notifyTodoShared).toHaveBeenCalledWith(todo, actor);
+        });
+
+        it('does not notify when created without any shared members', async () => {
+            const notify = { notifyTodoShared: mock(async () => {}) };
+            const svcWithNotify = new TodoService(
+                repo as never,
+                new MockIds() as never,
+                undefined,
+                friends as never,
+                notify as never
+            );
+            await svcWithNotify.createTodo('u1', { title: 'Solo task' }, { id: 'u1', username: 'user-u1' });
+            expect(notify.notifyTodoShared).not.toHaveBeenCalled();
+        });
+
+        it('does not notify when created without an actor, even if shared', async () => {
+            friends.add('u1', 'u2');
+            const notify = { notifyTodoShared: mock(async () => {}) };
+            const svcWithNotify = new TodoService(
+                repo as never,
+                new MockIds() as never,
+                undefined,
+                friends as never,
+                notify as never
+            );
+            await svcWithNotify.createTodo('u1', { title: 'Plan trip' });
+            expect(notify.notifyTodoShared).not.toHaveBeenCalled();
         });
     });
 

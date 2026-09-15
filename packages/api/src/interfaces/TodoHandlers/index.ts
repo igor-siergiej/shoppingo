@@ -11,7 +11,7 @@ export const getTodos = withAuth(async (c, user) => {
 
 export const createTodo = withAuth(async (c, user) => {
     const body = await c.req.json<CreateTodoInput>();
-    return c.json(await getTodoService().createTodo(user.id, body), 201);
+    return c.json(await getTodoService().createTodo(user.id, body, user), 201);
 });
 
 export const updateTodo = withAuth(async (c, user) => {

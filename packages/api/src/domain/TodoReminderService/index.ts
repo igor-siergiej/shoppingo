@@ -15,20 +15,25 @@ export const formatDueBody = (titles: string[]): string => {
     return extra > 0 ? `${shown} and ${extra} more` : shown;
 };
 
-const groupByOwner = (todos: Todo[]): Map<string, Todo[]> => {
-    const byOwner = new Map<string, Todo[]>();
+/** Owner plus every shared member — each gets their own summary push for a due todo. */
+const recipientsOf = (todo: Todo): string[] => [todo.ownerId, ...(todo.users ?? []).map((u) => u.id)];
+
+const groupByRecipient = (todos: Todo[]): Map<string, Todo[]> => {
+    const byRecipient = new Map<string, Todo[]>();
     for (const todo of todos) {
-        const list = byOwner.get(todo.ownerId) ?? [];
-        list.push(todo);
-        byOwner.set(todo.ownerId, list);
+        for (const recipientId of recipientsOf(todo)) {
+            const list = byRecipient.get(recipientId) ?? [];
+            list.push(todo);
+            byRecipient.set(recipientId, list);
+        }
     }
-    return byOwner;
+    return byRecipient;
 };
 
 const emptySummary = (configured: boolean): ReminderSummary => ({
     configured,
     due: 0,
-    owners: 0,
+    recipients: 0,
     subscriptions: 0,
     sent: 0,
 });
@@ -39,16 +44,16 @@ export interface ReminderSummary {
     configured: boolean;
     /** Incomplete todos occurring today. */
     due: number;
-    /** Distinct owners with at least one due todo. */
-    owners: number;
-    /** Push subscriptions targeted across those owners. */
+    /** Distinct recipients (owner + shared members) with at least one due todo. */
+    recipients: number;
+    /** Push subscriptions targeted across those recipients. */
     subscriptions: number;
     /** Pushes the browser push service accepted. */
     sent: number;
 }
 
 /**
- * Sends one summary push per owner for todos due "today".
+ * Sends one summary push per recipient (owner + shared members) for todos due "today".
  *
  * Single-replica, like NotificationService: invoked by the in-process DailyReminderScheduler.
  */
@@ -72,24 +77,27 @@ export class TodoReminderService {
             return emptySummary(configured);
         }
 
-        const byOwner = groupByOwner(due);
+        const byRecipient = groupByRecipient(due);
 
-        const perOwner = await Promise.all(
-            [...byOwner.entries()].map(([ownerId, todos]) => this.notifyOwner(ownerId, todos))
+        const perRecipient = await Promise.all(
+            [...byRecipient.entries()].map(([recipientId, todos]) => this.notifyRecipient(recipientId, todos))
         );
 
         return {
             configured,
             due: due.length,
-            owners: byOwner.size,
-            subscriptions: perOwner.reduce((n, r) => n + r.subscriptions, 0),
-            sent: perOwner.reduce((n, r) => n + r.sent, 0),
+            recipients: byRecipient.size,
+            subscriptions: perRecipient.reduce((n, r) => n + r.subscriptions, 0),
+            sent: perRecipient.reduce((n, r) => n + r.sent, 0),
         };
     }
 
-    private async notifyOwner(ownerId: string, todos: Todo[]): Promise<{ subscriptions: number; sent: number }> {
+    private async notifyRecipient(
+        recipientId: string,
+        todos: Todo[]
+    ): Promise<{ subscriptions: number; sent: number }> {
         try {
-            const subs = await this.pushRepo.findByUserIds([ownerId]);
+            const subs = await this.pushRepo.findByUserIds([recipientId]);
             if (subs.length === 0) {
                 return { subscriptions: 0, sent: 0 };
             }
@@ -109,7 +117,7 @@ export class TodoReminderService {
             return { subscriptions: subs.length, sent: results.filter((r) => r === 'ok').length };
         } catch (error) {
             this.logger?.error('Todo reminder fan-out failed', {
-                ownerId,
+                recipientId,
                 error: (error as Error).message,
             });
             return { subscriptions: 0, sent: 0 };
