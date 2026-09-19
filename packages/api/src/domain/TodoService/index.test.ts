@@ -237,6 +237,97 @@ describe('TodoService', () => {
         });
     });
 
+    describe('edit-time sharing notification', () => {
+        it('notifies only newly-added members when sharing is edited', async () => {
+            friends.add('u1', 'u2');
+            friends.add('u1', 'u3');
+            const notify = { notifyTodoShared: mock(async () => {}) };
+            const svcWithNotify = new TodoService(
+                repo as never,
+                new MockIds() as never,
+                undefined,
+                friends as never,
+                notify as never
+            );
+            const actor = { id: 'u1', username: 'user-u1' };
+            const t = await svcWithNotify.createTodo('u1', { title: 'Plan trip', userIds: ['u2'] }, actor);
+            notify.notifyTodoShared.mockClear();
+
+            const updated = await svcWithNotify.updateTodo(
+                t.id,
+                'u1',
+                {
+                    users: [
+                        { id: 'u2', username: 'user-u2' },
+                        { id: 'u3', username: 'user-u3' },
+                    ],
+                },
+                actor
+            );
+
+            expect(notify.notifyTodoShared).toHaveBeenCalledTimes(1);
+            expect(notify.notifyTodoShared).toHaveBeenCalledWith(
+                { ...updated, users: [{ id: 'u3', username: 'user-u3' }] },
+                actor
+            );
+        });
+
+        it('does not notify when the edited users[] adds nobody new', async () => {
+            friends.add('u1', 'u2');
+            const notify = { notifyTodoShared: mock(async () => {}) };
+            const svcWithNotify = new TodoService(
+                repo as never,
+                new MockIds() as never,
+                undefined,
+                friends as never,
+                notify as never
+            );
+            const actor = { id: 'u1', username: 'user-u1' };
+            const t = await svcWithNotify.createTodo('u1', { title: 'Plan trip', userIds: ['u2'] }, actor);
+            notify.notifyTodoShared.mockClear();
+
+            await svcWithNotify.updateTodo(t.id, 'u1', { users: [{ id: 'u2', username: 'user-u2' }] }, actor);
+
+            expect(notify.notifyTodoShared).not.toHaveBeenCalled();
+        });
+
+        it('does not notify when the update has no users[] at all', async () => {
+            friends.add('u1', 'u2');
+            const notify = { notifyTodoShared: mock(async () => {}) };
+            const svcWithNotify = new TodoService(
+                repo as never,
+                new MockIds() as never,
+                undefined,
+                friends as never,
+                notify as never
+            );
+            const actor = { id: 'u1', username: 'user-u1' };
+            const t = await svcWithNotify.createTodo('u1', { title: 'Plan trip' }, actor);
+            notify.notifyTodoShared.mockClear();
+
+            await svcWithNotify.updateTodo(t.id, 'u1', { title: 'Renamed' }, actor);
+
+            expect(notify.notifyTodoShared).not.toHaveBeenCalled();
+        });
+
+        it('does not notify without an actor, even when adding a member', async () => {
+            friends.add('u1', 'u2');
+            const notify = { notifyTodoShared: mock(async () => {}) };
+            const svcWithNotify = new TodoService(
+                repo as never,
+                new MockIds() as never,
+                undefined,
+                friends as never,
+                notify as never
+            );
+            const t = await svcWithNotify.createTodo('u1', { title: 'Plan trip' });
+
+            await svcWithNotify.updateTodo(t.id, 'u1', { users: [{ id: 'u2', username: 'user-u2' }] });
+
+            expect(notify.notifyTodoShared).not.toHaveBeenCalled();
+        });
+    });
+
     describe('collaborative shared todos', () => {
         it('lets a member toggle complete on a shared todo', async () => {
             friends.add('u1', 'u2');

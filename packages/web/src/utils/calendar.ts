@@ -61,6 +61,8 @@ const toSelectedItem = (
     labelColor: color ?? 'transparent',
     dimmed,
     occurrenceDay: isoDay(occDate),
+    ownerId: todo.ownerId,
+    users: todo.users,
 });
 
 export const buildCalendarDayData = (

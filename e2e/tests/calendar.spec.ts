@@ -1,5 +1,7 @@
 import { apiCreateLabel, apiCreateTodo } from '../api-helpers';
+import { seedFriendship } from '../db-helpers';
 import { expect, test } from '../fixtures';
+import { MOCK_USER, MOCK_USER_2 } from '../mocks/data/users';
 
 function isoDay(d: Date): string {
     const y = d.getFullYear();
@@ -161,7 +163,7 @@ test.describe('Calendar page', () => {
         await expect(authenticatedPage.getByText('Plain Todo')).toBeVisible();
 
         // Activate the label filter chip.
-        await authenticatedPage.getByRole('button', { name: 'Work' }).click();
+        await authenticatedPage.getByRole('button', { name: 'Work', exact: true }).click();
 
         // Both stay visible; only the non-matching todo is dimmed.
         await expect(authenticatedPage.getByText('Work Todo')).toBeVisible();
@@ -174,6 +176,34 @@ test.describe('Calendar page', () => {
         await expect(todayCell.getByTestId('day-dot')).toHaveCount(2);
         await expect(todayCell.locator('[data-testid="day-dot"][data-dimmed="true"]')).toHaveCount(1);
         await expect(todayCell.locator('[data-testid="day-dot"][data-dimmed="false"]')).toHaveCount(1);
+    });
+
+    test('manage sharing: owner can share an existing todo with a friend after creation', async ({
+        authenticatedPage,
+    }) => {
+        // Todo created before the friendship exists, so it starts genuinely unshared
+        // (mirrors createTodo's friend-seeding: no friends yet means no default share).
+        await apiCreateTodo({ title: 'Unshared Todo', dueDate: todayKey });
+        await seedFriendship(MOCK_USER, MOCK_USER_2);
+
+        await authenticatedPage.goto('/calendar');
+        const row = authenticatedPage.locator('li[data-todo-title="Unshared Todo"]');
+        await expect(row).toBeVisible();
+
+        const shareButton = row.getByLabel('Manage sharing for Unshared Todo');
+        await expect(shareButton).toBeVisible();
+        await shareButton.click();
+
+        await expect(authenticatedPage.getByRole('heading', { name: 'Manage Sharing' })).toBeVisible();
+        await expect(authenticatedPage.getByRole('switch')).not.toBeChecked();
+        await authenticatedPage.getByRole('switch').click();
+        await expect(authenticatedPage.getByRole('switch')).toBeChecked();
+
+        await authenticatedPage.getByRole('button', { name: 'Close' }).click();
+
+        // Reopening confirms the share persisted.
+        await shareButton.click();
+        await expect(authenticatedPage.getByRole('switch')).toBeChecked();
     });
 
     // Week view rather than month view: no month grid to navigate, so the swipe target's

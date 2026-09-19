@@ -1,7 +1,9 @@
+import { useUser } from '@imapps/web-utils';
 import { addMonths, endOfMonth, startOfMonth } from 'date-fns';
 import { useEffect, useMemo, useState } from 'react';
 import type { CreateTodoBody } from '../../api';
 import { InboxDrawer } from '../../components/Calendar/InboxDrawer';
+import { ManageTodoSharingDrawer } from '../../components/Calendar/ManageTodoSharingDrawer';
 import ToolBar from '../../components/ToolBar';
 import { usePullToRefreshContext } from '../../contexts/PullToRefreshContext';
 import { useLabels } from '../../hooks/useLabels';
@@ -11,16 +13,21 @@ import { isoDay } from '../../utils/recurrence';
 import { CalendarBody } from './CalendarBody';
 import { CalendarHeader, type CalendarView } from './CalendarHeader';
 import { useCalendarScheduling } from './useCalendarScheduling';
+import { useLabelFilter } from './useLabelFilter';
+import { useManageTodoSharing } from './useManageTodoSharing';
 
+// fallow-ignore-next-line complexity
 const CalendarPage = () => {
     const { todos, createTodo, updateTodo, completeTodo, deleteTodo, refetch: refetchTodos } = useTodos();
     const { labels, refetch: refetchLabels } = useLabels();
     const { registerRefresh } = usePullToRefreshContext();
+    const { user } = useUser();
+    const sharing = useManageTodoSharing(updateTodo);
+    const { activeLabels, toggleLabel } = useLabelFilter();
 
     const [view, setView] = useState<CalendarView>('month');
     const [month, setMonth] = useState<Date>(startOfMonth(new Date()));
     const [selectedDay, setSelectedDay] = useState<Date>(new Date());
-    const [activeLabels, setActiveLabels] = useState<Set<string>>(new Set());
 
     useEffect(
         () =>
@@ -66,13 +73,6 @@ const CalendarPage = () => {
         void completeTodo(todoId, todo?.recurrence ? occurrenceDay : undefined);
     };
     const handleDelete = (todoId: string) => void deleteTodo(todoId);
-    const toggleLabel = (labelId: string) =>
-        setActiveLabels((prev) => {
-            const next = new Set(prev);
-            if (next.has(labelId)) next.delete(labelId);
-            else next.add(labelId);
-            return next;
-        });
 
     return (
         <>
@@ -108,8 +108,10 @@ const CalendarPage = () => {
                     selectedItems={selectedItems}
                     weekDays={weekDays}
                     labels={labels}
+                    currentUserId={user?.id}
                     onToggle={handleToggle}
                     onDelete={handleDelete}
+                    onManageSharing={sharing.openSharing}
                     schedulingTodoId={scheduling.schedulingTodoId}
                     onScheduleDay={scheduling.selectDay}
                 />
@@ -121,6 +123,16 @@ const CalendarPage = () => {
                 schedulingTodoId={scheduling.schedulingTodoId}
                 onToggleScheduling={scheduling.toggle}
             />
+
+            {sharing.sharingItem && (
+                <ManageTodoSharingDrawer
+                    open={sharing.sharingItem !== null}
+                    onOpenChange={(open) => !open && sharing.closeSharing()}
+                    title={sharing.sharingItem.title}
+                    users={sharing.sharingItem.users ?? []}
+                    onSave={sharing.saveSharing}
+                />
+            )}
 
             <ToolBar onAddTodo={handleAddTodo} labels={labels} prefillTodoDate={selectedDay} />
         </>
