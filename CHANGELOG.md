@@ -1,3 +1,10 @@
+# [1.71.0](https://github.com/igor-siergiej/shoppingo/compare/v1.70.0...v1.71.0) (2026-09-19)
+
+
+### Features
+
+* **calendar:** edit-time sharing for todos ([#159](https://github.com/igor-siergiej/shoppingo/issues/159)) ([a129717](https://github.com/igor-siergiej/shoppingo/commit/a1297175ade40e136784f102300024e3b757a914))
+
 # [1.70.0](https://github.com/igor-siergiej/shoppingo/compare/v1.69.0...v1.70.0) (2026-09-15)
 
 
