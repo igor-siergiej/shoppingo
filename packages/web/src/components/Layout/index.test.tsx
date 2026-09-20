@@ -47,6 +47,24 @@ describe('Layout', () => {
         expect(layoutDiv).toHaveClass('px-4', 'py-2', 'max-w-[500px]', 'mx-auto');
     });
 
+    it('keeps the 500px cap on single-column routes but widens the grid-based recipes route', () => {
+        const { container: narrow } = renderAtPath(
+            '/',
+            <Layout>
+                <p>Content</p>
+            </Layout>
+        );
+        const { container: wide } = renderAtPath(
+            '/recipes',
+            <Layout>
+                <p>Content</p>
+            </Layout>
+        );
+
+        expect(narrow.firstChild).not.toHaveClass('sm:max-w-5xl');
+        expect(wide.firstChild).toHaveClass('max-w-[500px]', 'sm:max-w-5xl', 'mx-auto');
+    });
+
     it('renders children in reverse flex column on bottom-anchored routes', () => {
         const { container } = renderAtPath(
             '/',

@@ -100,32 +100,37 @@ const RecipesPage = () => {
         navigate(`/recipes/${recipeId}`);
     };
 
+    // The bar itself spans the content column (its background masks content scrolling
+    // underneath), while the field is capped so it doesn't stretch across the full grid
+    // width the recipes route gets on desktop.
     const searchBar = (
         <div
             className="sticky bottom-0 mt-6 py-2 bg-background z-10"
             style={{ bottom: 'env(keyboard-inset-height, 0px)' }}
         >
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-            <Input
-                type="search"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search recipes..."
-                className="pl-9 pr-9 [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
-                name="recipe-search"
-                autoComplete="off"
-                inputMode="search"
-            />
-            {searchQuery && (
-                <button
-                    type="button"
-                    onClick={() => setSearchQuery('')}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    aria-label="Clear search"
-                >
-                    <X className="h-4 w-4" />
-                </button>
-            )}
+            <div className="relative mx-auto w-full max-w-[500px]">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                <Input
+                    type="search"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search recipes..."
+                    className="pl-9 pr-9 [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
+                    name="recipe-search"
+                    autoComplete="off"
+                    inputMode="search"
+                />
+                {searchQuery && (
+                    <button
+                        type="button"
+                        onClick={() => setSearchQuery('')}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        aria-label="Clear search"
+                    >
+                        <X className="h-4 w-4" />
+                    </button>
+                )}
+            </div>
         </div>
     );
 
