@@ -28,6 +28,7 @@ import { applyImportedDraft, type ImportMeta } from './applyImportedDraft';
 import { ChoiceScreen } from './ChoiceScreen';
 import { FormSection } from './FormSection';
 import { ImageUploadField } from './ImageUploadField';
+import { ImportProgress, type ImportStage } from './ImportProgress';
 import { ImportScreen } from './ImportScreen';
 import { type Ingredient, IngredientsField } from './IngredientsField';
 import { LinkImportField } from './LinkImportField';
@@ -92,11 +93,12 @@ const AddRecipePage = () => {
     const [ingredients, setIngredients] = useState<Ingredient[]>([]);
     const [showIngredientsPaste, setShowIngredientsPaste] = useState(true);
     const [tags, setTags] = useState<string[]>([]);
-    const [isImporting, setIsImporting] = useState(false);
+    const [importStage, setImportStage] = useState<ImportStage>('idle');
     const [importError, setImportError] = useState('');
     const [importMeta, setImportMeta] = useState<ImportMeta>({});
     const autoImportedRef = useRef(false);
     const importAbortRef = useRef<AbortController | null>(null);
+    const isImporting = importStage !== 'idle';
 
     // Validate → abort-controller setup → try/catch/finally around the fetch; the soft-fail abort
     // check and the mode-transition guard are both load-bearing and already factored out from the
@@ -111,7 +113,7 @@ const AddRecipePage = () => {
 
         const controller = new AbortController();
         importAbortRef.current = controller;
-        setIsImporting(true);
+        setImportStage('fetching');
         setError('');
         setImportError('');
         try {
@@ -130,7 +132,8 @@ const AddRecipePage = () => {
                     setImageUrl,
                     setImportMeta,
                 },
-                unitSystemRef.current
+                unitSystemRef.current,
+                { signal: controller.signal, onImageStart: () => setImportStage('image') }
             );
 
             notifyImportResult(draft.ingredients.length + draft.instructions.length);
@@ -147,7 +150,7 @@ const AddRecipePage = () => {
             notifyError(message);
         } finally {
             importAbortRef.current = null;
-            setIsImporting(false);
+            setImportStage('idle');
         }
     }, []);
 
@@ -233,7 +236,7 @@ const AddRecipePage = () => {
             <ImportScreen
                 link={link}
                 setLink={setLink}
-                isImporting={isImporting}
+                importStage={importStage}
                 importError={importError}
                 onImport={() => void handleImport(link)}
                 onCancelImport={handleCancelImport}
@@ -407,6 +410,10 @@ const AddRecipePage = () => {
             </div>
 
             <div className="sticky bottom-0 bg-background border-t px-4 py-3 flex flex-col gap-2 max-w-lg mx-auto w-full">
+                {/* Pinned above the submit actions so an in-flight import (including the
+                    share-target auto-import, which lands straight on this form) stays
+                    visible wherever the user has scrolled to. */}
+                <ImportProgress stage={importStage} />
                 <Button onClick={() => void handleSubmit()} disabled={isLoading || !title.trim()}>
                     {isLoading ? 'Creating...' : 'Create Recipe'}
                 </Button>

@@ -276,19 +276,25 @@ export const importRecipe = async (url: string, signal?: AbortSignal): Promise<R
     });
 };
 
-export const importRecipeImage = async (imageUrl: string): Promise<File> => {
+// Raw-fetch endpoints (blob download, multipart upload) bypass makeRequest, so they have
+// to attach the bearer token themselves.
+const authHeaders = (): Record<string, string> => {
     const authConfig = getAuthConfig();
     const accessToken = getStorageItem(
         authConfig.accessTokenKey || 'accessToken',
         authConfig.storageType || 'localStorage'
     );
 
-    const headers: Record<string, string> = {};
-    if (accessToken) {
-        headers.Authorization = `Bearer ${accessToken}`;
-    }
+    return accessToken ? { Authorization: `Bearer ${accessToken}` } : {};
+};
 
-    const response = await fetch(`/api/recipes/import/image?url=${encodeURIComponent(imageUrl)}`, { headers });
+export const importRecipeImage = async (imageUrl: string, signal?: AbortSignal): Promise<File> => {
+    const headers = authHeaders();
+
+    const response = await fetch(`/api/recipes/import/image?url=${encodeURIComponent(imageUrl)}`, {
+        headers,
+        ...(signal && { signal }),
+    });
     if (!response.ok) {
         throw new Error(`Failed to fetch recipe cover image: ${response.status}`);
     }
@@ -365,16 +371,7 @@ export const uploadRecipeImage = async (recipeId: string, file: File): Promise<{
     const formData = new FormData();
     formData.append('image', file);
 
-    const authConfig = getAuthConfig();
-    const accessToken = getStorageItem(
-        authConfig.accessTokenKey || 'accessToken',
-        authConfig.storageType || 'localStorage'
-    );
-
-    const headers: Record<string, string> = {};
-    if (accessToken) {
-        headers.Authorization = `Bearer ${accessToken}`;
-    }
+    const headers = authHeaders();
 
     const response = await fetch(`/api/recipes/${encodeURIComponent(recipeId)}/image/upload`, {
         method: 'POST',
