@@ -1,3 +1,10 @@
+# [1.72.0](https://github.com/igor-siergiej/shoppingo/compare/v1.71.1...v1.72.0) (2026-09-21)
+
+
+### Features
+
+* **web:** staged in-flight feedback for recipe URL imports ([#161](https://github.com/igor-siergiej/shoppingo/issues/161)) ([25754d1](https://github.com/igor-siergiej/shoppingo/commit/25754d1c408c8e2dbb162964038691dd6ba5eb66))
+
 ## [1.71.1](https://github.com/igor-siergiej/shoppingo/compare/v1.71.0...v1.71.1) (2026-09-21)
 
 
