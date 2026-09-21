@@ -1,3 +1,10 @@
+## [1.71.1](https://github.com/igor-siergiej/shoppingo/compare/v1.71.0...v1.71.1) (2026-09-21)
+
+
+### Bug Fixes
+
+* **web:** widen recipes grid beyond the 500px column on desktop ([#160](https://github.com/igor-siergiej/shoppingo/issues/160)) ([0cc444e](https://github.com/igor-siergiej/shoppingo/commit/0cc444ef16febe0fd07501b27ce03d3193a9dd94))
+
 # [1.71.0](https://github.com/igor-siergiej/shoppingo/compare/v1.70.0...v1.71.0) (2026-09-19)
 
 
