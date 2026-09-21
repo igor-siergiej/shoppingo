@@ -1,3 +1,10 @@
+## [1.73.1](https://github.com/igor-siergiej/shoppingo/compare/v1.73.0...v1.73.1) (2026-09-21)
+
+
+### Bug Fixes
+
+* **web:** keyboard-safe pinned search in the add-from-recipe drawer ([#163](https://github.com/igor-siergiej/shoppingo/issues/163)) ([ef8281d](https://github.com/igor-siergiej/shoppingo/commit/ef8281da6650b6e52ad7c3b764405b2b406536c5))
+
 # [1.73.0](https://github.com/igor-siergiej/shoppingo/compare/v1.72.0...v1.73.0) (2026-09-21)
 
 
