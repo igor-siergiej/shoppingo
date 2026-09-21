@@ -1,3 +1,10 @@
+# [1.73.0](https://github.com/igor-siergiej/shoppingo/compare/v1.72.0...v1.73.0) (2026-09-21)
+
+
+### Features
+
+* **web:** Waste Warrior becomes a full page instead of a drawer ([#162](https://github.com/igor-siergiej/shoppingo/issues/162)) ([f60f1d7](https://github.com/igor-siergiej/shoppingo/commit/f60f1d7b9edc42ee88855b8e8edcc4c897038875))
+
 # [1.72.0](https://github.com/igor-siergiej/shoppingo/compare/v1.71.1...v1.72.0) (2026-09-21)
 
 
