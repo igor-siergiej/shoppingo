@@ -1,15 +1,15 @@
 import { useUser } from '@imapps/web-utils';
-import { AlertTriangle, ChefHat, Search, X } from 'lucide-react';
+import { AlertTriangle, ChefHat, Search } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { generateRecipeAiImage, getRecipesQuery } from '../../api';
 import { ListsSkeleton } from '../../components/LoadingSkeleton';
+import { PinnedSearchField } from '../../components/PinnedSearchField';
 import { RecipesList } from '../../components/RecipesList';
 import ToolBar from '../../components/ToolBar';
 import { Button } from '../../components/ui/button';
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '../../components/ui/empty';
-import { Input } from '../../components/ui/input';
 import { usePullToRefreshContext } from '../../contexts/PullToRefreshContext';
 import { useScrollContainer } from '../../contexts/ScrollContainerContext';
 import { useRecipeSearch } from '../../hooks/useRecipeSearch';
@@ -100,38 +100,13 @@ const RecipesPage = () => {
         navigate(`/recipes/${recipeId}`);
     };
 
-    // The bar itself spans the content column (its background masks content scrolling
-    // underneath), while the field is capped so it doesn't stretch across the full grid
-    // width the recipes route gets on desktop.
     const searchBar = (
-        <div
-            className="sticky bottom-0 mt-6 py-2 bg-background z-10"
-            style={{ bottom: 'env(keyboard-inset-height, 0px)' }}
-        >
-            <div className="relative mx-auto w-full max-w-[500px]">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                <Input
-                    type="search"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search recipes..."
-                    className="pl-9 pr-9 [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
-                    name="recipe-search"
-                    autoComplete="off"
-                    inputMode="search"
-                />
-                {searchQuery && (
-                    <button
-                        type="button"
-                        onClick={() => setSearchQuery('')}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                        aria-label="Clear search"
-                    >
-                        <X className="h-4 w-4" />
-                    </button>
-                )}
-            </div>
-        </div>
+        <PinnedSearchField
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder="Search recipes..."
+            name="recipe-search"
+        />
     );
 
     const pageContent = (
