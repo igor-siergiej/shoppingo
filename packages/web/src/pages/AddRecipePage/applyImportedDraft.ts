@@ -43,21 +43,42 @@ const applyIngredientsAndInstructions = (
     }
 };
 
-const applyScrapedImage = async (draft: RecipeImportResult, setters: DraftSetters): Promise<void> => {
+export interface ApplyDraftOptions {
+    signal?: AbortSignal;
+    // Called just before the cover-image request starts, so callers can surface that
+    // second leg — it only runs when the scrape actually found an image.
+    onImageStart?: () => void;
+}
+
+// Resolves to undefined when the cover image couldn't be fetched for an ordinary reason
+// (dead link, blocked host, proxy error) — that is a soft failure, since the rest of the
+// import already succeeded and manual upload stays available. An aborted fetch is not:
+// it propagates so a cancelled import is dropped instead of half-applied.
+const fetchCoverImage = async (url: string, signal?: AbortSignal): Promise<File | undefined> => {
+    try {
+        return await importRecipeImage(url, signal);
+    } catch (imageErr) {
+        if (signal?.aborted) throw imageErr;
+
+        logger.warn('Failed to auto-attach scraped recipe image', { error: String(imageErr) });
+        return undefined;
+    }
+};
+
+const applyScrapedImage = async (
+    draft: RecipeImportResult,
+    setters: DraftSetters,
+    options: ApplyDraftOptions
+): Promise<void> => {
     if (!draft.image) return;
 
-    try {
-        const file = await importRecipeImage(draft.image);
-        setters.setSelectedFile(file);
-        setters.setImageUrl(URL.createObjectURL(file));
-    } catch (imageErr) {
-        // Soft-fail: the scraped page's image couldn't be proxied (dead link, blocked host, etc).
-        // The rest of the import already succeeded — leave manual upload available instead of
-        // surfacing this as an import failure.
-        logger.warn('Failed to auto-attach scraped recipe image', {
-            error: imageErr instanceof Error ? imageErr.message : 'Unknown error',
-        });
-    }
+    options.onImageStart?.();
+
+    const file = await fetchCoverImage(draft.image, options.signal);
+    if (!file) return;
+
+    setters.setSelectedFile(file);
+    setters.setImageUrl(URL.createObjectURL(file));
 };
 
 const applyImportMeta = (draft: RecipeImportResult, setters: DraftSetters): void => {
@@ -73,10 +94,11 @@ const applyImportMeta = (draft: RecipeImportResult, setters: DraftSetters): void
 export const applyImportedDraft = async (
     draft: RecipeImportResult,
     setters: DraftSetters,
-    unitSystem: UnitSystem = 'original'
+    unitSystem: UnitSystem = 'original',
+    options: ApplyDraftOptions = {}
 ): Promise<void> => {
     applyBasicFields(draft, setters);
     applyIngredientsAndInstructions(draft, setters, unitSystem);
-    await applyScrapedImage(draft, setters);
+    await applyScrapedImage(draft, setters, options);
     applyImportMeta(draft, setters);
 };

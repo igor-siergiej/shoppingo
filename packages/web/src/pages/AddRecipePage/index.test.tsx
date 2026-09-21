@@ -1,3 +1,4 @@
+import type { RecipeImportResult } from '@shoppingo/types';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from 'react-query';
@@ -292,6 +293,65 @@ describe('AddRecipePage', () => {
         expect(screen.queryByText('Aborted')).toBeFalsy();
     });
 
+    it('walks the in-flight import through the page-fetch stage and then the cover-photo stage', async () => {
+        const draft = Promise.withResolvers<RecipeImportResult>();
+        const neverSettlingImage = Promise.withResolvers<File>();
+        vi.mocked(importRecipe).mockReturnValue(draft.promise);
+        vi.mocked(importRecipeImage).mockReturnValue(neverSettlingImage.promise);
+
+        renderPage('/recipes/new?sharedUrl=https%3A%2F%2Fexample.com%2Fstaged');
+
+        const fetchStep = await screen.findByText('Reading the recipe page');
+        const imageStep = screen.getByText('Fetching the cover photo');
+        expect(fetchStep.closest('li')).toHaveAttribute('aria-current', 'step');
+        expect(imageStep.closest('li')).not.toHaveAttribute('aria-current');
+
+        draft.resolve({
+            title: 'Staged',
+            ingredients: [],
+            instructions: ['Mix.'],
+            link: 'https://example.com/staged',
+            image: 'https://example.com/cover.jpg',
+        });
+
+        await waitFor(() => {
+            expect(screen.getByText('Fetching the cover photo').closest('li')).toHaveAttribute('aria-current', 'step');
+        });
+        expect(screen.getByText('Reading the recipe page').closest('li')).not.toHaveAttribute('aria-current');
+    });
+
+    it('cancelling during the cover-photo leg aborts that request too', async () => {
+        let imageSignal: AbortSignal | undefined;
+        vi.mocked(importRecipe).mockResolvedValue({
+            title: 'Half Imported',
+            ingredients: [],
+            instructions: ['Mix.'],
+            link: 'https://example.com/slow-image',
+            image: 'https://example.com/cover.jpg',
+        });
+        vi.mocked(importRecipeImage).mockImplementation((_url: string, signal?: AbortSignal) => {
+            const image = Promise.withResolvers<File>();
+            imageSignal = signal;
+            signal?.addEventListener('abort', () => image.reject(new DOMException('Aborted', 'AbortError')));
+            return image.promise;
+        });
+
+        renderPage('/recipes/new?sharedUrl=https%3A%2F%2Fexample.com%2Fslow-image');
+
+        await waitFor(() => {
+            expect(imageSignal).toBeDefined();
+        });
+
+        await userEvent.click(screen.getByRole('button', { name: /Cancel import/ }));
+
+        await waitFor(() => {
+            expect(imageSignal?.aborted).toBe(true);
+            expect(screen.queryByRole('button', { name: /Cancel import/ })).toBeFalsy();
+        });
+        expect(screen.queryByText('Reading the recipe page')).toBeFalsy();
+        expect(screen.queryByText('Aborted')).toBeFalsy();
+    });
+
     it('auto-attaches the scraped cover image after a successful import', async () => {
         vi.mocked(importRecipe).mockResolvedValue({
             title: 'Imported With Image',
@@ -306,7 +366,7 @@ describe('AddRecipePage', () => {
         renderPage('/recipes/new?sharedUrl=https%3A%2F%2Fexample.com%2Fdish');
 
         await waitFor(() => {
-            expect(importRecipeImage).toHaveBeenCalledWith('https://example.com/cover.jpg');
+            expect(importRecipeImage).toHaveBeenCalledWith('https://example.com/cover.jpg', expect.any(AbortSignal));
         });
 
         await userEvent.click(screen.getByRole('button', { name: /Create Recipe/ }));

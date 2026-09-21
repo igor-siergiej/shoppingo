@@ -4,11 +4,12 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { AddRecipeHeader } from './AddRecipeHeader';
+import { ImportProgress, type ImportStage } from './ImportProgress';
 
 interface ImportScreenProps {
     link: string;
     setLink: (link: string) => void;
-    isImporting: boolean;
+    importStage: ImportStage;
     importError: string;
     onImport: () => void;
     onCancelImport: () => void;
@@ -22,7 +23,7 @@ interface ImportScreenProps {
 export const ImportScreen = ({
     link,
     setLink,
-    isImporting,
+    importStage,
     importError,
     onImport,
     onCancelImport,
@@ -30,6 +31,7 @@ export const ImportScreen = ({
     onCancel,
 }: ImportScreenProps) => {
     const linkInputId = useId();
+    const isImporting = importStage !== 'idle';
 
     return (
         <div className="flex flex-col min-h-[calc(100vh-3.5rem)]">
@@ -72,6 +74,8 @@ export const ImportScreen = ({
                             </>
                         )}
                     </Button>
+
+                    <ImportProgress stage={importStage} />
 
                     {importError && (
                         <div className="space-y-2 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
