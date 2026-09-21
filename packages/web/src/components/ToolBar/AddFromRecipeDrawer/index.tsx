@@ -2,17 +2,17 @@
 
 import { useUser } from '@imapps/web-utils';
 import type { Item, Recipe } from '@shoppingo/types';
-import { ArrowLeft, BookOpen, Plus, Search, X } from 'lucide-react';
+import { ArrowLeft, BookOpen, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { addItemsBulk, getRecipesQuery } from '../../../api';
 import { Button } from '../../../components/ui/button';
 import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from '../../../components/ui/drawer';
-import { Input } from '../../../components/ui/input';
 import { RippleButton } from '../../../components/ui/ripple';
 import { useRecipeSearch } from '../../../hooks/useRecipeSearch';
 import { notifyError, notifySuccess } from '../../../utils/toast';
 import { IngredientSelectRow } from '../../IngredientSelectRow';
+import { PinnedSearchField } from '../../PinnedSearchField';
 import { RecipeResultCard } from '../../RecipeResultCard';
 
 interface AddFromRecipeDrawerProps {
@@ -134,46 +134,33 @@ export const AddFromRecipeDrawer = ({
 
                     <div className="p-4 pb-0 max-h-[60vh] overflow-y-auto">
                         {step === 'recipes' ? (
-                            <div className="space-y-2">
-                                <div className="relative mb-3">
-                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                                    <Input
-                                        type="search"
-                                        value={recipeSearch}
-                                        onChange={(e) => setRecipeSearch(e.target.value)}
-                                        placeholder="Search recipes..."
-                                        className="pl-9 pr-9 [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
-                                        name="add-from-recipe-search"
-                                        autoComplete="off"
-                                        inputMode="search"
-                                    />
-                                    {recipeSearch && (
-                                        <button
-                                            type="button"
-                                            onClick={() => setRecipeSearch('')}
-                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                                            aria-label="Clear search"
-                                        >
-                                            <X className="h-4 w-4" />
-                                        </button>
+                            <div className="flex min-h-full flex-col justify-between">
+                                <div className="space-y-2">
+                                    {recipes.length === 0 ? (
+                                        <p className="text-muted-foreground text-sm py-3">No recipes found</p>
+                                    ) : (
+                                        recipes.map((recipe) => (
+                                            <RecipeResultCard
+                                                key={recipe.id}
+                                                recipe={recipe}
+                                                onClick={() => handleSelectRecipe(recipe)}
+                                                subtitle={
+                                                    <p className="text-sm text-muted-foreground">
+                                                        {recipe.ingredients.length} ingredients
+                                                    </p>
+                                                }
+                                            />
+                                        ))
                                     )}
                                 </div>
-                                {recipes.length === 0 ? (
-                                    <p className="text-muted-foreground text-sm py-3">No recipes found</p>
-                                ) : (
-                                    recipes.map((recipe) => (
-                                        <RecipeResultCard
-                                            key={recipe.id}
-                                            recipe={recipe}
-                                            onClick={() => handleSelectRecipe(recipe)}
-                                            subtitle={
-                                                <p className="text-sm text-muted-foreground">
-                                                    {recipe.ingredients.length} ingredients
-                                                </p>
-                                            }
-                                        />
-                                    ))
-                                )}
+                                {/* Bottom-pinned so the on-screen keyboard can't cover it and the field
+                                    stays within thumb reach of the results it filters. */}
+                                <PinnedSearchField
+                                    value={recipeSearch}
+                                    onChange={setRecipeSearch}
+                                    placeholder="Search recipes..."
+                                    name="add-from-recipe-search"
+                                />
                             </div>
                         ) : (
                             chosenRecipe && (
