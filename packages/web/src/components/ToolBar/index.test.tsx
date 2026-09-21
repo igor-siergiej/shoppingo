@@ -66,12 +66,14 @@ vi.mock('../ManageLabelsDrawer', () => ({
 }));
 
 vi.mock('./ActionsFab', () => ({
-    ActionsFab: ({ actionItems }: { actionItems: { show: boolean; label: string }[] }) => (
+    ActionsFab: ({ actionItems }: { actionItems: { show: boolean; label: string; onClick: () => void }[] }) => (
         <div data-testid="actions-fab">
             {actionItems
                 .filter((item) => item.show)
                 .map((item) => (
-                    <span key={item.label}>{item.label}</span>
+                    <button key={item.label} type="button" onClick={item.onClick}>
+                        {item.label}
+                    </button>
                 ))}
         </div>
     ),
@@ -79,10 +81,6 @@ vi.mock('./ActionsFab', () => ({
 
 vi.mock('./AddFromRecipeDrawer', () => ({
     AddFromRecipeDrawer: () => <div data-testid="add-from-recipe-drawer" />,
-}));
-
-vi.mock('./WasteWarriorDrawer', () => ({
-    WasteWarriorDrawer: () => <div data-testid="waste-warrior-drawer" />,
 }));
 
 describe('ToolBar', () => {
@@ -247,7 +245,9 @@ describe('ToolBar', () => {
 
         expect(screen.getByText('Use Up Ingredient')).toBeInTheDocument();
         expect(screen.queryByText('Manage Labels')).not.toBeInTheDocument();
-        expect(screen.getByTestId('waste-warrior-drawer')).toBeInTheDocument();
+
+        screen.getByText('Use Up Ingredient').click();
+        expect(mockNavigate).toHaveBeenCalledWith('/recipes/use-up');
     });
 
     it('shows no actions on the Friends page', () => {

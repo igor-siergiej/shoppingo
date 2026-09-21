@@ -13,7 +13,7 @@ import { RippleButton } from '../../../components/ui/ripple';
 import { useRecipeSearch } from '../../../hooks/useRecipeSearch';
 import { notifyError, notifySuccess } from '../../../utils/toast';
 import { IngredientSelectRow } from '../../IngredientSelectRow';
-import { RecipeResultCard } from '../RecipeResultCard';
+import { RecipeResultCard } from '../../RecipeResultCard';
 
 interface AddFromRecipeDrawerProps {
     open: boolean;
