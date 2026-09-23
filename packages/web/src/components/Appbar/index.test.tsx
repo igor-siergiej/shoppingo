@@ -1,8 +1,21 @@
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import userEvent from '@testing-library/user-event';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import Appbar from './index';
 
+vi.mock('../../data/release-notes.json', () => ({
+    default: [
+        { version: '1.3.0', date: '2026-09-21', notes: [{ type: 'feature', text: 'Recipes get a use-it-up page' }] },
+        { version: '1.2.0', date: '2026-09-01', notes: [{ type: 'fix', text: 'Photos load faster' }] },
+    ],
+}));
+
+const STORAGE_KEY = 'shoppingo:lastSeenVersion';
+
 describe('Appbar', () => {
+    beforeEach(() => {
+        window.localStorage.clear();
+    });
     it('renders header element', () => {
         const { container } = render(<Appbar />);
 
@@ -41,5 +54,41 @@ describe('Appbar', () => {
 
         const contentDiv = container.querySelector('div[class*="h-14"]');
         expect(contentDiv).toHaveClass('flex', 'items-center', 'justify-between', 'h-14');
+    });
+
+    it('marks a returning user behind the latest release as having unread notes', () => {
+        window.localStorage.setItem(STORAGE_KEY, '1.2.0');
+
+        render(<Appbar />);
+
+        expect(screen.getByTestId('whats-new-indicator')).toBeInTheDocument();
+    });
+
+    it('shows no unread indicator once the user has seen the latest release', () => {
+        window.localStorage.setItem(STORAGE_KEY, '1.3.0');
+
+        render(<Appbar />);
+
+        expect(screen.queryByTestId('whats-new-indicator')).not.toBeInTheDocument();
+    });
+
+    it('treats a first-time visitor as up to date instead of flagging every past release', () => {
+        render(<Appbar />);
+
+        expect(screen.queryByTestId('whats-new-indicator')).not.toBeInTheDocument();
+        expect(window.localStorage.getItem(STORAGE_KEY)).toBe('1.3.0');
+    });
+
+    it('opens the notes on the version badge, flagging what was unread, and clears the indicator', async () => {
+        const user = userEvent.setup();
+        window.localStorage.setItem(STORAGE_KEY, '1.2.0');
+
+        render(<Appbar />);
+        await user.click(screen.getByRole('button', { name: /what's new/i }));
+
+        expect(screen.getByText('Recipes get a use-it-up page')).toBeInTheDocument();
+        expect(screen.getByText('New')).toBeInTheDocument();
+        expect(screen.queryByTestId('whats-new-indicator')).not.toBeInTheDocument();
+        expect(window.localStorage.getItem(STORAGE_KEY)).toBe('1.3.0');
     });
 });

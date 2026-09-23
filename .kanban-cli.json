@@ -1,5 +1,6 @@
 {
   "repoName": "shoppingo",
+  "releaseNotes": true,
   "dev": {
     "startCommand": "bun run start:web",
     "healthCheckUrl": "http://localhost:4000",
