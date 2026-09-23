@@ -10,6 +10,16 @@
     ]
   },
   {
+    "version": "1.73.1",
+    "date": "2026-09-21",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Widen the pinned search in the add-from-recipe drawer so the keyboard cannot cover it"
+      }
+    ]
+  },
+  {
     "version": "1.73.0",
     "date": "2026-09-21",
     "notes": [
