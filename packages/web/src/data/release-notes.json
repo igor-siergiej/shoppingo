@@ -1,0 +1,1856 @@
+[
+  {
+    "version": "1.73.0",
+    "date": "2026-09-21",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Waste Warrior becomes a full page instead of a drawer"
+      }
+    ]
+  },
+  {
+    "version": "1.72.0",
+    "date": "2026-09-21",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Staged in-flight feedback for recipe URL imports"
+      }
+    ]
+  },
+  {
+    "version": "1.71.1",
+    "date": "2026-09-21",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Widen recipes grid beyond the 500px column on desktop"
+      }
+    ]
+  },
+  {
+    "version": "1.71.0",
+    "date": "2026-09-19",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Edit-time sharing for todos"
+      }
+    ]
+  },
+  {
+    "version": "1.70.0",
+    "date": "2026-09-15",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Push notifications for todo sharing, fan out daily reminders to shared members"
+      }
+    ]
+  },
+  {
+    "version": "1.69.0",
+    "date": "2026-09-14",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Reuse ItemCheckBoxCard for manual ingredient rows"
+      }
+    ]
+  },
+  {
+    "version": "1.68.1",
+    "date": "2026-09-14",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Stop auto-converting tsp/tbsp/cup on unit-system conversion"
+      }
+    ]
+  },
+  {
+    "version": "1.68.0",
+    "date": "2026-09-14",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Shopping-list-style add/edit/delete drawer for manual ingredients"
+      }
+    ]
+  },
+  {
+    "version": "1.67.0",
+    "date": "2026-09-14",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Pick ingredients from an existing shopping list on manual create"
+      }
+    ]
+  },
+  {
+    "version": "1.66.1",
+    "date": "2026-09-13",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Stop double toast on ingredient delete, show zero on success"
+      }
+    ]
+  },
+  {
+    "version": "1.66.0",
+    "date": "2026-09-13",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Waste Warrior — find recipes that use a given ingredient"
+      }
+    ]
+  },
+  {
+    "version": "1.65.3",
+    "date": "2026-09-13",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Stop payment-autofill popups on Add Recipe form fields"
+      }
+    ]
+  },
+  {
+    "version": "1.65.2",
+    "date": "2026-09-13",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Pass mongo credentials to the e2e test step"
+      }
+    ]
+  },
+  {
+    "version": "1.65.1",
+    "date": "2026-09-13",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Pin recipe search field to bottom, results build upward"
+      }
+    ]
+  },
+  {
+    "version": "1.65.0",
+    "date": "2026-09-13",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Recipe UI/UX rework — sectioned Add Recipe, hero-image Recipe Detail"
+      }
+    ]
+  },
+  {
+    "version": "1.64.2",
+    "date": "2026-09-12",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Make the PR workflow trigger on branches with slashes"
+      }
+    ]
+  },
+  {
+    "version": "1.64.1",
+    "date": "2026-09-12",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Drop recipe tag-chip filter, keep search hidden-only"
+      }
+    ]
+  },
+  {
+    "version": "1.64.0",
+    "date": "2026-09-12",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Add manual + AI-generated tags, searchable and filterable"
+      }
+    ]
+  },
+  {
+    "version": "1.63.2",
+    "date": "2026-09-12",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Schedule undated todos by tapping a day, not just dragging"
+      }
+    ]
+  },
+  {
+    "version": "1.63.1",
+    "date": "2026-09-12",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Stop recipe image skeleton sticking and 403 on first import-add"
+      }
+    ]
+  },
+  {
+    "version": "1.63.0",
+    "date": "2026-09-09",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Convert imported recipe units to a preferred system"
+      }
+    ]
+  },
+  {
+    "version": "1.62.0",
+    "date": "2026-09-09",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Give the extra-actions menu a surface panel"
+      }
+    ]
+  },
+  {
+    "version": "1.61.0",
+    "date": "2026-09-09",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Redesign recipe card with mobile single-column layout"
+      }
+    ]
+  },
+  {
+    "version": "1.60.0",
+    "date": "2026-08-26",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Replace shared-list badge with member avatar stack"
+      }
+    ]
+  },
+  {
+    "version": "1.59.10",
+    "date": "2026-08-20",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Disable autofill on add-recipe fields and reclaim wasted layout space"
+      }
+    ]
+  },
+  {
+    "version": "1.59.9",
+    "date": "2026-08-18",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Merge shared/personal lists and recipes into one view"
+      }
+    ]
+  },
+  {
+    "version": "1.59.8",
+    "date": "2026-08-18",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Recipe import UX improvements"
+      }
+    ]
+  },
+  {
+    "version": "1.59.7",
+    "date": "2026-08-09",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Swap each section's own toolbar icon for back, harden search-input autofill"
+      }
+    ]
+  },
+  {
+    "version": "1.59.6",
+    "date": "2026-08-09",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Sync boot theme-color and add dark PWA manifest to stop flashbang"
+      }
+    ]
+  },
+  {
+    "version": "1.59.5",
+    "date": "2026-08-09",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Remove leftover 'send test reminder' debug trigger"
+      }
+    ]
+  },
+  {
+    "version": "1.59.4",
+    "date": "2026-08-09",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Draw input focus ring inset so it can't be clipped by ancestor overflow"
+      }
+    ]
+  },
+  {
+    "version": "1.59.3",
+    "date": "2026-08-09",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Stop pull-to-refresh false-triggering while scrolling recipes"
+      }
+    ]
+  },
+  {
+    "version": "1.59.2",
+    "date": "2026-08-09",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Stop payment-autofill popup on recipe search inputs"
+      }
+    ]
+  },
+  {
+    "version": "1.59.1",
+    "date": "2026-08-09",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Include shared friends in optimistic recipe.create cache and invalidate list on sharing changes"
+      }
+    ]
+  },
+  {
+    "version": "1.59.0",
+    "date": "2026-08-09",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Add kanban-worker repo config and a real @smoke-tagged test"
+      }
+    ]
+  },
+  {
+    "version": "1.58.6",
+    "date": "2026-08-09",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Use history-aware back navigation on Items and Recipe Detail pages"
+      }
+    ]
+  },
+  {
+    "version": "1.58.5",
+    "date": "2026-08-07",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Toolbar/nav polish, add-friend rework, and recipe search/sharing fixes"
+      }
+    ]
+  },
+  {
+    "version": "1.58.4",
+    "date": "2026-08-02",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Rework mobile toolbar, add-friend drawer, and actions FAB"
+      }
+    ]
+  },
+  {
+    "version": "1.58.3",
+    "date": "2026-08-01",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Make mobile add-friend drawer nicer"
+      }
+    ]
+  },
+  {
+    "version": "1.58.2",
+    "date": "2026-07-11",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Recover JSON-LD with raw control chars in strings"
+      }
+    ]
+  },
+  {
+    "version": "1.58.1",
+    "date": "2026-07-10",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Recover shared recipe url from Android's text/title share fields"
+      }
+    ]
+  },
+  {
+    "version": "1.58.0",
+    "date": "2026-07-10",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Clean imported ingredient names, add LLM-first parsing behind a flag"
+      }
+    ]
+  },
+  {
+    "version": "1.57.4",
+    "date": "2026-07-09",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Carry parsed quantity/unit into created recipe ingredients"
+      }
+    ]
+  },
+  {
+    "version": "1.57.3",
+    "date": "2026-07-09",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Split quantity/unit out of ingredient name"
+      }
+    ]
+  },
+  {
+    "version": "1.57.2",
+    "date": "2026-07-09",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Send browser-like headers to reduce 403s from recipe sites"
+      }
+    ]
+  },
+  {
+    "version": "1.57.1",
+    "date": "2026-07-09",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Allow letters and pasting in friend code input"
+      }
+    ]
+  },
+  {
+    "version": "1.57.0",
+    "date": "2026-07-09",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Friends & consent-based sharing"
+      }
+    ]
+  },
+  {
+    "version": "1.56.0",
+    "date": "2026-07-07",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Import recipe from URL"
+      }
+    ]
+  },
+  {
+    "version": "1.55.2",
+    "date": "2026-07-05",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Set file extension on MinIO image object keys"
+      },
+      {
+        "type": "fix",
+        "text": "Disable husky hooks in release job"
+      }
+    ]
+  },
+  {
+    "version": "1.55.1",
+    "date": "2026-07-05",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Store dueDate as timezone-agnostic day so reminders fire"
+      }
+    ]
+  },
+  {
+    "version": "1.55.0",
+    "date": "2026-07-05",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Replace OpenAI image gen with fal.ai FLUX.1 [schnell]"
+      }
+    ]
+  },
+  {
+    "version": "1.54.1",
+    "date": "2026-07-02",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Match legacy string dueDates in reminder query"
+      }
+    ]
+  },
+  {
+    "version": "1.54.0",
+    "date": "2026-07-02",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Offline sync phase 2 + 3 (list creation, todos, labels, recipes)"
+      }
+    ]
+  },
+  {
+    "version": "1.53.1",
+    "date": "2026-06-29",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Coerce todo dueDate strings to Dates so reminders fire"
+      }
+    ]
+  },
+  {
+    "version": "1.53.0",
+    "date": "2026-06-27",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Offline sync (Phase 1) — item edits via outbox queue"
+      }
+    ]
+  },
+  {
+    "version": "1.52.0",
+    "date": "2026-06-27",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Surface reminder run counts for debugging"
+      }
+    ]
+  },
+  {
+    "version": "1.51.0",
+    "date": "2026-06-27",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Manual trigger for daily todo reminder"
+      }
+    ]
+  },
+  {
+    "version": "1.50.0",
+    "date": "2026-06-25",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Daily todo reminder push notification (08:30 UK)"
+      }
+    ]
+  },
+  {
+    "version": "1.49.0",
+    "date": "2026-06-24",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Notification polish — persistent, per-list, monochrome badge, notify-unless-focused"
+      }
+    ]
+  },
+  {
+    "version": "1.48.0",
+    "date": "2026-06-23",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Web Push notifications for shared lists"
+      }
+    ]
+  },
+  {
+    "version": "1.47.1",
+    "date": "2026-06-23",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Suppress repeated update toast for same pending SW version"
+      }
+    ]
+  },
+  {
+    "version": "1.47.0",
+    "date": "2026-06-22",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Replace AI cover image with upload, revert back for free"
+      }
+    ]
+  },
+  {
+    "version": "1.46.0",
+    "date": "2026-06-22",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Natural language date input + swipe-to-change calendar months"
+      }
+    ]
+  },
+  {
+    "version": "1.45.0",
+    "date": "2026-06-09",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Label filter grey-out + drawer feedback"
+      }
+    ]
+  },
+  {
+    "version": "1.44.1",
+    "date": "2026-06-07",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Make add todo drawer scrollable on mobile"
+      }
+    ]
+  },
+  {
+    "version": "1.44.0",
+    "date": "2026-06-07",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Calendar UX refinements"
+      }
+    ]
+  },
+  {
+    "version": "1.43.0",
+    "date": "2026-06-06",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Resolve all dead-code report findings"
+      },
+      {
+        "type": "feature",
+        "text": "First-class todos + calendar view"
+      }
+    ]
+  },
+  {
+    "version": "1.42.0",
+    "date": "2026-06-04",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Add fallow static analysis"
+      }
+    ]
+  },
+  {
+    "version": "1.41.0",
+    "date": "2026-05-19",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Restore workflows-utils submodule"
+      }
+    ]
+  },
+  {
+    "version": "1.40.0",
+    "date": "2026-05-19",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Prevent pull-to-refresh from firing mid-scroll or too easily"
+      },
+      {
+        "type": "feature",
+        "text": "Clean up superpowers directory"
+      }
+    ]
+  },
+  {
+    "version": "1.39.0",
+    "date": "2026-05-16",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Add coverage for TODO lists, add-from-recipe, share-target and share-on-create"
+      },
+      {
+        "type": "feature",
+        "text": "Expand coverage and fix local test runner setup"
+      }
+    ]
+  },
+  {
+    "version": "1.38.0",
+    "date": "2026-05-16",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Expand coverage and fix local test runner"
+      }
+    ]
+  },
+  {
+    "version": "1.37.0",
+    "date": "2026-05-15",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Update sharp to 0.34.5 and resync lockfile to restore failing tests"
+      },
+      {
+        "type": "fix",
+        "text": "Add mutateAsync to ManageUsersDrawer test mock"
+      },
+      {
+        "type": "feature",
+        "text": "55/55 Playwright E2E tests with full mock infrastructure"
+      },
+      {
+        "type": "feature",
+        "text": "Convert to true e2e tests against real API and MongoDB"
+      }
+    ]
+  },
+  {
+    "version": "1.36.0",
+    "date": "2026-05-14",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Playwright E2E testing infrastructure"
+      }
+    ]
+  },
+  {
+    "version": "1.35.0",
+    "date": "2026-05-05",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Add manual check for updates button in menu"
+      }
+    ]
+  },
+  {
+    "version": "1.34.4",
+    "date": "2026-05-05",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Check for updates on tab visibility change and reduce poll interval"
+      }
+    ]
+  },
+  {
+    "version": "1.34.3",
+    "date": "2026-05-05",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Store user-uploaded recipe image instead of generating AI image"
+      }
+    ]
+  },
+  {
+    "version": "1.34.2",
+    "date": "2026-05-03",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Fix PWA update dialog not appearing after new version published"
+      }
+    ]
+  },
+  {
+    "version": "1.34.1",
+    "date": "2026-05-03",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Pull-to-refresh scroll fix and indicator polish"
+      }
+    ]
+  },
+  {
+    "version": "1.34.0",
+    "date": "2026-05-02",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Add pull-to-refresh with haptics, overscroll indicator, and PWA update check"
+      }
+    ]
+  },
+  {
+    "version": "1.33.0",
+    "date": "2026-04-30",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Show skeleton while AI recipe image is loading"
+      },
+      {
+        "type": "fix",
+        "text": "Show skeleton when coverImageKey absent"
+      },
+      {
+        "type": "feature",
+        "text": "Replace pulse skeleton with shimmer animation on recipe cards"
+      }
+    ]
+  },
+  {
+    "version": "1.32.3",
+    "date": "2026-04-29",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Show skeleton during coverImageKey transition in RecipeCard"
+      }
+    ]
+  },
+  {
+    "version": "1.32.2",
+    "date": "2026-04-29",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Share recipes with selected users at creation time"
+      }
+    ]
+  },
+  {
+    "version": "1.32.1",
+    "date": "2026-04-29",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Restore skeleton loading and prevent double image generation"
+      }
+    ]
+  },
+  {
+    "version": "1.32.0",
+    "date": "2026-04-28",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Shared AI recipe image cache by title"
+      }
+    ]
+  },
+  {
+    "version": "1.31.0",
+    "date": "2026-04-28",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Make unit tests pass for client-initiated image generation"
+      },
+      {
+        "type": "feature",
+        "text": "Client-initiated recipe image generation with skeleton loading"
+      }
+    ]
+  },
+  {
+    "version": "1.30.0",
+    "date": "2026-04-23",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Move IngredientSelectRow test next to component"
+      },
+      {
+        "type": "feature",
+        "text": "Prometheus metrics + RecipeImageService split"
+      },
+      {
+        "type": "feature",
+        "text": "Reuse IngredientSelectRow in AddFromRecipeDrawer for consistent theming"
+      },
+      {
+        "type": "feature",
+        "text": "Separate RecipeImageService with food photography prompt and 512px output"
+      }
+    ]
+  },
+  {
+    "version": "1.29.0",
+    "date": "2026-03-28",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Async recipe image generation with pizza spinner"
+      }
+    ]
+  },
+  {
+    "version": "1.28.0",
+    "date": "2026-03-27",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Single-column recipe card layout"
+      }
+    ]
+  },
+  {
+    "version": "1.27.0",
+    "date": "2026-03-26",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Fuzzy recipe search"
+      },
+      {
+        "type": "feature",
+        "text": "Ingredient select theming and images"
+      }
+    ]
+  },
+  {
+    "version": "1.26.0",
+    "date": "2026-03-26",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Add recipe link and cooking instructions"
+      }
+    ]
+  },
+  {
+    "version": "1.25.1",
+    "date": "2026-03-26",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Add HTTP status code to deploy webhook curl output"
+      }
+    ]
+  },
+  {
+    "version": "1.25.0",
+    "date": "2026-03-26",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Improve add recipe button with composite BookOpen+Plus icon"
+      },
+      {
+        "type": "feature",
+        "text": "PWA update notification with user-controlled updates"
+      }
+    ]
+  },
+  {
+    "version": "1.24.4",
+    "date": "2026-03-26",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Center add button when navigating to items page"
+      }
+    ]
+  },
+  {
+    "version": "1.24.3",
+    "date": "2026-03-24",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Recipe image not refreshing after upload or AI generation"
+      },
+      {
+        "type": "fix",
+        "text": "Fix failing web component tests"
+      }
+    ]
+  },
+  {
+    "version": "1.24.2",
+    "date": "2026-03-22",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Recipe images and list refresh after bulk ingredient add"
+      }
+    ]
+  },
+  {
+    "version": "1.24.1",
+    "date": "2026-03-21",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Remove accidentally committed claude worktree gitlinks"
+      }
+    ]
+  },
+  {
+    "version": "1.24.0",
+    "date": "2026-03-21",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Add helpful message when all recipe ingredients already in shopping list"
+      },
+      {
+        "type": "fix",
+        "text": "Add recipe image retrieval and improve recipe card UI"
+      },
+      {
+        "type": "fix",
+        "text": "Change recipe creation endpoint from POST to PUT"
+      },
+      {
+        "type": "fix",
+        "text": "Correct selectedIds initialization and listType filter in IngredientSelectSection"
+      },
+      {
+        "type": "fix",
+        "text": "Move recipe picker button to left section instead of right"
+      },
+      {
+        "type": "fix",
+        "text": "Remove green background from recipe picker button"
+      },
+      {
+        "type": "fix",
+        "text": "Update web component tests to match current component implementations"
+      },
+      {
+        "type": "fix",
+        "text": "Use ListType enum for shopping list comparison in ToolBar"
+      },
+      {
+        "type": "feature",
+        "text": "Add recipe-to-shopping-list bulk import feature"
+      },
+      {
+        "type": "feature",
+        "text": "Consolidate recipe components with shared patterns"
+      },
+      {
+        "type": "feature",
+        "text": "Implement complete Recipes feature"
+      },
+      {
+        "type": "feature",
+        "text": "Implement recipe image upload and AI generation"
+      },
+      {
+        "type": "fix",
+        "text": "Revert \"chore: remove active state background from navigation buttons\""
+      },
+      {
+        "type": "fix",
+        "text": "Revert \"chore: remove colored border from recipe picker button\""
+      },
+      {
+        "type": "fix",
+        "text": "Revert \"Reapply \"chore: remove active state background from navigation buttons\"\""
+      }
+    ]
+  },
+  {
+    "version": "1.23.0",
+    "date": "2026-03-20",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Unified loading page with smooth transitions"
+      }
+    ]
+  },
+  {
+    "version": "1.22.0",
+    "date": "2026-03-19",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Add security-events:write permission for SARIF upload"
+      },
+      {
+        "type": "fix",
+        "text": "Add security-events:write permission to semgrep job in main pipeline"
+      },
+      {
+        "type": "fix",
+        "text": "Resolve sharp native bindings issue by running TypeScript directly with bun"
+      },
+      {
+        "type": "feature",
+        "text": "Add automatic Dokploy deployment webhook trigger"
+      },
+      {
+        "type": "feature",
+        "text": "Add pull request workflow with coverage and semgrep checks"
+      }
+    ]
+  },
+  {
+    "version": "1.21.9",
+    "date": "2026-03-18",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Consolidate sharp to root node_modules before copy to runner"
+      },
+      {
+        "type": "fix",
+        "text": "Copy sharp from packages/api/node_modules instead of consolidating"
+      },
+      {
+        "type": "fix",
+        "text": "Install sharp directly in runner stage"
+      },
+      {
+        "type": "fix",
+        "text": "Fix linting errors and bun:test compatibility issues"
+      }
+    ]
+  },
+  {
+    "version": "1.21.8",
+    "date": "2026-03-18",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Update Dockerfile references from bun.lockb to bun.lock"
+      }
+    ]
+  },
+  {
+    "version": "1.21.7",
+    "date": "2026-03-18",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Copy sharp native binaries from builder stage in Dockerfile"
+      },
+      {
+        "type": "fix",
+        "text": "Use bun in runner stage instead of node/npm"
+      }
+    ]
+  },
+  {
+    "version": "1.21.6",
+    "date": "2026-03-18",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Add workbox-window as explicit dependency for vite-plugin-pwa"
+      }
+    ]
+  },
+  {
+    "version": "1.21.5",
+    "date": "2026-03-18",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Update GitHub Actions to Node.js 24 compatible versions"
+      }
+    ]
+  },
+  {
+    "version": "1.21.4",
+    "date": "2026-03-18",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Resolve build-publish pipeline failures"
+      }
+    ]
+  },
+  {
+    "version": "1.21.3",
+    "date": "2026-03-18",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Update Dockerfiles to use bun.lock instead of bun.lockb"
+      }
+    ]
+  },
+  {
+    "version": "1.21.2",
+    "date": "2026-03-18",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Biome linting issues"
+      },
+      {
+        "type": "fix",
+        "text": "Replace Yarn workspace versioning with Bun-compatible Node script"
+      },
+      {
+        "type": "fix",
+        "text": "Resolve all linting warnings"
+      },
+      {
+        "type": "fix",
+        "text": "Update biome-config reference to @imapps namespace in root biome.json"
+      }
+    ]
+  },
+  {
+    "version": "1.21.1",
+    "date": "2026-03-12",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Add contents:read permission for checkout action"
+      },
+      {
+        "type": "fix",
+        "text": "Use GITHUB_TOKEN instead of GH_TOKEN"
+      },
+      {
+        "type": "fix",
+        "text": "Suppress biome linting warnings for Elysia context typing and ConfigService unknown types"
+      },
+      {
+        "type": "fix",
+        "text": "Use Docker Hub credentials instead of GHCR for image push"
+      },
+      {
+        "type": "fix",
+        "text": "Use GitHub Container Registry (ghcr.io) instead of Docker Hub"
+      }
+    ]
+  },
+  {
+    "version": "1.21.0",
+    "date": "2026-03-12",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Correct version extraction for GitHub Actions"
+      },
+      {
+        "type": "feature",
+        "text": "Add utils submodule for shared CI/CD pipelines"
+      }
+    ]
+  },
+  {
+    "version": "1.20.4",
+    "date": "2026-03-11",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Install dependencies before workspaces focus in runner stage"
+      },
+      {
+        "type": "fix",
+        "text": "Pass NODE_AUTH_TOKEN to runner stage for GitHub Packages auth"
+      }
+    ]
+  },
+  {
+    "version": "1.20.3",
+    "date": "2026-03-11",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Remove .yarn from dockerfile copy (not in repo)"
+      }
+    ]
+  },
+  {
+    "version": "1.20.2",
+    "date": "2026-03-11",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Add NODE_AUTH_TOKEN to yarn install and change release condition to success"
+      },
+      {
+        "type": "fix",
+        "text": "Add npmAuthToken to .yarnrc.yml for GitHub Packages authentication"
+      },
+      {
+        "type": "fix",
+        "text": "Add packages:read permission to jobs for GitHub Packages access"
+      },
+      {
+        "type": "fix",
+        "text": "Downgrade to 0.4.5 which is published to GitHub Packages"
+      },
+      {
+        "type": "fix",
+        "text": "Pass NODE_AUTH_TOKEN env var to yarn install in Dockerfiles"
+      },
+      {
+        "type": "fix",
+        "text": "Remove circular dependency and add git pull to build-publish"
+      },
+      {
+        "type": "fix",
+        "text": "Serial dependencies and version extraction from package.json"
+      },
+      {
+        "type": "fix",
+        "text": "Update yarn lock and utils versions"
+      },
+      {
+        "type": "fix",
+        "text": "Use GH_TOKEN which has explicit read:packages permission"
+      },
+      {
+        "type": "fix",
+        "text": "Use GITHUB_TOKEN instead of GH_TOKEN secret"
+      },
+      {
+        "type": "fix",
+        "text": "Use NODE_AUTH_TOKEN in .yarnrc.yml to match workflow"
+      }
+    ]
+  },
+  {
+    "version": "1.20.1",
+    "date": "2026-03-11",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Correct reusable workflow org reference"
+      }
+    ]
+  },
+  {
+    "version": "1.20.0",
+    "date": "2026-02-13",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Improve dark mode colors for Appbar and theme toggle button"
+      },
+      {
+        "type": "feature",
+        "text": "Add dark mode toggle to Shoppingo"
+      },
+      {
+        "type": "feature",
+        "text": "Adjust card color to better match cream background"
+      },
+      {
+        "type": "feature",
+        "text": "Different green shades for light and dark modes"
+      },
+      {
+        "type": "feature",
+        "text": "Make app bar green in both light and dark modes"
+      },
+      {
+        "type": "feature",
+        "text": "Replace green color scheme with neutral gray"
+      },
+      {
+        "type": "feature",
+        "text": "Restore green app bar in light mode"
+      },
+      {
+        "type": "feature",
+        "text": "Use cream color for light mode background"
+      },
+      {
+        "type": "feature",
+        "text": "Use darker green for primary color"
+      }
+    ]
+  },
+  {
+    "version": "1.19.0",
+    "date": "2026-02-13",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Add confirmation dialog for clear selected items and disable buttons"
+      },
+      {
+        "type": "feature",
+        "text": "Add confirmation dialogs for delete operations"
+      }
+    ]
+  },
+  {
+    "version": "1.18.1",
+    "date": "2026-02-13",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Include ownerId in getListsForUser response"
+      },
+      {
+        "type": "fix",
+        "text": "Make list cards consistent height"
+      }
+    ]
+  },
+  {
+    "version": "1.18.0",
+    "date": "2026-02-12",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Update toast styling and add list ownership controls"
+      }
+    ]
+  },
+  {
+    "version": "1.17.2",
+    "date": "2026-02-09",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Properly extract and log error messages in user management endpoints"
+      }
+    ]
+  },
+  {
+    "version": "1.17.1",
+    "date": "2026-02-08",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Improve Kubernetes pod scheduling by optimizing kubelet resources"
+      }
+    ]
+  },
+  {
+    "version": "1.17.0",
+    "date": "2026-02-08",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Improve Docker daemon startup timeout in CI pipelines"
+      },
+      {
+        "type": "fix",
+        "text": "Improve error handling and messaging for user sharing and list creation"
+      },
+      {
+        "type": "feature",
+        "text": "Manage users menu"
+      }
+    ]
+  },
+  {
+    "version": "1.16.1",
+    "date": "2026-01-30",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Ensure gitops jobs receive VERSION artifact from version-release"
+      }
+    ]
+  },
+  {
+    "version": "1.16.0",
+    "date": "2026-01-29",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Not being able to add shopping list items"
+      },
+      {
+        "type": "feature",
+        "text": "Added support for openai models for image generation"
+      }
+    ]
+  },
+  {
+    "version": "1.15.0",
+    "date": "2026-01-05",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Add Origin header to kivo /verify requests"
+      }
+    ]
+  },
+  {
+    "version": "1.14.0",
+    "date": "2026-01-05",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Fix types package external dependency"
+      }
+    ]
+  },
+  {
+    "version": "1.13.0",
+    "date": "2026-01-05",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Apply linting auto-fixes for formatting"
+      },
+      {
+        "type": "fix",
+        "text": "Match exact shadcn date-picker example implementation"
+      },
+      {
+        "type": "fix",
+        "text": "Resolve 3 linting errors"
+      },
+      {
+        "type": "fix",
+        "text": "Resolve Calendar identifier conflict"
+      },
+      {
+        "type": "fix",
+        "text": "Resolve date picker in drawer by increasing z-index"
+      },
+      {
+        "type": "fix",
+        "text": "Resolve TODO list checkbox error and calendar styling"
+      },
+      {
+        "type": "fix",
+        "text": "Use shadcn date-picker pattern with proper state management"
+      },
+      {
+        "type": "feature",
+        "text": "Add date picker popover for TODO items"
+      },
+      {
+        "type": "feature",
+        "text": "Complete TODO list feature with context-aware UI and date picker"
+      },
+      {
+        "type": "feature",
+        "text": "Fix calendar padding"
+      }
+    ]
+  },
+  {
+    "version": "1.12.0",
+    "date": "2026-01-04",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Include listType in getListsForUser response"
+      },
+      {
+        "type": "feature",
+        "text": "Add conditional empty state messages for list types"
+      },
+      {
+        "type": "feature",
+        "text": "Improve add item/task modal UI"
+      },
+      {
+        "type": "feature",
+        "text": "Replace CheckSquare with ListTodo icon for TODO lists"
+      }
+    ]
+  },
+  {
+    "version": "1.11.0",
+    "date": "2026-01-04",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Update ListHandlers tests for TODO list feature"
+      },
+      {
+        "type": "feature",
+        "text": "Add todo list feature with due dates support"
+      }
+    ]
+  },
+  {
+    "version": "1.10.3",
+    "date": "2026-01-03",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Add missing getList method to ListService for access control checks"
+      }
+    ]
+  },
+  {
+    "version": "1.10.2",
+    "date": "2026-01-02",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Implement phase 1 web security hardening and sanitized logging"
+      }
+    ]
+  },
+  {
+    "version": "1.10.1",
+    "date": "2026-01-02",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Implement authorization layer for Shoppingo API"
+      },
+      {
+        "type": "fix",
+        "text": "Implement authorization layer for Shoppingo API"
+      }
+    ]
+  },
+  {
+    "version": "1.10.0",
+    "date": "2026-01-01",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Implement end-to-end JWT authentication with Kivo integration"
+      }
+    ]
+  },
+  {
+    "version": "1.9.1",
+    "date": "2025-12-29",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Add .env to .gitignore to prevent credential leaks"
+      }
+    ]
+  },
+  {
+    "version": "1.9.0",
+    "date": "2025-12-19",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Add frontend and backend logging pipeline to Loki"
+      }
+    ]
+  },
+  {
+    "version": "1.8.1",
+    "date": "2025-12-18",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Update helm values paths for proper image tag configuration"
+      }
+    ]
+  },
+  {
+    "version": "1.8.0",
+    "date": "2025-12-18",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Add comprehensive audit logging to shoppingo API"
+      }
+    ]
+  },
+  {
+    "version": "1.7.0",
+    "date": "2025-12-09",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Migrate CI/CD pipeline to Helm chart GitOps templates"
+      }
+    ]
+  },
+  {
+    "version": "1.6.0",
+    "date": "2025-12-04",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Move the add button to the middle"
+      }
+    ]
+  },
+  {
+    "version": "1.5.0",
+    "date": "2025-11-17",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Add commitlint for conventional commits"
+      },
+      {
+        "type": "feature",
+        "text": "Fix commit lint linting lol"
+      },
+      {
+        "type": "feature",
+        "text": "Get commit hook working"
+      },
+      {
+        "type": "feature",
+        "text": "New version"
+      }
+    ]
+  },
+  {
+    "version": "1.4.0",
+    "date": "2025-11-14",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Deploy new version"
+      }
+    ]
+  },
+  {
+    "version": "1.3.0",
+    "date": "2025-11-04",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Lint"
+      },
+      {
+        "type": "feature",
+        "text": "Added optimistic state changes with tanstack"
+      },
+      {
+        "type": "feature",
+        "text": "Added swiping to show edit and delete"
+      },
+      {
+        "type": "feature",
+        "text": "Move edit to a dialog"
+      }
+    ]
+  },
+  {
+    "version": "1.2.1",
+    "date": "2025-10-31",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Configure publish jobs to allow insecure registry"
+      }
+    ]
+  },
+  {
+    "version": "1.2.0",
+    "date": "2025-10-31",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Add clean orphanes tags script"
+      },
+      {
+        "type": "feature",
+        "text": "Use jewellery-catalogue pipeline"
+      }
+    ]
+  },
+  {
+    "version": "1.1.2",
+    "date": "2025-10-04",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Remove some tests"
+      }
+    ]
+  },
+  {
+    "version": "1.1.1",
+    "date": "2025-10-03",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Update package versions too"
+      }
+    ]
+  },
+  {
+    "version": "1.1.0",
+    "date": "2025-10-03",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Yarn lock and use eslint-config 0.2"
+      },
+      {
+        "type": "feature",
+        "text": "Update empty components and some toolbar fixes"
+      }
+    ]
+  },
+  {
+    "version": "1.0.0",
+    "date": "2025-09-30",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Make sure prod gitops job has version"
+      },
+      {
+        "type": "fix",
+        "text": "Use new util package versions"
+      },
+      {
+        "type": "fix",
+        "text": "Use version-release steps instead"
+      },
+      {
+        "type": "feature",
+        "text": "Add semantic-release for automated versioning"
+      },
+      {
+        "type": "feature",
+        "text": "Use semantic versions here too"
+      }
+    ]
+  }
+]

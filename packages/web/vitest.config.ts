@@ -10,6 +10,9 @@ export default defineConfig({
             'virtual:pwa-register/react': path.resolve(__dirname, './src/__mocks__/pwa-register.ts'),
         },
     },
+    define: {
+        __APP_VERSION__: JSON.stringify('test'),
+    },
     test: {
         globals: true,
         environment: 'happy-dom',

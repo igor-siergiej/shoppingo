@@ -43,6 +43,7 @@ jobs:
       - run: bun run tsc --noEmit
       - run: bun run --filter @shoppingo/api test --coverage
       - run: bun run --filter @shoppingo/web test
+      - run: bun run test:scripts
       - name: Check coverage threshold (90%)
         run: |
           COVERAGE=$(cat packages/api/coverage/coverage-summary.json | grep -o '"lines"[^}]*}' | grep -o '[0-9.]*' | head -1)

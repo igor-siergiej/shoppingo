@@ -101,6 +101,37 @@ Common TypeScript interfaces and types shared between frontend and backend.
 5. **Building**: Use `bun run --filter @shoppingo/web build` for production build
 6. **Commit messages**: Must follow Conventional Commits (enforced by commitlint + Husky)
 7. **Versioning**: Automated via semantic-release on main branch merges
+8. **Release notes**: Every user-visible change adds a `Release-Notes:` trailer to its commit body (see below)
+
+## Release Notes (`Release-Notes:` trailer)
+The web app ships a "What's new" panel: tapping the version in the app bar opens
+`packages/web/src/data/release-notes.json`, which is generated at release time by
+`scripts/collect-release-notes.js` (run from semantic-release's `prepareCmd`).
+
+**Any commit that changes something a user can notice MUST end its body with a
+`Release-Notes:` trailer** — one sentence in plain language, describing the change
+from the user's side, not the implementation's:
+
+```
+feat(web): Waste Warrior becomes a full page instead of a drawer
+
+<technical body: what moved where, why>
+
+Release-Notes: Use-it-up ingredient search is now a full page, so results aren't
+squashed behind the keyboard.
+```
+
+Rules:
+- This applies to every author — human, Claude Code, kanban-worker, any other harness.
+- Put the same trailer at the end of the PR body too; PRs are squash-merged and this
+  guarantees the trailer survives whichever message GitHub composes.
+- Commits with no trailer fall back to their conventional-commit subject, so the panel
+  is never empty — the trailer is how you stop a user-facing release note reading like
+  a commit log.
+- A trailer on a `chore`/`refactor`/`docs` commit forces it into the notes (use it when
+  a nominally internal change is visible); those types are otherwise omitted.
+- Never hand-edit `release-notes.json` for a new release; it is generated and committed
+  by the release job.
 
 ## Pre-commit Hooks (Husky)
 - **pre-commit**: Runs lint-staged on `*.{ts,tsx,json}` files
