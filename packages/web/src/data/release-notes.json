@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.74.0",
+    "date": "2026-09-23",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Tap the version number to see what's new — every release, what changed in it, and a dot when there is something you haven't read yet."
+      }
+    ]
+  },
+  {
     "version": "1.73.0",
     "date": "2026-09-21",
     "notes": [

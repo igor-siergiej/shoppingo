@@ -1,3 +1,10 @@
+# [1.74.0](https://github.com/igor-siergiej/shoppingo/compare/v1.73.1...v1.74.0) (2026-09-23)
+
+
+### Features
+
+* **web:** what's new panel behind the version badge ([#164](https://github.com/igor-siergiej/shoppingo/issues/164)) ([d892590](https://github.com/igor-siergiej/shoppingo/commit/d892590204c94ff4282dc2c4adab34e9655a9eac))
+
 ## [1.73.1](https://github.com/igor-siergiej/shoppingo/compare/v1.73.0...v1.73.1) (2026-09-21)
 
 
