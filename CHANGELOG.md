@@ -1,3 +1,10 @@
+## [1.74.1](https://github.com/igor-siergiej/shoppingo/compare/v1.74.0...v1.74.1) (2026-09-27)
+
+
+### Bug Fixes
+
+* **web:** shopping list delete no longer needs a second press ([#166](https://github.com/igor-siergiej/shoppingo/issues/166)) ([49ca1be](https://github.com/igor-siergiej/shoppingo/commit/49ca1bef7f7fe33ae9a14f3bef7ab5e8457d9d1b))
+
 # [1.74.0](https://github.com/igor-siergiej/shoppingo/compare/v1.73.1...v1.74.0) (2026-09-23)
 
 
