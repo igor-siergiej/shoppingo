@@ -1,7 +1,6 @@
 import type { Ingredient } from '@shoppingo/types';
-import { ImageOff } from 'lucide-react';
-import { Skeleton } from '../../components/ui/skeleton';
 import { useItemImage } from '../../hooks/useItemImage';
+import { IngredientAvatar } from '../IngredientAvatar';
 
 interface IngredientSelectRowProps {
     ingredient: Ingredient;
@@ -22,27 +21,14 @@ export const IngredientSelectRow = ({ ingredient, isSelected, onToggle }: Ingred
                     : 'bg-muted/30 border-muted-foreground/20 text-muted-foreground line-through'
             }`}
         >
-            <div className="relative h-12 w-12 shrink-0">
-                {imageBlobUrl && (
-                    <img
-                        src={imageBlobUrl}
-                        alt={ingredient.name}
-                        className={`h-12 w-12 rounded-full object-cover border ${hasLoadedImage && !hasImageError ? 'opacity-100' : 'opacity-0'}`}
-                        onLoad={onImageLoad}
-                        onError={onImageError}
-                    />
-                )}
-
-                {!hasLoadedImage && !hasImageError && (
-                    <Skeleton className="absolute inset-0 h-12 w-12 rounded-full border" />
-                )}
-
-                {hasImageError && (
-                    <div className="absolute inset-0 h-12 w-12 rounded-full border flex items-center justify-center bg-muted/20 text-muted-foreground">
-                        <ImageOff className="h-5 w-5" />
-                    </div>
-                )}
-            </div>
+            <IngredientAvatar
+                name={ingredient.name}
+                imageBlobUrl={imageBlobUrl}
+                hasLoadedImage={hasLoadedImage}
+                hasImageError={hasImageError}
+                onImageLoad={onImageLoad}
+                onImageError={onImageError}
+            />
 
             <div>
                 <div className="font-medium">{ingredient.name}</div>

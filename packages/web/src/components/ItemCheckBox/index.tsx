@@ -1,6 +1,5 @@
 import type { Item, ListType } from '@shoppingo/types';
 import { ListType as ListTypeEnum } from '@shoppingo/types';
-import { Edit2, Loader2, Trash2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { type MouseEvent, useId, useRef, useState } from 'react';
 import { QuantityUnitField } from '../../components/QuantityUnitField';
@@ -18,7 +17,8 @@ import { Label } from '../../components/ui/label';
 import { useItemEditDrawer } from '../../hooks/useItemEditDrawer';
 import { useItemImage } from '../../hooks/useItemImage';
 import { useItemMutations } from '../../hooks/useItemMutations';
-import { SWIPE_REVEAL_DISTANCE, useSwipeGesture } from '../../hooks/useSwipeGesture';
+import { useSwipeGesture } from '../../hooks/useSwipeGesture';
+import { SwipeRevealShell } from '../SwipeRevealShell';
 import { ItemCheckBoxCard } from './ItemCheckBoxCard';
 
 interface ItemCheckBoxProps {
@@ -26,45 +26,6 @@ interface ItemCheckBoxProps {
     listTitle: string;
     listType: ListType;
 }
-
-interface ItemCheckBoxActionButtonsProps {
-    isDeleting: boolean;
-    deleteMutation: { isLoading: boolean };
-    onDelete: (e?: MouseEvent) => void;
-    onEdit: (e?: MouseEvent) => void;
-}
-
-const ItemCheckBoxActionButtons = ({
-    isDeleting,
-    deleteMutation,
-    onDelete,
-    onEdit,
-}: ItemCheckBoxActionButtonsProps) => {
-    if (isDeleting) return null;
-
-    return (
-        <>
-            <div className="absolute inset-y-0 right-0 flex items-center justify-end w-20">
-                <Button
-                    onClick={onDelete}
-                    disabled={deleteMutation.isLoading}
-                    className="h-[calc(100%-2px)] w-full rounded-lg bg-destructive hover:bg-destructive/90 text-white border border-destructive/20 shadow-sm flex items-center justify-center mr-1"
-                >
-                    {deleteMutation.isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Trash2 size={20} />}
-                </Button>
-            </div>
-
-            <div className="absolute inset-y-0 left-0 flex items-center justify-start pl-1 w-20">
-                <Button
-                    onClick={onEdit}
-                    className="h-[calc(100%-2px)] w-full rounded-lg bg-blue-500 hover:bg-blue-600 text-white border border-blue-600/20 shadow-sm flex items-center justify-center"
-                >
-                    <Edit2 size={20} />
-                </Button>
-            </div>
-        </>
-    );
-};
 
 const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
     const [isDeleting, setIsDeleting] = useState(false);
@@ -74,7 +35,6 @@ const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
     const itemUnitId = useId();
 
     const { imageBlobUrl, hasLoadedImage, hasImageError, onImageLoad, onImageError } = useItemImage(item.name);
-    const { x, controls, swipeState, handleDragEnd, closeSwipe } = useSwipeGesture();
     const { toggleMutation, deleteMutation, updateNameMutation, updateQuantityMutation } = useItemMutations(
         listTitle,
         item.id
@@ -86,6 +46,8 @@ const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
         setIsDeleting(true);
         deleteMutation.mutate();
     };
+
+    const { x, controls, swipeState, handleDragEnd, closeSwipe } = useSwipeGesture(() => handleDeleteItem());
 
     const handleEditStart = (e?: MouseEvent) => {
         e?.stopPropagation();
@@ -137,26 +99,19 @@ const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
                     layout: { duration: 0.4, ease: [0.4, 0, 0.2, 1] },
                 }}
             >
-                <ItemCheckBoxActionButtons
-                    isDeleting={isDeleting}
-                    deleteMutation={deleteMutation}
+                <SwipeRevealShell
+                    x={x}
+                    controls={controls}
+                    swipeState={swipeState}
+                    onDragEnd={handleDragEnd}
+                    onCloseSwipe={closeSwipe}
                     onDelete={handleDeleteItem}
                     onEdit={handleEditStart}
-                />
-
-                <motion.div
-                    drag={!deleteMutation.isLoading ? 'x' : false}
-                    dragConstraints={{ left: -SWIPE_REVEAL_DISTANCE, right: SWIPE_REVEAL_DISTANCE }}
-                    dragElastic={0.1}
-                    onDragEnd={handleDragEnd}
-                    animate={controls}
-                    style={{ x }}
-                    className="relative z-10 bg-background rounded-lg"
-                    onClick={(e) => {
-                        const target = e.target as HTMLElement;
-                        if (target.closest('button')) return;
-                        if (swipeState !== 'closed') closeSwipe();
-                    }}
+                    deleteLoading={deleteMutation.isLoading}
+                    disabled={deleteMutation.isLoading}
+                    hideActions={isDeleting}
+                    deleteAriaLabel={`Delete ${item.name}`}
+                    editAriaLabel={`Edit ${item.name}`}
                 >
                     <motion.div
                         animate={{ opacity: toggleMutation.isLoading ? 0.5 : 1 }}
@@ -175,7 +130,7 @@ const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
                             onImageError={onImageError}
                         />
                     </motion.div>
-                </motion.div>
+                </SwipeRevealShell>
             </motion.div>
 
             <Drawer open={drawerState.isOpen} onOpenChange={(open) => !open && drawerState.closeDrawer()}>

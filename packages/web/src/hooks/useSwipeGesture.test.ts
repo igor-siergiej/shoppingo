@@ -137,6 +137,63 @@ describe('useSwipeGesture', () => {
         expect(result.current.swipeState).toBe('closed');
     });
 
+    it('commits delete on a swipe past the commit distance, without needing a follow-up tap', () => {
+        const onCommitDelete = vi.fn();
+        const { result } = renderHook(() => useSwipeGesture(onCommitDelete));
+
+        act(() => {
+            result.current.handleDragEnd(new PointerEvent('dragend'), {
+                offset: { x: -150 },
+                velocity: { x: 0 },
+            });
+        });
+
+        expect(onCommitDelete).toHaveBeenCalledTimes(1);
+        expect(result.current.swipeState).toBe('closed');
+    });
+
+    it('commits delete on a fast flick past the reveal distance, even under the commit distance', () => {
+        const onCommitDelete = vi.fn();
+        const { result } = renderHook(() => useSwipeGesture(onCommitDelete));
+
+        act(() => {
+            result.current.handleDragEnd(new PointerEvent('dragend'), {
+                offset: { x: -90 },
+                velocity: { x: -1000 },
+            });
+        });
+
+        expect(onCommitDelete).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not commit delete for a normal reveal swipe (falls back to reveal + tap)', () => {
+        const onCommitDelete = vi.fn();
+        const { result } = renderHook(() => useSwipeGesture(onCommitDelete));
+
+        act(() => {
+            result.current.handleDragEnd(new PointerEvent('dragend'), {
+                offset: { x: -100 },
+                velocity: { x: 0 },
+            });
+        });
+
+        expect(onCommitDelete).not.toHaveBeenCalled();
+        expect(result.current.swipeState).toBe('left');
+    });
+
+    it('never commits delete when no onCommitDelete callback is provided', () => {
+        const { result } = renderHook(() => useSwipeGesture());
+
+        act(() => {
+            result.current.handleDragEnd(new PointerEvent('dragend'), {
+                offset: { x: -200 },
+                velocity: { x: 0 },
+            });
+        });
+
+        expect(result.current.swipeState).toBe('left');
+    });
+
     it('maintains open state when drag is minimal while open', () => {
         const { result } = renderHook(() => useSwipeGesture());
 
