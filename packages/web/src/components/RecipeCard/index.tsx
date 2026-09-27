@@ -1,6 +1,7 @@
 import type { Recipe } from '@shoppingo/types';
 import { CalendarDays, ImageOff, ListChecks, Users } from 'lucide-react';
 import { useAuthedImage } from '../../hooks/useAuthedImage';
+import { cn } from '../../lib/utils';
 import { AvatarStack } from '../ui/avatar-stack';
 import { Skeleton } from '../ui/skeleton';
 
@@ -54,27 +55,34 @@ const RecipeCardImage = ({ recipe }: { recipe: Recipe }) => {
     return <div className="relative h-32 w-32 flex-shrink-0 overflow-hidden rounded-xl bg-muted">{content}</div>;
 };
 
-const RecipeCardMeta = ({ recipe }: { recipe: Recipe }) => {
-    const ingredientCount = recipe.ingredients?.length ?? 0;
-    const ingredientLabel = ingredientCount === 1 ? 'ingredient' : 'ingredients';
-
-    return (
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-            <span className="inline-flex items-center gap-1">
-                <ListChecks className="h-3.5 w-3.5" />
-                {ingredientCount} {ingredientLabel}
-            </span>
-            <span className="inline-flex items-center gap-1">
-                <Users className="h-3.5 w-3.5" />
-                {recipe.users.length}
-            </span>
-            <span className="inline-flex items-center gap-1">
-                <CalendarDays className="h-3.5 w-3.5" />
-                {relativeDate(recipe.dateAdded)}
-            </span>
-        </div>
-    );
+const ingredientSummary = (recipe: Recipe): string => {
+    const count = recipe.ingredients?.length ?? 0;
+    return `${count} ${count === 1 ? 'ingredient' : 'ingredients'}`;
 };
+
+// Unshared cards have no avatar stack to fill the bottom slot, so their meta
+// stacks as a column and the whole info block centres vertically instead.
+const CARD_LAYOUT = {
+    shared: { info: 'justify-between', meta: 'flex-wrap items-center gap-x-3 gap-y-1' },
+    unshared: { info: 'justify-center gap-2', meta: 'flex-col items-start gap-1' },
+};
+
+const RecipeCardMeta = ({ recipe, className }: { recipe: Recipe; className: string }) => (
+    <div className={cn('flex text-xs text-muted-foreground', className)}>
+        <span className="inline-flex items-center gap-1">
+            <ListChecks className="h-3.5 w-3.5" />
+            {ingredientSummary(recipe)}
+        </span>
+        <span className="inline-flex items-center gap-1">
+            <Users className="h-3.5 w-3.5" />
+            {recipe.users.length}
+        </span>
+        <span className="inline-flex items-center gap-1">
+            <CalendarDays className="h-3.5 w-3.5" />
+            {relativeDate(recipe.dateAdded)}
+        </span>
+    </div>
+);
 
 const NewBadge = () => (
     <span className="absolute -top-2 -left-2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-primary-foreground shadow">
@@ -84,6 +92,7 @@ const NewBadge = () => (
 
 export const RecipeCard = ({ recipe, currentUserId, onClick }: RecipeCardProps) => {
     const otherUsers = recipe.users.filter((user) => user.id !== currentUserId);
+    const layout = otherUsers.length > 0 ? CARD_LAYOUT.shared : CARD_LAYOUT.unshared;
 
     return (
         <div
@@ -97,11 +106,11 @@ export const RecipeCard = ({ recipe, currentUserId, onClick }: RecipeCardProps) 
 
             <RecipeCardImage recipe={recipe} />
 
-            <div className="flex min-w-0 flex-1 flex-col justify-between py-0.5">
+            <div className={cn('flex min-w-0 flex-1 flex-col py-0.5', layout.info)}>
                 <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-foreground group-hover:text-primary transition-colors">
                     {recipe.title}
                 </h3>
-                <RecipeCardMeta recipe={recipe} />
+                <RecipeCardMeta recipe={recipe} className={layout.meta} />
                 <AvatarStack users={otherUsers} />
             </div>
         </div>
