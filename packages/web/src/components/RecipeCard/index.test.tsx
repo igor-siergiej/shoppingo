@@ -136,12 +136,13 @@ describe('RecipeCard', () => {
         expect((meta.parentElement as HTMLElement).className).toContain('justify-center');
     });
 
-    it('keeps the meta chips in a row when the recipe is shared', () => {
+    it('stacks the meta chips with the avatar stack directly beneath when the recipe is shared', () => {
         render(<RecipeCard recipe={mockRecipe} currentUserId="user-1" onClick={vi.fn()} />);
 
         const meta = screen.getByText('2 ingredients').parentElement as HTMLElement;
-        expect(meta.className).not.toContain('flex-col');
-        expect((meta.parentElement as HTMLElement).className).toContain('justify-between');
+        expect(meta.className).toContain('flex-col');
+        expect((meta.parentElement as HTMLElement).className).toContain('justify-center');
+        expect(meta.nextElementSibling?.contains(screen.getByTitle('friend'))).toBe(true);
     });
 
     it('cleans up object URL on unmount', async () => {

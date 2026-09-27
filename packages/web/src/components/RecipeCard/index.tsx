@@ -1,7 +1,6 @@
 import type { Recipe } from '@shoppingo/types';
 import { CalendarDays, ImageOff, ListChecks, Users } from 'lucide-react';
 import { useAuthedImage } from '../../hooks/useAuthedImage';
-import { cn } from '../../lib/utils';
 import { AvatarStack } from '../ui/avatar-stack';
 import { Skeleton } from '../ui/skeleton';
 
@@ -60,15 +59,8 @@ const ingredientSummary = (recipe: Recipe): string => {
     return `${count} ${count === 1 ? 'ingredient' : 'ingredients'}`;
 };
 
-// Unshared cards have no avatar stack to fill the bottom slot, so their meta
-// stacks as a column and the whole info block centres vertically instead.
-const CARD_LAYOUT = {
-    shared: { info: 'justify-between', meta: 'flex-wrap items-center gap-x-3 gap-y-1' },
-    unshared: { info: 'justify-center gap-2', meta: 'flex-col items-start gap-1' },
-};
-
-const RecipeCardMeta = ({ recipe, className }: { recipe: Recipe; className: string }) => (
-    <div className={cn('flex text-xs text-muted-foreground', className)}>
+const RecipeCardMeta = ({ recipe }: { recipe: Recipe }) => (
+    <div className="flex flex-col items-start gap-1 text-xs text-muted-foreground">
         <span className="inline-flex items-center gap-1">
             <ListChecks className="h-3.5 w-3.5" />
             {ingredientSummary(recipe)}
@@ -92,7 +84,6 @@ const NewBadge = () => (
 
 export const RecipeCard = ({ recipe, currentUserId, onClick }: RecipeCardProps) => {
     const otherUsers = recipe.users.filter((user) => user.id !== currentUserId);
-    const layout = otherUsers.length > 0 ? CARD_LAYOUT.shared : CARD_LAYOUT.unshared;
 
     return (
         <div
@@ -106,11 +97,11 @@ export const RecipeCard = ({ recipe, currentUserId, onClick }: RecipeCardProps) 
 
             <RecipeCardImage recipe={recipe} />
 
-            <div className={cn('flex min-w-0 flex-1 flex-col py-0.5', layout.info)}>
+            <div className="flex min-w-0 flex-1 flex-col justify-center gap-2 py-0.5">
                 <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-foreground group-hover:text-primary transition-colors">
                     {recipe.title}
                 </h3>
-                <RecipeCardMeta recipe={recipe} className={layout.meta} />
+                <RecipeCardMeta recipe={recipe} />
                 <AvatarStack users={otherUsers} />
             </div>
         </div>
