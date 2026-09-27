@@ -1,3 +1,10 @@
+## [1.74.2](https://github.com/igor-siergiej/shoppingo/compare/v1.74.1...v1.74.2) (2026-09-27)
+
+
+### Bug Fixes
+
+* **web:** hide recipe edit/delete while selecting ingredients for a list ([#167](https://github.com/igor-siergiej/shoppingo/issues/167)) ([54fd556](https://github.com/igor-siergiej/shoppingo/commit/54fd556850ed90e612e54ca4205704192a437557))
+
 ## [1.74.1](https://github.com/igor-siergiej/shoppingo/compare/v1.74.0...v1.74.1) (2026-09-27)
 
 

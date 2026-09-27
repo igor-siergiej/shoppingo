@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.74.2",
+    "date": "2026-09-27",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Recipe edit and delete buttons are hidden while you pick ingredients to add to a shopping list, so you can't tap them by accident."
+      }
+    ]
+  },
+  {
     "version": "1.74.1",
     "date": "2026-09-27",
     "notes": [
