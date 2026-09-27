@@ -98,6 +98,8 @@ export default defineConfig(({ mode }) => {
         },
         server: {
             port: 4000,
+            host: true,
+            allowedHosts: ['.ts.net'],
             hmr: {
                 overlay: false,
             },
