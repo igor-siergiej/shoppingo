@@ -110,4 +110,50 @@ describe('RecipeDetailPage', () => {
 
         expect(screen.queryByTestId('cover-image')).not.toBeInTheDocument();
     });
+
+    it('hides edit and delete actions while in ingredient-select mode and restores them after', async () => {
+        mockRecipe = {
+            id: 'recipe-1',
+            title: 'Pasta',
+            ingredients: [],
+            ownerId: 'user-1',
+            users: [{ id: 'user-1', username: 'testuser' }],
+            dateAdded: new Date(),
+        };
+
+        renderPage();
+
+        await screen.findByRole('heading', { name: 'Pasta' });
+        fireEvent.click(screen.getByText('Toggle Select Mode'));
+
+        expect(screen.queryByLabelText('Edit recipe title')).not.toBeInTheDocument();
+        expect(screen.queryByLabelText('Delete recipe')).not.toBeInTheDocument();
+
+        fireEvent.click(screen.getByText('Toggle Select Mode'));
+
+        expect(screen.getByLabelText('Edit recipe title')).toBeInTheDocument();
+        expect(screen.getByLabelText('Delete recipe')).toBeInTheDocument();
+    });
+
+    it('hides an open title editor while in ingredient-select mode', async () => {
+        mockRecipe = {
+            id: 'recipe-1',
+            title: 'Pasta',
+            ingredients: [],
+            ownerId: 'user-1',
+            users: [{ id: 'user-1', username: 'testuser' }],
+            dateAdded: new Date(),
+        };
+
+        renderPage();
+
+        await screen.findByRole('heading', { name: 'Pasta' });
+        fireEvent.click(screen.getByLabelText('Edit recipe title'));
+        expect(screen.getByLabelText('Recipe title')).toBeInTheDocument();
+
+        fireEvent.click(screen.getByText('Toggle Select Mode'));
+
+        expect(screen.queryByLabelText('Recipe title')).not.toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Pasta' })).toBeInTheDocument();
+    });
 });

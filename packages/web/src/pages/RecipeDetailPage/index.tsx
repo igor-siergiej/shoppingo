@@ -306,7 +306,7 @@ const RecipeDetailPage = () => {
                     )}
 
                     <div className="p-4 space-y-6">
-                        {isEditingTitle ? (
+                        {isEditingTitle && !isSelectMode ? (
                             <div className="flex items-center gap-2">
                                 <Input
                                     value={editedTitle}
@@ -338,7 +338,7 @@ const RecipeDetailPage = () => {
                                             Recipe
                                         </a>
                                     )}
-                                    {isOwner && (
+                                    {isOwner && !isSelectMode && (
                                         <>
                                             <button
                                                 onClick={() => setIsEditingTitle(true)}
