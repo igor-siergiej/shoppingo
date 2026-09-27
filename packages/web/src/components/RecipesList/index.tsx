@@ -13,7 +13,7 @@ interface RecipesListProps {
 export const RecipesList = ({ recipes, currentUserId, onRecipeClick, isLoading }: RecipesListProps) => {
     if (isLoading) {
         return (
-            <div className="flex flex-col gap-3 px-2 sm:grid sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+            <div className="flex flex-col gap-3 px-2 pt-2 sm:grid sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
                 {[1, 2, 3, 4, 5, 6].map((value) => (
                     <Card key={value} className="overflow-hidden">
                         <CardContent className="flex gap-3 p-3">
@@ -42,7 +42,7 @@ export const RecipesList = ({ recipes, currentUserId, onRecipeClick, isLoading }
     }
 
     return (
-        <div className="flex flex-col gap-3 px-2 sm:grid sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+        <div className="flex flex-col gap-3 px-2 pt-2 sm:grid sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
             {recipes.map((recipe) => (
                 <RecipeCard
                     key={recipe.id}

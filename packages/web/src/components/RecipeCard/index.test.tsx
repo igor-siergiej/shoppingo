@@ -127,6 +127,24 @@ describe('RecipeCard', () => {
         expect(screen.getByTitle('owner')).toBeTruthy();
     });
 
+    it('stacks the meta chips in a centred column when the recipe is not shared', () => {
+        const unsharedRecipe: Recipe = { ...mockRecipe, users: [{ id: 'user-1', username: 'owner' }] };
+        render(<RecipeCard recipe={unsharedRecipe} currentUserId="user-1" onClick={vi.fn()} />);
+
+        const meta = screen.getByText('2 ingredients').parentElement as HTMLElement;
+        expect(meta.className).toContain('flex-col');
+        expect((meta.parentElement as HTMLElement).className).toContain('justify-center');
+    });
+
+    it('stacks the meta chips with the avatar stack directly beneath when the recipe is shared', () => {
+        render(<RecipeCard recipe={mockRecipe} currentUserId="user-1" onClick={vi.fn()} />);
+
+        const meta = screen.getByText('2 ingredients').parentElement as HTMLElement;
+        expect(meta.className).toContain('flex-col');
+        expect((meta.parentElement as HTMLElement).className).toContain('justify-center');
+        expect(meta.nextElementSibling?.contains(screen.getByTitle('friend'))).toBe(true);
+    });
+
     it('cleans up object URL on unmount', async () => {
         const { unmount } = render(<RecipeCard recipe={mockRecipe} currentUserId="user-1" onClick={vi.fn()} />);
 

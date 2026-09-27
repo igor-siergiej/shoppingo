@@ -62,7 +62,8 @@ export async function apiUpdateItem(
 
 export async function apiCreateRecipe(
     title: string,
-    ingredients: Array<{ name: string; quantity?: number; unit?: string }> = []
+    ingredients: Array<{ name: string; quantity?: number; unit?: string }> = [],
+    selectedUsers: Array<string> = []
 ) {
     const res = await fetch(`${API_BASE}/api/recipes`, {
         method: 'PUT',
@@ -71,7 +72,7 @@ export async function apiCreateRecipe(
             title,
             dateAdded: new Date().toISOString(),
             user: { id: 'user-testuser', username: 'testuser' },
-            selectedUsers: [],
+            selectedUsers,
             ingredients,
         }),
     });
