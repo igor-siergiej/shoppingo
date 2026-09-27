@@ -1,5 +1,4 @@
 import type { Ingredient } from '@shoppingo/types';
-import { Edit2, ImageOff, Loader2, Trash2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { type MouseEvent, useId, useRef, useState } from 'react';
 import { QuantityBadge } from '../../components/ItemCheckBox/QuantityBadge';
@@ -15,9 +14,10 @@ import {
 } from '../../components/ui/drawer';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
-import { Skeleton } from '../../components/ui/skeleton';
 import { useItemImage } from '../../hooks/useItemImage';
-import { SWIPE_REVEAL_DISTANCE, useSwipeGesture } from '../../hooks/useSwipeGesture';
+import { useSwipeGesture } from '../../hooks/useSwipeGesture';
+import { IngredientAvatar } from '../IngredientAvatar';
+import { SwipeRevealShell } from '../SwipeRevealShell';
 
 interface IngredientItemProps {
     ingredient: Ingredient;
@@ -25,47 +25,6 @@ interface IngredientItemProps {
     onEdit: (id: string, updated: Ingredient) => void;
     isOwner?: boolean;
 }
-
-const IngredientItemActionButtons = ({
-    ingredientName,
-    isDeleting,
-    isLoading,
-    onDelete,
-    onEdit,
-}: {
-    ingredientName: string;
-    isDeleting: boolean;
-    isLoading: boolean;
-    onDelete: (e?: MouseEvent) => void;
-    onEdit: (e?: MouseEvent) => void;
-}) => {
-    if (isDeleting) return null;
-
-    return (
-        <>
-            <div className="absolute inset-y-0 right-0 flex items-center justify-end w-20">
-                <Button
-                    onClick={onDelete}
-                    disabled={isLoading}
-                    aria-label={`Delete ${ingredientName}`}
-                    className="h-[calc(100%-2px)] w-full rounded-lg bg-destructive hover:bg-destructive/90 text-white border border-destructive/20 shadow-sm flex items-center justify-center mr-1"
-                >
-                    {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Trash2 size={20} />}
-                </Button>
-            </div>
-
-            <div className="absolute inset-y-0 left-0 flex items-center justify-start pl-1 w-20">
-                <Button
-                    onClick={onEdit}
-                    aria-label={`Edit ${ingredientName}`}
-                    className="h-[calc(100%-2px)] w-full rounded-lg bg-blue-500 hover:bg-blue-600 text-white border border-blue-600/20 shadow-sm flex items-center justify-center"
-                >
-                    <Edit2 size={20} />
-                </Button>
-            </div>
-        </>
-    );
-};
 
 const IngredientItem = ({ ingredient, onDelete, onEdit, isOwner = true }: IngredientItemProps) => {
     const [isDeleting, setIsDeleting] = useState(false);
@@ -77,7 +36,6 @@ const IngredientItem = ({ ingredient, onDelete, onEdit, isOwner = true }: Ingred
     const ingredientUnitId = useId();
 
     const { imageBlobUrl, hasLoadedImage, hasImageError, onImageLoad, onImageError } = useItemImage(ingredient.name);
-    const { x, controls, swipeState, handleDragEnd, closeSwipe } = useSwipeGesture();
 
     const [editedName, setEditedName] = useState(ingredient.name);
     const [editedQuantity, setEditedQuantity] = useState(String(ingredient.quantity || ''));
@@ -96,6 +54,8 @@ const IngredientItem = ({ ingredient, onDelete, onEdit, isOwner = true }: Ingred
             setIsLoading(false);
         }
     };
+
+    const { x, controls, swipeState, handleDragEnd, closeSwipe } = useSwipeGesture(() => void handleDeleteClick());
 
     const handleEditClick = (e?: MouseEvent) => {
         e?.stopPropagation();
@@ -132,27 +92,14 @@ const IngredientItem = ({ ingredient, onDelete, onEdit, isOwner = true }: Ingred
     if (!isOwner) {
         return (
             <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/20 border border-border min-h-[60px]">
-                <div className="relative h-12 w-12 shrink-0 flex items-center justify-center">
-                    {imageBlobUrl && (
-                        <img
-                            src={imageBlobUrl}
-                            alt={ingredient.name}
-                            className={`h-12 w-12 rounded-full object-cover border ${hasLoadedImage && !hasImageError ? 'opacity-100' : 'opacity-0'}`}
-                            onLoad={onImageLoad}
-                            onError={onImageError}
-                        />
-                    )}
-
-                    {!hasLoadedImage && !hasImageError && (
-                        <Skeleton className="absolute inset-0 h-12 w-12 rounded-full border" />
-                    )}
-
-                    {hasImageError && (
-                        <div className="absolute inset-0 h-12 w-12 rounded-full border flex items-center justify-center bg-muted/20 text-muted-foreground">
-                            <ImageOff className="h-5 w-5" />
-                        </div>
-                    )}
-                </div>
+                <IngredientAvatar
+                    name={ingredient.name}
+                    imageBlobUrl={imageBlobUrl}
+                    hasLoadedImage={hasLoadedImage}
+                    hasImageError={hasImageError}
+                    onImageLoad={onImageLoad}
+                    onImageError={onImageError}
+                />
                 <p className="font-medium flex-1">{ingredient.name}</p>
                 <QuantityBadge quantity={ingredient.quantity} unit={ingredient.unit} />
             </div>
@@ -176,54 +123,33 @@ const IngredientItem = ({ ingredient, onDelete, onEdit, isOwner = true }: Ingred
                     layout: { duration: 0.4, ease: [0.4, 0, 0.2, 1] },
                 }}
             >
-                <IngredientItemActionButtons
-                    ingredientName={ingredient.name}
-                    isDeleting={isDeleting}
-                    isLoading={isLoading}
+                <SwipeRevealShell
+                    x={x}
+                    controls={controls}
+                    swipeState={swipeState}
+                    onDragEnd={handleDragEnd}
+                    onCloseSwipe={closeSwipe}
                     onDelete={handleDeleteClick}
                     onEdit={handleEditClick}
-                />
-
-                <motion.div
-                    drag={!isLoading ? 'x' : false}
-                    dragConstraints={{ left: -SWIPE_REVEAL_DISTANCE, right: SWIPE_REVEAL_DISTANCE }}
-                    dragElastic={0.1}
-                    onDragEnd={handleDragEnd}
-                    animate={controls}
-                    style={{ x }}
-                    className="relative z-10 bg-background rounded-lg"
-                    onClick={(e) => {
-                        const target = e.target as HTMLElement;
-                        if (target.closest('button')) return;
-                        if (swipeState !== 'closed') closeSwipe();
-                    }}
+                    deleteLoading={isLoading}
+                    disabled={isLoading}
+                    hideActions={isDeleting}
+                    deleteAriaLabel={`Delete ${ingredient.name}`}
+                    editAriaLabel={`Edit ${ingredient.name}`}
                 >
                     <div className="flex items-center gap-3 p-3 rounded-lg border border-border min-h-[60px]">
-                        <div className="relative h-12 w-12 shrink-0 flex items-center justify-center">
-                            {imageBlobUrl && (
-                                <img
-                                    src={imageBlobUrl}
-                                    alt={ingredient.name}
-                                    className={`h-12 w-12 rounded-full object-cover border ${hasLoadedImage && !hasImageError ? 'opacity-100' : 'opacity-0'}`}
-                                    onLoad={onImageLoad}
-                                    onError={onImageError}
-                                />
-                            )}
-
-                            {!hasLoadedImage && !hasImageError && (
-                                <Skeleton className="absolute inset-0 h-12 w-12 rounded-full border" />
-                            )}
-
-                            {hasImageError && (
-                                <div className="absolute inset-0 h-12 w-12 rounded-full border flex items-center justify-center bg-muted/20 text-muted-foreground">
-                                    <ImageOff className="h-5 w-5" />
-                                </div>
-                            )}
-                        </div>
+                        <IngredientAvatar
+                            name={ingredient.name}
+                            imageBlobUrl={imageBlobUrl}
+                            hasLoadedImage={hasLoadedImage}
+                            hasImageError={hasImageError}
+                            onImageLoad={onImageLoad}
+                            onImageError={onImageError}
+                        />
                         <p className="font-medium flex-1">{ingredient.name}</p>
                         <QuantityBadge quantity={ingredient.quantity} unit={ingredient.unit} />
                     </div>
-                </motion.div>
+                </SwipeRevealShell>
             </motion.div>
 
             <Drawer open={isDrawerOpen} onOpenChange={(open) => !open && setIsDrawerOpen(false)}>
