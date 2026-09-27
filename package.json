@@ -6,10 +6,8 @@
   "author": "Igor Siergiej <igorsiergiej@gmail.com>",
   "scripts": {
     "start:web": "bun run --filter @shoppingo/web start",
-    "start:web:with-mock": "dotenv -e .env -- bun run --filter @shoppingo/web start:with-mock",
     "start:api": "dotenv -e .env -- bun run --filter @shoppingo/api start",
     "start": "bun run start:web & bun run start:api",
-    "start:with-mock": "bun run start:web:with-mock & bun run start:api",
     "lint": "biome check .",
     "lint:fix": "biome check --fix --unsafe .",
     "format": "biome format --write .",

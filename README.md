@@ -54,7 +54,6 @@ Requires **Bun 1.x**, a local **MongoDB** (`localhost:27017`), **MinIO**, and a
 ```bash
 bun install
 bun run start            # web on :4000, api on :4001
-bun run start:with-mock  # same, with a mock auth server (no kivo needed)
 ```
 
 ```bash

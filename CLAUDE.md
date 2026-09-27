@@ -35,7 +35,6 @@ Run these from the root directory:
 - `bun run start` - Start both frontend and API
 - `bun run start:web` - Start only frontend (port 4000)
 - `bun run start:api` - Start only API (port 4001)
-- `bun run start:with-mock` - Start with mock authentication (uses `packages/web/mock-auth-server.js`)
 
 ### Code Quality
 - `bun run lint` - Run Biome linter across all packages
