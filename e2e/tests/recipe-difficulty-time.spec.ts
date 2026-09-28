@@ -4,9 +4,7 @@ import { expect, test } from '../fixtures';
 // Coverage for shoppingo-recipe-difficulty-time: prep time, cook time, servings and difficulty
 // are editable on manual creation and on Recipe Detail, and prefilled (parsed) from an import.
 test.describe('Recipe prep time, cook time, servings and difficulty', () => {
-    test('can be entered manually when creating a recipe and show on Recipe Detail', async ({
-        authenticatedPage,
-    }) => {
+    test('can be entered manually when creating a recipe and show on Recipe Detail', async ({ authenticatedPage }) => {
         await authenticatedPage.goto('/recipes/new');
         await authenticatedPage.getByRole('button', { name: 'Add manually' }).click();
         await authenticatedPage.getByLabel('Recipe Title').fill('Roast Chicken');
