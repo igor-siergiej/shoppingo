@@ -1,3 +1,10 @@
+## [1.75.1](https://github.com/igor-siergiej/shoppingo/compare/v1.75.0...v1.75.1) (2026-09-28)
+
+
+### Bug Fixes
+
+* **web:** recipe title no longer autofocuses after an import ([#171](https://github.com/igor-siergiej/shoppingo/issues/171)) ([f564dd6](https://github.com/igor-siergiej/shoppingo/commit/f564dd6d8bd56209e21a58a1dc01c7bd1cfd11cd))
+
 # [1.75.0](https://github.com/igor-siergiej/shoppingo/compare/v1.74.3...v1.75.0) (2026-09-28)
 
 

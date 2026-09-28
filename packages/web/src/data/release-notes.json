@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.75.1",
+    "date": "2026-09-28",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Importing a recipe from a link no longer jumps the page back to the top and pops the keyboard — you can see what was imported right away."
+      }
+    ]
+  },
+  {
     "version": "1.75.0",
     "date": "2026-09-28",
     "notes": [
