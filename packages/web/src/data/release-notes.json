@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.75.0",
+    "date": "2026-09-28",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Adding a recipe's ingredients to a shopping list now combines a near-duplicate (like \"eggs\" and \"large eggs\") into one line with the total quantity, instead of creating a second row."
+      }
+    ]
+  },
+  {
     "version": "1.74.3",
     "date": "2026-09-28",
     "notes": [

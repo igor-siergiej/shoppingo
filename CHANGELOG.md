@@ -1,3 +1,10 @@
+# [1.75.0](https://github.com/igor-siergiej/shoppingo/compare/v1.74.3...v1.75.0) (2026-09-28)
+
+
+### Features
+
+* **api:** merge near-duplicate ingredients into one shopping list row ([#170](https://github.com/igor-siergiej/shoppingo/issues/170)) ([4aa74d6](https://github.com/igor-siergiej/shoppingo/commit/4aa74d6abcea214e8e11a038602d7eaa556c9064))
+
 ## [1.74.3](https://github.com/igor-siergiej/shoppingo/compare/v1.74.2...v1.74.3) (2026-09-28)
 
 
