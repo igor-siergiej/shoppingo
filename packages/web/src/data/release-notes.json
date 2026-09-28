@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.77.0",
+    "date": "2026-09-28",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Recipes now offer AI-suggested substitutes for any ingredient — tap the swap icon next to an ingredient to see a few alternatives."
+      }
+    ]
+  },
+  {
     "version": "1.76.0",
     "date": "2026-09-28",
     "notes": [

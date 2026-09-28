@@ -1,3 +1,10 @@
+# [1.77.0](https://github.com/igor-siergiej/shoppingo/compare/v1.76.0...v1.77.0) (2026-09-28)
+
+
+### Features
+
+* **recipes:** suggest substitutes for a recipe ingredient ([#174](https://github.com/igor-siergiej/shoppingo/issues/174)) ([bac883b](https://github.com/igor-siergiej/shoppingo/commit/bac883b2e0b7e981325b151237c1d888f355b4e0))
+
 # [1.76.0](https://github.com/igor-siergiej/shoppingo/compare/v1.75.2...v1.76.0) (2026-09-28)
 
 
