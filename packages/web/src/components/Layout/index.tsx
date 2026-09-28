@@ -21,6 +21,15 @@ const NORMAL_SCROLL_ROUTES: Record<string, true> = {
     '/settings': true,
 };
 
+// Recipe Detail (`/recipes/:recipeId`) is a dynamic segment, so it can't live in the
+// static NORMAL_SCROLL_ROUTES map above — same reversed-flex bug as the Recipes page
+// (#122), scoped to its own ingredients/steps overflow. Excludes the sibling static
+// routes that also start with "/recipes/" and are handled elsewhere.
+const RECIPE_DETAIL_ROUTE = /^\/recipes\/(?!new$|use-up$)[^/]+$/;
+
+const isNormalScrollRoute = (pathname: string): boolean =>
+    !!NORMAL_SCROLL_ROUTES[pathname] || RECIPE_DETAIL_ROUTE.test(pathname);
+
 // Routes with their own full-page header/footer (no bottom ToolBar) — they don't need
 // the bottom-24 space Layout normally reserves for it, or Layout's own padding.
 const FULL_BLEED_ROUTES: Record<string, true> = { '/recipes/new': true };
@@ -36,7 +45,7 @@ export const Layout = ({ children }: LayoutProps) => {
     const { scrollRef, pullY, isRefreshing, hasTriggered } = usePullToRefresh(executeRefresh);
     const { pathname } = useLocation();
 
-    const flexDirectionClass = NORMAL_SCROLL_ROUTES[pathname] ? 'flex-col' : 'flex-col-reverse';
+    const flexDirectionClass = isNormalScrollRoute(pathname) ? 'flex-col' : 'flex-col-reverse';
     const widthClass = WIDE_ROUTES[pathname] ? 'max-w-[500px] sm:max-w-5xl' : 'max-w-[500px]';
     const containerClass = FULL_BLEED_ROUTES[pathname]
         ? 'fixed top-14 md:top-16 bottom-0 left-0 right-0'
