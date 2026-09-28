@@ -68,6 +68,10 @@ const AddRecipePage = () => {
     const autoImport = !!initialLink;
 
     const [mode, setMode] = useState<Mode>(autoImport ? 'form' : 'choice');
+    // Title autoFocus only fires when the user explicitly chose manual entry (no imported
+    // content to hide behind the keyboard) — never for a completed URL/share-target import,
+    // which already populated the form and would just yank the user back to the top.
+    const [titleAutoFocus, setTitleAutoFocus] = useState(false);
     const modeRef = useRef<Mode>(mode);
     useEffect(() => {
         modeRef.current = mode;
@@ -225,7 +229,10 @@ const AddRecipePage = () => {
         return (
             <ChoiceScreen
                 onSelectImport={() => setMode('import')}
-                onSelectManual={() => setMode('form')}
+                onSelectManual={() => {
+                    setTitleAutoFocus(true);
+                    setMode('form');
+                }}
                 onCancel={handleCancel}
             />
         );
@@ -243,6 +250,7 @@ const AddRecipePage = () => {
                 onSwitchToManual={() => {
                     handleCancelImport();
                     setImportError('');
+                    setTitleAutoFocus(true);
                     setMode('form');
                 }}
                 onCancel={handleCancel}
@@ -320,7 +328,7 @@ const AddRecipePage = () => {
                                     setError('');
                                 }}
                                 disabled={isLoading}
-                                autoFocus
+                                autoFocus={titleAutoFocus}
                                 autoComplete="off"
                                 inputMode="text"
                                 className="h-12 border border-foreground/30 text-base"

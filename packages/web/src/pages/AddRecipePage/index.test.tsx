@@ -394,6 +394,23 @@ describe('AddRecipePage', () => {
         expect(screen.queryByText('proxy failed')).toBeFalsy();
     });
 
+    it('does not autofocus the title field after a completed share-target import', async () => {
+        vi.mocked(importRecipe).mockResolvedValue({
+            title: 'Imported Dish',
+            ingredients: [],
+            instructions: ['Mix.'],
+            link: 'https://example.com/dish3',
+        });
+
+        renderPage('/recipes/new?sharedUrl=https%3A%2F%2Fexample.com%2Fdish3');
+
+        const titleInput = await screen.findByPlaceholderText('Enter recipe title...');
+        await waitFor(() => {
+            expect((titleInput as HTMLInputElement).value).toBe('Imported Dish');
+        });
+        expect(titleInput).not.toHaveFocus();
+    });
+
     it('shows scraped prep/cook time and yield as read-only chips after import', async () => {
         vi.mocked(importRecipe).mockResolvedValue({
             title: 'Timed Dish',
@@ -517,11 +534,12 @@ describe('AddRecipePage', () => {
         expect(screen.queryByPlaceholderText('Enter recipe title...')).toBeFalsy();
     });
 
-    it('clicking Add manually shows the full form, empty', async () => {
+    it('clicking Add manually shows the full form, empty, and autofocuses the title field', async () => {
         renderPage();
         await enterManualMode();
         const titleInput = screen.getByPlaceholderText('Enter recipe title...') as HTMLInputElement;
         expect(titleInput.value).toBe('');
+        expect(titleInput).toHaveFocus();
     });
 
     it('navigates to /recipes when the choice screen Cancel button is pressed', async () => {
@@ -644,14 +662,15 @@ describe('AddRecipePage', () => {
         expect((screen.getByPlaceholderText('Enter recipe title...') as HTMLInputElement).value).toBe('Recovered');
     });
 
-    it('clicking "or add manually instead" with no error moves straight to an empty form', async () => {
+    it('clicking "or add manually instead" with no error moves straight to an empty, focused form', async () => {
         renderPage();
         await enterImportMode();
 
         await userEvent.click(screen.getByRole('button', { name: /or add manually instead/i }));
 
-        expect(screen.getByPlaceholderText('Enter recipe title...')).toBeTruthy();
-        expect((screen.getByPlaceholderText('Enter recipe title...') as HTMLInputElement).value).toBe('');
+        const titleInput = screen.getByPlaceholderText('Enter recipe title...') as HTMLInputElement;
+        expect(titleInput.value).toBe('');
+        expect(titleInput).toHaveFocus();
     });
 
     it('invalidates the single-recipe query cache after uploading an image', async () => {
