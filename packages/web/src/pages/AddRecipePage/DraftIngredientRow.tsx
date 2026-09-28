@@ -18,7 +18,7 @@ const noop = () => {};
 // same image lookup by name) but edit/delete are local callbacks, not useItemMutations —
 // recipe ingredients are draft-only local state until the whole recipe is submitted.
 export const DraftIngredientRow = ({ ingredient, onEdit, onDelete }: DraftIngredientRowProps) => {
-    const { x, controls, swipeState, handleDragEnd, closeSwipe } = useSwipeGesture(onDelete);
+    const { x, controls, swipeState, handleDragEnd, closeSwipe } = useSwipeGesture();
     const { imageBlobUrl, hasLoadedImage, hasImageError, onImageLoad, onImageError } = useItemImage(ingredient.name);
 
     return (

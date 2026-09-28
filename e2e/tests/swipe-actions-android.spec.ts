@@ -42,7 +42,7 @@ test.describe('Android Chrome (Pixel 5) delete swipe', () => {
         await expect(authenticatedPage.getByText('Milk', { exact: true })).toBeHidden({ timeout: 3000 });
     });
 
-    test('swiping past the delete commit distance removes the item on release, with no button tap needed', async ({
+    test('swiping past the old delete-commit distance does not delete on release; the revealed button still must be tapped', async ({
         authenticatedPage,
     }) => {
         await apiCreateList(LIST_TITLE);
@@ -51,6 +51,14 @@ test.describe('Android Chrome (Pixel 5) delete swipe', () => {
         await expect(authenticatedPage.getByText('Eggs')).toBeVisible();
 
         await swipeNoSettleWait(authenticatedPage, 'Eggs', -170);
+
+        // A far, fast swipe with no follow-up tap must never delete on its own.
+        await authenticatedPage.waitForTimeout(500);
+        await expect(authenticatedPage.getByText('Eggs', { exact: true })).toBeVisible();
+
+        const deleteButton = authenticatedPage.locator('button[class*="bg-destructive"]').first();
+        await expect(deleteButton).toBeVisible();
+        await deleteButton.click();
 
         await expect(authenticatedPage.getByText('Eggs', { exact: true })).toBeHidden({ timeout: 3000 });
     });

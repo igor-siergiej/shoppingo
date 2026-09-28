@@ -55,7 +55,7 @@ const IngredientItem = ({ ingredient, onDelete, onEdit, isOwner = true }: Ingred
         }
     };
 
-    const { x, controls, swipeState, handleDragEnd, closeSwipe } = useSwipeGesture(() => void handleDeleteClick());
+    const { x, controls, swipeState, handleDragEnd, closeSwipe } = useSwipeGesture();
 
     const handleEditClick = (e?: MouseEvent) => {
         e?.stopPropagation();
