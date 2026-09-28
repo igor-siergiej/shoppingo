@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.74.3",
+    "date": "2026-09-28",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Swiping to delete a shopping list item, recipe ingredient, or draft ingredient now only reveals the Delete button again — you always have to tap it to confirm, so a stray swipe can't delete something by accident."
+      }
+    ]
+  },
+  {
     "version": "1.74.2",
     "date": "2026-09-27",
     "notes": [

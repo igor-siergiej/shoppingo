@@ -1,3 +1,10 @@
+## [1.74.3](https://github.com/igor-siergiej/shoppingo/compare/v1.74.2...v1.74.3) (2026-09-28)
+
+
+### Bug Fixes
+
+* **web:** require a tap on the revealed Delete button, no swipe-only delete ([#169](https://github.com/igor-siergiej/shoppingo/issues/169)) ([6fba673](https://github.com/igor-siergiej/shoppingo/commit/6fba67357f85745727bb5ed5977590ebe2002a98)), closes [#166](https://github.com/igor-siergiej/shoppingo/issues/166)
+
 ## [1.74.2](https://github.com/igor-siergiej/shoppingo/compare/v1.74.1...v1.74.2) (2026-09-27)
 
 
