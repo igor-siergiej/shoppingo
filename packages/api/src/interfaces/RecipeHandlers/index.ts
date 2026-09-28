@@ -227,6 +227,34 @@ export const importRecipeImage = async (c: Context<HonoVars>): Promise<Response>
 };
 
 // fallow-ignore-next-line complexity
+export const suggestIngredientSubstitutes = async (c: Context<HonoVars>): Promise<Response> => {
+    const { ingredientName, recipeTitle } = await c.req.json<{ ingredientName?: string; recipeTitle?: string }>();
+    const authenticatedUser = getAuthenticatedUser(c);
+    if (!authenticatedUser) return unauthorized(c, 'Unauthorized ingredient substitute request');
+
+    if (!ingredientName || typeof ingredientName !== 'string' || ingredientName.trim() === '') {
+        return c.json({ error: 'ingredientName is required and must be a non-empty string' }, 400);
+    }
+
+    try {
+        const substitutes = await getRecipeService().suggestSubstitutes(ingredientName.trim(), recipeTitle?.trim());
+
+        getLogger().info('API: Ingredient substitutes suggested', {
+            userId: authenticatedUser.id,
+            ingredientName,
+            substituteCount: substitutes.length,
+        });
+
+        return c.json({ substitutes }, 200);
+    } catch (error: unknown) {
+        return failWithApiError(error, 'API: Failed to suggest ingredient substitutes', {
+            userId: authenticatedUser.id,
+            ingredientName,
+        });
+    }
+};
+
+// fallow-ignore-next-line complexity
 export const updateRecipe = async (c: Context<HonoVars>): Promise<Response> => {
     const recipeId = c.req.param('recipeId');
     const { title, ingredients, link, instructions, tags, prepTime, cookTime, servings, difficulty } =

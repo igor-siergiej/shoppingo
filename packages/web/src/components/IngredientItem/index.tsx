@@ -17,6 +17,7 @@ import { Label } from '../../components/ui/label';
 import { useItemImage } from '../../hooks/useItemImage';
 import { useSwipeGesture } from '../../hooks/useSwipeGesture';
 import { IngredientAvatar } from '../IngredientAvatar';
+import { IngredientSubstitutesPopover } from '../IngredientSubstitutesPopover';
 import { SwipeRevealShell } from '../SwipeRevealShell';
 
 interface IngredientItemProps {
@@ -24,9 +25,51 @@ interface IngredientItemProps {
     onDelete: (id: string) => void;
     onEdit: (id: string, updated: Ingredient) => void;
     isOwner?: boolean;
+    recipeTitle?: string;
 }
 
-const IngredientItem = ({ ingredient, onDelete, onEdit, isOwner = true }: IngredientItemProps) => {
+interface IngredientRowContentProps {
+    ingredient: Ingredient;
+    imageBlobUrl: string | null;
+    hasLoadedImage: boolean;
+    hasImageError: boolean;
+    onImageLoad: () => void;
+    onImageError: () => void;
+    recipeTitle?: string;
+    muted?: boolean;
+}
+
+// Shared avatar/name/quantity/substitutes row, identical for the read-only (non-owner) and
+// swipeable (owner) renders below — only the surrounding wrapper (plain div vs SwipeRevealShell)
+// and the muted background differ.
+const IngredientRowContent = ({
+    ingredient,
+    imageBlobUrl,
+    hasLoadedImage,
+    hasImageError,
+    onImageLoad,
+    onImageError,
+    recipeTitle,
+    muted = false,
+}: IngredientRowContentProps) => (
+    <div
+        className={`flex items-center gap-3 p-3 rounded-lg border border-border min-h-[60px] ${muted ? 'bg-muted/20' : ''}`}
+    >
+        <IngredientAvatar
+            name={ingredient.name}
+            imageBlobUrl={imageBlobUrl}
+            hasLoadedImage={hasLoadedImage}
+            hasImageError={hasImageError}
+            onImageLoad={onImageLoad}
+            onImageError={onImageError}
+        />
+        <p className="font-medium flex-1">{ingredient.name}</p>
+        <QuantityBadge quantity={ingredient.quantity} unit={ingredient.unit} />
+        <IngredientSubstitutesPopover ingredientName={ingredient.name} recipeTitle={recipeTitle} />
+    </div>
+);
+
+const IngredientItem = ({ ingredient, onDelete, onEdit, isOwner = true, recipeTitle }: IngredientItemProps) => {
     const [isDeleting, setIsDeleting] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -91,18 +134,16 @@ const IngredientItem = ({ ingredient, onDelete, onEdit, isOwner = true }: Ingred
 
     if (!isOwner) {
         return (
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/20 border border-border min-h-[60px]">
-                <IngredientAvatar
-                    name={ingredient.name}
-                    imageBlobUrl={imageBlobUrl}
-                    hasLoadedImage={hasLoadedImage}
-                    hasImageError={hasImageError}
-                    onImageLoad={onImageLoad}
-                    onImageError={onImageError}
-                />
-                <p className="font-medium flex-1">{ingredient.name}</p>
-                <QuantityBadge quantity={ingredient.quantity} unit={ingredient.unit} />
-            </div>
+            <IngredientRowContent
+                ingredient={ingredient}
+                imageBlobUrl={imageBlobUrl}
+                hasLoadedImage={hasLoadedImage}
+                hasImageError={hasImageError}
+                onImageLoad={onImageLoad}
+                onImageError={onImageError}
+                recipeTitle={recipeTitle}
+                muted
+            />
         );
     }
 
@@ -137,18 +178,15 @@ const IngredientItem = ({ ingredient, onDelete, onEdit, isOwner = true }: Ingred
                     deleteAriaLabel={`Delete ${ingredient.name}`}
                     editAriaLabel={`Edit ${ingredient.name}`}
                 >
-                    <div className="flex items-center gap-3 p-3 rounded-lg border border-border min-h-[60px]">
-                        <IngredientAvatar
-                            name={ingredient.name}
-                            imageBlobUrl={imageBlobUrl}
-                            hasLoadedImage={hasLoadedImage}
-                            hasImageError={hasImageError}
-                            onImageLoad={onImageLoad}
-                            onImageError={onImageError}
-                        />
-                        <p className="font-medium flex-1">{ingredient.name}</p>
-                        <QuantityBadge quantity={ingredient.quantity} unit={ingredient.unit} />
-                    </div>
+                    <IngredientRowContent
+                        ingredient={ingredient}
+                        imageBlobUrl={imageBlobUrl}
+                        hasLoadedImage={hasLoadedImage}
+                        hasImageError={hasImageError}
+                        onImageLoad={onImageLoad}
+                        onImageError={onImageError}
+                        recipeTitle={recipeTitle}
+                    />
                 </SwipeRevealShell>
             </motion.div>
 
