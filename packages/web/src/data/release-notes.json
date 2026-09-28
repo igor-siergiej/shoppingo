@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.75.2",
+    "date": "2026-09-28",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Scrolling through a recipe's ingredients and steps no longer randomly triggers pull-to-refresh."
+      }
+    ]
+  },
+  {
     "version": "1.75.1",
     "date": "2026-09-28",
     "notes": [

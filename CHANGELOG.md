@@ -1,3 +1,10 @@
+## [1.75.2](https://github.com/igor-siergiej/shoppingo/compare/v1.75.1...v1.75.2) (2026-09-28)
+
+
+### Bug Fixes
+
+* **web:** Recipe Detail no longer false-triggers pull-to-refresh on scroll ([#172](https://github.com/igor-siergiej/shoppingo/issues/172)) ([a79132e](https://github.com/igor-siergiej/shoppingo/commit/a79132ecd812dc60513dc36908a4d223e562add7)), closes [#122](https://github.com/igor-siergiej/shoppingo/issues/122)
+
 ## [1.75.1](https://github.com/igor-siergiej/shoppingo/compare/v1.75.0...v1.75.1) (2026-09-28)
 
 
