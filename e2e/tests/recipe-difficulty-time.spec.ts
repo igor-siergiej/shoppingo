@@ -29,9 +29,9 @@ test.describe('Recipe prep time, cook time, servings and difficulty', () => {
         await authenticatedPage.goto(`/recipes/${recipe.id}`);
         await authenticatedPage.locator('h1').last().waitFor({ timeout: 10000 });
 
-        await expect(authenticatedPage.getByText('No details added yet.')).toBeVisible();
+        await expect(authenticatedPage.getByRole('button', { name: 'Add Details' })).toBeVisible();
 
-        await authenticatedPage.getByLabel('Edit recipe details').click();
+        await authenticatedPage.getByRole('button', { name: 'Add Details' }).click();
         await authenticatedPage.getByLabel('Prep time').fill('10');
         await authenticatedPage.getByLabel('Cook time').fill('25');
         await authenticatedPage.getByLabel('Servings').fill('2');

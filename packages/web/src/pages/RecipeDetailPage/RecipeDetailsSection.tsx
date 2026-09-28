@@ -91,6 +91,17 @@ export const RecipeDetailsSection = ({
     if (!isEditing) {
         if (!hasAnyDetail && !isOwner) return null;
 
+        if (!hasAnyDetail) {
+            return (
+                <div className="space-y-2">
+                    <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Details</p>
+                    <Button variant="outline" size="sm" onClick={handleEditStart}>
+                        Add Details
+                    </Button>
+                </div>
+            );
+        }
+
         return (
             <div className="space-y-2">
                 <div className="flex items-center justify-between">
@@ -106,16 +117,12 @@ export const RecipeDetailsSection = ({
                         </button>
                     )}
                 </div>
-                {hasAnyDetail ? (
-                    <RecipeDetailsChips
-                        prepTime={prepTime}
-                        cookTime={cookTime}
-                        servings={servings}
-                        difficulty={difficulty}
-                    />
-                ) : (
-                    <p className="text-sm text-muted-foreground">No details added yet.</p>
-                )}
+                <RecipeDetailsChips
+                    prepTime={prepTime}
+                    cookTime={cookTime}
+                    servings={servings}
+                    difficulty={difficulty}
+                />
             </div>
         );
     }

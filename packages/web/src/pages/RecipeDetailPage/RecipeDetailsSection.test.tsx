@@ -11,8 +11,7 @@ describe('RecipeDetailsSection', () => {
 
     it('shows an "add details" affordance for the owner when nothing is set yet', () => {
         render(<RecipeDetailsSection isOwner onSave={vi.fn()} />);
-        expect(screen.getByText('No details added yet.')).toBeInTheDocument();
-        expect(screen.getByLabelText('Edit recipe details')).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Add Details' })).toBeInTheDocument();
     });
 
     it('shows chips for whichever fields are set', () => {
@@ -53,7 +52,7 @@ describe('RecipeDetailsSection', () => {
         const onSave = vi.fn().mockResolvedValue(undefined);
         render(<RecipeDetailsSection isOwner onSave={onSave} />);
 
-        await userEvent.click(screen.getByLabelText('Edit recipe details'));
+        await userEvent.click(screen.getByRole('button', { name: 'Add Details' }));
         await userEvent.type(screen.getByLabelText('Prep time'), '10');
         await userEvent.type(screen.getByLabelText('Servings'), '2');
         await userEvent.click(screen.getByRole('button', { name: 'Save' }));
