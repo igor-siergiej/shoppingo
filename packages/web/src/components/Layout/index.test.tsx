@@ -92,4 +92,38 @@ describe('Layout', () => {
         expect(scrollDiv).toHaveClass('flex-col', 'overflow-y-auto', 'h-full', 'overscroll-y-contain');
         expect(scrollDiv).not.toHaveClass('flex-col-reverse');
     });
+
+    it('renders children in normal (non-reversed) flex column on a Recipe Detail route', () => {
+        const { container } = renderAtPath(
+            '/recipes/abc123',
+            <Layout>
+                <p>Content</p>
+            </Layout>
+        );
+
+        const outerDiv = container.firstChild as HTMLElement;
+        const scrollDiv = outerDiv.lastElementChild as HTMLElement;
+        expect(scrollDiv).toHaveClass('flex-col', 'overflow-y-auto', 'h-full', 'overscroll-y-contain');
+        expect(scrollDiv).not.toHaveClass('flex-col-reverse');
+    });
+
+    it('keeps the sibling static /recipes/new and /recipes/use-up routes on their own handling', () => {
+        const { container: addRecipe } = renderAtPath(
+            '/recipes/new',
+            <Layout>
+                <p>Content</p>
+            </Layout>
+        );
+        const { container: useUp } = renderAtPath(
+            '/recipes/use-up',
+            <Layout>
+                <p>Content</p>
+            </Layout>
+        );
+
+        // /recipes/new is full-bleed and reversed by default (own header/footer, not a list).
+        expect((addRecipe.firstChild as HTMLElement).lastElementChild).toHaveClass('flex-col-reverse');
+        // /recipes/use-up was already a NORMAL_SCROLL_ROUTES entry before this change.
+        expect((useUp.firstChild as HTMLElement).lastElementChild).toHaveClass('flex-col');
+    });
 });
