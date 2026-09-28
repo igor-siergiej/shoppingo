@@ -6,7 +6,7 @@ import { AuthorizationService } from '../AuthorizationService';
 import type { FriendService } from '../FriendService';
 import type { IdGenerator } from '../IdGenerator';
 import type { ListRepository } from '../ListRepository';
-import type { NotificationService } from '../NotificationService';
+import { isMergeableIngredient, resolveMergedQuantity, resolveMergedUnit } from './ingredientMatching';
 import type { AuthClient } from './types';
 
 export class ListService {
@@ -574,17 +574,20 @@ export class ListService {
                 throw Object.assign(new Error('List not found'), { status: 404 });
             }
 
-            // Collect existing item names (lowercased)
-            const existingNames = new Set(list.items.map((item) => item.name.toLowerCase()));
-
-            // Filter duplicates and create Item objects
-            const newItems: Item[] = [];
+            // Working copy: existing items plus any rows this same batch adds, so two
+            // near-duplicate ingredients from the same recipe also merge into one row,
+            // not just against what was already on the list.
+            const items = [...list.items];
+            const addedNames: string[] = [];
+            let added = 0;
             let skipped = 0;
 
             for (const raw of rawItems) {
-                if (existingNames.has(raw.itemName.toLowerCase())) {
-                    skipped++;
-                } else {
+                const matchIndex = items.findIndex((item) =>
+                    isMergeableIngredient(item, { name: raw.itemName, unit: raw.unit })
+                );
+
+                if (matchIndex === -1) {
                     const item: Item = {
                         id: this.idGenerator.generate(),
                         name: raw.itemName,
@@ -593,32 +596,37 @@ export class ListService {
                         ...(raw.quantity !== undefined && { quantity: raw.quantity }),
                         ...(raw.unit !== undefined && { unit: raw.unit }),
                     };
-                    newItems.push(item);
-                    existingNames.add(raw.itemName.toLowerCase());
+                    items.push(item);
+                    addedNames.push(item.name);
+                    added++;
+                } else {
+                    const existing = items[matchIndex];
+                    const mergedQuantity = resolveMergedQuantity(existing.quantity, raw.quantity);
+                    const mergedUnit = resolveMergedUnit(existing.unit, raw.unit);
+                    items[matchIndex] = {
+                        ...existing,
+                        ...(mergedQuantity !== undefined && { quantity: mergedQuantity }),
+                        ...(mergedUnit !== undefined && { unit: mergedUnit }),
+                    };
+                    skipped++;
                 }
             }
 
-            // Push new items to list
-            if (newItems.length > 0) {
-                await this.repo.pushItems(title, newItems);
-            }
+            list.items = items;
+            await this.repo.replaceByTitle(title, list);
 
             this.logger?.info('Items bulk added to list', {
                 listTitle: title,
                 userId,
-                addedCount: newItems.length,
+                addedCount: added,
                 skippedCount: skipped,
             });
 
-            if (actor && newItems.length > 0) {
-                void this.notificationService?.notifyItemsAdded(
-                    list,
-                    newItems.map((i) => i.name),
-                    actor
-                );
+            if (actor && addedNames.length > 0) {
+                void this.notificationService?.notifyItemsAdded(list, addedNames, actor);
             }
 
-            return { added: newItems.length, skipped };
+            return { added, skipped };
         } catch (error) {
             this.logger?.error('Failed to add items to list', { listTitle: title, userId, error });
             throw error;
