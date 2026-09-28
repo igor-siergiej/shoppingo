@@ -1,5 +1,5 @@
 import { useUser } from '@imapps/web-utils';
-import type { Recipe } from '@shoppingo/types';
+import type { Recipe, RecipeDifficulty } from '@shoppingo/types';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -12,6 +12,7 @@ import {
     uploadRecipeImage,
 } from '../../api';
 import { FriendPicker } from '../../components/FriendPicker';
+import { RecipeTimingFields } from '../../components/RecipeTimingFields';
 import { StepsList } from '../../components/StepsList';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
@@ -20,11 +21,12 @@ import { Textarea } from '../../components/ui/textarea';
 import { useUnitSystem } from '../../contexts/UnitSystemContext';
 import { useRecipeMutations } from '../../hooks/useRecipeMutations';
 import { logger } from '../../utils/logger';
+import { toOptionalNumber } from '../../utils/parseRecipeMeta';
 import { splitIntoSteps } from '../../utils/splitIntoSteps';
 import { notifyError, notifySuccess, notifyWarning } from '../../utils/toast';
 import { AddIngredientsFromListDrawer } from './AddIngredientsFromListDrawer';
 import { AddRecipeHeader } from './AddRecipeHeader';
-import { applyImportedDraft, type ImportMeta } from './applyImportedDraft';
+import { applyImportedDraft } from './applyImportedDraft';
 import { ChoiceScreen } from './ChoiceScreen';
 import { FormSection } from './FormSection';
 import { ImageUploadField } from './ImageUploadField';
@@ -51,6 +53,10 @@ const notifyImportResult = (foundCount: number): void => {
 // fallow-ignore-next-line complexity
 const AddRecipePage = () => {
     const recipeNameId = useId();
+    const prepTimeId = useId();
+    const cookTimeId = useId();
+    const servingsId = useId();
+    const difficultyId = useId();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const { user } = useUser();
@@ -99,7 +105,10 @@ const AddRecipePage = () => {
     const [tags, setTags] = useState<string[]>([]);
     const [importStage, setImportStage] = useState<ImportStage>('idle');
     const [importError, setImportError] = useState('');
-    const [importMeta, setImportMeta] = useState<ImportMeta>({});
+    const [prepTime, setPrepTime] = useState('');
+    const [cookTime, setCookTime] = useState('');
+    const [servings, setServings] = useState('');
+    const [difficulty, setDifficulty] = useState<'' | RecipeDifficulty>('');
     const autoImportedRef = useRef(false);
     const importAbortRef = useRef<AbortController | null>(null);
     const isImporting = importStage !== 'idle';
@@ -134,7 +143,9 @@ const AddRecipePage = () => {
                     setShowPasteArea,
                     setSelectedFile,
                     setImageUrl,
-                    setImportMeta,
+                    setPrepTime,
+                    setCookTime,
+                    setServings,
                 },
                 unitSystemRef.current,
                 { signal: controller.signal, onImageStart: () => setImportStage('image') }
@@ -180,7 +191,11 @@ const AddRecipePage = () => {
         recipeLink?: string,
         instructions?: string[],
         imageFile?: File,
-        recipeTags?: string[]
+        recipeTags?: string[],
+        recipePrepTime?: number,
+        recipeCookTime?: number,
+        recipeServings?: number,
+        recipeDifficulty?: RecipeDifficulty
     ): Promise<Recipe | undefined> => {
         if (!user) {
             logger.warn('Attempted to add recipe without user');
@@ -194,7 +209,11 @@ const AddRecipePage = () => {
                 recipeIngredients,
                 recipeLink,
                 instructions,
-                recipeTags
+                recipeTags,
+                recipePrepTime,
+                recipeCookTime,
+                recipeServings,
+                recipeDifficulty
             );
             logger.info('Recipe created successfully', { title: recipeTitle, recipeId });
 
@@ -280,7 +299,11 @@ const AddRecipePage = () => {
                 link.trim() || undefined,
                 steps.length > 0 ? steps : undefined,
                 selectedFile || undefined,
-                tags.length > 0 ? tags : undefined
+                tags.length > 0 ? tags : undefined,
+                toOptionalNumber(prepTime),
+                toOptionalNumber(cookTime),
+                toOptionalNumber(servings),
+                difficulty || undefined
             );
             if (!recipe) {
                 throw new Error('Failed to create recipe');
@@ -335,12 +358,27 @@ const AddRecipePage = () => {
                             />
                         </div>
 
+                        <RecipeTimingFields
+                            prepTimeId={prepTimeId}
+                            cookTimeId={cookTimeId}
+                            servingsId={servingsId}
+                            difficultyId={difficultyId}
+                            prepTime={prepTime}
+                            cookTime={cookTime}
+                            servings={servings}
+                            difficulty={difficulty}
+                            onPrepTimeChange={setPrepTime}
+                            onCookTimeChange={setCookTime}
+                            onServingsChange={setServings}
+                            onDifficultyChange={setDifficulty}
+                            disabled={isLoading}
+                        />
+
                         <LinkImportField
                             link={link}
                             setLink={setLink}
                             isImporting={isImporting}
                             importError={importError}
-                            importMeta={importMeta}
                             disabled={isLoading}
                             onImport={() => void handleImport(link)}
                             onCancelImport={handleCancelImport}

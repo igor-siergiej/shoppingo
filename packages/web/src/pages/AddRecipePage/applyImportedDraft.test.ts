@@ -16,7 +16,9 @@ const makeSetters = (): DraftSetters => ({
     setShowPasteArea: vi.fn(),
     setSelectedFile: vi.fn(),
     setImageUrl: vi.fn(),
-    setImportMeta: vi.fn(),
+    setPrepTime: vi.fn(),
+    setCookTime: vi.fn(),
+    setServings: vi.fn(),
 });
 
 const draft: RecipeImportResult = {
@@ -50,5 +52,27 @@ describe('applyImportedDraft unit conversion', () => {
             { name: 'Butter', quantity: 113, unit: 'g' },
             { name: 'Salt', quantity: undefined, unit: undefined },
         ]);
+    });
+});
+
+describe('applyImportedDraft timing and servings prefill', () => {
+    beforeEach(() => vi.clearAllMocks());
+
+    it('parses prepTime, cookTime and recipeYield into the real form fields', async () => {
+        const setters = makeSetters();
+        await applyImportedDraft({ ...draft, prepTime: 'PT20M', cookTime: 'PT1H', recipeYield: '8 servings' }, setters);
+
+        expect(setters.setPrepTime).toHaveBeenCalledWith('20');
+        expect(setters.setCookTime).toHaveBeenCalledWith('60');
+        expect(setters.setServings).toHaveBeenCalledWith('8');
+    });
+
+    it('does not touch timing/servings setters when the import found none', async () => {
+        const setters = makeSetters();
+        await applyImportedDraft(draft, setters);
+
+        expect(setters.setPrepTime).not.toHaveBeenCalled();
+        expect(setters.setCookTime).not.toHaveBeenCalled();
+        expect(setters.setServings).not.toHaveBeenCalled();
     });
 });

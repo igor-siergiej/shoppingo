@@ -411,30 +411,32 @@ describe('AddRecipePage', () => {
         expect(titleInput).not.toHaveFocus();
     });
 
-    it('shows scraped prep/cook time and yield as read-only chips after import', async () => {
+    it('prefills prep time, cook time and servings from a scraped import', async () => {
         vi.mocked(importRecipe).mockResolvedValue({
             title: 'Timed Dish',
             ingredients: [],
             instructions: ['Mix.'],
             link: 'https://example.com/timed',
-            prepTime: '10 mins',
-            cookTime: '25 mins',
+            prepTime: 'PT10M',
+            cookTime: 'PT25M',
             recipeYield: '4 servings',
         });
 
         renderPage('/recipes/new?sharedUrl=https%3A%2F%2Fexample.com%2Ftimed');
 
         await waitFor(() => {
-            expect(screen.getByText(/Prep:\s*10 mins/)).toBeTruthy();
-            expect(screen.getByText(/Cook:\s*25 mins/)).toBeTruthy();
-            expect(screen.getByText(/Yield:\s*4 servings/)).toBeTruthy();
+            expect(screen.getByLabelText('Prep time')).toHaveValue(10);
+            expect(screen.getByLabelText('Cook time')).toHaveValue(25);
+            expect(screen.getByLabelText('Servings')).toHaveValue(4);
         });
     });
 
-    it('does not show metadata chips when the import has no timing info', async () => {
+    it('leaves prep time, cook time and servings empty on a fresh manual entry', async () => {
         renderPage();
         await enterManualMode();
-        expect(screen.queryByText(/Prep:/)).toBeFalsy();
+        expect(screen.getByLabelText('Prep time')).toHaveValue(null);
+        expect(screen.getByLabelText('Cook time')).toHaveValue(null);
+        expect(screen.getByLabelText('Servings')).toHaveValue(null);
     });
 
     it('navigates to /recipes after successful recipe creation', async () => {
@@ -474,6 +476,10 @@ describe('AddRecipePage', () => {
                 [],
                 'https://example.com',
                 ['Step one', 'Step two'],
+                undefined,
+                undefined,
+                undefined,
+                undefined,
                 undefined
             );
         });
@@ -514,6 +520,10 @@ describe('AddRecipePage', () => {
                 ],
                 'https://example.com/dish',
                 ['Mix.', 'Bake.'],
+                undefined,
+                undefined,
+                undefined,
+                undefined,
                 undefined
             );
         });

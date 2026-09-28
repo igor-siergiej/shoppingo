@@ -120,4 +120,59 @@ describe('useRecipeMutations', () => {
         const detail = client.getQueryData(['recipe', 'R2']) as { title: string };
         expect(detail.title).toBe('New Title');
     });
+
+    it('createRecipe includes prepTime, cookTime, servings and difficulty in the optimistic update', async () => {
+        const client = new QueryClient();
+        client.setQueryData(['recipes', 'user-1'], []);
+        const { result } = renderHook(() => useRecipeMutations(user), { wrapper: wrap(client) });
+        await act(async () => {
+            await result.current.createRecipe('Pasta', [], [], undefined, undefined, undefined, 10, 20, 4, 'easy');
+        });
+        const cached = client.getQueryData(['recipes', 'user-1']) as Array<{
+            title: string;
+            prepTime?: number;
+            cookTime?: number;
+            servings?: number;
+            difficulty?: string;
+        }>;
+        const created = cached.find((r) => r.title === 'Pasta');
+        expect(created).toMatchObject({ prepTime: 10, cookTime: 20, servings: 4, difficulty: 'easy' });
+    });
+
+    it('updateRecipe patches prepTime, cookTime, servings and difficulty in the detail cache', async () => {
+        const existingRecipe = {
+            id: 'R3',
+            title: 'Pasta',
+            ingredients: [],
+            ownerId: 'user-1',
+            users: [user],
+            dateAdded: new Date(),
+        };
+        const client = new QueryClient();
+        client.setQueryData(['recipes', 'user-1'], [existingRecipe]);
+        client.setQueryData(['recipe', 'R3'], existingRecipe);
+        const { result } = renderHook(() => useRecipeMutations(user), { wrapper: wrap(client) });
+        await act(async () => {
+            await result.current.updateRecipe(
+                'R3',
+                'Pasta',
+                [],
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                15,
+                25,
+                6,
+                'hard'
+            );
+        });
+        const detail = client.getQueryData(['recipe', 'R3']) as {
+            prepTime?: number;
+            cookTime?: number;
+            servings?: number;
+            difficulty?: string;
+        };
+        expect(detail).toMatchObject({ prepTime: 15, cookTime: 25, servings: 6, difficulty: 'hard' });
+    });
 });

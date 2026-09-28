@@ -215,6 +215,38 @@ describe('RecipeService.createRecipe', () => {
         expect(second).toBe(first);
         expect(second.title).toBe('Pasta');
     });
+
+    it('persists prepTime, cookTime, servings and difficulty when provided', async () => {
+        const svc = new RecipeService(repo as any, ids);
+        const recipe = await svc.createRecipe(
+            'Pasta',
+            [],
+            owner.id,
+            owner,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            20,
+            15,
+            4,
+            'easy'
+        );
+        expect(recipe.prepTime).toBe(20);
+        expect(recipe.cookTime).toBe(15);
+        expect(recipe.servings).toBe(4);
+        expect(recipe.difficulty).toBe('easy');
+    });
+
+    it('omits prepTime, cookTime, servings and difficulty when not provided', async () => {
+        const svc = new RecipeService(repo as any, ids);
+        const recipe = await svc.createRecipe('Pasta', [], owner.id, owner);
+        expect(recipe.prepTime).toBeUndefined();
+        expect(recipe.cookTime).toBeUndefined();
+        expect(recipe.servings).toBeUndefined();
+        expect(recipe.difficulty).toBeUndefined();
+    });
 });
 
 class MockRecipeTagger {
@@ -511,6 +543,52 @@ describe('RecipeService.updateRecipe', () => {
         );
         const updated = await svc.updateRecipe(created.id, 'Pasta', [], owner.id, undefined, undefined, ['dinner']);
         expect(updated.tags).toEqual(['dinner']);
+    });
+
+    it('persists prepTime, cookTime, servings and difficulty on update', async () => {
+        const svc = new RecipeService(repo as any, ids);
+        const created = await svc.createRecipe('Pasta', [], owner.id, owner);
+        const updated = await svc.updateRecipe(
+            created.id,
+            'Pasta',
+            [],
+            owner.id,
+            undefined,
+            undefined,
+            undefined,
+            25,
+            30,
+            6,
+            'hard'
+        );
+        expect(updated.prepTime).toBe(25);
+        expect(updated.cookTime).toBe(30);
+        expect(updated.servings).toBe(6);
+        expect(updated.difficulty).toBe('hard');
+    });
+
+    it('clears prepTime, cookTime, servings and difficulty when passed as undefined', async () => {
+        const svc = new RecipeService(repo as any, ids);
+        const created = await svc.createRecipe(
+            'Pasta',
+            [],
+            owner.id,
+            owner,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            20,
+            15,
+            4,
+            'easy'
+        );
+        const updated = await svc.updateRecipe(created.id, 'Pasta', [], owner.id);
+        expect(updated.prepTime).toBeUndefined();
+        expect(updated.cookTime).toBeUndefined();
+        expect(updated.servings).toBeUndefined();
+        expect(updated.difficulty).toBeUndefined();
     });
 });
 

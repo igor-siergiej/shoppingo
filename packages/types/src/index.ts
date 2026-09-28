@@ -63,6 +63,8 @@ export interface Ingredient {
     unit?: string;
 }
 
+export type RecipeDifficulty = 'easy' | 'medium' | 'hard';
+
 export interface Recipe {
     id: string;
     title: string;
@@ -76,6 +78,12 @@ export interface Recipe {
     link?: string;
     instructions?: string[];
     tags?: string[];
+    /** Minutes, not a raw ISO-8601 duration string — see applyImportedDraft.ts for import parsing. */
+    prepTime?: number;
+    /** Minutes, not a raw ISO-8601 duration string — see applyImportedDraft.ts for import parsing. */
+    cookTime?: number;
+    servings?: number;
+    difficulty?: RecipeDifficulty;
 }
 
 export interface RecipeResponse {
@@ -90,6 +98,10 @@ export interface RecipeResponse {
     link?: string;
     instructions?: string[];
     tags?: string[];
+    prepTime?: number;
+    cookTime?: number;
+    servings?: number;
+    difficulty?: RecipeDifficulty;
 }
 
 export interface RecipeImportResult {

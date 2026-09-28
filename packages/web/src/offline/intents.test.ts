@@ -185,6 +185,30 @@ describe('applyRecipeIntent', () => {
                 .tags
         ).toEqual(['dinner', 'quick']);
     });
+    it('recipe.create carries prepTime, cookTime, servings and difficulty through', () => {
+        const r = applyRecipeIntent(
+            [],
+            recipeIntent('recipe.create', 'R1', {
+                title: 'Pasta',
+                ownerId: 'user-1',
+                prepTime: 10,
+                cookTime: 20,
+                servings: 4,
+                difficulty: 'easy',
+            })
+        );
+        expect(r[0]).toMatchObject({ prepTime: 10, cookTime: 20, servings: 4, difficulty: 'easy' });
+    });
+    it('recipe.update merges prepTime, cookTime, servings and difficulty by id', () => {
+        const existing = [
+            { id: 'R1', title: 'Pasta', ingredients: [], ownerId: 'user-1', users: [], dateAdded: new Date() },
+        ];
+        const updated = applyRecipeIntent(
+            existing as never,
+            recipeIntent('recipe.update', 'R1', { prepTime: 15, cookTime: 25, servings: 6, difficulty: 'hard' })
+        )[0];
+        expect(updated).toMatchObject({ prepTime: 15, cookTime: 25, servings: 6, difficulty: 'hard' });
+    });
     it('recipe.delete removes by id', () => {
         const existing = [
             { id: 'R1', title: 'Pasta', ingredients: [], ownerId: 'user-1', users: [], dateAdded: new Date() },

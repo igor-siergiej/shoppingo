@@ -1,5 +1,5 @@
 import type { IdGenerator, Logger } from '@imapps/api-utils';
-import type { Ingredient, Recipe, User } from '@shoppingo/types';
+import type { Ingredient, Recipe, RecipeDifficulty, User } from '@shoppingo/types';
 import { AuthorizationService } from '../AuthorizationService';
 import type { FriendService } from '../FriendService';
 import type { RecipeImageService } from '../RecipeImageService';
@@ -109,7 +109,11 @@ export class RecipeService {
         instructions?: string[],
         selectedUsers?: string[],
         id?: string,
-        tags?: string[]
+        tags?: string[],
+        prepTime?: number,
+        cookTime?: number,
+        servings?: number,
+        difficulty?: RecipeDifficulty
     ): Promise<Recipe> {
         try {
             if (id) {
@@ -133,6 +137,10 @@ export class RecipeService {
                 ...(link !== undefined && { link }),
                 ...(instructions !== undefined && { instructions }),
                 ...(mergedTags.length > 0 && { tags: mergedTags }),
+                ...(prepTime !== undefined && { prepTime }),
+                ...(cookTime !== undefined && { cookTime }),
+                ...(servings !== undefined && { servings }),
+                ...(difficulty !== undefined && { difficulty }),
             };
             const created = await this.recipeRepository.insert(recipe);
             this.logger?.info('Recipe created', {
@@ -173,7 +181,11 @@ export class RecipeService {
         ownerId: string,
         link?: string,
         instructions?: string[],
-        tags?: string[]
+        tags?: string[],
+        prepTime?: number,
+        cookTime?: number,
+        servings?: number,
+        difficulty?: RecipeDifficulty
     ): Promise<Recipe> {
         try {
             const recipe = await this.getRecipe(recipeId);
@@ -190,6 +202,10 @@ export class RecipeService {
             recipe.link = link;
             recipe.instructions = instructions;
             recipe.tags = tags;
+            recipe.prepTime = prepTime;
+            recipe.cookTime = cookTime;
+            recipe.servings = servings;
+            recipe.difficulty = difficulty;
             const updated = await this.recipeRepository.update(recipeId, recipe);
             this.logger?.info('Recipe updated', {
                 recipeId,

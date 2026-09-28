@@ -235,6 +235,7 @@ const getRecipe = async (recipeId: string): Promise<Recipe> => {
     });
 };
 
+// fallow-ignore-next-line complexity
 export const addRecipe = async (
     title: string,
     user: User,
@@ -242,7 +243,11 @@ export const addRecipe = async (
     ingredients?: Array<{ name: string; quantity?: number; unit?: string }>,
     link?: string,
     instructions?: string[],
-    id?: string
+    id?: string,
+    prepTime?: number,
+    cookTime?: number,
+    servings?: number,
+    difficulty?: Recipe['difficulty']
 ): Promise<Recipe> => {
     const dateAdded = generateTimestamp(new Date());
     const requestBody = {
@@ -254,6 +259,10 @@ export const addRecipe = async (
         ...(link !== undefined && { link }),
         ...(instructions !== undefined && { instructions }),
         ...(id !== undefined && { id }),
+        ...(prepTime !== undefined && { prepTime }),
+        ...(cookTime !== undefined && { cookTime }),
+        ...(servings !== undefined && { servings }),
+        ...(difficulty !== undefined && { difficulty }),
     };
 
     const result = await makeRequest({
@@ -304,13 +313,18 @@ export const importRecipeImage = async (imageUrl: string, signal?: AbortSignal):
     return new File([blob], `imported-cover.${extension}`, { type: blob.type });
 };
 
+// fallow-ignore-next-line complexity
 export const updateRecipe = async (
     recipeId: string,
     title: string,
     ingredients: Array<{ name: string; quantity?: number; unit?: string }>,
     coverImageKey?: string,
     link?: string,
-    instructions?: string[]
+    instructions?: string[],
+    prepTime?: number,
+    cookTime?: number,
+    servings?: number,
+    difficulty?: Recipe['difficulty']
 ): Promise<Recipe> => {
     return await makeRequest({
         pathname: `/api/recipes/${encodeURIComponent(recipeId)}`,
@@ -322,6 +336,10 @@ export const updateRecipe = async (
             ...(coverImageKey !== undefined && { coverImageKey }),
             ...(link !== undefined && { link }),
             ...(instructions !== undefined && { instructions }),
+            ...(prepTime !== undefined && { prepTime }),
+            ...(cookTime !== undefined && { cookTime }),
+            ...(servings !== undefined && { servings }),
+            ...(difficulty !== undefined && { difficulty }),
         }),
     });
 };

@@ -18,6 +18,7 @@ import {
 } from '../api';
 import type { OutboxIntent } from './outboxStore';
 
+// fallow-ignore-next-line complexity
 export const replayIntent = async (intent: OutboxIntent): Promise<void> => {
     const p = intent.payload;
     switch (intent.op) {
@@ -85,7 +86,11 @@ export const replayIntent = async (intent: OutboxIntent): Promise<void> => {
                 p.ingredients as Parameters<typeof addRecipe>[3] | undefined,
                 p.link as string | undefined,
                 p.instructions as string[] | undefined,
-                intent.targetId
+                intent.targetId,
+                p.prepTime as number | undefined,
+                p.cookTime as number | undefined,
+                p.servings as number | undefined,
+                p.difficulty as Parameters<typeof addRecipe>[10] | undefined
             );
             return;
         }
@@ -96,7 +101,11 @@ export const replayIntent = async (intent: OutboxIntent): Promise<void> => {
                 p.ingredients as Parameters<typeof updateRecipe>[2],
                 p.coverImageKey as string | undefined,
                 p.link as string | undefined,
-                p.instructions as string[] | undefined
+                p.instructions as string[] | undefined,
+                p.prepTime as number | undefined,
+                p.cookTime as number | undefined,
+                p.servings as number | undefined,
+                p.difficulty as Parameters<typeof updateRecipe>[9] | undefined
             );
             return;
         }
