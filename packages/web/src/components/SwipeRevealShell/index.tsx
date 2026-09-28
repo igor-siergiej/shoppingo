@@ -3,7 +3,7 @@ import type { AnimationControls, MotionValue } from 'motion/react';
 import { motion } from 'motion/react';
 import type { MouseEvent, ReactNode } from 'react';
 import type { PanInfo } from '../../hooks/useSwipeGesture';
-import { SWIPE_DELETE_DRAG_CONSTRAINT, SWIPE_REVEAL_DISTANCE } from '../../hooks/useSwipeGesture';
+import { SWIPE_REVEAL_DISTANCE } from '../../hooks/useSwipeGesture';
 import { Button } from '../ui/button';
 
 export interface SwipeRevealShellProps {
@@ -58,9 +58,9 @@ const handleContentClick =
 
 // Shared swipe-reveal shell for a listable row with edit/delete actions — extracted
 // from ItemCheckBox/IngredientItem/DraftIngredientRow, which each hand-rolled the same
-// drag + revealed-button markup. Pulling the delete commit into useSwipeGesture (see
-// SWIPE_DELETE_COMMIT_DISTANCE) fixes the "needs 2 presses" bug in one place for every
-// row that uses this shell, instead of three separately-maintained copies.
+// drag + revealed-button markup, so any future fix to the shared shell applies to
+// shopping list items, recipe ingredients and draft ingredient rows alike instead of
+// three copies drifting apart.
 //
 // Remaining branches below are independent ternaries/guards tied 1:1 to props
 // (loading icon, drag-disabled, edit-reveal width, hide-actions); collapsing
@@ -110,7 +110,7 @@ export const SwipeRevealShell = ({
 
             <motion.div
                 drag={disabled ? false : 'x'}
-                dragConstraints={{ left: -SWIPE_DELETE_DRAG_CONSTRAINT, right: onEdit ? SWIPE_REVEAL_DISTANCE : 0 }}
+                dragConstraints={{ left: -SWIPE_REVEAL_DISTANCE, right: onEdit ? SWIPE_REVEAL_DISTANCE : 0 }}
                 dragElastic={0.1}
                 onDragEnd={onDragEnd}
                 animate={controls}

@@ -47,7 +47,7 @@ const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
         deleteMutation.mutate();
     };
 
-    const { x, controls, swipeState, handleDragEnd, closeSwipe } = useSwipeGesture(() => handleDeleteItem());
+    const { x, controls, swipeState, handleDragEnd, closeSwipe } = useSwipeGesture();
 
     const handleEditStart = (e?: MouseEvent) => {
         e?.stopPropagation();
