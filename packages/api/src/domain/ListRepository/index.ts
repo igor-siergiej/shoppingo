@@ -8,6 +8,5 @@ export interface ListRepository {
     deleteByTitle(title: string): Promise<void>;
     replaceByTitle(title: string, list: List): Promise<void>;
     pushItem(title: string, item: Item): Promise<void>;
-    pushItems(title: string, items: Item[]): Promise<void>;
     removeMemberFromAll(memberId: string, ownerId: string): Promise<void>;
 }

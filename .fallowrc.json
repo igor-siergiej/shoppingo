@@ -5,6 +5,7 @@
     "packages/web/src/components/ui/**",
     "packages/web/src/lib/utils.ts",
     "packages/api/src/domain/ListService/index.ts",
+    "packages/api/src/domain/ListService/ingredientMatching.ts",
     "packages/api/src/domain/RecipeService/index.ts",
     "packages/api/src/domain/TodoService/index.ts",
     "packages/api/src/domain/LabelService/index.ts",

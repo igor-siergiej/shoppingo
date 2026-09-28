@@ -60,3 +60,28 @@ test.describe('Bulk add ingredients to list', () => {
         await expect(authenticatedPage.getByText(/0 items added.*1 skipped|1 skipped/)).toBeVisible();
     });
 });
+
+test.describe('Merging near-duplicate ingredients', () => {
+    test('combines a near-duplicate ingredient into the existing list item instead of a second row', async ({
+        authenticatedPage,
+    }) => {
+        const recipe = await apiCreateRecipe('Omelette', [{ name: 'large eggs', quantity: 2 }]);
+        await apiCreateList('Groceries');
+        await apiAddItem('Groceries', 'eggs', { quantity: 5, unit: 'pcs' });
+
+        await authenticatedPage.goto(`/recipes/${recipe.id}`);
+
+        await authenticatedPage.getByRole('button', { name: 'Actions' }).click();
+        await authenticatedPage.getByRole('button', { name: 'Add to Shopping List' }).click();
+        await authenticatedPage.getByText('large eggs').click();
+        await authenticatedPage.getByRole('button', { name: 'Groceries' }).click();
+        await authenticatedPage.getByRole('button', { name: /Add 1 items/ }).click();
+
+        await expect(authenticatedPage.getByText(/skipped/)).toBeVisible();
+
+        await authenticatedPage.goto('/list/Groceries');
+        await expect(authenticatedPage.getByText('eggs', { exact: true })).toHaveCount(1);
+        await expect(authenticatedPage.getByText('7 pcs')).toBeVisible();
+        await expect(authenticatedPage.getByText('large eggs')).not.toBeVisible();
+    });
+});

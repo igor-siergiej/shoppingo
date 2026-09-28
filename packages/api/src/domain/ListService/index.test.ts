@@ -46,14 +46,6 @@ class MockListRepository implements ListRepository {
         }
     }
 
-    async pushItems(title: string, items: Item[]): Promise<void> {
-        const list = this.lists.find((l) => l.title === title);
-
-        if (list) {
-            list.items.push(...items);
-        }
-    }
-
     async removeMemberFromAll(memberId: string, ownerId: string): Promise<void> {
         this.lists = this.lists.map((list) =>
             list.ownerId === ownerId ? { ...list, users: list.users.filter((u) => u.id !== memberId) } : list
@@ -1226,6 +1218,105 @@ describe('ListService', () => {
                 const breadItem = updatedList?.items.find((i) => i.name === 'Bread');
                 expect(breadItem?.quantity).toBeUndefined();
                 expect(breadItem?.unit).toBeUndefined();
+            });
+        });
+
+        describe('When an incoming item is a near-duplicate of an existing one', () => {
+            it('combines quantities instead of adding a second row for a descriptor-qualified name', async () => {
+                const mockList: List = {
+                    id: 'list-1',
+                    title: 'Test List',
+                    dateAdded: new Date('2023-01-01'),
+                    items: [
+                        {
+                            id: 'item-1',
+                            name: 'eggs',
+                            dateAdded: new Date(),
+                            isSelected: false,
+                            quantity: 5,
+                            unit: 'pcs',
+                        },
+                    ],
+                    users: [mockUser],
+                };
+
+                await mockRepository.insert(mockList);
+
+                const result = await listService.addItems(
+                    'Test List',
+                    [{ itemName: 'large eggs', quantity: 2, dateAdded: new Date() }],
+                    'user-1'
+                );
+
+                expect(result.added).toBe(0);
+                expect(result.skipped).toBe(1);
+
+                const updatedList = await mockRepository.getByTitle('Test List');
+                expect(updatedList?.items).toHaveLength(1);
+                expect(updatedList?.items[0].name).toBe('eggs');
+                expect(updatedList?.items[0].quantity).toBe(7);
+                expect(updatedList?.items[0].unit).toBe('pcs');
+            });
+
+            it('merges near-duplicates introduced within the same batch', async () => {
+                const mockList: List = {
+                    id: 'list-1',
+                    title: 'Test List',
+                    dateAdded: new Date('2023-01-01'),
+                    items: [],
+                    users: [mockUser],
+                };
+
+                await mockRepository.insert(mockList);
+
+                const result = await listService.addItems(
+                    'Test List',
+                    [
+                        { itemName: 'eggs', quantity: 5, dateAdded: new Date() },
+                        { itemName: 'large eggs', quantity: 2, dateAdded: new Date() },
+                    ],
+                    'user-1'
+                );
+
+                expect(result.added).toBe(1);
+                expect(result.skipped).toBe(1);
+
+                const updatedList = await mockRepository.getByTitle('Test List');
+                expect(updatedList?.items).toHaveLength(1);
+                expect(updatedList?.items[0].quantity).toBe(7);
+            });
+
+            it('does not merge across genuinely different measurement units', async () => {
+                const mockList: List = {
+                    id: 'list-1',
+                    title: 'Test List',
+                    dateAdded: new Date('2023-01-01'),
+                    items: [
+                        {
+                            id: 'item-1',
+                            name: 'flour',
+                            dateAdded: new Date(),
+                            isSelected: false,
+                            quantity: 200,
+                            unit: 'g',
+                        },
+                    ],
+                    users: [mockUser],
+                };
+
+                await mockRepository.insert(mockList);
+
+                const result = await listService.addItems(
+                    'Test List',
+                    [{ itemName: 'flour', quantity: 1, unit: 'ml', dateAdded: new Date() }],
+                    'user-1'
+                );
+
+                expect(result.added).toBe(1);
+                expect(result.skipped).toBe(0);
+
+                const updatedList = await mockRepository.getByTitle('Test List');
+                expect(updatedList?.items).toHaveLength(2);
             });
         });
     });
