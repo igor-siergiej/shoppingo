@@ -2,13 +2,8 @@ import type { RecipeImportResult } from '@shoppingo/types';
 import { importRecipeImage } from '../../api';
 import { convertIngredients, type UnitSystem } from '../../utils/convertUnits';
 import { logger } from '../../utils/logger';
+import { parseDurationMinutes, parseServings } from '../../utils/parseRecipeMeta';
 import type { Ingredient } from './IngredientsField';
-
-export interface ImportMeta {
-    prepTime?: string;
-    cookTime?: string;
-    recipeYield?: string;
-}
 
 export interface DraftSetters {
     setTitle: (title: string) => void;
@@ -19,7 +14,9 @@ export interface DraftSetters {
     setShowPasteArea: (show: boolean) => void;
     setSelectedFile: (file: File | null) => void;
     setImageUrl: (url: string | null) => void;
-    setImportMeta: (meta: ImportMeta) => void;
+    setPrepTime: (value: string) => void;
+    setCookTime: (value: string) => void;
+    setServings: (value: string) => void;
 }
 
 const applyBasicFields = (draft: RecipeImportResult, setters: DraftSetters): void => {
@@ -81,12 +78,23 @@ const applyScrapedImage = async (
     setters.setImageUrl(URL.createObjectURL(file));
 };
 
-const applyImportMeta = (draft: RecipeImportResult, setters: DraftSetters): void => {
-    setters.setImportMeta({
-        ...(draft.prepTime && { prepTime: draft.prepTime }),
-        ...(draft.cookTime && { cookTime: draft.cookTime }),
-        ...(draft.recipeYield && { recipeYield: draft.recipeYield }),
-    });
+// Prefills the real prepTime/cookTime/servings form fields (still user-editable before
+// save) by parsing the raw schema.org strings the import found. Difficulty has no
+// schema.org source, so it stays manual-only and is never touched here.
+// fallow-ignore-next-line complexity
+const applyTimingAndServings = (draft: RecipeImportResult, setters: DraftSetters): void => {
+    if (draft.prepTime !== undefined) {
+        const minutes = parseDurationMinutes(draft.prepTime);
+        if (minutes !== undefined) setters.setPrepTime(String(minutes));
+    }
+    if (draft.cookTime !== undefined) {
+        const minutes = parseDurationMinutes(draft.cookTime);
+        if (minutes !== undefined) setters.setCookTime(String(minutes));
+    }
+    if (draft.recipeYield !== undefined) {
+        const servings = parseServings(draft.recipeYield);
+        if (servings !== undefined) setters.setServings(String(servings));
+    }
 };
 
 // Applies a successfully-fetched recipe draft to form state. Only touches fields the
@@ -100,5 +108,5 @@ export const applyImportedDraft = async (
     applyBasicFields(draft, setters);
     applyIngredientsAndInstructions(draft, setters, unitSystem);
     await applyScrapedImage(draft, setters, options);
-    applyImportMeta(draft, setters);
+    applyTimingAndServings(draft, setters);
 };

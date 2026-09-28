@@ -1,5 +1,5 @@
 import { APIError } from '@imapps/api-utils/hono';
-import type { Ingredient, Recipe } from '@shoppingo/types';
+import type { Ingredient, Recipe, RecipeDifficulty } from '@shoppingo/types';
 import type { Context } from 'hono';
 import { dependencyContainer } from '../../dependencies/container';
 import { DependencyToken } from '../../dependencies/types';
@@ -7,6 +7,8 @@ import type { RecipeImportService } from '../../domain/RecipeImportService';
 import type { RecipeService } from '../../domain/RecipeService';
 import { withImageExtension } from '../../infrastructure/objectKey';
 import type { HonoVars } from '../handlerUtils';
+
+const DIFFICULTY_VALUES: Record<RecipeDifficulty, true> = { easy: true, medium: true, hard: true };
 
 const getRecipeService = (): RecipeService => dependencyContainer.resolve(DependencyToken.RecipeService);
 const getRecipeImportService = (): RecipeImportService =>
@@ -90,7 +92,19 @@ export const getRecipe = async (c: Context<HonoVars>): Promise<Response> => {
 // Validation + create + logging in one linear flow; splitting further would scatter one request.
 // fallow-ignore-next-line complexity
 export const createRecipe = async (c: Context<HonoVars>): Promise<Response> => {
-    const { title, ingredients, link, instructions, selectedUsers, id, tags } = await c.req.json<{
+    const {
+        title,
+        ingredients,
+        link,
+        instructions,
+        selectedUsers,
+        id,
+        tags,
+        prepTime,
+        cookTime,
+        servings,
+        difficulty,
+    } = await c.req.json<{
         title: string;
         ingredients: Ingredient[];
         link?: string;
@@ -98,6 +112,10 @@ export const createRecipe = async (c: Context<HonoVars>): Promise<Response> => {
         selectedUsers?: string[];
         id?: string;
         tags?: string[];
+        prepTime?: number;
+        cookTime?: number;
+        servings?: number;
+        difficulty?: RecipeDifficulty;
     }>();
     const authenticatedUser = getAuthenticatedUser(c);
     if (!authenticatedUser) return unauthorized(c, 'Unauthorized recipe creation attempt');
@@ -110,6 +128,10 @@ export const createRecipe = async (c: Context<HonoVars>): Promise<Response> => {
         return c.json({ error: 'Ingredients is required and must be an array' }, 400);
     }
 
+    if (difficulty !== undefined && !DIFFICULTY_VALUES[difficulty]) {
+        return c.json({ error: 'Difficulty must be one of easy, medium, hard' }, 400);
+    }
+
     try {
         const recipe = await getRecipeService().createRecipe(
             title,
@@ -120,7 +142,11 @@ export const createRecipe = async (c: Context<HonoVars>): Promise<Response> => {
             instructions,
             selectedUsers,
             id,
-            tags
+            tags,
+            prepTime,
+            cookTime,
+            servings,
+            difficulty
         );
 
         getLogger().info('API: Recipe created', {
@@ -200,17 +226,27 @@ export const importRecipeImage = async (c: Context<HonoVars>): Promise<Response>
     }
 };
 
+// fallow-ignore-next-line complexity
 export const updateRecipe = async (c: Context<HonoVars>): Promise<Response> => {
     const recipeId = c.req.param('recipeId');
-    const { title, ingredients, link, instructions, tags } = await c.req.json<{
-        title: string;
-        ingredients: Ingredient[];
-        link?: string;
-        instructions?: string[];
-        tags?: string[];
-    }>();
+    const { title, ingredients, link, instructions, tags, prepTime, cookTime, servings, difficulty } =
+        await c.req.json<{
+            title: string;
+            ingredients: Ingredient[];
+            link?: string;
+            instructions?: string[];
+            tags?: string[];
+            prepTime?: number;
+            cookTime?: number;
+            servings?: number;
+            difficulty?: RecipeDifficulty;
+        }>();
     const authenticatedUser = getAuthenticatedUser(c);
     if (!authenticatedUser) return unauthorized(c, 'Unauthorized recipe update attempt', { recipeId });
+
+    if (difficulty !== undefined && !DIFFICULTY_VALUES[difficulty]) {
+        return c.json({ error: 'Difficulty must be one of easy, medium, hard' }, 400);
+    }
 
     try {
         const hasAccess = await verifyRecipeAccess(recipeId, authenticatedUser);
@@ -228,7 +264,11 @@ export const updateRecipe = async (c: Context<HonoVars>): Promise<Response> => {
             authenticatedUser.id,
             link,
             instructions,
-            tags
+            tags,
+            prepTime,
+            cookTime,
+            servings,
+            difficulty
         );
 
         getLogger().info('API: Recipe updated', { userId: authenticatedUser.id, recipeId, recipeTitle: title });

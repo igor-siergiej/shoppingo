@@ -43,7 +43,11 @@ export const useRecipeMutations = (user: User | undefined) => {
             ingredients?: Array<{ name: string; quantity?: number; unit?: string }>,
             link?: string,
             instructions?: string[],
-            tags?: string[]
+            tags?: string[],
+            prepTime?: number,
+            cookTime?: number,
+            servings?: number,
+            difficulty?: Recipe['difficulty']
         ): Promise<string> => {
             const id = crypto.randomUUID();
             const sharedFriends = friends.filter((f) => selectedUsers.includes(f.id));
@@ -57,6 +61,10 @@ export const useRecipeMutations = (user: User | undefined) => {
                 user,
                 users: user ? [user, ...sharedFriends] : sharedFriends,
                 ownerId: userId,
+                prepTime,
+                cookTime,
+                servings,
+                difficulty,
             });
             return id;
         },
@@ -69,7 +77,11 @@ export const useRecipeMutations = (user: User | undefined) => {
             coverImageKey?: string,
             link?: string,
             instructions?: string[],
-            tags?: string[]
+            tags?: string[],
+            prepTime?: number,
+            cookTime?: number,
+            servings?: number,
+            difficulty?: Recipe['difficulty']
         ): Promise<void> => {
             await enqueueRecipe('recipe.update', recipeId, {
                 title,
@@ -78,6 +90,10 @@ export const useRecipeMutations = (user: User | undefined) => {
                 ...(link !== undefined && { link }),
                 ...(instructions !== undefined && { instructions }),
                 ...(tags !== undefined && { tags }),
+                prepTime,
+                cookTime,
+                servings,
+                difficulty,
             });
         },
 

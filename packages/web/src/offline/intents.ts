@@ -160,6 +160,19 @@ export const applyLabelIntent = (labels: Label[], intent: OutboxIntent): Label[]
     }
 };
 
+// Optional Recipe fields shared between recipe.create and recipe.update payloads — both branches
+// merge the same subset onto a base object, so building it once keeps them from drifting apart.
+// fallow-ignore-next-line complexity
+const optionalRecipeFields = (p: Record<string, unknown>) => ({
+    ...(p.link !== undefined && { link: String(p.link) }),
+    ...(p.instructions !== undefined && { instructions: p.instructions as string[] }),
+    ...(p.tags !== undefined && { tags: p.tags as string[] }),
+    ...(p.prepTime !== undefined && { prepTime: p.prepTime as number }),
+    ...(p.cookTime !== undefined && { cookTime: p.cookTime as number }),
+    ...(p.servings !== undefined && { servings: p.servings as number }),
+    ...(p.difficulty !== undefined && { difficulty: p.difficulty as Recipe['difficulty'] }),
+});
+
 // fallow-ignore-next-line complexity
 export const applyRecipeIntent = (recipes: Recipe[], intent: OutboxIntent): Recipe[] => {
     const p = intent.payload;
@@ -176,9 +189,7 @@ export const applyRecipeIntent = (recipes: Recipe[], intent: OutboxIntent): Reci
                     ownerId: String(p.ownerId ?? ''),
                     users: (p.users as Recipe['users']) ?? [],
                     dateAdded: new Date(),
-                    ...(p.link !== undefined && { link: String(p.link) }),
-                    ...(p.instructions !== undefined && { instructions: p.instructions as string[] }),
-                    ...(p.tags !== undefined && { tags: p.tags as string[] }),
+                    ...optionalRecipeFields(p),
                 } as Recipe,
             ];
         }
@@ -190,9 +201,7 @@ export const applyRecipeIntent = (recipes: Recipe[], intent: OutboxIntent): Reci
                           ...r,
                           ...(p.title !== undefined && { title: String(p.title) }),
                           ...(p.ingredients !== undefined && { ingredients: p.ingredients as Ingredient[] }),
-                          ...(p.link !== undefined && { link: String(p.link) }),
-                          ...(p.instructions !== undefined && { instructions: p.instructions as string[] }),
-                          ...(p.tags !== undefined && { tags: p.tags as string[] }),
+                          ...optionalRecipeFields(p),
                       }
                     : r
             );

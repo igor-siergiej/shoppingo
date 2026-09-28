@@ -3,35 +3,26 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { ImportErrorBanner } from './ImportErrorBanner';
-import { ImportMetaChips } from './ImportMetaChips';
-
-interface ImportMeta {
-    prepTime?: string;
-    cookTime?: string;
-    recipeYield?: string;
-}
 
 interface LinkImportFieldProps {
     link: string;
     setLink: (link: string) => void;
     isImporting: boolean;
     importError: string;
-    importMeta: ImportMeta;
     disabled?: boolean;
     onImport: () => void;
     onCancelImport: () => void;
 }
 
-// Link input + import/cancel button + error banner + metadata chips, mirroring the full-screen
-// ImportScreen's shape but embedded in the form; the error/metadata blocks are already split
-// into ImportErrorBanner/ImportMetaChips, leaving only the input+button's own branching here.
+// Link input + import/cancel button + error banner, mirroring the full-screen ImportScreen's
+// shape but embedded in the form; the error block is already split into ImportErrorBanner,
+// leaving only the input+button's own branching here.
 // fallow-ignore-next-line complexity
 export const LinkImportField = ({
     link,
     setLink,
     isImporting,
     importError,
-    importMeta,
     disabled,
     onImport,
     onCancelImport,
@@ -75,6 +66,5 @@ export const LinkImportField = ({
             Paste a recipe URL and tap Import to auto-fill the fields below.
         </p>
         <ImportErrorBanner importError={importError} isImporting={isImporting} link={link} onRetry={onImport} />
-        <ImportMetaChips importMeta={importMeta} />
     </div>
 );

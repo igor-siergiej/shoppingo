@@ -1,7 +1,7 @@
 'use client';
 
 import { useUser } from '@imapps/web-utils';
-import type { Ingredient } from '@shoppingo/types';
+import type { Ingredient, Recipe } from '@shoppingo/types';
 import { ExternalLink, Pencil, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
@@ -33,6 +33,7 @@ import { ErrorState } from './ErrorState';
 import { IngredientSelectSection } from './IngredientSelectSection';
 import { IngredientsSection } from './IngredientsSection';
 import { InstructionsSection } from './InstructionsSection';
+import { RecipeDetailsSection } from './RecipeDetailsSection';
 import { TagsSection } from './TagsSection';
 
 // Extensive per-field state (title/link/ingredients/instructions/tags/sharing/select-mode) backs a
@@ -109,7 +110,11 @@ const RecipeDetailPage = () => {
                 undefined,
                 recipe.link,
                 recipe.instructions,
-                recipe.tags
+                recipe.tags,
+                recipe.prepTime,
+                recipe.cookTime,
+                recipe.servings,
+                recipe.difficulty
             );
             await refetch();
         } catch (error) {
@@ -133,7 +138,11 @@ const RecipeDetailPage = () => {
                 undefined,
                 recipe.link,
                 recipe.instructions,
-                recipe.tags
+                recipe.tags,
+                recipe.prepTime,
+                recipe.cookTime,
+                recipe.servings,
+                recipe.difficulty
             );
             await refetch();
             setIsEditingTitle(false);
@@ -156,7 +165,11 @@ const RecipeDetailPage = () => {
                 undefined,
                 editedLink.trim() || undefined,
                 recipe.instructions,
-                recipe.tags
+                recipe.tags,
+                recipe.prepTime,
+                recipe.cookTime,
+                recipe.servings,
+                recipe.difficulty
             );
             await refetch();
             setIsEditingLink(false);
@@ -178,7 +191,11 @@ const RecipeDetailPage = () => {
                 undefined,
                 recipe.link,
                 instructions.length > 0 ? instructions : undefined,
-                recipe.tags
+                recipe.tags,
+                recipe.prepTime,
+                recipe.cookTime,
+                recipe.servings,
+                recipe.difficulty
             );
             await refetch();
             notifySuccess('Instructions updated');
@@ -202,7 +219,11 @@ const RecipeDetailPage = () => {
                 undefined,
                 recipe.link,
                 recipe.instructions,
-                recipe.tags
+                recipe.tags,
+                recipe.prepTime,
+                recipe.cookTime,
+                recipe.servings,
+                recipe.difficulty
             );
             await refetch();
             if (!options?.silent) notifySuccess('Ingredients updated');
@@ -226,12 +247,45 @@ const RecipeDetailPage = () => {
                 undefined,
                 recipe.link,
                 recipe.instructions,
-                nextTags
+                nextTags,
+                recipe.prepTime,
+                recipe.cookTime,
+                recipe.servings,
+                recipe.difficulty
             );
             await refetch();
         } catch (error) {
             const err = error as { message?: string };
             notifyError(err.message || 'Failed to remove tag');
+        }
+    };
+
+    const handleSaveDetails = async (details: {
+        prepTime?: number;
+        cookTime?: number;
+        servings?: number;
+        difficulty?: Recipe['difficulty'];
+    }) => {
+        if (!recipe) return;
+        try {
+            await updateRecipe(
+                recipeId,
+                recipe.title,
+                recipe.ingredients,
+                undefined,
+                recipe.link,
+                recipe.instructions,
+                recipe.tags,
+                details.prepTime,
+                details.cookTime,
+                details.servings,
+                details.difficulty
+            );
+            await refetch();
+            notifySuccess('Recipe details updated');
+        } catch (error) {
+            const err = error as { message?: string };
+            notifyError(err.message || 'Failed to update recipe details');
         }
     };
 
@@ -404,6 +458,15 @@ const RecipeDetailPage = () => {
                                         )}
                                     </div>
                                 )}
+
+                                <RecipeDetailsSection
+                                    prepTime={recipe.prepTime}
+                                    cookTime={recipe.cookTime}
+                                    servings={recipe.servings}
+                                    difficulty={recipe.difficulty}
+                                    isOwner={isOwner}
+                                    onSave={handleSaveDetails}
+                                />
 
                                 <TagsSection tags={recipe.tags} isOwner={isOwner} onDeleteTag={handleDeleteTag} />
 

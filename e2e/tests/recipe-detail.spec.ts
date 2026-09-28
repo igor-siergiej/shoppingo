@@ -118,6 +118,7 @@ test.describe('Recipe detail page', () => {
         await expect(authenticatedPage.getByText('Garlic')).toBeVisible();
 
         const item = authenticatedPage.getByText('Garlic');
+        await item.scrollIntoViewIfNeeded();
         const box = await item.boundingBox();
         if (box) {
             const cx = box.x + box.width / 2;
@@ -143,6 +144,7 @@ test.describe('Recipe detail page', () => {
         await expect(authenticatedPage.getByText('Basil')).toBeVisible();
 
         const item = authenticatedPage.getByText('Basil');
+        await item.scrollIntoViewIfNeeded();
         const box = await item.boundingBox();
         if (!box) throw new Error('ingredient row has no bounding box');
         const cx = box.x + box.width / 2;

@@ -298,6 +298,37 @@ describe('RecipeHandlers', () => {
             });
             await expect(recipeHandlers.createRecipe(ctx)).rejects.toThrow('fail');
         });
+
+        it('returns 400 when difficulty is not one of easy/medium/hard', async () => {
+            const ctx = createMockContext({
+                body: { title: 'Test', ingredients: [], difficulty: 'extreme' },
+            });
+            const response = await recipeHandlers.createRecipe(ctx);
+            expect(response.status).toBe(400);
+        });
+
+        it('passes prepTime, cookTime, servings and difficulty through to the service', async () => {
+            mockRecipeService.createRecipe.mockResolvedValue(baseRecipe);
+            const ctx = createMockContext({
+                body: { title: 'Test', ingredients: [], prepTime: 10, cookTime: 20, servings: 4, difficulty: 'easy' },
+            });
+            await recipeHandlers.createRecipe(ctx);
+            expect(mockRecipeService.createRecipe).toHaveBeenCalledWith(
+                'Test',
+                [],
+                'user-1',
+                { id: 'user-1', username: 'testuser' },
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                10,
+                20,
+                4,
+                'easy'
+            );
+        });
     });
 
     describe('updateRecipe', () => {
@@ -342,6 +373,45 @@ describe('RecipeHandlers', () => {
                 body: { title: 'Updated', ingredients: [] },
             });
             await expect(recipeHandlers.updateRecipe(ctx)).rejects.toThrow('fail');
+        });
+
+        it('returns 400 when difficulty is not one of easy/medium/hard', async () => {
+            const ctx = createMockContext({
+                params: { recipeId: 'recipe-1' },
+                body: { title: 'Updated', ingredients: [], difficulty: 'extreme' },
+            });
+            const response = await recipeHandlers.updateRecipe(ctx);
+            expect(response.status).toBe(400);
+        });
+
+        it('passes prepTime, cookTime, servings and difficulty through to the service', async () => {
+            const updated = { ...baseRecipe, title: 'Updated' };
+            mockRecipeService.updateRecipe.mockResolvedValue(updated);
+            const ctx = createMockContext({
+                params: { recipeId: 'recipe-1' },
+                body: {
+                    title: 'Updated',
+                    ingredients: [],
+                    prepTime: 10,
+                    cookTime: 20,
+                    servings: 4,
+                    difficulty: 'medium',
+                },
+            });
+            await recipeHandlers.updateRecipe(ctx);
+            expect(mockRecipeService.updateRecipe).toHaveBeenCalledWith(
+                'recipe-1',
+                'Updated',
+                [],
+                'user-1',
+                undefined,
+                undefined,
+                undefined,
+                10,
+                20,
+                4,
+                'medium'
+            );
         });
     });
 
