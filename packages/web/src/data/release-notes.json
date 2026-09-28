@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.76.0",
+    "date": "2026-09-28",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Recipes can now record prep time, cook time, servings and difficulty — editable when creating or editing a recipe, and prefilled automatically when importing from a link."
+      }
+    ]
+  },
+  {
     "version": "1.75.2",
     "date": "2026-09-28",
     "notes": [

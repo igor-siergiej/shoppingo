@@ -1,3 +1,10 @@
+# [1.76.0](https://github.com/igor-siergiej/shoppingo/compare/v1.75.2...v1.76.0) (2026-09-28)
+
+
+### Features
+
+* **recipes:** add prep time, cook time, servings and difficulty ([#173](https://github.com/igor-siergiej/shoppingo/issues/173)) ([4e1ab70](https://github.com/igor-siergiej/shoppingo/commit/4e1ab70fbc22019c990f0d2c4448381d9e8cb60f))
+
 ## [1.75.2](https://github.com/igor-siergiej/shoppingo/compare/v1.75.1...v1.75.2) (2026-09-28)
 
 
