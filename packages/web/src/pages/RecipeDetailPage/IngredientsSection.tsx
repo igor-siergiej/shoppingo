@@ -54,6 +54,7 @@ export const IngredientsSection = ({ recipe, isOwner = false, onUpdateIngredient
                             onDelete={handleDeleteIngredient}
                             onEdit={handleEditIngredient}
                             isOwner={isOwner}
+                            recipeTitle={recipe.title}
                         />
                     ))}
                 </div>

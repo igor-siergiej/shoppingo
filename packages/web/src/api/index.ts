@@ -285,6 +285,20 @@ export const importRecipe = async (url: string, signal?: AbortSignal): Promise<R
     });
 };
 
+export const suggestIngredientSubstitutes = async (
+    ingredientName: string,
+    recipeTitle?: string,
+    signal?: AbortSignal
+): Promise<{ substitutes: string[] }> => {
+    return await makeRequest({
+        pathname: '/api/recipes/substitutes',
+        method: MethodType.POST,
+        operationString: 'suggest ingredient substitutes',
+        body: JSON.stringify({ ingredientName, recipeTitle }),
+        signal,
+    });
+};
+
 // Raw-fetch endpoints (blob download, multipart upload) bypass makeRequest, so they have
 // to attach the bearer token themselves.
 const authHeaders = (): Record<string, string> => {

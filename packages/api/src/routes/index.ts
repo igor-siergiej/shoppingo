@@ -32,6 +32,7 @@ import {
     removeUserFromRecipe,
     revertRecipeImage,
     setCoverImageKey,
+    suggestIngredientSubstitutes,
     updateRecipe,
     uploadRecipeImage,
 } from '../interfaces/RecipeHandlers';
@@ -82,6 +83,7 @@ export const createRoutes = (): Hono<Vars> => {
 
     router.get('/api/recipes', authenticate, getRecipes);
     router.post('/api/recipes/import', authenticate, importRecipe);
+    router.post('/api/recipes/substitutes', authenticate, suggestIngredientSubstitutes);
     router.get('/api/recipes/import/image', authenticate, importRecipeImage);
     router.put('/api/recipes', authenticate, createRecipe);
     router.get('/api/recipes/:recipeId', authenticate, getRecipe);

@@ -361,6 +361,71 @@ describe('RecipeService.createRecipe tags', () => {
     });
 });
 
+class MockIngredientSubstituter {
+    calls: Array<{ ingredientName: string; recipeTitle?: string }> = [];
+    substitutes: string[] = [];
+    shouldReject = false;
+
+    async generateSubstitutes(ingredientName: string, recipeTitle?: string): Promise<string[]> {
+        this.calls.push({ ingredientName, recipeTitle });
+        if (this.shouldReject) throw new Error('substitution failed');
+        return this.substitutes;
+    }
+
+    reset() {
+        this.calls = [];
+        this.substitutes = [];
+        this.shouldReject = false;
+    }
+}
+
+const mockSubstituter = new MockIngredientSubstituter();
+
+beforeEach(() => {
+    mockSubstituter.reset();
+});
+
+describe('RecipeService.suggestSubstitutes', () => {
+    it('throws 503 when no substituter is configured', async () => {
+        const svc = new RecipeService(repo as any, ids);
+        await expect(svc.suggestSubstitutes('butter')).rejects.toMatchObject({ status: 503 });
+    });
+
+    it('returns substitutes from the configured substituter', async () => {
+        mockSubstituter.substitutes = ['margarine', 'coconut oil'];
+        const svc = new RecipeService(
+            repo as any,
+            ids,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            mockSubstituter as any
+        );
+        const substitutes = await svc.suggestSubstitutes('butter', 'Carbonara');
+        expect(substitutes).toEqual(['margarine', 'coconut oil']);
+        expect(mockSubstituter.calls).toEqual([{ ingredientName: 'butter', recipeTitle: 'Carbonara' }]);
+    });
+
+    it('throws 502 when the substituter throws', async () => {
+        mockSubstituter.shouldReject = true;
+        const svc = new RecipeService(
+            repo as any,
+            ids,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            mockSubstituter as any
+        );
+        await expect(svc.suggestSubstitutes('butter')).rejects.toMatchObject({ status: 502 });
+    });
+});
+
 class MockRecipeImageService {
     calls: Array<{ recipeId: string; title: string; ingredients: Ingredient[] }> = [];
     shouldReject = false;

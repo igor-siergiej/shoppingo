@@ -18,6 +18,7 @@ import { TodoService } from '../domain/TodoService';
 import { HttpAuthClient } from '../infrastructure/AuthClient';
 import { BucketStore } from '../infrastructure/BucketStore';
 import { FalImageGenerator } from '../infrastructure/FalImageGenerator';
+import { FalIngredientSubstituter } from '../infrastructure/FalIngredientSubstituter';
 import { FalLlmClient } from '../infrastructure/FalLlmClient';
 import { FalRecipeExtractor } from '../infrastructure/FalRecipeExtractor';
 import { FalRecipeParser } from '../infrastructure/FalRecipeParser';
@@ -139,7 +140,8 @@ export const registerDepdendencies = () => {
                     dependencyContainer.resolve(DependencyToken.RecipeImageService),
                     dependencyContainer.resolve(DependencyToken.AuthClient),
                     dependencyContainer.resolve(DependencyToken.FriendService),
-                    dependencyContainer.resolve(DependencyToken.RecipeTagger)
+                    dependencyContainer.resolve(DependencyToken.RecipeTagger),
+                    dependencyContainer.resolve(DependencyToken.IngredientSubstituter)
                 );
             }
         }
@@ -384,6 +386,16 @@ export const registerDepdendencies = () => {
         class {
             constructor() {
                 return new FalRecipeTagger(dependencyContainer.resolve(DependencyToken.FalLlmClient));
+            }
+        }
+    );
+
+    dependencyContainer.registerSingleton(
+        DependencyToken.IngredientSubstituter,
+        // @ts-expect-error - Dependency injection requires constructor return override
+        class {
+            constructor() {
+                return new FalIngredientSubstituter(dependencyContainer.resolve(DependencyToken.FalLlmClient));
             }
         }
     );

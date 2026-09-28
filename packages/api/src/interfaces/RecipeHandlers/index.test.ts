@@ -26,6 +26,7 @@ const mockRecipeService = {
     setCoverImageKey: vi.fn(),
     regenerateImage: vi.fn(),
     revertToAiImage: vi.fn(),
+    suggestSubstitutes: vi.fn(),
 };
 
 const mockRecipeImportService = {
@@ -184,6 +185,42 @@ describe('RecipeHandlers', () => {
             mockRecipeImportService.importImage.mockRejectedValue(Object.assign(new Error('boom'), { status: 415 }));
             const ctx = createMockContext({ query: { url: 'https://example.com/cover.png' } });
             await expect(recipeHandlers.importRecipeImage(ctx)).rejects.toMatchObject({ status: 415 });
+        });
+    });
+
+    describe('suggestIngredientSubstitutes', () => {
+        it('returns 401 when no authenticated user', async () => {
+            const ctx = createMockContext({ user: undefined, body: { ingredientName: 'butter' } });
+            const response = await recipeHandlers.suggestIngredientSubstitutes(ctx);
+            expect(response.status).toBe(401);
+        });
+
+        it('returns 400 when ingredientName is missing', async () => {
+            const ctx = createMockContext({ body: {} });
+            const response = await recipeHandlers.suggestIngredientSubstitutes(ctx);
+            expect(response.status).toBe(400);
+        });
+
+        it('returns 400 when ingredientName is blank', async () => {
+            const ctx = createMockContext({ body: { ingredientName: '   ' } });
+            const response = await recipeHandlers.suggestIngredientSubstitutes(ctx);
+            expect(response.status).toBe(400);
+        });
+
+        it('returns substitutes on success', async () => {
+            mockRecipeService.suggestSubstitutes.mockResolvedValue(['margarine', 'coconut oil']);
+            const ctx = createMockContext({ body: { ingredientName: 'butter', recipeTitle: 'Carbonara' } });
+            const response = await recipeHandlers.suggestIngredientSubstitutes(ctx);
+            expect(response.status).toBe(200);
+            const body = (await response.json()) as { substitutes: string[] };
+            expect(body.substitutes).toEqual(['margarine', 'coconut oil']);
+            expect(mockRecipeService.suggestSubstitutes).toHaveBeenCalledWith('butter', 'Carbonara');
+        });
+
+        it('throws an APIError when the service fails', async () => {
+            mockRecipeService.suggestSubstitutes.mockRejectedValue(Object.assign(new Error('boom'), { status: 502 }));
+            const ctx = createMockContext({ body: { ingredientName: 'butter' } });
+            await expect(recipeHandlers.suggestIngredientSubstitutes(ctx)).rejects.toMatchObject({ status: 502 });
         });
     });
 

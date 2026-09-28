@@ -13,6 +13,10 @@ interface RecipeTagger {
     generateTags(title: string, ingredients: Ingredient[], instructions?: string[]): Promise<string[]>;
 }
 
+interface IngredientSubstituter {
+    generateSubstitutes(ingredientName: string, recipeTitle?: string): Promise<string[]>;
+}
+
 const normalizeTag = (t: string) => t.trim().toLowerCase();
 
 const mergeTags = (manual: string[], aiTags: string[]): string[] => {
@@ -39,9 +43,22 @@ export class RecipeService {
         private recipeImageService?: RecipeImageService,
         readonly _auth?: AuthClient,
         private readonly friendService?: FriendService,
-        private readonly tagger?: RecipeTagger
+        private readonly tagger?: RecipeTagger,
+        private readonly substituter?: IngredientSubstituter
     ) {
         this.authorizationService = authorizationService ?? new AuthorizationService();
+    }
+
+    async suggestSubstitutes(ingredientName: string, recipeTitle?: string): Promise<string[]> {
+        if (!this.substituter) {
+            throw Object.assign(new Error('Ingredient substitution is not configured'), { status: 503 });
+        }
+        try {
+            return await this.substituter.generateSubstitutes(ingredientName, recipeTitle);
+        } catch (error) {
+            this.logger?.warn('Ingredient substitute generation failed', { ingredientName, recipeTitle, error });
+            throw Object.assign(new Error('Failed to generate ingredient substitutes'), { status: 502 });
+        }
     }
 
     private async resolveTags(title: string, ingredients: Ingredient[], instructions?: string[], manual?: string[]) {
