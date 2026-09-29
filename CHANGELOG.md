@@ -1,3 +1,10 @@
+# [1.79.0](https://github.com/igor-siergiej/shoppingo/compare/v1.78.0...v1.79.0) (2026-09-29)
+
+
+### Features
+
+* **web:** single page-level Edit on Recipe Detail instead of per-section edits ([#176](https://github.com/igor-siergiej/shoppingo/issues/176)) ([66d8aeb](https://github.com/igor-siergiej/shoppingo/commit/66d8aeb4f8ec95f91cb33eb184d9738b92ebc381))
+
 # [1.78.0](https://github.com/igor-siergiej/shoppingo/compare/v1.77.0...v1.78.0) (2026-09-29)
 
 

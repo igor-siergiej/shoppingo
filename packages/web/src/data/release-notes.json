@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.79.0",
+    "date": "2026-09-29",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Recipe Detail now has one Edit button that puts the title, link, tags, details and instructions into edit mode together, with a single Save and Cancel, instead of a separate edit toggle for each section."
+      }
+    ]
+  },
+  {
     "version": "1.78.0",
     "date": "2026-09-29",
     "notes": [
