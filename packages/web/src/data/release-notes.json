@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.78.0",
+    "date": "2026-09-29",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "The recipe-creation \"Import from a link or add manually\" choice now opens as a bottom sheet instead of a full page, with Cancel only at the bottom."
+      }
+    ]
+  },
+  {
     "version": "1.77.0",
     "date": "2026-09-28",
     "notes": [

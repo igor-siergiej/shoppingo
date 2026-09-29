@@ -1,3 +1,10 @@
+# [1.78.0](https://github.com/igor-siergiej/shoppingo/compare/v1.77.0...v1.78.0) (2026-09-29)
+
+
+### Features
+
+* **web:** add-recipe choice is a modal drawer, Cancel only at the bottom ([#175](https://github.com/igor-siergiej/shoppingo/issues/175)) ([670d049](https://github.com/igor-siergiej/shoppingo/commit/670d049d08a844fa149fdb3c67e73ac4e4719c19))
+
 # [1.77.0](https://github.com/igor-siergiej/shoppingo/compare/v1.76.0...v1.77.0) (2026-09-28)
 
 
