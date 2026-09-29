@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.80.0",
+    "date": "2026-09-29",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Text fields across the app now request the right mobile keyboard and autocomplete behavior for what you're typing — names, searches, links, and numbers each get sensible defaults instead of a generic keyboard."
+      }
+    ]
+  },
+  {
     "version": "1.79.1",
     "date": "2026-09-29",
     "notes": [

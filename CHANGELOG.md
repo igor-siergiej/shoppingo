@@ -1,3 +1,10 @@
+# [1.80.0](https://github.com/igor-siergiej/shoppingo/compare/v1.79.1...v1.80.0) (2026-09-29)
+
+
+### Features
+
+* **web:** add canonical input-attribute presets for mobile keyboards ([#178](https://github.com/igor-siergiej/shoppingo/issues/178)) ([f3ae547](https://github.com/igor-siergiej/shoppingo/commit/f3ae547acc7d250a36a1a016a67cd2fdb4fa56e4))
+
 ## [1.79.1](https://github.com/igor-siergiej/shoppingo/compare/v1.79.0...v1.79.1) (2026-09-29)
 
 
