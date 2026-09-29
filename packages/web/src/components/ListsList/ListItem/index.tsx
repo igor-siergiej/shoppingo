@@ -38,6 +38,7 @@ export const ListItem = ({
                 {isEditing ? (
                     <div className="flex items-center space-x-2 px-3">
                         <Input
+                            purpose="name"
                             value={editValue}
                             onChange={(e) => onEditChange(e.target.value)}
                             onKeyDown={(e) => {

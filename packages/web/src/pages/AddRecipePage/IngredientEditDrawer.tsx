@@ -54,6 +54,7 @@ export const IngredientEditDrawer = ({
                             <Input
                                 id={nameId}
                                 value={name}
+                                purpose="name"
                                 autoFocus
                                 onChange={(e) => onNameChange(e.target.value)}
                                 placeholder="Enter ingredient name"

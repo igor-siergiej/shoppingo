@@ -27,6 +27,7 @@ export const QuantityUnitField = ({
                     id={quantityId}
                     type="number"
                     value={quantity}
+                    purpose="number"
                     onChange={(e) => onQuantityChange(e.target.value)}
                     placeholder="e.g., 2"
                     className="mt-2 border border-foreground/30"

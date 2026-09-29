@@ -83,7 +83,7 @@ export const AddListDrawer = ({ open, onOpenChange, onAdd, placeholder }: AddLis
                             <Input
                                 id={listNameId}
                                 value={newName}
-                                autoComplete="off"
+                                purpose="name"
                                 autoFocus
                                 className={`${error ? 'border-destructive' : ''} h-12 text-base`}
                                 onChange={(event) => {

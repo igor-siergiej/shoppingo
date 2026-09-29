@@ -146,6 +146,7 @@ const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
                                     id={itemNameId}
                                     ref={drawerInputRef}
                                     value={drawerState.values.name}
+                                    purpose="name"
                                     onChange={(e) => drawerState.updateName(e.target.value)}
                                     placeholder="Enter item name"
                                     className="mt-2"

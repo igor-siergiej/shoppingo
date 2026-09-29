@@ -23,6 +23,7 @@ export const TimeField = ({ id, label, value, onChange, suffix, placeholder, dis
             <Input
                 id={id}
                 type="number"
+                purpose="number"
                 inputMode="numeric"
                 min={0}
                 step={1}
