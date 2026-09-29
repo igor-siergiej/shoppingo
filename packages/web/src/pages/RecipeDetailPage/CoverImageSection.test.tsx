@@ -46,6 +46,7 @@ describe('CoverImageSection revert control', () => {
                     aiImageKey: 'recipe-image/recipe-1',
                 }}
                 isOwner
+                isEditing
             />
         );
         await waitFor(() => expect(screen.getByText('Use AI image')).toBeInTheDocument());
@@ -56,6 +57,7 @@ describe('CoverImageSection revert control', () => {
             <CoverImageSection
                 recipe={{ ...baseRecipe, coverImageKey: 'recipe-image/recipe-1', aiImageKey: 'recipe-image/recipe-1' }}
                 isOwner
+                isEditing
             />
         );
         await waitFor(() => expect(screen.getByText('Replace')).toBeInTheDocument());
@@ -63,7 +65,25 @@ describe('CoverImageSection revert control', () => {
     });
 
     it('hides owner controls for non-owners', () => {
-        render(<CoverImageSection recipe={{ ...baseRecipe, aiImageKey: 'recipe-image/recipe-1' }} isOwner={false} />);
+        render(
+            <CoverImageSection
+                recipe={{ ...baseRecipe, aiImageKey: 'recipe-image/recipe-1' }}
+                isOwner={false}
+                isEditing
+            />
+        );
+        expect(screen.queryByText('Use AI image')).not.toBeInTheDocument();
+        expect(screen.queryByText('Upload')).not.toBeInTheDocument();
+    });
+
+    it('hides owner controls when the page is not in edit mode', () => {
+        render(
+            <CoverImageSection
+                recipe={{ ...baseRecipe, aiImageKey: 'recipe-image/recipe-1' }}
+                isOwner
+                isEditing={false}
+            />
+        );
         expect(screen.queryByText('Use AI image')).not.toBeInTheDocument();
         expect(screen.queryByText('Upload')).not.toBeInTheDocument();
     });
@@ -79,6 +99,7 @@ describe('CoverImageSection revert control', () => {
                     aiImageKey: 'recipe-image/recipe-1',
                 }}
                 isOwner
+                isEditing
                 onImageChange={onImageChange}
             />
         );

@@ -7,8 +7,8 @@ export class RecipeDetailPage {
         return this.page.locator('h1').first();
     }
 
-    get editTitleButton() {
-        return this.page.getByLabel('Edit recipe title');
+    get editButton() {
+        return this.page.getByLabel('Edit recipe');
     }
 
     get deleteRecipeButton() {
@@ -27,14 +27,6 @@ export class RecipeDetailPage {
         return this.page.getByRole('button', { name: 'Go back' });
     }
 
-    get addLinkButton() {
-        return this.page.getByRole('button', { name: 'Add Link' });
-    }
-
-    get editLinkButton() {
-        return this.page.getByRole('button', { name: 'Edit Link' });
-    }
-
     get linkInput() {
         return this.page.getByPlaceholder('https://...');
     }
@@ -51,10 +43,6 @@ export class RecipeDetailPage {
         return this.page.getByRole('heading', { name: /Ingredients/ });
     }
 
-    get editInstructionsButton() {
-        return this.page.getByRole('button', { name: 'Edit Instructions' });
-    }
-
     get selectIngredientsHeading() {
         return this.page.getByRole('heading', { name: 'Select Ingredients' });
     }
@@ -68,7 +56,7 @@ export class RecipeDetailPage {
     }
 
     async editTitle(newTitle: string) {
-        await this.editTitleButton.click();
+        await this.editButton.click();
         const input = this.page.locator('input[autofocus], input').first();
         await input.clear();
         await input.fill(newTitle);

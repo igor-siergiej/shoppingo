@@ -31,27 +31,27 @@ test.describe('Recipe detail page', () => {
         await authenticatedPage.goto(`/recipes/${recipe.id}`);
         await authenticatedPage.locator('h1').last().waitFor({ timeout: 10000 });
 
-        await authenticatedPage.getByLabel('Edit recipe title').click();
+        await authenticatedPage.getByLabel('Edit recipe').click();
         const input = authenticatedPage.getByLabel('Recipe title');
         await input.clear();
         await input.fill('New Title');
-        await authenticatedPage.getByRole('button', { name: 'Save' }).first().click();
+        await authenticatedPage.getByRole('button', { name: 'Save' }).click();
 
         await expect(authenticatedPage.locator('h1').filter({ hasText: 'New Title' })).toBeVisible();
     });
 
-    test('editing the title surfaces a success toast', async ({ authenticatedPage }) => {
+    test('editing the recipe surfaces a success toast', async ({ authenticatedPage }) => {
         const recipe = await apiCreateRecipe('Toast Recipe');
         await authenticatedPage.goto(`/recipes/${recipe.id}`);
         await authenticatedPage.locator('h1').last().waitFor({ timeout: 10000 });
 
-        await authenticatedPage.getByLabel('Edit recipe title').click();
+        await authenticatedPage.getByLabel('Edit recipe').click();
         const input = authenticatedPage.getByLabel('Recipe title');
         await input.clear();
         await input.fill('Toast Recipe Renamed');
-        await authenticatedPage.getByRole('button', { name: 'Save' }).first().click();
+        await authenticatedPage.getByRole('button', { name: 'Save' }).click();
 
-        await expect(authenticatedPage.getByText('Recipe title updated')).toBeVisible();
+        await expect(authenticatedPage.getByText('Recipe updated')).toBeVisible();
     });
 
     test('owner can add a link', async ({ authenticatedPage }) => {
@@ -59,11 +59,11 @@ test.describe('Recipe detail page', () => {
         await authenticatedPage.goto(`/recipes/${recipe.id}`);
         await authenticatedPage.locator('h1').last().waitFor({ timeout: 10000 });
 
-        await authenticatedPage.getByRole('button', { name: 'Add Link' }).click();
+        await authenticatedPage.getByLabel('Edit recipe').click();
         await authenticatedPage.getByPlaceholder('https://...').fill('https://example.com/recipe');
-        await authenticatedPage.getByRole('button', { name: 'Save' }).first().click();
+        await authenticatedPage.getByRole('button', { name: 'Save' }).click();
 
-        await expect(authenticatedPage.getByRole('button', { name: 'Edit Link' })).toBeVisible();
+        await expect(authenticatedPage.getByLabel('Open original recipe')).toBeVisible();
     });
 
     test('owner can edit instructions', async ({ authenticatedPage }) => {
@@ -71,9 +71,9 @@ test.describe('Recipe detail page', () => {
         await authenticatedPage.goto(`/recipes/${recipe.id}`);
         await authenticatedPage.locator('h1').last().waitFor({ timeout: 10000 });
 
-        await authenticatedPage.getByRole('button', { name: 'Edit Instructions' }).click();
+        await authenticatedPage.getByLabel('Edit recipe').click();
         await authenticatedPage.getByRole('button', { name: '+ Add step' }).click();
-        await authenticatedPage.getByRole('button', { name: 'Save' }).first().click();
+        await authenticatedPage.getByRole('button', { name: 'Save' }).click();
     });
 
     test('owner can delete recipe and returns to /recipes', async ({ authenticatedPage }) => {

@@ -1,16 +1,17 @@
 import type { Recipe } from '@shoppingo/types';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import RecipeDetailPage from './index';
 
 vi.mock('@imapps/web-utils', () => ({
     useUser: () => ({ user: { id: 'user-1', username: 'testuser' } }),
 }));
 
+const mockUpdateRecipe = vi.fn();
 vi.mock('../../hooks/useRecipeMutations', () => ({
-    useRecipeMutations: () => ({ updateRecipe: vi.fn(), deleteRecipe: vi.fn() }),
+    useRecipeMutations: () => ({ updateRecipe: mockUpdateRecipe, deleteRecipe: vi.fn() }),
 }));
 
 vi.mock('../../hooks/useManageRecipeUsers', () => ({
@@ -57,6 +58,10 @@ const renderPage = (recipeId = 'recipe-1') => {
 };
 
 describe('RecipeDetailPage', () => {
+    beforeEach(() => {
+        mockUpdateRecipe.mockReset();
+    });
+
     it('renders a long title in full, without truncating', async () => {
         const longTitle = "Grandma's Slow-Cooked Beef Bourguignon With Red Wine And Root Vegetables";
         mockRecipe = {
@@ -87,7 +92,7 @@ describe('RecipeDetailPage', () => {
         renderPage();
 
         await screen.findByRole('heading', { name: 'Pasta' });
-        expect(screen.getByLabelText('Edit recipe title')).toBeInTheDocument();
+        expect(screen.getByLabelText('Edit recipe')).toBeInTheDocument();
         expect(screen.getByLabelText('Delete recipe')).toBeInTheDocument();
     });
 
@@ -126,12 +131,12 @@ describe('RecipeDetailPage', () => {
         await screen.findByRole('heading', { name: 'Pasta' });
         fireEvent.click(screen.getByText('Toggle Select Mode'));
 
-        expect(screen.queryByLabelText('Edit recipe title')).not.toBeInTheDocument();
+        expect(screen.queryByLabelText('Edit recipe')).not.toBeInTheDocument();
         expect(screen.queryByLabelText('Delete recipe')).not.toBeInTheDocument();
 
         fireEvent.click(screen.getByText('Toggle Select Mode'));
 
-        expect(screen.getByLabelText('Edit recipe title')).toBeInTheDocument();
+        expect(screen.getByLabelText('Edit recipe')).toBeInTheDocument();
         expect(screen.getByLabelText('Delete recipe')).toBeInTheDocument();
     });
 
@@ -148,12 +153,92 @@ describe('RecipeDetailPage', () => {
         renderPage();
 
         await screen.findByRole('heading', { name: 'Pasta' });
-        fireEvent.click(screen.getByLabelText('Edit recipe title'));
+        fireEvent.click(screen.getByLabelText('Edit recipe'));
         expect(screen.getByLabelText('Recipe title')).toBeInTheDocument();
 
         fireEvent.click(screen.getByText('Toggle Select Mode'));
 
         expect(screen.queryByLabelText('Recipe title')).not.toBeInTheDocument();
         expect(screen.getByRole('heading', { name: 'Pasta' })).toBeInTheDocument();
+    });
+
+    it('entering edit mode shows title input plus one Save and one Cancel', async () => {
+        mockRecipe = {
+            id: 'recipe-1',
+            title: 'Pasta',
+            link: 'https://example.com/pasta',
+            ingredients: [],
+            ownerId: 'user-1',
+            users: [{ id: 'user-1', username: 'testuser' }],
+            dateAdded: new Date(),
+        };
+
+        renderPage();
+
+        await screen.findByRole('heading', { name: 'Pasta' });
+        fireEvent.click(screen.getByLabelText('Edit recipe'));
+
+        expect(screen.getByLabelText('Recipe title')).toHaveValue('Pasta');
+        expect(screen.getByRole('button', { name: 'Save' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
+    });
+
+    it('Save assembles the edited title and link plus the recipe’s other fields into one updateRecipe call', async () => {
+        mockUpdateRecipe.mockResolvedValue({});
+        mockRecipe = {
+            id: 'recipe-1',
+            title: 'Pasta',
+            link: 'https://example.com/pasta',
+            instructions: ['Boil water'],
+            tags: ['dinner'],
+            ingredients: [{ id: 'i1', name: 'Flour' }],
+            ownerId: 'user-1',
+            users: [{ id: 'user-1', username: 'testuser' }],
+            dateAdded: new Date(),
+        };
+
+        renderPage();
+
+        await screen.findByRole('heading', { name: 'Pasta' });
+        fireEvent.click(screen.getByLabelText('Edit recipe'));
+        fireEvent.change(screen.getByLabelText('Recipe title'), { target: { value: 'Pasta v2' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+
+        await waitFor(() => expect(screen.queryByLabelText('Recipe title')).not.toBeInTheDocument());
+        expect(mockUpdateRecipe).toHaveBeenCalledTimes(1);
+        expect(mockUpdateRecipe).toHaveBeenCalledWith(
+            'recipe-1',
+            'Pasta v2',
+            mockRecipe.ingredients,
+            undefined,
+            'https://example.com/pasta',
+            ['Boil water'],
+            ['dinner'],
+            undefined,
+            undefined,
+            undefined,
+            undefined
+        );
+    });
+
+    it('Cancel exits edit mode without calling updateRecipe', async () => {
+        mockRecipe = {
+            id: 'recipe-1',
+            title: 'Pasta',
+            ingredients: [],
+            ownerId: 'user-1',
+            users: [{ id: 'user-1', username: 'testuser' }],
+            dateAdded: new Date(),
+        };
+
+        renderPage();
+
+        await screen.findByRole('heading', { name: 'Pasta' });
+        fireEvent.click(screen.getByLabelText('Edit recipe'));
+        fireEvent.change(screen.getByLabelText('Recipe title'), { target: { value: 'Discarded' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+
+        expect(screen.getByRole('heading', { name: 'Pasta' })).toBeInTheDocument();
+        expect(mockUpdateRecipe).not.toHaveBeenCalled();
     });
 });

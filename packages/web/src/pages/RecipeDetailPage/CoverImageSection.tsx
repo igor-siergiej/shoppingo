@@ -10,6 +10,7 @@ import { notifyError, notifySuccess } from '../../utils/toast';
 interface CoverImageSectionProps {
     recipe: Recipe;
     isOwner?: boolean;
+    isEditing?: boolean;
     onImageChange?: () => void;
 }
 
@@ -126,7 +127,12 @@ const OwnerControls = ({ recipe, onImageChange }: { recipe: Recipe; onImageChang
     );
 };
 
-export const CoverImageSection = ({ recipe, isOwner = false, onImageChange }: CoverImageSectionProps) => {
+export const CoverImageSection = ({
+    recipe,
+    isOwner = false,
+    isEditing = false,
+    onImageChange,
+}: CoverImageSectionProps) => {
     const { imageUrl, isLoading, hasError } = useAuthedImage(recipe.coverImageKey);
 
     return (
@@ -137,7 +143,7 @@ export const CoverImageSection = ({ recipe, isOwner = false, onImageChange }: Co
                 hasError={hasError}
                 alt={recipe.title}
             />
-            {isOwner && <OwnerControls recipe={recipe} onImageChange={onImageChange} />}
+            {isOwner && isEditing && <OwnerControls recipe={recipe} onImageChange={onImageChange} />}
         </div>
     );
 };

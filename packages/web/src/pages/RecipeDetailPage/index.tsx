@@ -27,6 +27,7 @@ import { useGoBack } from '../../hooks/useGoBack';
 import { useManageRecipeUsers } from '../../hooks/useManageRecipeUsers';
 import { useRecipeMutations } from '../../hooks/useRecipeMutations';
 import { logger } from '../../utils/logger';
+import { toOptionalNumber } from '../../utils/parseRecipeMeta';
 import { notifyError, notifySuccess } from '../../utils/toast';
 import { CoverImageSection } from './CoverImageSection';
 import { ErrorState } from './ErrorState';
@@ -52,11 +53,16 @@ const RecipeDetailPage = () => {
         userId: user?.id ?? '',
     });
 
-    const [isEditingTitle, setIsEditingTitle] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
     const [editedTitle, setEditedTitle] = useState('');
-    const [isSelectMode, setIsSelectMode] = useState(false);
-    const [isEditingLink, setIsEditingLink] = useState(false);
     const [editedLink, setEditedLink] = useState('');
+    const [editedTags, setEditedTags] = useState<string[]>([]);
+    const [editedInstructions, setEditedInstructions] = useState<string[]>([]);
+    const [editedPrepTime, setEditedPrepTime] = useState('');
+    const [editedCookTime, setEditedCookTime] = useState('');
+    const [editedServings, setEditedServings] = useState('');
+    const [editedDifficulty, setEditedDifficulty] = useState<'' | NonNullable<Recipe['difficulty']>>('');
+    const [isSelectMode, setIsSelectMode] = useState(false);
     const [isManageUsersOpen, setIsManageUsersOpen] = useState(false);
 
     const {
@@ -74,8 +80,6 @@ const RecipeDetailPage = () => {
 
     useEffect(() => {
         if (recipe) {
-            setEditedTitle(recipe.title);
-            setEditedLink(recipe.link ?? '');
             logger.info('Recipe detail page loaded', {
                 recipeId,
                 title: recipe.title,
@@ -123,85 +127,58 @@ const RecipeDetailPage = () => {
         }
     };
 
+    // Seeds every editable field from the current recipe in one linear pass; splitting
+    // further would just scatter the eight fields the edit form genuinely has.
     // fallow-ignore-next-line complexity
-    const handleSaveTitle = async () => {
-        if (!recipe || editedTitle.trim() === recipe.title) {
-            setIsEditingTitle(false);
+    const handleEditStart = () => {
+        if (!recipe) return;
+        setEditedTitle(recipe.title);
+        setEditedLink(recipe.link ?? '');
+        setEditedTags(recipe.tags ?? []);
+        setEditedInstructions(recipe.instructions ?? []);
+        setEditedPrepTime(recipe.prepTime?.toString() ?? '');
+        setEditedCookTime(recipe.cookTime?.toString() ?? '');
+        setEditedServings(recipe.servings?.toString() ?? '');
+        setEditedDifficulty(recipe.difficulty ?? '');
+        setIsEditing(true);
+    };
+
+    const handleEditCancel = () => {
+        setIsEditing(false);
+    };
+
+    // Single Save assembles every editable field (title/link/tags/instructions/details) from
+    // local edit state — never from the possibly-stale cached recipe — into one updateRecipe
+    // call, so untouched fields aren't clobbered and the user sees one toast, not five.
+    // fallow-ignore-next-line complexity
+    const handleSaveAll = async () => {
+        if (!recipe) return;
+        if (!editedTitle.trim()) {
+            notifyError('Recipe title is required');
             return;
         }
 
         try {
             await updateRecipe(
                 recipeId,
-                editedTitle,
-                recipe.ingredients,
-                undefined,
-                recipe.link,
-                recipe.instructions,
-                recipe.tags,
-                recipe.prepTime,
-                recipe.cookTime,
-                recipe.servings,
-                recipe.difficulty
-            );
-            await refetch();
-            setIsEditingTitle(false);
-            notifySuccess('Recipe title updated');
-            logger.info('Recipe title updated', { recipeId, newTitle: editedTitle });
-        } catch (error) {
-            const err = error as { message?: string };
-            notifyError(err.message || 'Failed to update recipe title');
-        }
-    };
-
-    // fallow-ignore-next-line complexity
-    const handleSaveLink = async () => {
-        if (!recipe) return;
-        try {
-            await updateRecipe(
-                recipeId,
-                recipe.title,
+                editedTitle.trim(),
                 recipe.ingredients,
                 undefined,
                 editedLink.trim() || undefined,
-                recipe.instructions,
-                recipe.tags,
-                recipe.prepTime,
-                recipe.cookTime,
-                recipe.servings,
-                recipe.difficulty
+                editedInstructions.length > 0 ? editedInstructions : undefined,
+                editedTags.length > 0 ? editedTags : undefined,
+                toOptionalNumber(editedPrepTime),
+                toOptionalNumber(editedCookTime),
+                toOptionalNumber(editedServings),
+                editedDifficulty || undefined
             );
             await refetch();
-            setIsEditingLink(false);
-            notifySuccess('Recipe link updated');
+            setIsEditing(false);
+            notifySuccess('Recipe updated');
+            logger.info('Recipe updated', { recipeId, title: editedTitle });
         } catch (error) {
             const err = error as { message?: string };
-            notifyError(err.message || 'Failed to update link');
-        }
-    };
-
-    // fallow-ignore-next-line complexity
-    const handleSaveInstructions = async (instructions: string[]) => {
-        if (!recipe) return;
-        try {
-            await updateRecipe(
-                recipeId,
-                recipe.title,
-                recipe.ingredients,
-                undefined,
-                recipe.link,
-                instructions.length > 0 ? instructions : undefined,
-                recipe.tags,
-                recipe.prepTime,
-                recipe.cookTime,
-                recipe.servings,
-                recipe.difficulty
-            );
-            await refetch();
-            notifySuccess('Instructions updated');
-        } catch (error) {
-            const err = error as { message?: string };
-            notifyError(err.message || 'Failed to update instructions');
+            notifyError(err.message || 'Failed to update recipe');
         }
     };
 
@@ -232,60 +209,6 @@ const RecipeDetailPage = () => {
             const err = error as { message?: string };
             notifyError(err.message || 'Failed to update ingredients');
             throw error;
-        }
-    };
-
-    // fallow-ignore-next-line complexity
-    const handleDeleteTag = async (tag: string) => {
-        if (!recipe) return;
-        const nextTags = (recipe.tags ?? []).filter((t) => t !== tag);
-        try {
-            await updateRecipe(
-                recipeId,
-                recipe.title,
-                recipe.ingredients,
-                undefined,
-                recipe.link,
-                recipe.instructions,
-                nextTags,
-                recipe.prepTime,
-                recipe.cookTime,
-                recipe.servings,
-                recipe.difficulty
-            );
-            await refetch();
-        } catch (error) {
-            const err = error as { message?: string };
-            notifyError(err.message || 'Failed to remove tag');
-        }
-    };
-
-    const handleSaveDetails = async (details: {
-        prepTime?: number;
-        cookTime?: number;
-        servings?: number;
-        difficulty?: Recipe['difficulty'];
-    }) => {
-        if (!recipe) return;
-        try {
-            await updateRecipe(
-                recipeId,
-                recipe.title,
-                recipe.ingredients,
-                undefined,
-                recipe.link,
-                recipe.instructions,
-                recipe.tags,
-                details.prepTime,
-                details.cookTime,
-                details.servings,
-                details.difficulty
-            );
-            await refetch();
-            notifySuccess('Recipe details updated');
-        } catch (error) {
-            const err = error as { message?: string };
-            notifyError(err.message || 'Failed to update recipe details');
         }
     };
 
@@ -356,12 +279,17 @@ const RecipeDetailPage = () => {
             {!isLoading && !isError && recipe && (
                 <div className="flex-1 overflow-y-auto">
                     {!isSelectMode && (
-                        <CoverImageSection recipe={recipe} isOwner={isOwner} onImageChange={() => void refetch()} />
+                        <CoverImageSection
+                            recipe={recipe}
+                            isOwner={isOwner}
+                            isEditing={isEditing}
+                            onImageChange={() => void refetch()}
+                        />
                     )}
 
                     <div className="p-4 space-y-6">
-                        {isEditingTitle && !isSelectMode ? (
-                            <div className="flex items-center gap-2">
+                        {isEditing && !isSelectMode ? (
+                            <div className="space-y-2">
                                 <Input
                                     value={editedTitle}
                                     onChange={(e) => setEditedTitle(e.target.value)}
@@ -369,12 +297,6 @@ const RecipeDetailPage = () => {
                                     autoFocus
                                     aria-label="Recipe title"
                                 />
-                                <Button size="sm" onClick={handleSaveTitle}>
-                                    Save
-                                </Button>
-                                <Button size="sm" variant="outline" onClick={() => setIsEditingTitle(false)}>
-                                    Cancel
-                                </Button>
                             </div>
                         ) : (
                             <div className="space-y-2">
@@ -395,9 +317,9 @@ const RecipeDetailPage = () => {
                                     {isOwner && !isSelectMode && (
                                         <>
                                             <button
-                                                onClick={() => setIsEditingTitle(true)}
+                                                onClick={handleEditStart}
                                                 className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-muted transition-colors"
-                                                aria-label="Edit recipe title"
+                                                aria-label="Edit recipe"
                                                 type="button"
                                             >
                                                 <Pencil className="h-5 w-5" />
@@ -430,31 +352,18 @@ const RecipeDetailPage = () => {
                                         <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
                                             Recipe Link
                                         </p>
-                                        {isEditingLink ? (
-                                            <div className="flex gap-2">
-                                                <Input
-                                                    type="url"
-                                                    value={editedLink}
-                                                    onChange={(e) => setEditedLink(e.target.value)}
-                                                    placeholder="https://..."
-                                                    className="flex-1"
-                                                    autoFocus
-                                                />
-                                                <Button size="sm" onClick={handleSaveLink}>
-                                                    Save
-                                                </Button>
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline"
-                                                    onClick={() => setIsEditingLink(false)}
-                                                >
-                                                    Cancel
-                                                </Button>
-                                            </div>
+                                        {isEditing ? (
+                                            <Input
+                                                type="url"
+                                                value={editedLink}
+                                                onChange={(e) => setEditedLink(e.target.value)}
+                                                placeholder="https://..."
+                                                className="flex-1"
+                                            />
+                                        ) : recipe.link ? (
+                                            <p className="text-sm text-muted-foreground truncate">{recipe.link}</p>
                                         ) : (
-                                            <Button variant="outline" size="sm" onClick={() => setIsEditingLink(true)}>
-                                                {recipe.link ? 'Edit Link' : 'Add Link'}
-                                            </Button>
+                                            <p className="text-sm text-muted-foreground">No link added yet.</p>
                                         )}
                                     </div>
                                 )}
@@ -465,10 +374,23 @@ const RecipeDetailPage = () => {
                                     servings={recipe.servings}
                                     difficulty={recipe.difficulty}
                                     isOwner={isOwner}
-                                    onSave={handleSaveDetails}
+                                    isEditing={isEditing}
+                                    editedPrepTime={editedPrepTime}
+                                    editedCookTime={editedCookTime}
+                                    editedServings={editedServings}
+                                    editedDifficulty={editedDifficulty}
+                                    onEditedPrepTimeChange={setEditedPrepTime}
+                                    onEditedCookTimeChange={setEditedCookTime}
+                                    onEditedServingsChange={setEditedServings}
+                                    onEditedDifficultyChange={setEditedDifficulty}
                                 />
 
-                                <TagsSection tags={recipe.tags} isOwner={isOwner} onDeleteTag={handleDeleteTag} />
+                                <TagsSection
+                                    tags={isEditing ? editedTags : (recipe.tags ?? [])}
+                                    isOwner={isOwner}
+                                    isEditing={isEditing}
+                                    onChange={setEditedTags}
+                                />
 
                                 <IngredientsSection
                                     recipe={recipe}
@@ -477,10 +399,20 @@ const RecipeDetailPage = () => {
                                 />
 
                                 <InstructionsSection
-                                    instructions={recipe.instructions ?? undefined}
+                                    instructions={isEditing ? editedInstructions : (recipe.instructions ?? [])}
                                     isOwner={isOwner}
-                                    onSave={handleSaveInstructions}
+                                    isEditing={isEditing}
+                                    onChange={setEditedInstructions}
                                 />
+
+                                {isEditing && isOwner && (
+                                    <div className="flex gap-2">
+                                        <Button onClick={() => void handleSaveAll()}>Save</Button>
+                                        <Button variant="outline" onClick={handleEditCancel}>
+                                            Cancel
+                                        </Button>
+                                    </div>
+                                )}
                             </>
                         )}
                     </div>

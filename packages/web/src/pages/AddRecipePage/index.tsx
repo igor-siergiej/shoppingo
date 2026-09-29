@@ -14,6 +14,7 @@ import {
 import { FriendPicker } from '../../components/FriendPicker';
 import { RecipeTimingFields } from '../../components/RecipeTimingFields';
 import { StepsList } from '../../components/StepsList';
+import { TagsField } from '../../components/TagsField';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
@@ -34,7 +35,6 @@ import { ImportProgress, type ImportStage } from './ImportProgress';
 import { ImportScreen } from './ImportScreen';
 import { type Ingredient, IngredientsField } from './IngredientsField';
 import { LinkImportField } from './LinkImportField';
-import { TagsField } from './TagsField';
 
 type Mode = 'choice' | 'import' | 'form';
 
