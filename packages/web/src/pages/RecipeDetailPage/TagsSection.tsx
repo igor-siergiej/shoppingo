@@ -1,13 +1,27 @@
-import { X } from 'lucide-react';
+import { TagsField } from '../../components/TagsField';
 
 interface TagsSectionProps {
-    tags?: string[];
+    tags: string[];
     isOwner?: boolean;
-    onDeleteTag: (tag: string) => void;
+    isEditing: boolean;
+    onChange: (tags: string[]) => void;
 }
 
-export const TagsSection = ({ tags, isOwner = false, onDeleteTag }: TagsSectionProps) => {
-    if (!tags || tags.length === 0) return null;
+// View-only chips when not editing; adding and removing tags — the add/remove editor shared
+// with AddRecipePage's manual tag entry — only happens while the page is in edit mode, matching
+// every other field on this page (no standalone always-on per-tag delete outside edit mode).
+export const TagsSection = ({ tags, isOwner = false, isEditing, onChange }: TagsSectionProps) => {
+    if (isEditing) {
+        if (!isOwner) return null;
+        return (
+            <div className="space-y-2">
+                <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Tags</p>
+                <TagsField tags={tags} onChange={onChange} />
+            </div>
+        );
+    }
+
+    if (tags.length === 0) return null;
 
     return (
         <div className="flex flex-wrap gap-1.5">
@@ -17,11 +31,6 @@ export const TagsSection = ({ tags, isOwner = false, onDeleteTag }: TagsSectionP
                     className="flex items-center gap-1 rounded-full bg-muted px-3 py-1 text-xs text-foreground"
                 >
                     {tag}
-                    {isOwner && (
-                        <button type="button" aria-label={`Remove tag ${tag}`} onClick={() => onDeleteTag(tag)}>
-                            <X className="h-3 w-3" />
-                        </button>
-                    )}
                 </span>
             ))}
         </div>

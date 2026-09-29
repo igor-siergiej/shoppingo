@@ -1,42 +1,22 @@
 import { useState } from 'react';
 import { StepsList } from '../../components/StepsList';
-import { Button } from '../../components/ui/button';
 import { Textarea } from '../../components/ui/textarea';
 import { splitIntoSteps } from '../../utils/splitIntoSteps';
 
 interface InstructionsSectionProps {
-    instructions?: string[];
+    instructions: string[];
     isOwner?: boolean | null;
-    onSave: (instructions: string[]) => Promise<void>;
+    isEditing: boolean;
+    onChange: (instructions: string[]) => void;
 }
 
-// View/edit toggle with a paste-text/step-list sub-toggle for instructions; already delegates
-// step rendering to the shared StepsList component, leaving only this view's own state machine.
+// View/edit toggle with a paste-text/step-list sub-toggle for instructions; edit mode is now
+// externally controlled by the page's single Edit/Save/Cancel — only the paste-vs-steps
+// presentation toggle (and its scratch paste text) stays local to this component.
 // fallow-ignore-next-line complexity
-export const InstructionsSection = ({ instructions = [], isOwner, onSave }: InstructionsSectionProps) => {
-    const [isEditing, setIsEditing] = useState(false);
-    const [steps, setSteps] = useState<string[]>(instructions);
+export const InstructionsSection = ({ instructions, isOwner, isEditing, onChange }: InstructionsSectionProps) => {
     const [showPaste, setShowPaste] = useState(false);
     const [pasteText, setPasteText] = useState('');
-    const [isSaving, setIsSaving] = useState(false);
-
-    const handleSave = async () => {
-        setIsSaving(true);
-        try {
-            await onSave(steps);
-            setIsEditing(false);
-            setShowPaste(false);
-        } finally {
-            setIsSaving(false);
-        }
-    };
-
-    const handleCancel = () => {
-        setSteps(instructions);
-        setIsEditing(false);
-        setShowPaste(false);
-        setPasteText('');
-    };
 
     if (!isEditing) {
         return (
@@ -57,21 +37,11 @@ export const InstructionsSection = ({ instructions = [], isOwner, onSave }: Inst
                         ))}
                     </div>
                 )}
-                {isOwner && (
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                            setSteps(instructions);
-                            setIsEditing(true);
-                        }}
-                    >
-                        Edit Instructions
-                    </Button>
-                )}
             </div>
         );
     }
+
+    if (!isOwner) return null;
 
     return (
         <div className="space-y-2">
@@ -94,7 +64,7 @@ export const InstructionsSection = ({ instructions = [], isOwner, onSave }: Inst
                     onBlur={() => {
                         const parsed = splitIntoSteps(pasteText);
                         if (parsed.length > 0) {
-                            setSteps(parsed);
+                            onChange(parsed);
                             setShowPaste(false);
                             setPasteText('');
                         }
@@ -102,17 +72,8 @@ export const InstructionsSection = ({ instructions = [], isOwner, onSave }: Inst
                     className="min-h-[100px] resize-none"
                 />
             ) : (
-                <StepsList steps={steps} onChange={setSteps} />
+                <StepsList steps={instructions} onChange={onChange} />
             )}
-
-            <div className="flex gap-2">
-                <Button size="sm" onClick={handleSave} disabled={isSaving}>
-                    {isSaving ? 'Saving...' : 'Save'}
-                </Button>
-                <Button size="sm" variant="outline" onClick={handleCancel} disabled={isSaving}>
-                    Cancel
-                </Button>
-            </div>
         </div>
     );
 };

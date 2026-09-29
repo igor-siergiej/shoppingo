@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { TagsField } from './TagsField';
+import { TagsField } from './index';
 
 describe('TagsField', () => {
     it('commits a tag on Enter and clears the input', async () => {

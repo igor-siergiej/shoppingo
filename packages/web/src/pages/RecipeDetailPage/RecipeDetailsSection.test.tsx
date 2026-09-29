@@ -3,15 +3,27 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { RecipeDetailsSection } from './RecipeDetailsSection';
 
-describe('RecipeDetailsSection', () => {
-    it('renders nothing for a non-owner viewer when no details are set', () => {
-        const { container } = render(<RecipeDetailsSection isOwner={false} onSave={vi.fn()} />);
-        expect(container).toBeEmptyDOMElement();
-    });
+const noopHandlers = {
+    onEditedPrepTimeChange: vi.fn(),
+    onEditedCookTimeChange: vi.fn(),
+    onEditedServingsChange: vi.fn(),
+    onEditedDifficultyChange: vi.fn(),
+};
 
-    it('shows an "add details" affordance for the owner when nothing is set yet', () => {
-        render(<RecipeDetailsSection isOwner onSave={vi.fn()} />);
-        expect(screen.getByRole('button', { name: 'Add Details' })).toBeInTheDocument();
+describe('RecipeDetailsSection', () => {
+    it('renders nothing when nothing is set and not editing', () => {
+        const { container } = render(
+            <RecipeDetailsSection
+                isOwner
+                isEditing={false}
+                editedPrepTime=""
+                editedCookTime=""
+                editedServings=""
+                editedDifficulty=""
+                {...noopHandlers}
+            />
+        );
+        expect(container).toBeEmptyDOMElement();
     });
 
     it('shows chips for whichever fields are set', () => {
@@ -22,7 +34,12 @@ describe('RecipeDetailsSection', () => {
                 servings={4}
                 difficulty="easy"
                 isOwner={false}
-                onSave={vi.fn()}
+                isEditing={false}
+                editedPrepTime=""
+                editedCookTime=""
+                editedServings=""
+                editedDifficulty=""
+                {...noopHandlers}
             />
         );
         expect(screen.getByText('Prep: 20 min')).toBeInTheDocument();
@@ -31,50 +48,55 @@ describe('RecipeDetailsSection', () => {
         expect(screen.getByText('Difficulty: Easy')).toBeInTheDocument();
     });
 
-    it('hides the edit affordance for a non-owner', () => {
-        render(<RecipeDetailsSection prepTime={20} isOwner={false} onSave={vi.fn()} />);
-        expect(screen.queryByLabelText('Edit recipe details')).not.toBeInTheDocument();
+    it('renders nothing for a non-owner while the page is in edit mode', () => {
+        const { container } = render(
+            <RecipeDetailsSection
+                isOwner={false}
+                isEditing
+                editedPrepTime=""
+                editedCookTime=""
+                editedServings=""
+                editedDifficulty=""
+                {...noopHandlers}
+            />
+        );
+        expect(container).toBeEmptyDOMElement();
     });
 
-    it('opens the edit form prefilled with current values', async () => {
+    it('shows the timing fields prefilled with edited values for the owner while editing', () => {
         render(
-            <RecipeDetailsSection prepTime={20} cookTime={15} servings={4} difficulty="hard" isOwner onSave={vi.fn()} />
+            <RecipeDetailsSection
+                isOwner
+                isEditing
+                editedPrepTime="20"
+                editedCookTime="15"
+                editedServings="4"
+                editedDifficulty="hard"
+                {...noopHandlers}
+            />
         );
-
-        await userEvent.click(screen.getByLabelText('Edit recipe details'));
-
         expect(screen.getByLabelText('Prep time')).toHaveValue(20);
         expect(screen.getByLabelText('Cook time')).toHaveValue(15);
         expect(screen.getByLabelText('Servings')).toHaveValue(4);
     });
 
-    it('saves edited values and exits edit mode', async () => {
-        const onSave = vi.fn().mockResolvedValue(undefined);
-        render(<RecipeDetailsSection isOwner onSave={onSave} />);
+    it('reports edits via onEditedPrepTimeChange as the owner types', async () => {
+        const onEditedPrepTimeChange = vi.fn();
+        render(
+            <RecipeDetailsSection
+                isOwner
+                isEditing
+                editedPrepTime=""
+                editedCookTime=""
+                editedServings=""
+                editedDifficulty=""
+                {...noopHandlers}
+                onEditedPrepTimeChange={onEditedPrepTimeChange}
+            />
+        );
 
-        await userEvent.click(screen.getByRole('button', { name: 'Add Details' }));
-        await userEvent.type(screen.getByLabelText('Prep time'), '10');
-        await userEvent.type(screen.getByLabelText('Servings'), '2');
-        await userEvent.click(screen.getByRole('button', { name: 'Save' }));
+        await userEvent.type(screen.getByLabelText('Prep time'), '5');
 
-        expect(onSave).toHaveBeenCalledWith({
-            prepTime: 10,
-            cookTime: undefined,
-            servings: 2,
-            difficulty: undefined,
-        });
-        expect(screen.queryByRole('button', { name: 'Save' })).not.toBeInTheDocument();
-    });
-
-    it('cancel discards edits without saving', async () => {
-        const onSave = vi.fn();
-        render(<RecipeDetailsSection prepTime={20} isOwner onSave={onSave} />);
-
-        await userEvent.click(screen.getByLabelText('Edit recipe details'));
-        await userEvent.clear(screen.getByLabelText('Prep time'));
-        await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
-
-        expect(onSave).not.toHaveBeenCalled();
-        expect(screen.getByText('Prep: 20 min')).toBeInTheDocument();
+        expect(onEditedPrepTimeChange).toHaveBeenLastCalledWith('5');
     });
 });
