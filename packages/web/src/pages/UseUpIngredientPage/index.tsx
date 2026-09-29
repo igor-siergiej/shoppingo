@@ -37,7 +37,6 @@ const UseUpIngredientPage = () => {
                     onChange={setQuery}
                     placeholder="e.g. spinach"
                     name="waste-warrior-search"
-                    autoFocus
                 />
             </div>
 

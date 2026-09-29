@@ -63,4 +63,11 @@ describe('UseUpIngredientPage', () => {
 
         expect(mockNavigate).toHaveBeenCalledWith('/recipes/r1');
     });
+
+    it('does not focus the search field on load — the user taps to search', () => {
+        mockRecipes = [];
+        render(<UseUpIngredientPage />);
+
+        expect(screen.getByPlaceholderText('e.g. spinach')).not.toHaveFocus();
+    });
 });
