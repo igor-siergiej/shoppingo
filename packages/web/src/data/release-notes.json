@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.81.0",
+    "date": "2026-09-29",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Adding a recipe's ingredients to a shopping list now starts with a portions stepper — bump it up or down and the amounts you send scale to match, instead of always using the recipe's original quantities."
+      }
+    ]
+  },
+  {
     "version": "1.80.0",
     "date": "2026-09-29",
     "notes": [

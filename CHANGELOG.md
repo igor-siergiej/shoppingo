@@ -1,3 +1,10 @@
+# [1.81.0](https://github.com/igor-siergiej/shoppingo/compare/v1.80.0...v1.81.0) (2026-09-29)
+
+
+### Features
+
+* **web:** scale recipe ingredient quantities by a portions stepper ([#179](https://github.com/igor-siergiej/shoppingo/issues/179)) ([b89affa](https://github.com/igor-siergiej/shoppingo/commit/b89affaa1ba0356b3368acc13475a9facbf92b71))
+
 # [1.80.0](https://github.com/igor-siergiej/shoppingo/compare/v1.79.1...v1.80.0) (2026-09-29)
 
 
