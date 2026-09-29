@@ -135,3 +135,18 @@ export const convertIngredients = <T extends ConvertibleIngredient>(ingredients:
         return converted ? { ...ingredient, quantity: converted.quantity, unit: converted.unit } : ingredient;
     });
 };
+
+/**
+ * Scale each ingredient's quantity by `multiplier` (e.g. for a portions stepper).
+ * A multiplier of 1 is a no-op (same reference back); ingredients with no quantity
+ * are passed through untouched.
+ */
+export const scaleIngredients = <T extends ConvertibleIngredient>(ingredients: T[], multiplier: number): T[] => {
+    if (multiplier === 1) return ingredients;
+
+    return ingredients.map((ingredient) =>
+        ingredient.quantity === undefined
+            ? ingredient
+            : { ...ingredient, quantity: roundQuantity(ingredient.quantity * multiplier) }
+    );
+};

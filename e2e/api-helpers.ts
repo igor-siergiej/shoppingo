@@ -63,7 +63,8 @@ export async function apiUpdateItem(
 export async function apiCreateRecipe(
     title: string,
     ingredients: Array<{ name: string; quantity?: number; unit?: string }> = [],
-    selectedUsers: Array<string> = []
+    selectedUsers: Array<string> = [],
+    options: { servings?: number } = {}
 ) {
     const res = await fetch(`${API_BASE}/api/recipes`, {
         method: 'PUT',
@@ -74,6 +75,7 @@ export async function apiCreateRecipe(
             user: { id: 'user-testuser', username: 'testuser' },
             selectedUsers,
             ingredients,
+            ...options,
         }),
     });
     if (!res.ok) throw new Error(`apiCreateRecipe failed: ${await res.text()}`);

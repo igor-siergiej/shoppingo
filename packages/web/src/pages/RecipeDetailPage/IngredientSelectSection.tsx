@@ -4,38 +4,41 @@ import type { ListResponse, Recipe } from '@shoppingo/types';
 import { ListType } from '@shoppingo/types';
 import { useState } from 'react';
 import { IngredientSelectRow } from '../../components/IngredientSelectRow';
+import { PortionsStepper } from '../../components/PortionsStepper';
 import { Button } from '../../components/ui/button';
+import { useIngredientSelection } from '../../hooks/useIngredientSelection';
 
 interface IngredientSelectSectionProps {
     recipe: Recipe;
     lists: ListResponse[];
     onCancel: () => void;
-    onConfirm: (listTitle: string, ingredientIds: string[]) => Promise<void>;
+    onConfirm: (
+        listTitle: string,
+        items: Array<{ itemName: string; quantity?: number; unit?: string }>
+    ) => Promise<void>;
 }
 
 export const IngredientSelectSection = ({ recipe, lists, onCancel, onConfirm }: IngredientSelectSectionProps) => {
-    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const { selectedIds, toggleIngredient, portions, setPortions, scaledIngredients, selectedScaledIngredients } =
+        useIngredientSelection(recipe.ingredients, recipe.servings ?? 1);
     const [chosenList, setChosenList] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
     const shoppingLists = lists.filter((list) => list.listType === ListType.SHOPPING);
-
-    const handleToggleIngredient = (id: string) => {
-        const newSelected = new Set(selectedIds);
-        if (newSelected.has(id)) {
-            newSelected.delete(id);
-        } else {
-            newSelected.add(id);
-        }
-        setSelectedIds(newSelected);
-    };
 
     const handleConfirm = async () => {
         if (!chosenList || selectedIds.size === 0) return;
 
         try {
             setIsLoading(true);
-            await onConfirm(chosenList, Array.from(selectedIds));
+            await onConfirm(
+                chosenList,
+                selectedScaledIngredients.map((ingredient) => ({
+                    itemName: ingredient.name,
+                    quantity: ingredient.quantity,
+                    unit: ingredient.unit,
+                }))
+            );
         } finally {
             setIsLoading(false);
         }
@@ -43,19 +46,19 @@ export const IngredientSelectSection = ({ recipe, lists, onCancel, onConfirm }: 
 
     return (
         <div className="flex flex-col gap-6">
-            {/* Ingredients Selection */}
             <div className="space-y-3">
                 <h3 className="text-lg font-semibold">Select Ingredients</h3>
+                {recipe.ingredients.length > 0 && <PortionsStepper value={portions} onChange={setPortions} min={1} />}
                 <div className="grid gap-2">
-                    {recipe.ingredients.length === 0 ? (
+                    {scaledIngredients.length === 0 ? (
                         <p className="text-muted-foreground text-sm py-3">No ingredients to add</p>
                     ) : (
-                        recipe.ingredients.map((ingredient) => (
+                        scaledIngredients.map((ingredient) => (
                             <IngredientSelectRow
                                 key={ingredient.id}
                                 ingredient={ingredient}
                                 isSelected={selectedIds.has(ingredient.id)}
-                                onToggle={handleToggleIngredient}
+                                onToggle={toggleIngredient}
                             />
                         ))
                     )}
