@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { convertIngredients } from './convertUnits';
+import { convertIngredients, scaleIngredients } from './convertUnits';
 
 const one = (quantity: number | undefined, unit: string | undefined, system: 'metric' | 'imperial') =>
     convertIngredients([{ name: 'x', quantity, unit }], system)[0];
@@ -64,6 +64,46 @@ describe('convertIngredients', () => {
             { name: 'Garlic', quantity: 2, unit: 'cloves' },
             { name: 'Salt' },
             { name: 'Milk', quantity: 200, unit: 'ml' },
+        ]);
+    });
+});
+
+describe('scaleIngredients', () => {
+    it('is a no-op for multiplier 1 (same reference back)', () => {
+        const input = [{ name: 'Flour', quantity: 2, unit: 'cups' }];
+        expect(scaleIngredients(input, 1)).toBe(input);
+    });
+
+    it('scales quantities up and rounds via roundQuantity', () => {
+        expect(scaleIngredients([{ name: 'Carrot', quantity: 2, unit: 'cups' }], 1.25)).toEqual([
+            { name: 'Carrot', quantity: 2.5, unit: 'cups' },
+        ]);
+        expect(scaleIngredients([{ name: 'Flour', quantity: 150, unit: 'g' }], 2)).toEqual([
+            { name: 'Flour', quantity: 300, unit: 'g' },
+        ]);
+    });
+
+    it('scales quantities down', () => {
+        expect(scaleIngredients([{ name: 'Sugar', quantity: 4, unit: 'tbsp' }], 0.5)).toEqual([
+            { name: 'Sugar', quantity: 2, unit: 'tbsp' },
+        ]);
+    });
+
+    it('leaves ingredients with no quantity untouched', () => {
+        expect(scaleIngredients([{ name: 'Salt' }], 2)).toEqual([{ name: 'Salt' }]);
+    });
+
+    it('scales a mixed ingredient list, touching only what it can', () => {
+        const input = [
+            { name: 'Carrot', quantity: 2, unit: 'cups' },
+            { name: 'Salt' },
+            { name: 'Pepper', quantity: 0.5, unit: 'tsp' },
+        ];
+
+        expect(scaleIngredients(input, 3)).toEqual([
+            { name: 'Carrot', quantity: 6, unit: 'cups' },
+            { name: 'Salt' },
+            { name: 'Pepper', quantity: 1.5, unit: 'tsp' },
         ]);
     });
 });

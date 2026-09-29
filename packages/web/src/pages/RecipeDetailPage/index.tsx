@@ -233,20 +233,12 @@ const RecipeDetailPage = () => {
         });
     };
 
-    const handleConfirmAddToList = async (listTitle: string, ingredientIds: string[]) => {
-        if (!recipe) return;
-
+    const handleConfirmAddToList = async (
+        listTitle: string,
+        items: Array<{ itemName: string; quantity?: number; unit?: string }>
+    ) => {
         try {
-            const selectedIngredients = recipe.ingredients.filter((ing) => ingredientIds.includes(ing.id));
-
-            const result = await addItemsBulk(
-                listTitle,
-                selectedIngredients.map((ing) => ({
-                    itemName: ing.name,
-                    quantity: ing.quantity,
-                    unit: ing.unit,
-                }))
-            );
+            const result = await addItemsBulk(listTitle, items);
 
             notifySuccess(`${result.added} items added, ${result.skipped} skipped`);
 

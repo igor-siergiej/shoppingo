@@ -9,10 +9,12 @@ import { addItemsBulk, getRecipesQuery } from '../../../api';
 import { Button } from '../../../components/ui/button';
 import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from '../../../components/ui/drawer';
 import { RippleButton } from '../../../components/ui/ripple';
+import { useIngredientSelection } from '../../../hooks/useIngredientSelection';
 import { useRecipeSearch } from '../../../hooks/useRecipeSearch';
 import { notifyError, notifySuccess } from '../../../utils/toast';
 import { IngredientSelectRow } from '../../IngredientSelectRow';
 import { PinnedSearchField } from '../../PinnedSearchField';
+import { PortionsStepper } from '../../PortionsStepper';
 import { RecipeResultCard } from '../../RecipeResultCard';
 
 interface AddFromRecipeDrawerProps {
@@ -34,7 +36,6 @@ export const AddFromRecipeDrawer = ({
     const queryClient = useQueryClient();
     const [step, setStep] = useState<'recipes' | 'ingredients'>('recipes');
     const [chosenRecipe, setChosenRecipe] = useState<Recipe | null>(null);
-    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [isLoading, setIsLoading] = useState(false);
     const [recipeSearch, setRecipeSearch] = useState('');
 
@@ -44,21 +45,20 @@ export const AddFromRecipeDrawer = ({
     const recipes = useRecipeSearch(allRecipes, recipeSearch);
 
     const existingItemNames = new Set(listItems.map((item) => item.name.toLowerCase()));
+    const {
+        selectedIds,
+        toggleIngredient,
+        portions,
+        setPortions,
+        scaledIngredients,
+        selectedScaledIngredients,
+        reset,
+    } = useIngredientSelection(chosenRecipe?.ingredients ?? [], chosenRecipe?.servings ?? 1);
 
     const handleSelectRecipe = (recipe: Recipe) => {
         setChosenRecipe(recipe);
-        setSelectedIds(new Set());
+        reset(recipe.servings ?? 1);
         setStep('ingredients');
-    };
-
-    const handleToggleIngredient = (id: string) => {
-        const newSelected = new Set(selectedIds);
-        if (newSelected.has(id)) {
-            newSelected.delete(id);
-        } else {
-            newSelected.add(id);
-        }
-        setSelectedIds(newSelected);
     };
 
     const handleConfirm = async () => {
@@ -66,14 +66,12 @@ export const AddFromRecipeDrawer = ({
 
         try {
             setIsLoading(true);
-            const selectedIngredients = chosenRecipe.ingredients.filter((ing) => selectedIds.has(ing.id));
-
             const result = await addItemsBulk(
                 listTitle,
-                selectedIngredients.map((ing) => ({
-                    itemName: ing.name,
-                    quantity: ing.quantity,
-                    unit: ing.unit,
+                selectedScaledIngredients.map((ingredient) => ({
+                    itemName: ingredient.name,
+                    quantity: ingredient.quantity,
+                    unit: ingredient.unit,
                 }))
             );
 
@@ -92,7 +90,7 @@ export const AddFromRecipeDrawer = ({
     const handleClose = () => {
         setStep('recipes');
         setChosenRecipe(null);
-        setSelectedIds(new Set());
+        reset(1);
         setRecipeSearch('');
         onOpenChange(false);
     };
@@ -165,10 +163,13 @@ export const AddFromRecipeDrawer = ({
                         ) : (
                             chosenRecipe && (
                                 <div className="space-y-2">
-                                    {chosenRecipe.ingredients.length === 0 ? (
+                                    {chosenRecipe.ingredients.length > 0 && (
+                                        <PortionsStepper value={portions} onChange={setPortions} min={1} />
+                                    )}
+                                    {scaledIngredients.length === 0 ? (
                                         <p className="text-muted-foreground text-sm py-3">No ingredients</p>
                                     ) : (
-                                        chosenRecipe.ingredients.map((ingredient) => {
+                                        scaledIngredients.map((ingredient) => {
                                             const isAlreadyInList = existingItemNames.has(
                                                 ingredient.name.toLowerCase()
                                             );
@@ -194,7 +195,7 @@ export const AddFromRecipeDrawer = ({
                                                     key={ingredient.id}
                                                     ingredient={ingredient}
                                                     isSelected={selectedIds.has(ingredient.id)}
-                                                    onToggle={handleToggleIngredient}
+                                                    onToggle={toggleIngredient}
                                                 />
                                             );
                                         })

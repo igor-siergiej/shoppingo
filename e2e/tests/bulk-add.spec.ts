@@ -85,3 +85,33 @@ test.describe('Merging near-duplicate ingredients', () => {
         await expect(authenticatedPage.getByText('large eggs')).not.toBeVisible();
     });
 });
+
+test.describe('Portions scaling', () => {
+    test('defaults to recipe servings, scales quantities live, and sends the scaled amount', async ({
+        authenticatedPage,
+    }) => {
+        const recipe = await apiCreateRecipe('Soup', [{ name: 'Carrot', quantity: 2, unit: 'cups' }], [], {
+            servings: 4,
+        });
+        await apiCreateList('Groceries');
+        await authenticatedPage.goto(`/recipes/${recipe.id}`);
+
+        await authenticatedPage.getByRole('button', { name: 'Actions' }).click();
+        await authenticatedPage.getByRole('button', { name: 'Add to Shopping List' }).click();
+        await expect(authenticatedPage.getByRole('heading', { name: 'Select Ingredients' })).toBeVisible();
+
+        await expect(authenticatedPage.getByTestId('portions-value')).toHaveText('4');
+        await expect(authenticatedPage.getByText('2 cups')).toBeVisible();
+
+        await authenticatedPage.getByLabel('Increase portions').click();
+        await expect(authenticatedPage.getByTestId('portions-value')).toHaveText('5');
+        await expect(authenticatedPage.getByText('2.5 cups')).toBeVisible();
+
+        await authenticatedPage.getByText('Carrot').click();
+        await authenticatedPage.getByRole('button', { name: 'Groceries' }).click();
+        await authenticatedPage.getByRole('button', { name: /Add 1 items/ }).click();
+
+        await authenticatedPage.goto('/list/Groceries');
+        await expect(authenticatedPage.getByText('2.5 cups')).toBeVisible();
+    });
+});
