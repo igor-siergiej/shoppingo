@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.79.1",
+    "date": "2026-09-29",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Waste Warrior no longer pops the keyboard the moment you open it — tap the search field when you're ready to type."
+      }
+    ]
+  },
+  {
     "version": "1.79.0",
     "date": "2026-09-29",
     "notes": [

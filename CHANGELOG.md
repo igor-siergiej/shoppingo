@@ -1,3 +1,10 @@
+## [1.79.1](https://github.com/igor-siergiej/shoppingo/compare/v1.79.0...v1.79.1) (2026-09-29)
+
+
+### Bug Fixes
+
+* **web:** Waste Warrior search no longer steals focus on page load ([#177](https://github.com/igor-siergiej/shoppingo/issues/177)) ([51821b6](https://github.com/igor-siergiej/shoppingo/commit/51821b63fa84608a8e64053f15a67478fab8961d))
+
 # [1.79.0](https://github.com/igor-siergiej/shoppingo/compare/v1.78.0...v1.79.0) (2026-09-29)
 
 
