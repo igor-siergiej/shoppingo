@@ -47,6 +47,7 @@ export const RecurrenceField = ({ value, onChange }: RecurrenceFieldProps) => {
                 <div className="flex items-center gap-2">
                     <span className="text-sm text-muted-foreground">Every</span>
                     <Input
+                        purpose="number"
                         type="number"
                         min={1}
                         className="h-10 w-20"

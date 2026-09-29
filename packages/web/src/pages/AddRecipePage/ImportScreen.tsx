@@ -50,7 +50,7 @@ export const ImportScreen = ({
                             onChange={(e) => setLink(e.target.value)}
                             disabled={isImporting}
                             autoFocus
-                            autoComplete="off"
+                            purpose="url"
                             className="h-10 border border-foreground/30"
                         />
                     </div>

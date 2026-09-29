@@ -28,6 +28,7 @@ const NaturalDateInput = ({ onCommit }: { onCommit: (date: Date) => void }) => {
     return (
         <div className="mb-3 space-y-1">
             <Input
+                purpose="text"
                 value={text}
                 placeholder="e.g. tomorrow, next friday"
                 aria-label="Natural language date"

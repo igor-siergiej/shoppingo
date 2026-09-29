@@ -63,6 +63,7 @@ export const ManageLabelsDrawer = ({ open, onOpenChange }: ManageLabelsDrawerPro
                                 className="h-10 w-12 rounded border"
                             />
                             <Input
+                                purpose="name"
                                 value={name}
                                 placeholder="Label name"
                                 className="h-10"

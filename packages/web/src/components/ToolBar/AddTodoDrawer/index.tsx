@@ -117,7 +117,7 @@ export const AddTodoDrawer = ({ open, onOpenChange, onAdd, labels, prefillDate }
                             <Input
                                 id={titleId}
                                 value={title}
-                                autoComplete="off"
+                                purpose="name"
                                 autoFocus
                                 className={`${error ? 'border-destructive' : ''} h-12 text-base`}
                                 onChange={(e) => {

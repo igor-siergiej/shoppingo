@@ -203,6 +203,7 @@ const IngredientItem = ({ ingredient, onDelete, onEdit, isOwner = true, recipeTi
                                     id={ingredientNameId}
                                     ref={drawerInputRef}
                                     value={editedName}
+                                    purpose="name"
                                     onChange={(e) => setEditedName(e.target.value)}
                                     placeholder="Enter ingredient name"
                                     className="mt-2"

@@ -294,6 +294,7 @@ const RecipeDetailPage = () => {
                                     value={editedTitle}
                                     onChange={(e) => setEditedTitle(e.target.value)}
                                     className="flex-1"
+                                    purpose="name"
                                     autoFocus
                                     aria-label="Recipe title"
                                 />
@@ -359,6 +360,7 @@ const RecipeDetailPage = () => {
                                                 onChange={(e) => setEditedLink(e.target.value)}
                                                 placeholder="https://..."
                                                 className="flex-1"
+                                                purpose="url"
                                             />
                                         ) : recipe.link ? (
                                             <p className="text-sm text-muted-foreground truncate">{recipe.link}</p>

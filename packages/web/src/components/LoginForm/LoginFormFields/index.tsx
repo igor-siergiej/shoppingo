@@ -21,6 +21,11 @@ export const LoginFormFields = <T extends FieldValues>({ register, errors, isSub
                     id={usernameId}
                     type="text"
                     placeholder="Enter your username"
+                    purpose="text"
+                    autoComplete="username"
+                    autoCapitalize="none"
+                    spellCheck={false}
+                    enterKeyHint="next"
                     // biome-ignore lint/suspicious/noExplicitAny: react-hook-form generic type constraint
                     {...(register('username') as any)}
                     aria-invalid={errors.username ? 'true' : 'false'}
@@ -37,6 +42,11 @@ export const LoginFormFields = <T extends FieldValues>({ register, errors, isSub
                     id={passwordId}
                     type="password"
                     placeholder="Enter your password"
+                    purpose="text"
+                    autoComplete="current-password"
+                    autoCapitalize="none"
+                    spellCheck={false}
+                    enterKeyHint="done"
                     // biome-ignore lint/suspicious/noExplicitAny: react-hook-form generic type constraint
                     {...(register('password') as any)}
                     aria-invalid={errors.password ? 'true' : 'false'}

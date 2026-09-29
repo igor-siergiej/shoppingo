@@ -90,7 +90,7 @@ export const AddItemDrawer = ({ open, onOpenChange, onAdd, placeholder }: AddIte
                             <Input
                                 id={itemNameId}
                                 value={newName}
-                                autoComplete="off"
+                                purpose="name"
                                 autoFocus
                                 className={`${error ? 'border-destructive' : ''} h-12 text-base`}
                                 onChange={(event) => {
