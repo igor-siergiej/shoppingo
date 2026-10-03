@@ -1,6 +1,6 @@
-import type { ReactNode } from 'react';
 import type { Recipe } from '@shoppingo/types';
 import { CalendarDays, Clock, Flame, ImageOff, ListChecks, Utensils } from 'lucide-react';
+import type { ReactNode } from 'react';
 import { useAuthedImage } from '../../hooks/useAuthedImage';
 import { AvatarStack } from '../ui/avatar-stack';
 import { Skeleton } from '../ui/skeleton';
@@ -75,9 +75,7 @@ const optionalTimeChip = (
     return { icon, text: `${minutes}m ${suffix}` };
 };
 
-const optionalServingsChip = (
-    servings: number | undefined
-): { icon: typeof ListChecks; text: string } | null => {
+const optionalServingsChip = (servings: number | undefined): { icon: typeof ListChecks; text: string } | null => {
     if (servings === undefined) return null;
     return {
         icon: Utensils,
@@ -123,7 +121,9 @@ export const RecipeCard = ({ recipe, currentUserId, onClick }: RecipeCardProps) 
                 </h3>
                 <div className="flex flex-col items-start gap-1 text-xs text-muted-foreground">
                     {recipeMetaChips(recipe).map((chip) => (
-                        <MetaChip key={chip.text} icon={chip.icon}>{chip.text}</MetaChip>
+                        <MetaChip key={chip.text} icon={chip.icon}>
+                            {chip.text}
+                        </MetaChip>
                     ))}
                 </div>
                 <AvatarStack users={otherUsers} />
