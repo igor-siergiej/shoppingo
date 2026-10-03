@@ -1,3 +1,10 @@
+## [1.82.4](https://github.com/igor-siergiej/shoppingo/compare/v1.82.3...v1.82.4) (2026-10-03)
+
+
+### Bug Fixes
+
+* **web:** dismiss IngredientSubstitutesPopover on scroll ([#184](https://github.com/igor-siergiej/shoppingo/issues/184)) ([5dddc00](https://github.com/igor-siergiej/shoppingo/commit/5dddc00a76d858f6c4c5e8ee3e20b4ae251507de))
+
 ## [1.82.3](https://github.com/igor-siergiej/shoppingo/compare/v1.82.2...v1.82.3) (2026-10-03)
 
 
