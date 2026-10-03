@@ -19,7 +19,9 @@ vi.mock('../Layout', () => ({
 }));
 
 vi.mock('sonner', () => ({
-    Toaster: () => <div data-testid="toaster">Toaster</div>,
+    Toaster: (props: { position?: string; offset?: string; mobileOffset?: string }) => (
+        <div data-testid="toaster" data-position={props.position} data-offset={props.offset} data-mobile-offset={props.mobileOffset} />
+    ),
 }));
 
 vi.mock('react-router-dom', () => ({
@@ -43,6 +45,15 @@ describe('RootLayout', () => {
         render(<RootLayout />);
 
         expect(screen.getByTestId('toaster')).toBeInTheDocument();
+    });
+
+    it('positions Toaster at the top with an offset that clears the Appbar', () => {
+        render(<RootLayout />);
+
+        const toaster = screen.getByTestId('toaster');
+        expect(toaster).toHaveAttribute('data-position', 'top-center');
+        expect(toaster).toHaveAttribute('data-offset', '72px');
+        expect(toaster).toHaveAttribute('data-mobile-offset', '64px');
     });
 
     it('renders children with Layout when showLayout is true', () => {
