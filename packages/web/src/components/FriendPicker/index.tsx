@@ -45,6 +45,12 @@ export const FriendPicker = ({ value, onChange, seedAllByDefault }: FriendPicker
                         className="ml-auto"
                         checked={value.includes(f.id)}
                         onCheckedChange={(checked: boolean) => toggle(f.id, checked)}
+                        // Swallow pointer-down so tapping the switch does not steal focus from a
+                        // sibling text input — keyboard stays open on mobile when toggling share
+                        // targets in AddListDrawer / AddTodoDrawer / AddRecipePage. Keyboard tab
+                        // focus and Space/Enter still work because pointer events don't fire for
+                        // those paths.
+                        onPointerDown={(e) => e.preventDefault()}
                     />
                 </div>
             ))}

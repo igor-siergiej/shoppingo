@@ -65,4 +65,24 @@ describe('FriendPicker', () => {
 
         expect(screen.getByText(/no friends/i)).toBeInTheDocument();
     });
+
+    it('does not steal focus from a focused sibling text input when the switch is tapped', async () => {
+        const user = userEvent.setup();
+
+        render(
+            <>
+                <input data-testid="sibling" />
+                <FriendPicker value={[]} onChange={vi.fn()} />
+            </>
+        );
+
+        const sibling = screen.getByTestId('sibling');
+        sibling.focus();
+        expect(document.activeElement).toBe(sibling);
+
+        const switchEl = screen.getAllByRole('switch')[0];
+        await user.click(switchEl);
+
+        expect(document.activeElement).toBe(sibling);
+    });
 });
