@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.82.3",
+    "date": "2026-10-03",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Recipe cards now show prep time, cook time and servings instead of the share-with-people count, so you can see how long a recipe takes at a glance."
+      }
+    ]
+  },
+  {
     "version": "1.82.2",
     "date": "2026-10-03",
     "notes": [

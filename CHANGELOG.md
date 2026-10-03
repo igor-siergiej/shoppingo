@@ -1,3 +1,10 @@
+## [1.82.3](https://github.com/igor-siergiej/shoppingo/compare/v1.82.2...v1.82.3) (2026-10-03)
+
+
+### Bug Fixes
+
+* **web:** align registration password rule with kivo, surface server message ([#183](https://github.com/igor-siergiej/shoppingo/issues/183)) ([975ebf2](https://github.com/igor-siergiej/shoppingo/commit/975ebf26d0fa5d7eb9c9b93e00bc25ce553b1fa8))
+
 ## [1.82.2](https://github.com/igor-siergiej/shoppingo/compare/v1.82.1...v1.82.2) (2026-10-03)
 
 
