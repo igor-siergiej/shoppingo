@@ -1,3 +1,24 @@
+## [1.82.1](https://github.com/igor-siergiej/shoppingo/compare/v1.82.0...v1.82.1) (2026-10-03)
+
+
+### Bug Fixes
+
+* **web:** FriendPicker Switch does not steal focus from sibling inputs ([#181](https://github.com/igor-siergiej/shoppingo/issues/181)) ([44a099c](https://github.com/igor-siergiej/shoppingo/commit/44a099cab6c8128da4d7eca52c09d893295be5ac))
+
+# [1.82.0](https://github.com/igor-siergiej/shoppingo/compare/v1.81.0...v1.82.0) (2026-10-03)
+
+
+### Features
+
+* **web:** show prep/cook time and servings on recipe cards ([#180](https://github.com/igor-siergiej/shoppingo/issues/180)) ([0ac6578](https://github.com/igor-siergiej/shoppingo/commit/0ac65789cfcb32f72294b681eb81165e48ef60ac))
+
+# [1.81.0](https://github.com/igor-siergiej/shoppingo/compare/v1.80.0...v1.81.0) (2026-09-29)
+
+
+### Features
+
+* **web:** scale recipe ingredient quantities by a portions stepper ([#179](https://github.com/igor-siergiej/shoppingo/issues/179)) ([b89affa](https://github.com/igor-siergiej/shoppingo/commit/b89affaa1ba0356b3368acc13475a9facbf92b71))
+
 # [1.80.0](https://github.com/igor-siergiej/shoppingo/compare/v1.79.1...v1.80.0) (2026-09-29)
 
 

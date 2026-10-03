@@ -1,5 +1,35 @@
 [
   {
+    "version": "1.82.1",
+    "date": "2026-10-03",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Recipe cards now show prep time, cook time and servings instead of the share-with-people count, so you can see how long a recipe takes at a glance."
+      }
+    ]
+  },
+  {
+    "version": "1.82.0",
+    "date": "2026-10-03",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Recipe cards now show prep time, cook time and servings instead of the share-with-people count, so you can see how long a recipe takes at a glance."
+      }
+    ]
+  },
+  {
+    "version": "1.81.0",
+    "date": "2026-09-29",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Adding a recipe's ingredients to a shopping list now starts with a portions stepper — bump it up or down and the amounts you send scale to match, instead of always using the recipe's original quantities."
+      }
+    ]
+  },
+  {
     "version": "1.80.0",
     "date": "2026-09-29",
     "notes": [
