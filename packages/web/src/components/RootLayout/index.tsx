@@ -32,7 +32,10 @@ export const RootLayout = ({ children, showLayout = true }: RootLayoutProps) => 
                     <div className="w-full max-w-md">{content}</div>
                 </main>
             )}
-            <Toaster />
+            {/* Render at the top so toasts never sit on top of the bottom app bar (ToolBar).
+                offset clears the Appbar (h-14 mobile / h-16 desktop) plus a small gap so the
+                toast's top edge never overlaps the Appbar. */}
+            <Toaster position="top-center" offset="72px" mobileOffset="64px" />
         </div>
     );
 };
