@@ -17,7 +17,7 @@ test.describe('Recipes page visual regression', () => {
     test('populated state', async ({ authenticatedPage }) => {
         await seedFriendship(MOCK_USER, MOCK_USER_2);
         await apiCreateRecipe('Pasta Bolognese', [], [MOCK_USER_2.id]);
-        await apiCreateRecipe('Caesar Salad');
+        await apiCreateRecipe('Caesar Salad', [], [], { prepTime: 15, cookTime: 10, servings: 4 });
         await authenticatedPage.goto('/recipes');
         await expect(authenticatedPage.getByRole('button', { name: 'Pasta Bolognese' })).toBeVisible();
         await expect(authenticatedPage.getByRole('button', { name: 'Caesar Salad' })).toBeVisible();

@@ -1,5 +1,6 @@
 import type { Recipe } from '@shoppingo/types';
-import { CalendarDays, ImageOff, ListChecks, Users } from 'lucide-react';
+import { CalendarDays, Clock, Flame, ImageOff, ListChecks, Utensils } from 'lucide-react';
+import type { ReactNode } from 'react';
 import { useAuthedImage } from '../../hooks/useAuthedImage';
 import { AvatarStack } from '../ui/avatar-stack';
 import { Skeleton } from '../ui/skeleton';
@@ -58,23 +59,40 @@ const ingredientSummary = (recipe: Recipe): string => {
     const count = recipe.ingredients?.length ?? 0;
     return `${count} ${count === 1 ? 'ingredient' : 'ingredients'}`;
 };
-
-const RecipeCardMeta = ({ recipe }: { recipe: Recipe }) => (
-    <div className="flex flex-col items-start gap-1 text-xs text-muted-foreground">
-        <span className="inline-flex items-center gap-1">
-            <ListChecks className="h-3.5 w-3.5" />
-            {ingredientSummary(recipe)}
-        </span>
-        <span className="inline-flex items-center gap-1">
-            <Users className="h-3.5 w-3.5" />
-            {recipe.users.length}
-        </span>
-        <span className="inline-flex items-center gap-1">
-            <CalendarDays className="h-3.5 w-3.5" />
-            {relativeDate(recipe.dateAdded)}
-        </span>
-    </div>
+const MetaChip = ({ icon: Icon, children }: { icon: typeof ListChecks; children: ReactNode }) => (
+    <span className="inline-flex items-center gap-1">
+        <Icon className="h-3.5 w-3.5" />
+        {children}
+    </span>
 );
+
+const optionalTimeChip = (
+    minutes: number | undefined,
+    icon: typeof ListChecks,
+    suffix: string
+): { icon: typeof ListChecks; text: string } | null => {
+    if (minutes === undefined) return null;
+    return { icon, text: `${minutes}m ${suffix}` };
+};
+
+const optionalServingsChip = (servings: number | undefined): { icon: typeof ListChecks; text: string } | null => {
+    if (servings === undefined) return null;
+    return {
+        icon: Utensils,
+        text: `${servings} ${servings === 1 ? 'serving' : 'servings'}`,
+    };
+};
+
+const recipeMetaChips = (recipe: Recipe): Array<{ icon: typeof ListChecks; text: string }> => {
+    const chips = [
+        { icon: ListChecks as typeof ListChecks, text: ingredientSummary(recipe) },
+        { icon: CalendarDays as typeof ListChecks, text: relativeDate(recipe.dateAdded) },
+        optionalTimeChip(recipe.prepTime, Clock, 'prep'),
+        optionalTimeChip(recipe.cookTime, Flame, 'cook'),
+        optionalServingsChip(recipe.servings),
+    ];
+    return chips.filter((c): c is { icon: typeof ListChecks; text: string } => c !== null);
+};
 
 const NewBadge = () => (
     <span className="absolute -top-2 -left-2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-primary-foreground shadow">
@@ -101,7 +119,13 @@ export const RecipeCard = ({ recipe, currentUserId, onClick }: RecipeCardProps) 
                 <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-foreground group-hover:text-primary transition-colors">
                     {recipe.title}
                 </h3>
-                <RecipeCardMeta recipe={recipe} />
+                <div className="flex flex-col items-start gap-1 text-xs text-muted-foreground">
+                    {recipeMetaChips(recipe).map((chip) => (
+                        <MetaChip key={chip.text} icon={chip.icon}>
+                            {chip.text}
+                        </MetaChip>
+                    ))}
+                </div>
                 <AvatarStack users={otherUsers} />
             </div>
         </div>
