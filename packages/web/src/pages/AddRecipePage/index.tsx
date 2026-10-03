@@ -343,6 +343,7 @@ const AddRecipePage = () => {
                             <Label htmlFor={recipeNameId}>Recipe Title</Label>
                             <Input
                                 id={recipeNameId}
+                                type="search"
                                 name="recipe-title"
                                 placeholder="Enter recipe title..."
                                 value={title}

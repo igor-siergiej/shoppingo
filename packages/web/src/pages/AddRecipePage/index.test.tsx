@@ -113,6 +113,9 @@ describe('AddRecipePage', () => {
         expect(titleInput).toHaveAttribute('autocomplete', 'off');
         expect(titleInput).toHaveAttribute('name', 'recipe-title');
         expect(titleInput).toHaveAttribute('inputmode', 'text');
+        // type="search" keeps Chrome Android from offering address/credit-card autofill
+        // (autoComplete="off" is not enough on type="text" inputs).
+        expect(titleInput).toHaveAttribute('type', 'search');
 
         const linkInput = screen.getByPlaceholderText('https://...');
         expect(linkInput).toHaveAttribute('autocomplete', 'off');
@@ -130,11 +133,12 @@ describe('AddRecipePage', () => {
         expect(instructionsTextarea).toHaveAttribute('inputmode', 'text');
 
         const tagInput = screen.getByPlaceholderText('Add a tag and press Enter...');
-        expect(tagInput).toHaveAttribute('autocomplete', 'off');
-        expect(tagInput).toHaveAttribute('name', 'recipe-tag');
-        expect(tagInput).toHaveAttribute('inputmode', 'text');
-    });
 
+        expect(tagInput).toHaveAttribute('autocomplete', 'off');
+
+        expect(tagInput).toHaveAttribute('inputmode', 'text');
+        expect(tagInput).toHaveAttribute('type', 'search');
+    });
     it('groups fields into labeled sections', async () => {
         renderPage();
         await enterManualMode();

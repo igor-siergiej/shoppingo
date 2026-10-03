@@ -27,6 +27,7 @@ export const TagsField = ({ tags, onChange, disabled }: TagsFieldProps) => {
     return (
         <div className="space-y-2">
             <Input
+                type="search"
                 placeholder="Add a tag and press Enter..."
                 value={draft}
                 disabled={disabled}
