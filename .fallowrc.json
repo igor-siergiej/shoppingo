@@ -36,7 +36,13 @@
     "**/scripts/**"
   ],
   "ignoreUnresolvedImports": ["bun:test", "virtual:pwa-register/react"],
-  "ignoreExports": [{ "file": "packages/api/src/dependencies/types.ts", "exports": ["CollectionNames"] }],
+  "ignoreExports": [
+    { "file": "packages/api/src/dependencies/types.ts", "exports": ["CollectionNames"] },
+    {
+      "file": "packages/web/src/hooks/useRegisterForm.ts",
+      "exports": ["registerSchema", "parseRegisterError"]
+    }
+  ],
   "ignoreDependencies": [
     "@radix-ui/react-alert-dialog",
     "@radix-ui/react-checkbox",

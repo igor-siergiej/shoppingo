@@ -53,9 +53,14 @@ export const RegisterFormFields = <T extends FieldValues>({
                     // biome-ignore lint/suspicious/noExplicitAny: react-hook-form generic type constraint
                     {...(register('password') as any)}
                     aria-invalid={errors.password ? 'true' : 'false'}
-                    disabled={isSubmitting}
                 />
-                {errors.password && <p className="text-sm text-red-600">{errors.password.message}</p>}
+                {errors.password ? (
+                    <p className="text-sm text-red-600">{errors.password.message}</p>
+                ) : (
+                    <p className="text-xs text-muted-foreground">
+                        At least 8 characters, letters and digits only, must include both letters and a number.
+                    </p>
+                )}
             </div>
 
             <div className="grid gap-3">

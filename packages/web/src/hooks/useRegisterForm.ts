@@ -5,7 +5,10 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 import { logger } from '../utils/logger';
 
-const registerSchema = z
+const passwordRule = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+const passwordMessage = 'At least 8 characters, letters and digits only, must include both letters and a number';
+
+export const registerSchema = z
     .object({
         username: z
             .string()
@@ -16,14 +19,20 @@ const registerSchema = z
         password: z
             .string()
             .min(1, 'Password is required')
-            .min(6, 'Password must be at least 6 characters')
+            .regex(passwordRule, passwordMessage)
             .max(100, 'Password must not exceed 100 characters'),
-        repeatPassword: z.string().min(1, 'Please confirm your password'),
+        repeatPassword: z
+            .string()
+            .min(1, 'Please confirm your password')
+            .max(100, 'Password must not exceed 100 characters'),
     })
     .refine((data) => data.password === data.repeatPassword, {
         message: 'Passwords do not match',
         path: ['repeatPassword'],
     });
+
+export const parseRegisterError = (errorData: { message?: string; error?: string }): string =>
+    errorData.message || errorData.error || 'Registration failed';
 
 type RegisterFormData = z.infer<typeof registerSchema>;
 
@@ -57,7 +66,9 @@ export const useRegisterForm = () => {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.error || 'Registration failed');
+                // kivo returns { success: false, message: '<reason>' } — read `message` first
+                // (the legacy `error` key may also be present, fall back to it for compatibility).
+                throw new Error(parseRegisterError(errorData));
             }
 
             const responseData = await response.json();
