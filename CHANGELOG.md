@@ -1,3 +1,10 @@
+## [1.82.2](https://github.com/igor-siergiej/shoppingo/compare/v1.82.1...v1.82.2) (2026-10-03)
+
+
+### Bug Fixes
+
+* **web:** position toasts at the top so they don't cover the bottom app bar ([#182](https://github.com/igor-siergiej/shoppingo/issues/182)) ([877980a](https://github.com/igor-siergiej/shoppingo/commit/877980a7dea1422dadb92f84d930aac1b7be2dcc))
+
 ## [1.82.1](https://github.com/igor-siergiej/shoppingo/compare/v1.82.0...v1.82.1) (2026-10-03)
 
 
