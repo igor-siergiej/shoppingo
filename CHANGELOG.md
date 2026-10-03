@@ -1,3 +1,10 @@
+# [1.82.0](https://github.com/igor-siergiej/shoppingo/compare/v1.81.0...v1.82.0) (2026-10-03)
+
+
+### Features
+
+* **web:** show prep/cook time and servings on recipe cards ([#180](https://github.com/igor-siergiej/shoppingo/issues/180)) ([0ac6578](https://github.com/igor-siergiej/shoppingo/commit/0ac65789cfcb32f72294b681eb81165e48ef60ac))
+
 # [1.81.0](https://github.com/igor-siergiej/shoppingo/compare/v1.80.0...v1.81.0) (2026-09-29)
 
 
