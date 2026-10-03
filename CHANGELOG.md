@@ -1,3 +1,10 @@
+## [1.82.1](https://github.com/igor-siergiej/shoppingo/compare/v1.82.0...v1.82.1) (2026-10-03)
+
+
+### Bug Fixes
+
+* **web:** FriendPicker Switch does not steal focus from sibling inputs ([#181](https://github.com/igor-siergiej/shoppingo/issues/181)) ([44a099c](https://github.com/igor-siergiej/shoppingo/commit/44a099cab6c8128da4d7eca52c09d893295be5ac))
+
 # [1.82.0](https://github.com/igor-siergiej/shoppingo/compare/v1.81.0...v1.82.0) (2026-10-03)
 
 
