@@ -20,7 +20,12 @@ vi.mock('../Layout', () => ({
 
 vi.mock('sonner', () => ({
     Toaster: (props: { position?: string; offset?: string; mobileOffset?: string }) => (
-        <div data-testid="toaster" data-position={props.position} data-offset={props.offset} data-mobile-offset={props.mobileOffset} />
+        <div
+            data-testid="toaster"
+            data-position={props.position}
+            data-offset={props.offset}
+            data-mobile-offset={props.mobileOffset}
+        />
     ),
 }));
 
