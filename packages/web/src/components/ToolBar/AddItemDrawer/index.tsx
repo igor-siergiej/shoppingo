@@ -89,8 +89,8 @@ export const AddItemDrawer = ({ open, onOpenChange, onAdd, placeholder }: AddIte
                             <Label htmlFor="new-item">Item Name</Label>
                             <Input
                                 id={itemNameId}
+                                type="search"
                                 value={newName}
-                                purpose="name"
                                 autoFocus
                                 className={`${error ? 'border-destructive' : ''} h-12 text-base`}
                                 onChange={(event) => {

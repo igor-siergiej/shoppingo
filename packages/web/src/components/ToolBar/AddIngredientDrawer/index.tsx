@@ -14,7 +14,6 @@ import {
     DrawerTrigger,
 } from '../../ui/drawer';
 import { Input } from '../../ui/input';
-import { Label } from '../../ui/label';
 import { RippleButton } from '../../ui/ripple';
 
 export interface AddIngredientDrawerProps {
@@ -92,9 +91,9 @@ export const AddIngredientDrawer = ({ open, onOpenChange, onAdd, trigger }: AddI
                     </DrawerHeader>
                     <div className="p-4 pb-0 space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor={ingredientNameId}>Ingredient Name</Label>
                             <Input
                                 id={ingredientNameId}
+                                type="search"
                                 value={newName}
                                 purpose="name"
                                 autoFocus
