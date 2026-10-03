@@ -1,3 +1,10 @@
+## [1.82.5](https://github.com/igor-siergiej/shoppingo/compare/v1.82.4...v1.82.5) (2026-10-03)
+
+
+### Bug Fixes
+
+* **web:** stop Chrome Android autofill on Add Recipe / Add Ingredient inputs ([#185](https://github.com/igor-siergiej/shoppingo/issues/185)) ([223ab29](https://github.com/igor-siergiej/shoppingo/commit/223ab29497232eb6628dc56ce86a29e1223c51e0))
+
 ## [1.82.4](https://github.com/igor-siergiej/shoppingo/compare/v1.82.3...v1.82.4) (2026-10-03)
 
 
