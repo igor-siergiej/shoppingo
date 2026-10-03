@@ -145,6 +145,35 @@ describe('RecipeCard', () => {
         expect(meta.nextElementSibling?.contains(screen.getByTitle('friend'))).toBe(true);
     });
 
+    it('shows prep, cook and servings chips when the recipe has those fields', () => {
+        const recipeWithTimes: Recipe = {
+            ...mockRecipe,
+            prepTime: 20,
+            cookTime: 15,
+            servings: 4,
+        };
+        render(<RecipeCard recipe={recipeWithTimes} currentUserId="user-1" onClick={vi.fn()} />);
+
+        expect(screen.getByText('20m prep')).toBeTruthy();
+        expect(screen.getByText('15m cook')).toBeTruthy();
+        expect(screen.getByText('4 servings')).toBeTruthy();
+    });
+
+    it('omits prep, cook and servings chips when those fields are undefined', () => {
+        render(<RecipeCard recipe={mockRecipe} currentUserId="user-1" onClick={vi.fn()} />);
+
+        expect(screen.queryByText(/m prep/)).toBeNull();
+        expect(screen.queryByText(/m cook/)).toBeNull();
+        expect(screen.queryByText(/servings?/)).toBeNull();
+    });
+
+    it('singularises the servings label when there is exactly one', () => {
+        const recipeForOne: Recipe = { ...mockRecipe, servings: 1 };
+        render(<RecipeCard recipe={recipeForOne} currentUserId="user-1" onClick={vi.fn()} />);
+
+        expect(screen.getByText('1 serving')).toBeTruthy();
+    });
+
     it('cleans up object URL on unmount', async () => {
         const { unmount } = render(<RecipeCard recipe={mockRecipe} currentUserId="user-1" onClick={vi.fn()} />);
 

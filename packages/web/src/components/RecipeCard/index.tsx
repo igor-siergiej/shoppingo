@@ -1,5 +1,5 @@
 import type { Recipe } from '@shoppingo/types';
-import { CalendarDays, ImageOff, ListChecks, Users } from 'lucide-react';
+import { CalendarDays, Clock, Flame, ImageOff, ListChecks, Utensils } from 'lucide-react';
 import { useAuthedImage } from '../../hooks/useAuthedImage';
 import { AvatarStack } from '../ui/avatar-stack';
 import { Skeleton } from '../ui/skeleton';
@@ -65,10 +65,24 @@ const RecipeCardMeta = ({ recipe }: { recipe: Recipe }) => (
             <ListChecks className="h-3.5 w-3.5" />
             {ingredientSummary(recipe)}
         </span>
-        <span className="inline-flex items-center gap-1">
-            <Users className="h-3.5 w-3.5" />
-            {recipe.users.length}
-        </span>
+        {recipe.prepTime !== undefined && (
+            <span className="inline-flex items-center gap-1">
+                <Clock className="h-3.5 w-3.5" />
+                {recipe.prepTime}m prep
+            </span>
+        )}
+        {recipe.cookTime !== undefined && (
+            <span className="inline-flex items-center gap-1">
+                <Flame className="h-3.5 w-3.5" />
+                {recipe.cookTime}m cook
+            </span>
+        )}
+        {recipe.servings !== undefined && (
+            <span className="inline-flex items-center gap-1">
+                <Utensils className="h-3.5 w-3.5" />
+                {recipe.servings} {recipe.servings === 1 ? 'serving' : 'servings'}
+            </span>
+        )}
         <span className="inline-flex items-center gap-1">
             <CalendarDays className="h-3.5 w-3.5" />
             {relativeDate(recipe.dateAdded)}

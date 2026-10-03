@@ -64,7 +64,7 @@ export async function apiCreateRecipe(
     title: string,
     ingredients: Array<{ name: string; quantity?: number; unit?: string }> = [],
     selectedUsers: Array<string> = [],
-    options: { servings?: number } = {}
+    options: { servings?: number; prepTime?: number; cookTime?: number; difficulty?: 'easy' | 'medium' | 'hard' } = {}
 ) {
     const res = await fetch(`${API_BASE}/api/recipes`, {
         method: 'PUT',
