@@ -4,14 +4,10 @@ import { useForm } from 'react-hook-form';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 import { logger } from '../utils/logger';
+import { usernameField } from './authSchemas';
 
 const loginSchema = z.object({
-    username: z
-        .string()
-        .min(1, 'Username is required')
-        .min(3, 'Username must be at least 3 characters')
-        .max(50, 'Username must not exceed 50 characters')
-        .trim(),
+    username: usernameField,
     password: z
         .string()
         .min(1, 'Password is required')

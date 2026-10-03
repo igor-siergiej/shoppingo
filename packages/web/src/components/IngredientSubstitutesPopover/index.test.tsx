@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { suggestIngredientSubstitutes } from '../../api';
@@ -57,6 +57,66 @@ describe('IngredientSubstitutesPopover', () => {
         await userEvent.click(trigger); // close
         await userEvent.click(trigger); // reopen
 
+        expect(mockSuggest).toHaveBeenCalledTimes(1);
+    });
+
+    it('dismisses the popover when the user scrolls outside it', async () => {
+        mockSuggest.mockResolvedValue({ substitutes: ['margarine'] });
+        render(<IngredientSubstitutesPopover ingredientName="butter" />);
+
+        const trigger = screen.getByLabelText('Suggest substitutes for butter');
+        await userEvent.click(trigger);
+        await screen.findByText('margarine');
+        // A scroll event originating outside the popover content closes it.
+        act(() => {
+            window.dispatchEvent(new Event('scroll', { bubbles: true }));
+        });
+
+        await waitFor(() => {
+            expect(screen.queryByText('margarine')).not.toBeInTheDocument();
+        });
+    });
+
+    it('does not dismiss the popover when the user scrolls inside its content', async () => {
+        mockSuggest.mockResolvedValue({ substitutes: ['margarine'] });
+        render(<IngredientSubstitutesPopover ingredientName="butter" />);
+
+        const trigger = screen.getByLabelText('Suggest substitutes for butter');
+        await userEvent.click(trigger);
+        await screen.findByText('margarine');
+
+        // Find the popover content (portaled by Radix). Scrolling INSIDE it must not close.
+        const popoverContent = document.querySelector('[data-radix-popper-content-wrapper]');
+        expect(popoverContent).not.toBeNull();
+        act(() => {
+            popoverContent?.dispatchEvent(new Event('scroll', { bubbles: true }));
+        });
+
+        const { promise, resolve } = Promise.withResolvers<void>();
+        setTimeout(resolve, 50);
+        await promise;
+        expect(screen.queryByText('margarine')).toBeInTheDocument();
+    });
+
+    it('does not refetch on the dismiss-then-reopen cycle', async () => {
+        mockSuggest.mockResolvedValue({ substitutes: ['margarine'] });
+        render(<IngredientSubstitutesPopover ingredientName="butter" />);
+
+        const trigger = screen.getByLabelText('Suggest substitutes for butter');
+        await userEvent.click(trigger);
+        await screen.findByText('margarine');
+
+        // Scroll to dismiss.
+        act(() => {
+            window.dispatchEvent(new Event('scroll', { bubbles: true }));
+        });
+        await waitFor(() => {
+            expect(screen.queryByText('margarine')).not.toBeInTheDocument();
+        });
+
+        // Reopen — cache should serve the same response without another fetch.
+        await userEvent.click(trigger);
+        expect(screen.getByText('margarine')).toBeInTheDocument();
         expect(mockSuggest).toHaveBeenCalledTimes(1);
     });
 });
