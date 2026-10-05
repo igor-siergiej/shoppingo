@@ -5,7 +5,7 @@
     "notes": [
       {
         "type": "fix",
-        "text": "Recipe cards now show prep time, cook time and servings instead of the share-with-people count, so you can see how long a recipe takes at a glance."
+        "text": "Add Recipe title, ingredient name, item name, and recipe tag fields no longer trigger Chrome Android's address or credit-card autofill pop-ups on mobile."
       }
     ]
   },
@@ -15,7 +15,7 @@
     "notes": [
       {
         "type": "fix",
-        "text": "Recipe cards now show prep time, cook time and servings instead of the share-with-people count, so you can see how long a recipe takes at a glance."
+        "text": "Ingredient substitutes pop-over now closes when you scroll the recipe page, so it stops blocking the next ingredient."
       }
     ]
   },
@@ -25,7 +25,7 @@
     "notes": [
       {
         "type": "fix",
-        "text": "Recipe cards now show prep time, cook time and servings instead of the share-with-people count, so you can see how long a recipe takes at a glance."
+        "text": "Register screen now enforces the same password rule as the server (8+ characters, letters and digits only), shows the rule under the field, and surfaces the server's specific reason when registration fails instead of a generic \"Registration failed\"."
       }
     ]
   },
@@ -35,7 +35,7 @@
     "notes": [
       {
         "type": "fix",
-        "text": "Recipe cards now show prep time, cook time and servings instead of the share-with-people count, so you can see how long a recipe takes at a glance."
+        "text": "Notifications now appear at the top of the screen instead of covering the bottom app bar."
       }
     ]
   },
@@ -45,7 +45,7 @@
     "notes": [
       {
         "type": "fix",
-        "text": "Recipe cards now show prep time, cook time and servings instead of the share-with-people count, so you can see how long a recipe takes at a glance."
+        "text": "Toggling a share switch while the list-name or todo-title field is focused no longer closes the soft keyboard on mobile."
       }
     ]
   },
@@ -1845,10 +1845,6 @@
     "version": "1.10.1",
     "date": "2026-01-02",
     "notes": [
-      {
-        "type": "fix",
-        "text": "Implement authorization layer for Shoppingo API"
-      },
       {
         "type": "fix",
         "text": "Implement authorization layer for Shoppingo API"
