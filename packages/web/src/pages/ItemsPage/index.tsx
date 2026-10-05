@@ -95,7 +95,7 @@ const ItemsPage = () => {
     const handleAddItem = async (itemName: string, quantity?: number, unit?: string) => {
         return new Promise((resolve, reject) => {
             addItemMutation.mutate(
-                { itemName, quantity, unit },
+                { id: crypto.randomUUID(), itemName, quantity, unit },
                 {
                     onSuccess: resolve,
                     onError: reject,

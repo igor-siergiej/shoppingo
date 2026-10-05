@@ -53,4 +53,28 @@ test.describe('Offline queue', () => {
         // Selected items render with the primary-tinted card styling — confirms the toggle survived the reload.
         await expect(authenticatedPage.locator('div[class*="bg-primary/10"]', { hasText: 'Milk' })).toBeVisible();
     });
+
+    test('an item waiting on an unsynced change is marked until it syncs', async ({ authenticatedPage }) => {
+        await apiCreateList(LIST_TITLE);
+        await authenticatedPage.goto(`/list/${LIST_TITLE}`);
+        const addItemTrigger = authenticatedPage.locator('button[class*="border-primary"]').first();
+        await expect(addItemTrigger).toBeVisible();
+
+        await authenticatedPage.context().setOffline(true);
+        await expect(authenticatedPage.getByText('You are offline')).toBeVisible();
+
+        await addItemTrigger.click();
+        await authenticatedPage.getByPlaceholder('Enter item name...').fill('Marked Eggs');
+        await authenticatedPage.getByRole('button', { name: 'Add Item' }).click();
+
+        const row = authenticatedPage.getByRole('button').filter({ hasText: 'Marked Eggs' });
+        await expect(row).toBeVisible();
+        await expect(row.getByTestId('item-pending')).toBeVisible();
+
+        await authenticatedPage.context().setOffline(false);
+        await authenticatedPage.waitForResponse((r) => r.url().includes('/items') && r.request().method() === 'PUT');
+
+        await expect(row).toBeVisible();
+        await expect(authenticatedPage.getByTestId('item-pending')).toHaveCount(0);
+    });
 });

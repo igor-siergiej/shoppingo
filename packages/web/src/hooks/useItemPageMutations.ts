@@ -9,8 +9,19 @@ export const useItemPageMutations = (listTitle?: string) => {
     const queryClient = useQueryClient();
 
     const addItemMutation = useMutation({
-        mutationFn: async ({ itemName, quantity, unit }: { itemName: string; quantity?: number; unit?: string }) => {
-            const id = crypto.randomUUID();
+        // `id` is chosen by the caller so the optimistic cache entry and the queued intent share it;
+        // otherwise the outbox cannot tell which rendered item is the one waiting to sync.
+        mutationFn: async ({
+            id,
+            itemName,
+            quantity,
+            unit,
+        }: {
+            id: string;
+            itemName: string;
+            quantity?: number;
+            unit?: string;
+        }) => {
             await outboxStore.enqueue({
                 id: crypto.randomUUID(),
                 entityType: 'item',
@@ -27,12 +38,12 @@ export const useItemPageMutations = (listTitle?: string) => {
             void drainOutbox();
             return id;
         },
-        onMutate: async ({ itemName, quantity, unit }) => {
+        onMutate: async ({ id, itemName, quantity, unit }) => {
             await queryClient.cancelQueries([listTitle]);
             const previousData = queryClient.getQueryData<{ listType: ListType; items: Item[] }>([listTitle]);
 
             const optimisticItem: Item = {
-                id: crypto.randomUUID(),
+                id,
                 name: itemName,
                 isSelected: false,
                 dateAdded: new Date(),

@@ -128,4 +128,15 @@ describe('ItemCheckBoxCard', () => {
 
         expect(mockOnToggle).toHaveBeenCalled();
     });
+
+    it('marks the item as waiting to sync only while isPending', () => {
+        const { rerender } = render(<ItemCheckBoxCard {...defaultProps} />);
+        expect(screen.queryByTestId('item-pending')).not.toBeInTheDocument();
+
+        rerender(<ItemCheckBoxCard {...defaultProps} isPending />);
+        expect(screen.getByTestId('item-pending')).toHaveAttribute('aria-label', 'Waiting to sync');
+
+        rerender(<ItemCheckBoxCard {...defaultProps} isPending={false} />);
+        expect(screen.queryByTestId('item-pending')).not.toBeInTheDocument();
+    });
 });

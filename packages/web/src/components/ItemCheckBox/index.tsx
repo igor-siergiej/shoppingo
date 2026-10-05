@@ -17,6 +17,7 @@ import { Label } from '../../components/ui/label';
 import { useItemEditDrawer } from '../../hooks/useItemEditDrawer';
 import { useItemImage } from '../../hooks/useItemImage';
 import { useItemMutations } from '../../hooks/useItemMutations';
+import { usePendingItemIds } from '../../hooks/usePendingItemIds';
 import { useSwipeGesture } from '../../hooks/useSwipeGesture';
 import { SwipeRevealShell } from '../SwipeRevealShell';
 import { ItemCheckBoxCard } from './ItemCheckBoxCard';
@@ -40,6 +41,7 @@ const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
         item.id
     );
     const drawerState = useItemEditDrawer();
+    const isPending = usePendingItemIds(listTitle).has(item.id);
 
     const handleDeleteItem = async (e?: MouseEvent) => {
         e?.stopPropagation();
@@ -125,6 +127,7 @@ const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
                             hasImageError={hasImageError}
                             isLoading={toggleMutation.isLoading}
                             isSelected={item.isSelected}
+                            isPending={isPending}
                             onToggle={handleToggleSelected}
                             onImageLoad={onImageLoad}
                             onImageError={onImageError}
