@@ -1,3 +1,10 @@
+# [1.84.0](https://github.com/igor-siergiej/shoppingo/compare/v1.83.0...v1.84.0) (2026-10-05)
+
+
+### Features
+
+* real-time shared lists over websocket, with presence ([#188](https://github.com/igor-siergiej/shoppingo/issues/188)) ([524f0b0](https://github.com/igor-siergiej/shoppingo/commit/524f0b0f328c261467aa9b49553bcd25bdddc53f))
+
 # [1.83.0](https://github.com/igor-siergiej/shoppingo/compare/v1.82.6...v1.83.0) (2026-10-05)
 
 

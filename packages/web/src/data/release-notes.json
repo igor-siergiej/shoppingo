@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.84.0",
+    "date": "2026-10-05",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Shared lists now update live: when someone else adds, ticks off or removes an item you see it straight away, and you can see who else has the list open."
+      }
+    ]
+  },
+  {
     "version": "1.83.0",
     "date": "2026-10-05",
     "notes": [
