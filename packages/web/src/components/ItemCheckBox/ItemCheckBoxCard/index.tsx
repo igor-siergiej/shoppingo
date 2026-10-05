@@ -1,11 +1,13 @@
 import type { ListType } from '@shoppingo/types';
 import { ListType as ListTypeEnum } from '@shoppingo/types';
-import { ImageOff, Loader2 } from 'lucide-react';
+import { Clock, ImageOff, Loader2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Card, CardContent } from '../../../components/ui/card';
 import { Label } from '../../../components/ui/label';
 import { Skeleton } from '../../../components/ui/skeleton';
 import { QuantityBadge } from '../QuantityBadge';
+
+const PENDING_MARKER_DELAY_S = 0.8;
 
 // name/quantity/unit only, so this also covers draft (not-yet-persisted) rows like
 // recipe ingredients that don't have an Item's id/isSelected/dateAdded.
@@ -26,6 +28,7 @@ interface ItemCheckBoxCardProps {
     onToggle: () => void;
     onImageLoad: () => void;
     onImageError: () => void;
+    isPending?: boolean;
 }
 
 // fallow-ignore-next-line complexity
@@ -40,6 +43,7 @@ export const ItemCheckBoxCard = ({
     onToggle,
     onImageLoad,
     onImageError,
+    isPending = false,
 }: ItemCheckBoxCardProps) => {
     return (
         <Card
@@ -109,6 +113,23 @@ export const ItemCheckBoxCard = ({
                             )}
                         </span>
                     </Label>
+
+                    {isPending && (
+                        // Delayed fade-in: online, a queued intent drains within a blink and the marker
+                        // would flash on every tap; it only becomes visible if the sync is actually stuck.
+                        <motion.span
+                            data-testid="item-pending"
+                            role="img"
+                            aria-label="Waiting to sync"
+                            title="Waiting to sync"
+                            className="shrink-0 text-muted-foreground"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.2, delay: PENDING_MARKER_DELAY_S }}
+                        >
+                            <Clock className="h-4 w-4" />
+                        </motion.span>
+                    )}
                 </div>
 
                 {listType === ListTypeEnum.SHOPPING && <QuantityBadge quantity={item.quantity} unit={item.unit} />}
