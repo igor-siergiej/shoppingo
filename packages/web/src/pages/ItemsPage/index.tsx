@@ -5,6 +5,7 @@ import { useQuery } from 'react-query';
 import { useParams } from 'react-router-dom';
 import { getListQuery } from '../../api';
 import ItemCheckBoxList from '../../components/ItemCheckBoxList';
+import { ListViewers } from '../../components/ListViewers';
 import { ItemsSkeleton } from '../../components/LoadingSkeleton';
 import ToolBar from '../../components/ToolBar';
 import {
@@ -110,6 +111,7 @@ const ItemsPage = () => {
             {isError && !data && <ErrorState onRetry={() => void refetch()} />}
             {!isLoading && data && (
                 <div className="flex flex-col">
+                    <ListViewers listTitle={listTitle} />
                     {isEmpty ? (
                         <EmptyState listType={currentListType} />
                     ) : (

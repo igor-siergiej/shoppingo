@@ -33,6 +33,15 @@ const getList = async (
     });
 };
 
+export const getListSocketTicket = async (listTitle: string): Promise<string> => {
+    const { ticket } = await makeRequest({
+        pathname: `/api/lists/${encodeURIComponent(listTitle)}/socket-ticket`,
+        method: MethodType.POST,
+        operationString: 'get list socket ticket',
+    });
+    return ticket;
+};
+
 export const getListsQuery = (userId: string) => ({
     queryKey: ['lists', userId],
     queryFn: async () => foldPendingLists(userId, await getLists(userId)),

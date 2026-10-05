@@ -7,6 +7,7 @@ import { DailyReminderScheduler } from '../domain/DailyReminderScheduler';
 import { FriendService } from '../domain/FriendService';
 import { ImageService } from '../domain/ImageService';
 import { LabelService } from '../domain/LabelService';
+import { ListRealtimeHub } from '../domain/ListRealtimeHub';
 import { ListService } from '../domain/ListService';
 import { NotificationService } from '../domain/NotificationService';
 import { RecipeImageService } from '../domain/RecipeImageService';
@@ -15,6 +16,7 @@ import { RecipeService } from '../domain/RecipeService';
 import { RuleIngredientStructurer } from '../domain/RuleIngredientStructurer';
 import { TodoReminderService } from '../domain/TodoReminderService';
 import { TodoService } from '../domain/TodoService';
+import { WsTicketStore } from '../domain/WsTicketStore';
 import { HttpAuthClient } from '../infrastructure/AuthClient';
 import { BucketStore } from '../infrastructure/BucketStore';
 import { FalImageGenerator } from '../infrastructure/FalImageGenerator';
@@ -47,6 +49,8 @@ export const registerDepdendencies = () => {
     dependencyContainer.registerSingleton(DependencyToken.AuthClient, HttpAuthClient);
     dependencyContainer.registerSingleton(DependencyToken.IdGenerator, UuidGenerator);
     dependencyContainer.registerSingleton(DependencyToken.AuthorizationService, AuthorizationService);
+    dependencyContainer.registerSingleton(DependencyToken.ListRealtimeHub, ListRealtimeHub);
+    dependencyContainer.registerSingleton(DependencyToken.WsTicketStore, WsTicketStore);
 
     // Domain services using factory classes
     dependencyContainer.registerSingleton(

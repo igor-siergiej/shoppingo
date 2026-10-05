@@ -7,11 +7,16 @@ const authHeaders = {
     Authorization: `Bearer ${MOCK_TOKEN}`,
 };
 
-export async function apiCreateList(title: string, listType = 'shopping') {
+export async function apiCreateList(title: string, listType = 'shopping', selectedFriendIds?: Array<string>) {
     const res = await fetch(`${API_BASE}/api/lists`, {
         method: 'PUT',
         headers: authHeaders,
-        body: JSON.stringify({ title, listType, dateAdded: new Date().toISOString() }),
+        body: JSON.stringify({
+            title,
+            listType,
+            selectedUsers: selectedFriendIds,
+            dateAdded: new Date().toISOString(),
+        }),
     });
     if (!res.ok) throw new Error(`apiCreateList failed: ${await res.text()}`);
     return res.json() as Promise<{ id: string; title: string }>;
@@ -29,6 +34,15 @@ export async function apiAddItem(
     });
     if (!res.ok) throw new Error(`apiAddItem failed: ${await res.text()}`);
     return res.json() as Promise<{ id: string; name: string }>;
+}
+
+export async function apiDeleteItem(listTitle: string, itemName: string) {
+    const itemId = await resolveItemId(listTitle, itemName);
+    const res = await fetch(
+        `${API_BASE}/api/lists/${encodeURIComponent(listTitle)}/items/${encodeURIComponent(itemId)}`,
+        { method: 'DELETE', headers: authHeaders }
+    );
+    if (!res.ok) throw new Error(`apiDeleteItem failed: ${await res.text()}`);
 }
 
 async function resolveItemId(listTitle: string, itemName: string): Promise<string> {
