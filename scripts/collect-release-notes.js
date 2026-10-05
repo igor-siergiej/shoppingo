@@ -47,29 +47,37 @@ const TRAILER_PATTERN = /^release-notes:[ \t]*(.*)$/i;
 const OTHER_TRAILER_PATTERN = /^[A-Za-z][A-Za-z-]*:[ \t]/;
 
 /**
- * Pull the `Release-Notes:` trailer out of a commit body. The value may wrap
- * over following lines; it ends at a blank line, another trailer, or the body's
- * end. Returns null when the commit has no trailer.
+ * Pull every `Release-Notes:` trailer out of a commit body. A squash-merge body
+ * concatenates the messages of all its sub-commits, so it can carry several.
+ * Each value may wrap over following lines and ends at a blank line, another
+ * trailer, or the body's end. Returns an empty array when there are none.
  */
-export const extractTrailer = (body) => {
+export const extractTrailers = (body) => {
     const lines = (body ?? '').split('\n');
-    const start = lines.findIndex((line) => TRAILER_PATTERN.test(line.trim()));
+    const texts = [];
 
-    if (start === -1) return null;
+    for (let index = 0; index < lines.length; index++) {
+        const match = lines[index].trim().match(TRAILER_PATTERN);
 
-    const parts = [lines[start].trim().match(TRAILER_PATTERN)[1].trim()];
+        if (!match) continue;
 
-    for (const line of lines.slice(start + 1)) {
-        const trimmed = line.trim();
+        const parts = [match[1].trim()];
 
-        if (trimmed === '' || OTHER_TRAILER_PATTERN.test(trimmed)) break;
+        while (index + 1 < lines.length) {
+            const next = lines[index + 1].trim();
 
-        parts.push(trimmed);
+            if (next === '' || OTHER_TRAILER_PATTERN.test(next)) break;
+
+            parts.push(next);
+            index++;
+        }
+
+        const text = parts.filter(Boolean).join(' ').trim();
+
+        if (text !== '') texts.push(text);
     }
 
-    const text = parts.filter(Boolean).join(' ').trim();
-
-    return text === '' ? null : text;
+    return texts;
 };
 
 /** Split a conventional-commit subject into its parts, or null if it isn't one. */
@@ -91,42 +99,46 @@ export const tidySubject = (description) => {
 };
 
 /**
- * Map one commit to a note. An explicit trailer always wins and always
- * publishes, even on a commit type that is normally invisible (a `chore` that
- * users can genuinely see, say). Without a trailer, only user-facing types
- * publish, using their subject.
+ * Map one commit to its notes. Explicit trailers always win and always publish,
+ * even on a commit type that is normally invisible (a `chore` that users can
+ * genuinely see, say). Without any trailer, only user-facing types publish,
+ * using their subject. A commit whose trailers are all filtered out later (see
+ * `collectNotes`) does not fall back to its subject.
  */
-export const commitToNote = (commit) => {
+export const commitToNotes = (commit) => {
     const header = parseHeader(commit.subject);
 
-    if (!header) return null;
+    if (!header) return [];
     // Release commits are semantic-release's own bookkeeping, never a note.
-    if (header.type === 'chore' && header.scope === 'release') return null;
+    if (header.type === 'chore' && header.scope === 'release') return [];
 
-    const trailer = extractTrailer(commit.body);
+    const trailers = extractTrailers(commit.body);
     const type = USER_FACING_TYPES[header.type];
 
-    if (!trailer && !type) return null;
+    if (trailers.length > 0) return trailers.map((text) => ({ type: type ?? 'improvement', text }));
+    if (!type) return [];
 
-    return { type: type ?? 'improvement', text: trailer ?? tidySubject(header.description) };
+    return [{ type, text: tidySubject(header.description) }];
 };
 
-/** Notes for a set of commits, newest first, without duplicate lines. */
-export const collectNotes = (commits) => {
-    const seen = new Set();
+/**
+ * Notes for a set of commits, newest first. A line is dropped when it repeats
+ * within this release or already appears in `published` (lowercased texts of
+ * earlier releases), which is how a stacked branch's stale trailers stay out.
+ */
+export const collectNotes = (commits, published = new Set()) => {
+    const seen = new Set(published);
     const notes = [];
 
     for (const commit of commits) {
-        const note = commitToNote(commit);
+        for (const note of commitToNotes(commit)) {
+            const key = note.text.toLowerCase();
 
-        if (!note) continue;
+            if (seen.has(key)) continue;
 
-        const key = note.text.toLowerCase();
-
-        if (seen.has(key)) continue;
-
-        seen.add(key);
-        notes.push(note);
+            seen.add(key);
+            notes.push(note);
+        }
     }
 
     return notes;
@@ -146,6 +158,14 @@ export const upsertRelease = (releases, entry) => {
 
     return [...others, entry].sort(compareVersionsDesc);
 };
+
+/** Lowercased note texts already published in releases older than `version`. */
+export const publishedTexts = (releases, version) =>
+    new Set(
+        releases
+            .filter((release) => compareVersionsDesc({ version }, release) < 0)
+            .flatMap((release) => release.notes.map((note) => note.text.toLowerCase()))
+    );
 
 export const parseCommits = (raw) =>
     raw
@@ -201,7 +221,8 @@ const main = () => {
         process.exit(1);
     }
 
-    const notes = collectNotes(readCommits(sinceRef));
+    const releases = readReleases();
+    const notes = collectNotes(readCommits(sinceRef), publishedTexts(releases, version));
 
     if (notes.length === 0) {
         console.log(`No user-facing notes for ${version}; leaving release-notes.json unchanged.`);
@@ -211,7 +232,7 @@ const main = () => {
 
     const entry = { version, date: new Date().toISOString().slice(0, 10), notes };
 
-    writeReleases(upsertRelease(readReleases(), entry));
+    writeReleases(upsertRelease(releases, entry));
 
     console.log(`Recorded ${notes.length} release note(s) for ${version}`);
 };
