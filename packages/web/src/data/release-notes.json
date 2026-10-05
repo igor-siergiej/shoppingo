@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.83.0",
+    "date": "2026-10-05",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Items that haven't synced yet because of a bad connection now show a small clock icon until they're saved."
+      }
+    ]
+  },
+  {
     "version": "1.82.6",
     "date": "2026-10-05",
     "notes": [

@@ -1,3 +1,10 @@
+# [1.83.0](https://github.com/igor-siergiej/shoppingo/compare/v1.82.6...v1.83.0) (2026-10-05)
+
+
+### Features
+
+* **web:** mark list items that are waiting to sync ([#187](https://github.com/igor-siergiej/shoppingo/issues/187)) ([bf964d0](https://github.com/igor-siergiej/shoppingo/commit/bf964d046888d7bdadd3d73e0191ef533e73d0af))
+
 ## [1.82.6](https://github.com/igor-siergiej/shoppingo/compare/v1.82.5...v1.82.6) (2026-10-05)
 
 
