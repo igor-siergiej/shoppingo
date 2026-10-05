@@ -4,6 +4,7 @@ import { createApp } from '@imapps/api-utils/hono';
 import { config } from './config';
 import { dependencyContainer, registerDepdendencies } from './dependencies';
 import { DependencyToken } from './dependencies/types';
+import { websocket } from './infrastructure/bunWebSocket';
 import {
     httpRequestDurationSeconds,
     httpRequestsTotal,
@@ -72,6 +73,7 @@ export const onStartup = async () => {
         Bun.serve({
             port,
             fetch: app.fetch,
+            websocket,
         });
 
         logger.info(`Shoppingo API server running on port ${port}`);

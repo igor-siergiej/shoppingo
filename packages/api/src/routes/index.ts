@@ -1,5 +1,7 @@
 import type { Context, Next } from 'hono';
 import { Hono } from 'hono';
+import { dependencyContainer } from '../dependencies';
+import { DependencyToken } from '../dependencies/types';
 import { generateFriendCode, getFriends, redeemFriendCode, removeFriend } from '../interfaces/FriendHandlers';
 import { getImage } from '../interfaces/ImageHandlers';
 import { createLabel, deleteLabel, getLabels, updateLabel } from '../interfaces/LabelHandlers';
@@ -20,6 +22,7 @@ import {
 } from '../interfaces/ListHandlers';
 import { receiveLogs } from '../interfaces/LogHandlers';
 import { getVapidPublicKey, subscribe, unsubscribe } from '../interfaces/PushHandlers';
+import { createRealtimeHandlers } from '../interfaces/RealtimeHandlers';
 import {
     addUserToRecipe,
     createRecipe,
@@ -38,6 +41,7 @@ import {
 } from '../interfaces/RecipeHandlers';
 import { completeTodo, createTodo, deleteTodo, getTodos, updateTodo } from '../interfaces/TodoHandlers';
 import { authenticate } from '../middleware/auth';
+import { notifyListChanged } from '../middleware/notifyListChanged';
 
 type Vars = { Variables: { user: { id: string; username: string } } };
 
@@ -59,17 +63,30 @@ export const createRoutes = (): Hono<Vars> => {
 
     router.get('/api/lists/title/:title', authenticate, getList);
     router.get('/api/lists/user/:userId', authenticate, getLists);
-    router.delete('/api/lists/:title', authenticate, deleteList);
-    router.post('/api/lists/:title', authenticate, updateList);
+    const hub = dependencyContainer.resolve(DependencyToken.ListRealtimeHub);
+    const listService = dependencyContainer.resolve(DependencyToken.ListService);
+    const { issueListSocketTicket, connectListSocket } = createRealtimeHandlers({
+        hub,
+        tickets: dependencyContainer.resolve(DependencyToken.WsTicketStore),
+        getList: (listTitle) => listService.getList(listTitle),
+    });
+    const changed = notifyListChanged(hub);
+    const removedMember = notifyListChanged(hub, (c, listTitle) => hub.kick(listTitle, c.req.param('userId') ?? ''));
+
+    router.delete('/api/lists/:title', authenticate, changed, deleteList);
+    router.post('/api/lists/:title', authenticate, changed, updateList);
     router.put('/api/lists', authenticate, addList);
-    router.put('/api/lists/:title/items/bulk', authenticate, addItems);
-    router.put('/api/lists/:title/items', authenticate, addItem);
-    router.post('/api/lists/:title/items/:itemId', authenticate, updateItem);
-    router.delete('/api/lists/:title/items/:itemId', authenticate, deleteItem);
-    router.delete('/api/lists/:title/clear', authenticate, clearList);
-    router.delete('/api/lists/:title/clearSelected', authenticate, deleteSelected);
-    router.post('/api/lists/:title/users', authenticate, addUserToList);
-    router.delete('/api/lists/:title/users/:userId', authenticate, removeUserFromList);
+    router.put('/api/lists/:title/items/bulk', authenticate, changed, addItems);
+    router.put('/api/lists/:title/items', authenticate, changed, addItem);
+    router.post('/api/lists/:title/items/:itemId', authenticate, changed, updateItem);
+    router.delete('/api/lists/:title/items/:itemId', authenticate, changed, deleteItem);
+    router.delete('/api/lists/:title/clear', authenticate, changed, clearList);
+    router.delete('/api/lists/:title/clearSelected', authenticate, changed, deleteSelected);
+    router.post('/api/lists/:title/users', authenticate, changed, addUserToList);
+    router.delete('/api/lists/:title/users/:userId', authenticate, removedMember, removeUserFromList);
+
+    router.post('/api/lists/:title/socket-ticket', authenticate, issueListSocketTicket);
+    router.get('/api/ws/lists/:title', connectListSocket);
 
     const conditionalImageAuth = async (c: Context<Vars>, next: Next) => {
         const name = c.req.param('name');

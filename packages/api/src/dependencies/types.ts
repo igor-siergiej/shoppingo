@@ -10,6 +10,7 @@ import type { ImageService } from '../domain/ImageService';
 import type { ImageGenerator, ImageStore } from '../domain/ImageService/types';
 import type { LabelRepository } from '../domain/LabelRepository';
 import type { LabelService } from '../domain/LabelService';
+import type { ListRealtimeHub } from '../domain/ListRealtimeHub';
 import type { ListRepository } from '../domain/ListRepository';
 import type { ListService } from '../domain/ListService';
 import type { AuthClient } from '../domain/ListService/types';
@@ -23,6 +24,7 @@ import type { RecipeService } from '../domain/RecipeService';
 import type { TodoReminderService } from '../domain/TodoReminderService';
 import type { TodoRepository } from '../domain/TodoRepository';
 import type { TodoService } from '../domain/TodoService';
+import type { WsTicketStore } from '../domain/WsTicketStore';
 import type { FalIngredientSubstituter } from '../infrastructure/FalIngredientSubstituter';
 import type { FalLlmClient } from '../infrastructure/FalLlmClient';
 import type { FalRecipeTagger } from '../infrastructure/FalRecipeTagger';
@@ -76,6 +78,8 @@ export enum DependencyToken {
     DailyReminderScheduler = 'DailyReminderScheduler',
     FriendRepository = 'FriendRepository',
     FriendService = 'FriendService',
+    ListRealtimeHub = 'ListRealtimeHub',
+    WsTicketStore = 'WsTicketStore',
 }
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
@@ -115,6 +119,8 @@ export type Dependencies = {
     [DependencyToken.DailyReminderScheduler]: DailyReminderScheduler;
     [DependencyToken.FriendRepository]: FriendRepository;
     [DependencyToken.FriendService]: FriendService;
+    [DependencyToken.ListRealtimeHub]: ListRealtimeHub;
+    [DependencyToken.WsTicketStore]: WsTicketStore;
 };
 
 export enum CollectionNames {

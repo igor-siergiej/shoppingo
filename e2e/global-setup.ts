@@ -12,8 +12,17 @@ export default async function globalSetup(): Promise<() => Promise<void>> {
         res.setHeader('Content-Type', 'application/json');
 
         if (req.method === 'GET' && req.url === '/verify') {
+            // The mock tokens carry their user in the JWT payload; fall back to the default user.
+            const payload = req.headers.authorization?.split('.')[1];
+            let user = MOCK_USER;
+            try {
+                const claims = JSON.parse(Buffer.from(payload ?? '', 'base64').toString());
+                if (claims.id === MOCK_USER_2.id) user = MOCK_USER_2;
+            } catch {
+                // not a mock JWT
+            }
             res.writeHead(200);
-            res.end(JSON.stringify({ success: true, payload: MOCK_USER }));
+            res.end(JSON.stringify({ success: true, payload: user }));
             return;
         }
 

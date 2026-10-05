@@ -1,21 +1,28 @@
 import type { Page } from '@playwright/test';
+import type { User } from '@shoppingo/types';
 import { MOCK_USER, MOCK_USER_2 } from './data/users';
 
 const makePart = (obj: object | string) =>
     Buffer.from(typeof obj === 'string' ? obj : JSON.stringify(obj)).toString('base64');
 
-export const MOCK_TOKEN = [
-    makePart({ alg: 'HS256', typ: 'JWT' }),
-    makePart({ username: MOCK_USER.username, id: MOCK_USER.id, exp: 9999999999, iat: 1700000000 }),
-    makePart('mock-signature'),
-].join('.');
+export const tokenFor = (user: User) =>
+    [
+        makePart({ alg: 'HS256', typ: 'JWT' }),
+        makePart({ username: user.username, id: user.id, exp: 9999999999, iat: 1700000000 }),
+        makePart('mock-signature'),
+    ].join('.');
 
-export async function mockAuthRoutes(page: Page) {
+export const MOCK_TOKEN = tokenFor(MOCK_USER);
+export const MOCK_TOKEN_2 = tokenFor(MOCK_USER_2);
+
+export async function mockAuthRoutes(page: Page, user: User = MOCK_USER) {
+    const token = tokenFor(user);
+
     await page.route('http://localhost:3008/login', (route) =>
         route.fulfill({
             status: 200,
             contentType: 'application/json',
-            body: JSON.stringify({ token: MOCK_TOKEN, user: MOCK_USER }),
+            body: JSON.stringify({ token, user }),
         })
     );
 
@@ -24,7 +31,7 @@ export async function mockAuthRoutes(page: Page) {
         route.fulfill({
             status: 200,
             contentType: 'application/json',
-            body: JSON.stringify({ accessToken: MOCK_TOKEN, user: MOCK_USER }),
+            body: JSON.stringify({ accessToken: token, user }),
         })
     );
 
@@ -32,7 +39,7 @@ export async function mockAuthRoutes(page: Page) {
         route.fulfill({
             status: 200,
             contentType: 'application/json',
-            body: JSON.stringify({ accessToken: MOCK_TOKEN }),
+            body: JSON.stringify({ accessToken: token }),
         })
     );
 
@@ -63,7 +70,7 @@ export async function mockAuthRoutes(page: Page) {
         route.fulfill({
             status: 200,
             contentType: 'application/json',
-            body: JSON.stringify({ success: true, payload: { id: MOCK_USER.id, username: MOCK_USER.username } }),
+            body: JSON.stringify({ success: true, payload: { id: user.id, username: user.username } }),
         })
     );
 }
