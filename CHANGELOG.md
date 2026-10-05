@@ -1,3 +1,10 @@
+## [1.82.6](https://github.com/igor-siergiej/shoppingo/compare/v1.82.5...v1.82.6) (2026-10-05)
+
+
+### Bug Fixes
+
+* **release:** publish every Release-Notes trailer once, repair 1.82.x notes ([#186](https://github.com/igor-siergiej/shoppingo/issues/186)) ([974fe52](https://github.com/igor-siergiej/shoppingo/commit/974fe525704e2c623c9bec33eafdec185d16aa4c)), closes [181-#185](https://github.com/181-/issues/185)
+
 ## [1.82.5](https://github.com/igor-siergiej/shoppingo/compare/v1.82.4...v1.82.5) (2026-10-03)
 
 

@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.82.6",
+    "date": "2026-10-05",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "The \"What's new\" list no longer repeats the same recipe-card line under every recent version, and each version shows what actually changed in it."
+      }
+    ]
+  },
+  {
     "version": "1.82.5",
     "date": "2026-10-03",
     "notes": [
