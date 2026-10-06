@@ -14,16 +14,26 @@ interface FrontendLog {
 
 const getLogger = () => dependencyContainer.resolve(DependencyToken.Logger);
 
-const rateLimiter = new IpRateLimiter(100);
+// The web logger sends one POST per log line, so a busy realtime session legitimately bursts.
+const RATE_LIMIT_PER_WINDOW = 300;
 const RATE_LIMIT_WINDOW = 60000;
+const rateLimiter = new IpRateLimiter(RATE_LIMIT_PER_WINDOW);
 
 setInterval(() => {
     rateLimiter.reset();
 }, RATE_LIMIT_WINDOW);
 
+// First X-Forwarded-For entry is the originating client; later entries are proxies.
+const getClientIp = (c: Context): string => {
+    const forwardedFor = c.req.header('x-forwarded-for')?.split(',')[0]?.trim();
+    return forwardedFor || c.req.raw.headers.get('x-real-ip') || 'unknown';
+};
+
+// Rate limit + validation + log dispatch in one linear flow; splitting further would scatter one request.
+// fallow-ignore-next-line complexity
 export const receiveLogs = async (c: Context) => {
     const logger = getLogger();
-    const clientIp = c.req.header('x-forwarded-for') || c.req.raw.headers.get('x-real-ip') || 'unknown';
+    const clientIp = getClientIp(c);
 
     if (!rateLimiter.isAllowed(clientIp)) {
         logger.warn('Frontend logs rate limit exceeded', { clientIp });
