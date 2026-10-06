@@ -1,3 +1,10 @@
+## [1.84.2](https://github.com/igor-siergiej/shoppingo/compare/v1.84.1...v1.84.2) (2026-10-06)
+
+
+### Bug Fixes
+
+* **api:** stop multi-user sessions tripping kivo's rate limit ([#190](https://github.com/igor-siergiej/shoppingo/issues/190)) ([3863229](https://github.com/igor-siergiej/shoppingo/commit/386322985f5c5999591aa209b5e80b2b5e01bc53))
+
 ## [1.84.1](https://github.com/igor-siergiej/shoppingo/compare/v1.84.0...v1.84.1) (2026-10-06)
 
 
