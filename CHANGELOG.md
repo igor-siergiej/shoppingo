@@ -1,3 +1,10 @@
+## [1.84.1](https://github.com/igor-siergiej/shoppingo/compare/v1.84.0...v1.84.1) (2026-10-06)
+
+
+### Bug Fixes
+
+* **web:** rejected offline edits no longer jam the sync queue ([#189](https://github.com/igor-siergiej/shoppingo/issues/189)) ([80e281e](https://github.com/igor-siergiej/shoppingo/commit/80e281e18b7b8fa88197693d50c497fb88e9785b))
+
 # [1.84.0](https://github.com/igor-siergiej/shoppingo/compare/v1.83.0...v1.84.0) (2026-10-05)
 
 
