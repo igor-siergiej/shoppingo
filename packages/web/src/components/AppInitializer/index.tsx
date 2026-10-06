@@ -2,10 +2,11 @@ import { tryRefreshToken, useAuth } from '@imapps/web-utils';
 import { AnimatePresence, motion } from 'motion/react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
+import { useQueryClient } from 'react-query';
 import { useNavigate } from 'react-router-dom';
 import { getAuthConfig } from '../../config/auth';
 import { usePWA } from '../../hooks/usePWA';
-import { startDrainer } from '../../offline/drainer';
+import { onIntentsDiscarded, startDrainer } from '../../offline/drainer';
 import { outboxStore } from '../../offline/outboxStore';
 import LoadingPage from '../LoadingPage';
 
@@ -19,6 +20,7 @@ const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
     const { login, logout } = useAuth();
     const navigate = useNavigate();
     const { isUpdating } = usePWA();
+    const queryClient = useQueryClient();
 
     useEffect(() => {
         const timer = setTimeout(() => setTimeoutReached(true), 10000);
@@ -53,6 +55,8 @@ const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
         });
         return () => stop();
     }, []);
+
+    useEffect(() => onIntentsDiscarded(() => void queryClient.invalidateQueries()), [queryClient]);
 
     useEffect(() => {
         const handleSessionExpired = () => {
