@@ -3,7 +3,7 @@ import type { Context } from 'hono';
 
 import '../test-setup';
 import { config } from '../config';
-import { authenticate } from './auth';
+import { authenticate, clearVerifyCache } from './auth';
 
 type AuthVars = { Variables: { user: { id: string; username: string } } };
 
@@ -42,6 +42,7 @@ const mockNext = vi.fn().mockResolvedValue(undefined);
 describe('authenticate middleware', () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        clearVerifyCache();
         mockConfigGet.mockReturnValue('http://localhost:3001');
     });
 
@@ -250,6 +251,72 @@ describe('authenticate middleware', () => {
                 expect.any(String),
                 expect.objectContaining({
                     headers: expect.objectContaining({ Origin: 'localhost:4000' }),
+                })
+            );
+        });
+    });
+
+    describe('When the same token is presented repeatedly', () => {
+        const okResponse = () => ({
+            ok: true,
+            json: vi.fn().mockResolvedValue({ success: true, payload: { id: 'u1', username: 'bob' } }),
+        });
+
+        it('should only call Kivo once and still authenticate every request', async () => {
+            const mockFetch = vi.fn().mockImplementation(async () => okResponse());
+            global.fetch = mockFetch as unknown as typeof fetch;
+            const first = createMockContext({ authorization: 'Bearer repeat-token' });
+            const second = createMockContext({ authorization: 'Bearer repeat-token' });
+
+            await authenticate(first, mockNext);
+            await authenticate(second, mockNext);
+
+            expect(mockFetch).toHaveBeenCalledTimes(1);
+            expect(second.set).toHaveBeenCalledWith('user', { id: 'u1', username: 'bob' });
+            expect(mockNext).toHaveBeenCalledTimes(2);
+        });
+
+        it('should not share a cached identity between different tokens', async () => {
+            const mockFetch = vi.fn().mockImplementation(async () => okResponse());
+            global.fetch = mockFetch as unknown as typeof fetch;
+
+            await authenticate(createMockContext({ authorization: 'Bearer token-a' }), mockNext);
+            await authenticate(createMockContext({ authorization: 'Bearer token-b' }), mockNext);
+
+            expect(mockFetch).toHaveBeenCalledTimes(2);
+        });
+
+        it('should not cache a rejected token', async () => {
+            const mockFetch = vi
+                .fn()
+                .mockResolvedValueOnce({ ok: false, json: vi.fn() })
+                .mockImplementation(async () => okResponse());
+            global.fetch = mockFetch as unknown as typeof fetch;
+
+            const rejected = await authenticate(createMockContext({ authorization: 'Bearer flaky' }), mockNext);
+            await authenticate(createMockContext({ authorization: 'Bearer flaky' }), mockNext);
+
+            expect(rejected?.status).toBe(401);
+            expect(mockFetch).toHaveBeenCalledTimes(2);
+            expect(mockNext).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    describe('When the request carries an X-Forwarded-For header', () => {
+        it('should forward it to Kivo so the limit applies per client, not per shoppingo', async () => {
+            const ctx = createMockContext({ authorization: 'Bearer token' }, { 'x-forwarded-for': '203.0.113.7' });
+            const mockFetch = vi.fn().mockResolvedValue({
+                ok: true,
+                json: vi.fn().mockResolvedValue({ success: true, payload: { id: 'u1', username: 'bob' } }),
+            });
+            global.fetch = mockFetch as unknown as typeof fetch;
+
+            await authenticate(ctx, mockNext);
+
+            expect(mockFetch).toHaveBeenCalledWith(
+                expect.any(String),
+                expect.objectContaining({
+                    headers: expect.objectContaining({ 'X-Forwarded-For': '203.0.113.7' }),
                 })
             );
         });

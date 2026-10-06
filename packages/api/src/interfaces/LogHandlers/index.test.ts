@@ -153,6 +153,19 @@ describe('LogHandlers', () => {
             });
         });
 
+        describe('When X-Forwarded-For lists a proxy chain', () => {
+            it('should rate-limit on the originating client, not the whole chain string', async () => {
+                const ctx = createMockContext({
+                    ip: '203.0.113.7, 10.0.1.123',
+                    body: { level: 'info', message: 'test' },
+                });
+
+                await receiveLogs(ctx);
+
+                expect(mockIsAllowed).toHaveBeenCalledWith('203.0.113.7');
+            });
+        });
+
         describe('When level is missing', () => {
             it('should return 400', async () => {
                 const ctx = createMockContext({
