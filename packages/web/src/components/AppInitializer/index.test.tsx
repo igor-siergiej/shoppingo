@@ -1,4 +1,5 @@
 import { act, render, screen } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from 'react-query';
 import { BrowserRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import AppInitializer from './index';
@@ -30,6 +31,7 @@ vi.mock('../../offline/outboxStore', () => ({
 
 vi.mock('../../offline/drainer', () => ({
     startDrainer: vi.fn().mockReturnValue(() => {}),
+    onIntentsDiscarded: vi.fn().mockReturnValue(() => {}),
 }));
 
 import { tryRefreshToken, useAuth } from '@imapps/web-utils';
@@ -38,7 +40,11 @@ const mockLogin = vi.fn();
 const mockLogout = vi.fn();
 
 const renderWithRouter = (component: React.ReactElement) => {
-    return render(<BrowserRouter>{component}</BrowserRouter>);
+    return render(
+        <QueryClientProvider client={new QueryClient()}>
+            <BrowserRouter>{component}</BrowserRouter>
+        </QueryClientProvider>
+    );
 };
 
 describe('AppInitializer', () => {
