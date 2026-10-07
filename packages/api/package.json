@@ -7,10 +7,12 @@
     "build": "cp -r src build",
     "test": "bun test",
     "test:coverage": "bun test --coverage",
-    "test:run": "bun test"
+    "test:run": "bun test",
+    "reindex": "bun scripts/reindex-discovery.ts"
   },
   "dependencies": {
     "@imapps/api-utils": "0.6.0",
+    "@opensearch-project/opensearch": "^3.9.0",
     "@shoppingo/types": "workspace:*",
     "cheerio": "^1.2.0",
     "dotenv": "^17.2.2",

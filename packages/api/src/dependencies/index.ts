@@ -1,9 +1,11 @@
 // biome-ignore-all lint/correctness/noConstructorReturn: I need to figure out a better way to do this
 import { Logger, MongoDbConnection, ObjectStoreConnection } from '@imapps/api-utils';
+import { Client } from '@opensearch-project/opensearch';
 
 import { config } from '../config';
 import { AuthorizationService } from '../domain/AuthorizationService';
 import { DailyReminderScheduler } from '../domain/DailyReminderScheduler';
+import { DiscoveryService } from '../domain/DiscoveryService';
 import { FriendService } from '../domain/FriendService';
 import { ImageService } from '../domain/ImageService';
 import { LabelService } from '../domain/LabelService';
@@ -27,12 +29,14 @@ import { FalRecipeParser } from '../infrastructure/FalRecipeParser';
 import { FalRecipeTagger } from '../infrastructure/FalRecipeTagger';
 import { HttpImageFetcher } from '../infrastructure/HttpImageFetcher';
 import { HttpPageFetcher } from '../infrastructure/HttpPageFetcher';
+import { MongoDiscoveryRecipeRepository } from '../infrastructure/MongoDiscoveryRecipeRepository';
 import { MongoFriendRepository } from '../infrastructure/MongoFriendRepository';
 import { MongoLabelRepository } from '../infrastructure/MongoLabelRepository';
 import { MongoListRepository } from '../infrastructure/MongoListRepository';
 import { MongoPushSubscriptionRepository } from '../infrastructure/MongoPushSubscriptionRepository';
 import { MongoRecipeRepository } from '../infrastructure/MongoRecipeRepository';
 import { MongoTodoRepository } from '../infrastructure/MongoTodoRepository';
+import { type OpenSearchApi, OpenSearchDiscoveryIndex } from '../infrastructure/OpenSearchDiscoveryIndex';
 import { UuidGenerator } from '../infrastructure/UuidGenerator';
 import { WebPushSender } from '../infrastructure/WebPushSender';
 import * as RecipeHandlers from '../interfaces/RecipeHandlers';
@@ -435,6 +439,47 @@ export const registerDepdendencies = () => {
                     llmExtractor,
                     llmParser,
                     dependencyContainer.resolve(DependencyToken.ImageFetcher)
+                );
+            }
+        }
+    );
+
+    // Recipe discovery: Mongo is the library's system of record, OpenSearch a derived index over it.
+    dependencyContainer.registerSingleton(
+        DependencyToken.DiscoveryRecipeRepository,
+        // @ts-expect-error - Dependency injection requires constructor return override
+        class {
+            constructor() {
+                return new MongoDiscoveryRecipeRepository(dependencyContainer.resolve(DependencyToken.Database));
+            }
+        }
+    );
+
+    dependencyContainer.registerSingleton(
+        DependencyToken.DiscoveryIndex,
+        // @ts-expect-error - Dependency injection requires constructor return override
+        class {
+            constructor() {
+                const url = config.get('opensearchUrl');
+                // Fail fast rather than queue requests behind a dead engine: discovery is optional, the rest of the API is not.
+                const client = url ? new Client({ node: url, requestTimeout: 5000, maxRetries: 1 }) : null;
+                return new OpenSearchDiscoveryIndex(
+                    client as unknown as OpenSearchApi | null,
+                    dependencyContainer.resolve(DependencyToken.Logger)
+                );
+            }
+        }
+    );
+
+    dependencyContainer.registerSingleton(
+        DependencyToken.DiscoveryService,
+        // @ts-expect-error - Dependency injection requires constructor return override
+        class {
+            constructor() {
+                return new DiscoveryService(
+                    dependencyContainer.resolve(DependencyToken.DiscoveryRecipeRepository),
+                    dependencyContainer.resolve(DependencyToken.DiscoveryIndex),
+                    dependencyContainer.resolve(DependencyToken.Logger)
                 );
             }
         }

@@ -1,8 +1,20 @@
 import type { Logger, MongoDbConnection, ObjectStoreConnection } from '@imapps/api-utils';
-import type { Friendship, Label, List, PairingCode, PushSubscription, Recipe, Todo } from '@shoppingo/types';
+import type {
+    DiscoveryRecipe,
+    Friendship,
+    Label,
+    List,
+    PairingCode,
+    PushSubscription,
+    Recipe,
+    Todo,
+} from '@shoppingo/types';
 
 import type { AuthorizationService } from '../domain/AuthorizationService';
 import type { DailyReminderScheduler } from '../domain/DailyReminderScheduler';
+import type { DiscoveryRecipeRepository } from '../domain/DiscoveryRecipeRepository';
+import type { DiscoveryService } from '../domain/DiscoveryService';
+import type { DiscoveryIndex } from '../domain/DiscoveryService/types';
 import type { FriendRepository } from '../domain/FriendRepository';
 import type { FriendService } from '../domain/FriendService';
 import type { IdGenerator } from '../domain/IdGenerator';
@@ -40,6 +52,7 @@ export type Collections = {
     [CollectionNames.PushSubscription]: PushSubscription;
     [CollectionNames.Friendship]: Friendship;
     [CollectionNames.PairingCode]: PairingCode;
+    [CollectionNames.DiscoveryRecipe]: DiscoveryRecipe;
 };
 
 export enum DependencyToken {
@@ -80,6 +93,9 @@ export enum DependencyToken {
     FriendService = 'FriendService',
     ListRealtimeHub = 'ListRealtimeHub',
     WsTicketStore = 'WsTicketStore',
+    DiscoveryRecipeRepository = 'DiscoveryRecipeRepository',
+    DiscoveryIndex = 'DiscoveryIndex',
+    DiscoveryService = 'DiscoveryService',
 }
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
@@ -121,6 +137,9 @@ export type Dependencies = {
     [DependencyToken.FriendService]: FriendService;
     [DependencyToken.ListRealtimeHub]: ListRealtimeHub;
     [DependencyToken.WsTicketStore]: WsTicketStore;
+    [DependencyToken.DiscoveryRecipeRepository]: DiscoveryRecipeRepository;
+    [DependencyToken.DiscoveryIndex]: DiscoveryIndex;
+    [DependencyToken.DiscoveryService]: DiscoveryService;
 };
 
 export enum CollectionNames {
@@ -131,4 +150,5 @@ export enum CollectionNames {
     PushSubscription = 'pushSubscription',
     Friendship = 'friendships',
     PairingCode = 'pairingCodes',
+    DiscoveryRecipe = 'discoveryRecipes',
 }

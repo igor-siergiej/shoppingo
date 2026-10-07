@@ -116,6 +116,99 @@ export interface RecipeImportResult {
     recipeYield?: string;
 }
 
+export type DiscoverySource = 'wikibooks' | 'user';
+
+export type DiscoveryEstimatedField = 'prepTime' | 'cookTime' | 'servings' | 'difficulty';
+
+/** A recipe in the shared discovery library (Mongo `discoveryRecipes`). Never a view onto personal recipes. */
+export interface DiscoveryRecipe {
+    id: string;
+    title: string;
+    ingredients: Ingredient[];
+    instructions: string[];
+    tags: string[];
+    /** Minutes. */
+    prepTime?: number;
+    /** Minutes. */
+    cookTime?: number;
+    servings?: number;
+    difficulty?: RecipeDifficulty;
+    coverImageKey?: string;
+    source: DiscoverySource;
+    sourceUrl: string;
+    /** SPDX-style licence id, e.g. `CC-BY-SA-4.0`. */
+    licence: string;
+    /** Attribution text that must be displayed with the recipe. */
+    attribution: string;
+    /** Display name; user-published recipes only. */
+    publishedBy?: string;
+    /** Fields filled in by the extractor rather than read from the source. */
+    estimated?: DiscoveryEstimatedField[];
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+/** What a search hit carries: enough for a result card; the full recipe comes from `GET /api/discover/recipes/:id`. */
+export interface DiscoveryRecipeSummary {
+    id: string;
+    title: string;
+    tags: string[];
+    prepTime?: number;
+    cookTime?: number;
+    servings?: number;
+    difficulty?: RecipeDifficulty;
+    coverImageKey?: string;
+    source: DiscoverySource;
+    estimated?: DiscoveryEstimatedField[];
+}
+
+export interface DiscoveryFacetBucket {
+    key: string;
+    count: number;
+}
+
+export interface DiscoveryTimeBucket extends DiscoveryFacetBucket {
+    /** Inclusive lower bound of total (prep + cook) minutes. */
+    from?: number;
+    /** Exclusive upper bound of total (prep + cook) minutes. */
+    to?: number;
+}
+
+export interface DiscoveryFacets {
+    tags: DiscoveryFacetBucket[];
+    difficulty: DiscoveryFacetBucket[];
+    source: DiscoveryFacetBucket[];
+    ingredients: DiscoveryFacetBucket[];
+    time: DiscoveryTimeBucket[];
+}
+
+export interface DiscoverySearchQuery {
+    /** Free text; empty/absent browses the whole library. */
+    q?: string;
+    /** Recipe must carry every one of these tags. */
+    tags?: string[];
+    /** Recipe must contain every one of these ingredients (stemmed, synonym-aware). */
+    ingredients?: string[];
+    /** Recipe difficulty is any of these. */
+    difficulty?: RecipeDifficulty[];
+    /** Recipe source is any of these. */
+    source?: DiscoverySource[];
+    /** Total (prep + cook) minutes bounds, inclusive. Recipes without any time never match a time bound. */
+    minTime?: number;
+    maxTime?: number;
+    /** 1-based. */
+    page?: number;
+    pageSize?: number;
+}
+
+export interface DiscoverySearchResult {
+    hits: DiscoveryRecipeSummary[];
+    total: number;
+    page: number;
+    pageSize: number;
+    facets: DiscoveryFacets;
+}
+
 export interface Recurrence {
     freq: 'daily' | 'weekly' | 'monthly' | 'yearly';
     interval: number;

@@ -60,6 +60,14 @@ export const onStartup = async () => {
         });
         logger.info('Connected to database');
 
+        await dependencyContainer.resolve(DependencyToken.DiscoveryRecipeRepository).ensureIndexes();
+        // Discovery is optional: a search engine that is down at boot must not stop the rest of the API. The index
+        // is created lazily on the first request that finds it reachable.
+        dependencyContainer
+            .resolve(DependencyToken.DiscoveryService)
+            .ensureIndex()
+            .catch((error: unknown) => logger.warn('Discovery index not ready at startup', { error: String(error) }));
+
         await bucket.connect?.({
             endpoint: config.get('bucketEndpoint'),
             accessKey: config.get('bucketAccessKey'),

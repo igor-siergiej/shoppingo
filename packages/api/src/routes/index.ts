@@ -2,6 +2,7 @@ import type { Context, Next } from 'hono';
 import { Hono } from 'hono';
 import { dependencyContainer } from '../dependencies';
 import { DependencyToken } from '../dependencies/types';
+import { createDiscoveryHandlers } from '../interfaces/DiscoveryHandlers';
 import { generateFriendCode, getFriends, redeemFriendCode, removeFriend } from '../interfaces/FriendHandlers';
 import { getImage } from '../interfaces/ImageHandlers';
 import { createLabel, deleteLabel, getLabels, updateLabel } from '../interfaces/LabelHandlers';
@@ -112,6 +113,14 @@ export const createRoutes = (): Hono<Vars> => {
     router.post('/api/recipes/:recipeId/image/upload', authenticate, uploadRecipeImage);
     router.post('/api/recipes/:recipeId/image/generate', authenticate, generateRecipeImage);
     router.post('/api/recipes/:recipeId/image/revert', authenticate, revertRecipeImage);
+
+    const discovery = createDiscoveryHandlers(
+        dependencyContainer.resolve(DependencyToken.DiscoveryService),
+        dependencyContainer.resolve(DependencyToken.Logger)
+    );
+    router.get('/api/discover/recipes', authenticate, discovery.searchRecipes);
+    router.get('/api/discover/recipes/:id/similar', authenticate, discovery.getSimilarRecipes);
+    router.get('/api/discover/recipes/:id', authenticate, discovery.getRecipe);
 
     router.get('/api/todos', authenticate, getTodos);
     router.put('/api/todos', authenticate, createTodo);
