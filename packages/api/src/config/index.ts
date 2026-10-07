@@ -19,6 +19,7 @@ const schema = {
     vapidPublicKey: { parser: parsers.string, from: 'VAPID_PUBLIC_KEY', optional: true },
     vapidPrivateKey: { parser: parsers.string, from: 'VAPID_PRIVATE_KEY', optional: true },
     vapidSubject: { parser: parsers.string, from: 'VAPID_SUBJECT', optional: true },
+    wikibooksUserAgent: { parser: parsers.string, from: 'WIKIBOOKS_USER_AGENT', optional: true },
     opensearchUrl: { parser: parsers.string, from: 'OPENSEARCH_URL', optional: true },
 } as const;
 

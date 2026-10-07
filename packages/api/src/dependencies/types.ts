@@ -36,6 +36,8 @@ import type { RecipeService } from '../domain/RecipeService';
 import type { TodoReminderService } from '../domain/TodoReminderService';
 import type { TodoRepository } from '../domain/TodoRepository';
 import type { TodoService } from '../domain/TodoService';
+import type { WikibooksIngestService } from '../domain/WikibooksIngest';
+import type { RecipeEstimator, WikibooksSource } from '../domain/WikibooksIngest/types';
 import type { WsTicketStore } from '../domain/WsTicketStore';
 import type { FalIngredientSubstituter } from '../infrastructure/FalIngredientSubstituter';
 import type { FalLlmClient } from '../infrastructure/FalLlmClient';
@@ -96,6 +98,9 @@ export enum DependencyToken {
     DiscoveryRecipeRepository = 'DiscoveryRecipeRepository',
     DiscoveryIndex = 'DiscoveryIndex',
     DiscoveryService = 'DiscoveryService',
+    WikibooksSource = 'WikibooksSource',
+    RecipeEstimator = 'RecipeEstimator',
+    WikibooksIngestService = 'WikibooksIngestService',
 }
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
@@ -140,6 +145,9 @@ export type Dependencies = {
     [DependencyToken.DiscoveryRecipeRepository]: DiscoveryRecipeRepository;
     [DependencyToken.DiscoveryIndex]: DiscoveryIndex;
     [DependencyToken.DiscoveryService]: DiscoveryService;
+    [DependencyToken.WikibooksSource]: WikibooksSource;
+    [DependencyToken.RecipeEstimator]: RecipeEstimator;
+    [DependencyToken.WikibooksIngestService]: WikibooksIngestService;
 };
 
 export enum CollectionNames {

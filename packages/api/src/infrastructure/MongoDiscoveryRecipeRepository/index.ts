@@ -1,5 +1,5 @@
 import type { MongoDbConnection } from '@imapps/api-utils';
-import type { DiscoveryRecipe } from '@shoppingo/types';
+import type { DiscoveryRecipe, DiscoverySource } from '@shoppingo/types';
 
 import { CollectionNames } from '../../dependencies/types';
 import type { DiscoveryRecipeRepository } from '../../domain/DiscoveryRecipeRepository';
@@ -28,6 +28,14 @@ export class MongoDiscoveryRecipeRepository implements DiscoveryRecipeRepository
 
     async deleteById(id: string): Promise<void> {
         await this.collection().deleteOne({ id });
+    }
+
+    async listRevisions(
+        source: DiscoverySource
+    ): Promise<Array<Pick<DiscoveryRecipe, 'id' | 'sourceRevision' | 'createdAt'>>> {
+        return this.collection()
+            .find({ source }, { projection: { _id: 0, id: 1, sourceRevision: 1, createdAt: 1 } })
+            .toArray() as Promise<Array<Pick<DiscoveryRecipe, 'id' | 'sourceRevision' | 'createdAt'>>>;
     }
 
     async *batches(size: number): AsyncGenerator<DiscoveryRecipe[]> {
