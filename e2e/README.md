@@ -12,6 +12,7 @@ Currently the visual suite covers:
 - `/recipes/new` (`recipe-form.visual.spec.ts`) — added after a real bug (PR #131) where that page's layout wasted vertical space and duplicated its header, only caught by manually emulating a phone.
 - `/` (`lists.visual.spec.ts`), `/recipes` (`recipes.visual.spec.ts`), `/list/:listTitle` (`items.visual.spec.ts`), `/friends` (`friends.visual.spec.ts`) — empty + populated states each.
 - `/recipes/:recipeId` (`recipe-detail.visual.spec.ts`) — one populated state (no empty variant; the route requires an existing recipe).
+- `/discover` and `/discover/:recipeId` (`discover.visual.spec.ts`) — results, filters open and a recipe preview, over the fixed library in `e2e/discovery-fixtures.ts`.
 - `/calendar` (`calendar.visual.spec.ts`) — one fixed-date state (uses `page.clock.setFixedTime` so the baseline doesn't depend on which real-world day the test runs).
 - `/login`, `/register` (`auth.visual.spec.ts`) — these two don't use the `authenticatedPage` fixture (pre-auth) and render under a different layout (`RootLayout showLayout={false}`) than every other page above.
 
@@ -37,6 +38,22 @@ data-integrity-critical paths:
 
 API-side authorization and validation are unit-tested under
 `packages/api/src/**/*.test.ts` (Bun runner, 90% coverage threshold).
+
+## Discover specs and OpenSearch
+
+`discover.spec.ts` and `discover.visual.spec.ts` search a small fixed recipe library (`e2e/discovery-fixtures.ts`) that
+`global-setup.ts` writes to the e2e Mongo database and indexes into OpenSearch with the API's own
+`reindex-discovery` command (and empties again on teardown). They need a dedicated OpenSearch and **skip when
+`E2E_OPENSEARCH_URL` is unset**; CI sets it from an `opensearch` service container.
+
+The variable is deliberately not `OPENSEARCH_URL`: the e2e API is always started with `OPENSEARCH_URL` taken from
+`E2E_OPENSEARCH_URL`, so a developer's `.env` can never make the e2e fixtures land in a real index. Locally:
+
+```bash
+docker run -d --name os-e2e -p 127.0.0.1:19200:9200 -e discovery.type=single-node \
+  -e DISABLE_SECURITY_PLUGIN=true -e OPENSEARCH_JAVA_OPTS="-Xms512m -Xmx512m" opensearchproject/opensearch:2.19.1
+E2E_OPENSEARCH_URL=http://localhost:19200 bun run test:e2e
+```
 
 ## Updating visual baselines
 

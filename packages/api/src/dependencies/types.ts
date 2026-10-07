@@ -12,6 +12,7 @@ import type {
 
 import type { AuthorizationService } from '../domain/AuthorizationService';
 import type { DailyReminderScheduler } from '../domain/DailyReminderScheduler';
+import type { DiscoveryCopyService } from '../domain/DiscoveryCopyService';
 import type { DiscoveryRecipeRepository } from '../domain/DiscoveryRecipeRepository';
 import type { DiscoveryService } from '../domain/DiscoveryService';
 import type { DiscoveryIndex } from '../domain/DiscoveryService/types';
@@ -98,6 +99,7 @@ export enum DependencyToken {
     DiscoveryRecipeRepository = 'DiscoveryRecipeRepository',
     DiscoveryIndex = 'DiscoveryIndex',
     DiscoveryService = 'DiscoveryService',
+    DiscoveryCopyService = 'DiscoveryCopyService',
     WikibooksSource = 'WikibooksSource',
     RecipeEstimator = 'RecipeEstimator',
     WikibooksIngestService = 'WikibooksIngestService',
@@ -145,6 +147,7 @@ export type Dependencies = {
     [DependencyToken.DiscoveryRecipeRepository]: DiscoveryRecipeRepository;
     [DependencyToken.DiscoveryIndex]: DiscoveryIndex;
     [DependencyToken.DiscoveryService]: DiscoveryService;
+    [DependencyToken.DiscoveryCopyService]: DiscoveryCopyService;
     [DependencyToken.WikibooksSource]: WikibooksSource;
     [DependencyToken.RecipeEstimator]: RecipeEstimator;
     [DependencyToken.WikibooksIngestService]: WikibooksIngestService;

@@ -3,7 +3,7 @@
 import { useAuth, useUser } from '@imapps/web-utils';
 import type { Item } from '@shoppingo/types';
 import { ListType } from '@shoppingo/types';
-import { CheckCheck, ChefHat, Plus, Recycle, ShoppingCart, Tag, Trash2, Users } from 'lucide-react';
+import { CheckCheck, ChefHat, Compass, Plus, Recycle, ShoppingCart, Tag, Trash2, Users } from 'lucide-react';
 import { AnimatePresence, MotionConfig, motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -50,6 +50,8 @@ interface ToolBarProps {
     disableClearAll?: boolean;
 }
 
+// One bar for every page: each page's actions, drawers and menu state live here; a Discover entry adds one more row.
+// fallow-ignore-next-line complexity
 const ToolBar = ({
     onAddList,
     onAddItem,
@@ -160,6 +162,12 @@ const ToolBar = ({
             label: 'Use Up Ingredient',
             icon: Recycle,
             onClick: () => navigate('/recipes/use-up'),
+        },
+        {
+            show: isRecipesPage,
+            label: 'Discover Recipes',
+            icon: Compass,
+            onClick: () => navigate('/discover'),
         },
     ];
 

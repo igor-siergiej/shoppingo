@@ -130,7 +130,8 @@ export class RecipeService {
         prepTime?: number,
         cookTime?: number,
         servings?: number,
-        difficulty?: RecipeDifficulty
+        difficulty?: RecipeDifficulty,
+        attribution?: string
     ): Promise<Recipe> {
         try {
             if (id) {
@@ -158,6 +159,7 @@ export class RecipeService {
                 ...(cookTime !== undefined && { cookTime }),
                 ...(servings !== undefined && { servings }),
                 ...(difficulty !== undefined && { difficulty }),
+                ...(attribution !== undefined && { attribution }),
             };
             const created = await this.recipeRepository.insert(recipe);
             this.logger?.info('Recipe created', {

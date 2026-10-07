@@ -65,6 +65,19 @@ describe('Layout', () => {
         expect(wide.firstChild).toHaveClass('max-w-[500px]', 'sm:max-w-5xl', 'mx-auto');
     });
 
+    it.each(['/discover', '/discover/wikibooks-12'])('scrolls %s from the top like the other recipe pages', (path) => {
+        const { container } = renderAtPath(
+            path,
+            <Layout>
+                <p>Content</p>
+            </Layout>
+        );
+
+        const scrollDiv = (container.firstChild as HTMLElement).lastElementChild as HTMLElement;
+        expect(scrollDiv).toHaveClass('flex-col');
+        expect(scrollDiv).not.toHaveClass('flex-col-reverse');
+    });
+
     it('renders children in reverse flex column on bottom-anchored routes', () => {
         const { container } = renderAtPath(
             '/',

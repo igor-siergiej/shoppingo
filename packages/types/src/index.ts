@@ -84,6 +84,8 @@ export interface Recipe {
     cookTime?: number;
     servings?: number;
     difficulty?: RecipeDifficulty;
+    /** Licence attribution carried over from a discovery-library recipe this one was copied from; must stay displayed. */
+    attribution?: string;
 }
 
 export interface RecipeResponse {
@@ -102,6 +104,7 @@ export interface RecipeResponse {
     cookTime?: number;
     servings?: number;
     difficulty?: RecipeDifficulty;
+    attribution?: string;
 }
 
 export interface RecipeImportResult {

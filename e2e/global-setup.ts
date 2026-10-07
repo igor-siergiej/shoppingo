@@ -1,5 +1,7 @@
 import { createServer } from 'node:http';
 import { MongoClient } from 'mongodb';
+import { E2E_OPENSEARCH_URL, seedDiscoveryLibrary } from './db-helpers';
+import { DISCOVERY_FIXTURES } from './discovery-fixtures';
 import { resolveMongoUri } from './mongo-uri';
 
 const KIVO_PORT = 3099;
@@ -38,8 +40,13 @@ export default async function globalSetup(): Promise<() => Promise<void>> {
 
     await new Promise<void>((resolve) => kivoServer.listen(KIVO_PORT, resolve));
 
+    // The library is read-only shared data (no test writes to it), so it is seeded once rather than per test.
+    if (E2E_OPENSEARCH_URL) await seedDiscoveryLibrary(DISCOVERY_FIXTURES);
+
     return async () => {
         await new Promise<void>((resolve) => kivoServer.close(() => resolve()));
+        // Empty the library before the database is dropped so the index is not left holding fixtures.
+        if (E2E_OPENSEARCH_URL) await seedDiscoveryLibrary([]);
 
         const mongoUri = resolveMongoUri();
         const client = new MongoClient(mongoUri);

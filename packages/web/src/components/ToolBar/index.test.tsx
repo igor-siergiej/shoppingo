@@ -238,7 +238,7 @@ describe('ToolBar', () => {
         expect(screen.queryByText('Add to Shopping List')).not.toBeInTheDocument();
     });
 
-    it('shows only Use Up Ingredient on the Recipes list page', () => {
+    it('shows only Use Up Ingredient and Discover Recipes on the Recipes list page', () => {
         mockUseLocation.mockReturnValue({ pathname: '/recipes' });
 
         render(<ToolBar />);
@@ -248,6 +248,19 @@ describe('ToolBar', () => {
 
         screen.getByText('Use Up Ingredient').click();
         expect(mockNavigate).toHaveBeenCalledWith('/recipes/use-up');
+    });
+
+    it('offers Discover Recipes from the Recipes list page, and nowhere else', () => {
+        mockUseLocation.mockReturnValue({ pathname: '/recipes' });
+        const { unmount } = render(<ToolBar />);
+
+        screen.getByText('Discover Recipes').click();
+        expect(mockNavigate).toHaveBeenCalledWith('/discover');
+        unmount();
+
+        mockUseLocation.mockReturnValue({ pathname: '/friends' });
+        render(<ToolBar />);
+        expect(screen.queryByText('Discover Recipes')).not.toBeInTheDocument();
     });
 
     it('shows no actions on the Friends page', () => {

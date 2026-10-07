@@ -87,6 +87,21 @@ jobs:
         env:
           MONGO_INITDB_ROOT_USERNAME: devuser
           MONGO_INITDB_ROOT_PASSWORD: devpassword
+      # The Discover specs search a small fixed library that global-setup seeds into this OpenSearch.
+      opensearch:
+        image: opensearchproject/opensearch:2.19.1
+        ports:
+          - 9200:9200
+        env:
+          discovery.type: single-node
+          DISABLE_SECURITY_PLUGIN: 'true'
+          DISABLE_INSTALL_DEMO_CONFIG: 'true'
+          OPENSEARCH_JAVA_OPTS: -Xms512m -Xmx512m
+        options: >-
+          --health-cmd "curl -sf http://localhost:9200/_cluster/health"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
     steps:
       - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
@@ -99,6 +114,7 @@ jobs:
       - run: bun run test:e2e
         env:
           CONNECTION_URI: mongodb://devuser:devpassword@localhost:27017/shoppingo_e2e?authSource=admin
+          E2E_OPENSEARCH_URL: http://localhost:9200
       - uses: actions/upload-artifact@v4
         if: always()
         with:

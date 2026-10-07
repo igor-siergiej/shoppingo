@@ -116,11 +116,13 @@ export const createRoutes = (): Hono<Vars> => {
 
     const discovery = createDiscoveryHandlers(
         dependencyContainer.resolve(DependencyToken.DiscoveryService),
+        dependencyContainer.resolve(DependencyToken.DiscoveryCopyService),
         dependencyContainer.resolve(DependencyToken.Logger)
     );
     router.get('/api/discover/recipes', authenticate, discovery.searchRecipes);
     router.get('/api/discover/recipes/:id/similar', authenticate, discovery.getSimilarRecipes);
     router.get('/api/discover/recipes/:id', authenticate, discovery.getRecipe);
+    router.post('/api/discover/recipes/:id/copy', authenticate, discovery.copyRecipe);
 
     router.get('/api/todos', authenticate, getTodos);
     router.put('/api/todos', authenticate, createTodo);
