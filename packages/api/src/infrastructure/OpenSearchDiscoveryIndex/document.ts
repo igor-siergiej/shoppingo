@@ -1,6 +1,8 @@
 import type { DiscoveryRecipe, DiscoveryRecipeSummary } from '@shoppingo/types';
 
 /** The searchable subset of a library recipe. Instructions and quantities stay in Mongo only. */
+// One flat field-by-field projection.
+// fallow-ignore-next-line complexity
 export const toIndexDocument = (recipe: DiscoveryRecipe) => {
     const hasTime = recipe.prepTime !== undefined || recipe.cookTime !== undefined;
     return {

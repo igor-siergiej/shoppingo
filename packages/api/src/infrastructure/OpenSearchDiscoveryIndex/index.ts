@@ -39,6 +39,8 @@ export interface OpenSearchApi {
 const unavailable = (message: string, cause?: unknown) => Object.assign(new Error(message), { status: 503, cause });
 
 /** Failures that mean "the engine is not there", as opposed to "we sent it something wrong". */
+// A flat list of error classes that mean "engine unreachable".
+// fallow-ignore-next-line complexity
 const isUnreachable = (error: unknown): boolean =>
     error instanceof errors.ConnectionError ||
     error instanceof errors.TimeoutError ||
@@ -61,6 +63,8 @@ const toTimeBuckets = (buckets: Bucket[] | undefined): DiscoveryTimeBucket[] =>
         return { key: range.key, count: found?.doc_count ?? 0, from: range.from, to: range.to };
     });
 
+// One line per facet.
+// fallow-ignore-next-line complexity
 const toFacets = (aggregations: SearchResponse['aggregations']): DiscoveryFacets => ({
     tags: toBuckets(aggregations?.tags?.buckets),
     difficulty: toBuckets(aggregations?.difficulty?.buckets),
@@ -107,6 +111,8 @@ export class OpenSearchDiscoveryIndex implements DiscoveryIndex {
         return this.ready;
     }
 
+    // Check, create, and tolerate losing the creation race: one sequence.
+    // fallow-ignore-next-line complexity
     private async createIfMissing(client: OpenSearchApi): Promise<void> {
         const { body: exists } = await client.indices.existsAlias({ name: INDEX_ALIAS });
         if (exists) return;

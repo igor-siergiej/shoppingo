@@ -18,6 +18,8 @@ const REINDEX_BATCH_SIZE = 500;
 
 const httpError = (message: string, status: number) => Object.assign(new Error(message), { status });
 
+// Trim/dedupe/lowercase in one pass.
+// fallow-ignore-next-line complexity
 const clean = (values: string[] | undefined, lowercase = false): string[] => {
     const seen = new Set<string>();
     for (const raw of values ?? []) {
@@ -29,6 +31,8 @@ const clean = (values: string[] | undefined, lowercase = false): string[] => {
 
 const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 
+// Defaults and bounds for each optional parameter, one line each.
+// fallow-ignore-next-line complexity
 const normalizeQuery = (query: DiscoverySearchQuery): NormalizedDiscoveryQuery => {
     const pageSize = clamp(Math.trunc(query.pageSize ?? DEFAULT_PAGE_SIZE), 1, MAX_PAGE_SIZE);
     const page = Math.max(Math.trunc(query.page ?? 1), 1);

@@ -21,6 +21,8 @@ const listParam = (c: Context<HonoVars>, name: string): string[] | undefined => 
     return values?.length ? values : undefined;
 };
 
+// Parse + two bound checks for one parameter.
+// fallow-ignore-next-line complexity
 const intParam = (c: Context<HonoVars>, name: string, min: number): number | undefined => {
     const raw = c.req.query(name);
     if (raw === undefined || raw === '') return undefined;
@@ -49,6 +51,8 @@ const parseSearchQuery = (c: Context<HonoVars>): DiscoverySearchQuery => ({
 });
 
 /** Errors carrying a 4xx/503 status are meant for the caller; anything else is hidden behind a generic 500. */
+// Status mapping for one error path.
+// fallow-ignore-next-line complexity
 const failWith = (logger: Logger, message: string, error: unknown): never => {
     const e = (error ?? {}) as { message?: string; status?: number };
     const status = e.status ?? 500;

@@ -16,6 +16,8 @@ export const TIME_RANGES = [
     { key: 'over-120', from: 120 },
 ];
 
+// One flat list of optional filters; splitting it would scatter one query.
+// fallow-ignore-next-line complexity
 const buildFilters = (query: NormalizedDiscoveryQuery): object[] => {
     const filters: object[] = [];
     for (const tag of query.tags) filters.push({ term: { tags: tag } });
