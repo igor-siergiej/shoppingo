@@ -1,3 +1,10 @@
+# [1.85.0](https://github.com/igor-siergiej/shoppingo/compare/v1.84.2...v1.85.0) (2026-10-07)
+
+
+### Features
+
+* **api:** OpenSearch-backed search over a shared recipe library ([#191](https://github.com/igor-siergiej/shoppingo/issues/191)) ([42791e9](https://github.com/igor-siergiej/shoppingo/commit/42791e91d6ad15a8b0e82cbd4307d959d1e2d0fa))
+
 ## [1.84.2](https://github.com/igor-siergiej/shoppingo/compare/v1.84.1...v1.84.2) (2026-10-06)
 
 
