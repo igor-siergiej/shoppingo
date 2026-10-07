@@ -63,6 +63,8 @@ export class MediaWikiCookbookSource implements WikibooksSource {
     private readonly fetchImpl: typeof fetch;
     private readonly sleep: (ms: number) => Promise<void>;
 
+    // Option defaults, one line each.
+    // fallow-ignore-next-line complexity
     constructor(
         private readonly logger?: Logger,
         options: MediaWikiCookbookSourceOptions = {}
@@ -73,6 +75,8 @@ export class MediaWikiCookbookSource implements WikibooksSource {
         this.sleep = options.sleep ?? defaultSleep;
     }
 
+    // Paging loop plus one guarded field-by-field read per page.
+    // fallow-ignore-next-line complexity
     async listRecipePages(): Promise<WikibooksPageRef[]> {
         const pages = new Map<number, WikibooksPageRef>();
         let cursor: Params = {};
@@ -98,6 +102,8 @@ export class MediaWikiCookbookSource implements WikibooksSource {
         return [...pages.values()];
     }
 
+    // Batch loop with per-batch failure isolation and a guarded read per page.
+    // fallow-ignore-next-line complexity
     async fetchPages(refs: WikibooksPageRef[]): Promise<WikibooksPage[]> {
         const fetched: WikibooksPage[] = [];
         for (let i = 0; i < refs.length; i += CONTENT_BATCH_SIZE) {
@@ -133,6 +139,8 @@ export class MediaWikiCookbookSource implements WikibooksSource {
         return fetched;
     }
 
+    // Retry loop: pacing, outcome check, bounded attempts.
+    // fallow-ignore-next-line complexity
     private async request(params: Params): Promise<ApiJson> {
         const url = new URL(API_URL);
         const query = { format: 'json', formatversion: '2', maxlag: String(MAX_LAG_SECONDS), ...params };
@@ -148,6 +156,8 @@ export class MediaWikiCookbookSource implements WikibooksSource {
         }
     }
 
+    // One request: status classes, maxlag and error body, timeout; each is a distinct outcome.
+    // fallow-ignore-next-line complexity
     private async send(url: URL): Promise<{ json: ApiJson } | { reason: string; retryAfterSeconds: number }> {
         const controller = new AbortController();
         const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);

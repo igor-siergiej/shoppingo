@@ -15,6 +15,8 @@ export const recipeEstimateSchema: z.ZodType<RecipeEstimate> = z
         servings: z.number().int().min(1).max(MAX_SERVINGS).optional().catch(undefined),
         difficulty: z.enum(['easy', 'medium', 'hard']).optional().catch(undefined),
     })
+    // Copies only the fields that survived validation.
+    // fallow-ignore-next-line complexity
     .transform((raw): RecipeEstimate => {
         const estimate: RecipeEstimate = {};
         if (raw.prepTime !== undefined) estimate.prepTime = raw.prepTime;

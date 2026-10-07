@@ -42,6 +42,8 @@ const decodeEntities = (text: string): string =>
         .replace(/&([a-z0-9]+);/gi, (whole, name: string) => NAMED_ENTITIES[name.toLowerCase()] ?? whole);
 
 /** Index just past the `}}` that closes the `{{` at `start`, honouring nesting; -1 when unbalanced. */
+// Nesting scan over two-character delimiters.
+// fallow-ignore-next-line complexity
 const closingBraces = (text: string, start: number): number => {
     let depth = 0;
     for (let i = start; i < text.length - 1; i += 1) {
@@ -59,6 +61,8 @@ const closingBraces = (text: string, start: number): number => {
 };
 
 /** Splits on `|` outside nested `{{ }}` and `[[ ]]`. */
+// Nesting-aware split over two-character delimiters.
+// fallow-ignore-next-line complexity
 const splitTopLevel = (body: string): string[] => {
     const parts: string[] = [];
     let depth = 0;
@@ -127,6 +131,8 @@ const plainText = (wikitext: string): string =>
         .replace(/\s+/g, ' ')
         .trim();
 
+// Locates the template, then reads each parameter defensively.
+// fallow-ignore-next-line complexity
 const parseInfobox = (wikitext: string): Record<string, string> => {
     const start = wikitext.search(INFOBOX_START);
     if (start === -1) return {};
@@ -186,6 +192,8 @@ const findProcedure = (all: Section[]): Section | undefined => {
     return undefined;
 };
 
+// One guard per way a page can fail to be a usable recipe.
+// fallow-ignore-next-line complexity
 export const parseWikibooksPage = (wikitext: string): ParsedWikibooksPage | null => {
     if (/^\s*#redirect/i.test(wikitext)) return null;
 

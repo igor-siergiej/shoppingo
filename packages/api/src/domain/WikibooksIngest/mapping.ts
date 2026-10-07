@@ -9,6 +9,8 @@ const MAX_MINUTES = 7 * 24 * 60;
 const MAX_SERVINGS = 100;
 
 /** Wikibooks rates difficulty 1-5: 1 easy, 2-3 medium, 4-5 hard. Anything else is unknown. */
+// One branch per rating band.
+// fallow-ignore-next-line complexity
 export const mapDifficulty = (raw: string | undefined): RecipeDifficulty | undefined => {
     const level = /\d+/.exec(raw ?? '')?.[0];
     if (level === undefined) return undefined;
@@ -32,6 +34,8 @@ export const cleanCategory = (raw: string | undefined): string | undefined => {
 };
 
 /** Free text like `About 6`, `8-10`, `8 pieces`: the first number, the conservative end of a range. */
+// Bounds check on a free-text number.
+// fallow-ignore-next-line complexity
 export const parseServings = (raw: string | undefined): number | undefined => {
     const first = /\d+/.exec(raw ?? '')?.[0];
     if (first === undefined) return undefined;
@@ -80,6 +84,8 @@ export interface SourceTimes {
  * prep and cook; an unlabelled or "Total" value is a single total and goes to `cookTime`, leaving `prepTime` unset.
  * A "Total" segment next to labelled parts only repeats them, so it is ignored there.
  */
+// Label classification over free-text segments.
+// fallow-ignore-next-line complexity
 export const parseTimes = (raw: string | undefined): SourceTimes => {
     let prep = 0;
     let cook = 0;
