@@ -32,6 +32,23 @@ jobs:
     permissions:
       contents: read
       packages: read
+    # Real OpenSearch for the discovery index integration tests (analyzers, synonyms, ranking can't be faked).
+    # Same major version as production; security off because it is only reachable from this job.
+    services:
+      opensearch:
+        image: opensearchproject/opensearch:2.19.1
+        ports:
+          - 9200:9200
+        env:
+          discovery.type: single-node
+          DISABLE_SECURITY_PLUGIN: 'true'
+          DISABLE_INSTALL_DEMO_CONFIG: 'true'
+          OPENSEARCH_JAVA_OPTS: -Xms512m -Xmx512m
+        options: >-
+          --health-cmd "curl -sf http://localhost:9200/_cluster/health"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
     steps:
       - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
@@ -42,6 +59,8 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.GH_TOKEN }}
       - run: bun run tsc --noEmit
       - run: bun run --filter @shoppingo/api test --coverage
+        env:
+          OPENSEARCH_TEST_URL: http://localhost:9200
       - run: bun run --filter @shoppingo/web test
       - run: bun run test:scripts
       - name: Check coverage threshold (90%)
