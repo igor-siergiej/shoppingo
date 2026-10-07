@@ -18,17 +18,20 @@ import { RecipeService } from '../domain/RecipeService';
 import { RuleIngredientStructurer } from '../domain/RuleIngredientStructurer';
 import { TodoReminderService } from '../domain/TodoReminderService';
 import { TodoService } from '../domain/TodoService';
+import { WikibooksIngestService } from '../domain/WikibooksIngest';
 import { WsTicketStore } from '../domain/WsTicketStore';
 import { HttpAuthClient } from '../infrastructure/AuthClient';
 import { BucketStore } from '../infrastructure/BucketStore';
 import { FalImageGenerator } from '../infrastructure/FalImageGenerator';
 import { FalIngredientSubstituter } from '../infrastructure/FalIngredientSubstituter';
 import { FalLlmClient } from '../infrastructure/FalLlmClient';
+import { FalRecipeEstimator } from '../infrastructure/FalRecipeEstimator';
 import { FalRecipeExtractor } from '../infrastructure/FalRecipeExtractor';
 import { FalRecipeParser } from '../infrastructure/FalRecipeParser';
 import { FalRecipeTagger } from '../infrastructure/FalRecipeTagger';
 import { HttpImageFetcher } from '../infrastructure/HttpImageFetcher';
 import { HttpPageFetcher } from '../infrastructure/HttpPageFetcher';
+import { MediaWikiCookbookSource } from '../infrastructure/MediaWikiCookbookSource';
 import { MongoDiscoveryRecipeRepository } from '../infrastructure/MongoDiscoveryRecipeRepository';
 import { MongoFriendRepository } from '../infrastructure/MongoFriendRepository';
 import { MongoLabelRepository } from '../infrastructure/MongoLabelRepository';
@@ -479,6 +482,47 @@ export const registerDepdendencies = () => {
                 return new DiscoveryService(
                     dependencyContainer.resolve(DependencyToken.DiscoveryRecipeRepository),
                     dependencyContainer.resolve(DependencyToken.DiscoveryIndex),
+                    dependencyContainer.resolve(DependencyToken.Logger)
+                );
+            }
+        }
+    );
+
+    // Wikibooks Cookbook ingest: fills the library from the wiki and keeps it in step with it.
+    dependencyContainer.registerSingleton(
+        DependencyToken.WikibooksSource,
+        // @ts-expect-error - Dependency injection requires constructor return override
+        class {
+            constructor() {
+                return new MediaWikiCookbookSource(dependencyContainer.resolve(DependencyToken.Logger), {
+                    userAgent: config.get('wikibooksUserAgent') || undefined,
+                });
+            }
+        }
+    );
+
+    dependencyContainer.registerSingleton(
+        DependencyToken.RecipeEstimator,
+        // @ts-expect-error - Dependency injection requires constructor return override
+        class {
+            constructor() {
+                return new FalRecipeEstimator(dependencyContainer.resolve(DependencyToken.FalLlmClient));
+            }
+        }
+    );
+
+    dependencyContainer.registerSingleton(
+        DependencyToken.WikibooksIngestService,
+        // @ts-expect-error - Dependency injection requires constructor return override
+        class {
+            constructor() {
+                return new WikibooksIngestService(
+                    dependencyContainer.resolve(DependencyToken.WikibooksSource),
+                    dependencyContainer.resolve(DependencyToken.DiscoveryService),
+                    new RuleIngredientStructurer(),
+                    dependencyContainer.resolve(DependencyToken.RecipeTagger),
+                    dependencyContainer.resolve(DependencyToken.RecipeEstimator),
+                    dependencyContainer.resolve(DependencyToken.IdGenerator),
                     dependencyContainer.resolve(DependencyToken.Logger)
                 );
             }

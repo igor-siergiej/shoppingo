@@ -8,6 +8,8 @@
     "start:web": "bun run --filter @shoppingo/web start",
     "start:api": "dotenv -e .env -- bun run --filter @shoppingo/api start",
     "reindex:discovery": "dotenv -e .env -- bun run --filter @shoppingo/api reindex",
+    "discover:ingest": "dotenv -e .env -- bun run --filter @shoppingo/api ingest",
+    "discover:validate": "dotenv -e .env -- bun run --filter @shoppingo/api validate-library",
     "start": "bun run start:web & bun run start:api",
     "lint": "biome check .",
     "lint:fix": "biome check --fix --unsafe .",

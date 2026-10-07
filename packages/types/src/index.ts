@@ -144,6 +144,8 @@ export interface DiscoveryRecipe {
     publishedBy?: string;
     /** Fields filled in by the extractor rather than read from the source. */
     estimated?: DiscoveryEstimatedField[];
+    /** Revision of the source page this copy was built from; lets a refresh skip unchanged pages. Ingested recipes only. */
+    sourceRevision?: number;
     createdAt: Date;
     updatedAt: Date;
 }

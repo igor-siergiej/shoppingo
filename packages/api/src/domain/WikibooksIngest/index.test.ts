@@ -1,0 +1,263 @@
+import { describe, expect, it, vi } from 'bun:test';
+import type { DiscoveryRecipe } from '@shoppingo/types';
+
+import { RuleIngredientStructurer } from '../RuleIngredientStructurer';
+import { type DiscoveryWriter, WikibooksIngestService } from './index';
+import type { RecipeEstimate, WikibooksPage, WikibooksPageRef } from './types';
+
+const page = (pageId: number, revisionId: number, extra = ''): WikibooksPage => ({
+    pageId,
+    revisionId,
+    title: `Cookbook:Recipe ${pageId}`,
+    wikitext: `{{recipesummary|category=Soup recipes|servings=4|time=30 minutes|difficulty=2}}
+==Ingredients==
+* 2 cups water${extra}
+==Procedure==
+# Boil it.`,
+});
+
+const ref = ({ pageId, title, revisionId }: WikibooksPage): WikibooksPageRef => ({ pageId, title, revisionId });
+
+const setup = (initial: DiscoveryRecipe[] = []) => {
+    const store = new Map(initial.map((recipe) => [recipe.id, recipe]));
+    const discovery: DiscoveryWriter = {
+        save: vi.fn(async (recipe: DiscoveryRecipe) => {
+            store.set(recipe.id, recipe);
+        }),
+        remove: vi.fn(async (id: string) => {
+            store.delete(id);
+        }),
+        listRevisions: vi.fn(async () =>
+            [...store.values()].map(({ id, sourceRevision, createdAt }) => ({ id, sourceRevision, createdAt }))
+        ),
+    };
+    const wiki = new Map<number, WikibooksPage>();
+    const source = {
+        listRecipePages: vi.fn(async () => [...wiki.values()].map(ref)),
+        fetchPages: vi.fn(async (refs: WikibooksPageRef[]) =>
+            refs.flatMap((r) => (wiki.has(r.pageId) ? [wiki.get(r.pageId) as WikibooksPage] : []))
+        ),
+    };
+    const tagger = { generateTags: vi.fn(async (_title: string): Promise<string[]> => ['broth']) };
+    const estimator = {
+        estimate: vi.fn(
+            async (_recipe: unknown, _fields: string[]): Promise<RecipeEstimate> => ({
+                prepTime: 7,
+                cookTime: 40,
+                servings: 3,
+                difficulty: 'hard',
+            })
+        ),
+    };
+    let n = 0;
+    const service = new WikibooksIngestService(source, discovery, new RuleIngredientStructurer(), tagger, estimator, {
+        generate: () => `ing-${++n}`,
+    });
+    return { service, store, wiki, source, discovery, tagger, estimator };
+};
+
+describe('WikibooksIngestService', () => {
+    it('loads every recipe page once, keyed by page id and stamped with its revision', async () => {
+        const { service, store, wiki } = setup();
+        wiki.set(1, page(1, 100));
+        wiki.set(2, page(2, 200));
+
+        const summary = await service.run();
+
+        expect(summary).toMatchObject({ listed: 2, created: 2, updated: 0, failed: 0 });
+        const recipe = store.get('wikibooks-1');
+        expect(recipe).toMatchObject({
+            title: 'Recipe 1',
+            source: 'wikibooks',
+            licence: 'CC-BY-SA-4.0',
+            sourceUrl: 'https://en.wikibooks.org/wiki/Cookbook:Recipe_1',
+            sourceRevision: 100,
+            tags: ['soup', 'broth'],
+            servings: 4,
+            cookTime: 30,
+            difficulty: 'medium',
+        });
+        expect(recipe?.attribution).toContain('"Recipe 1" from Wikibooks Cookbook, CC BY-SA 4.0');
+    });
+
+    it('is idempotent: a second run skips unchanged revisions without touching LLM, store or fetch', async () => {
+        const { service, wiki, discovery, tagger, source } = setup();
+        wiki.set(1, page(1, 100));
+        await service.run();
+        (discovery.save as unknown as { mockClear(): void }).mockClear();
+        tagger.generateTags.mockClear();
+        source.fetchPages.mockClear();
+
+        const summary = await service.run();
+
+        expect(summary).toMatchObject({ unchanged: 1, created: 0, updated: 0 });
+        expect(discovery.save).not.toHaveBeenCalled();
+        expect(tagger.generateTags).not.toHaveBeenCalled();
+        expect(source.fetchPages).not.toHaveBeenCalled();
+    });
+
+    it('re-processes an edited page, keeping its original createdAt', async () => {
+        const { service, store, wiki } = setup();
+        wiki.set(1, page(1, 100));
+        await service.run();
+        const created = store.get('wikibooks-1')?.createdAt;
+        wiki.set(1, page(1, 101, '\n* 1 tsp salt'));
+
+        const summary = await service.run();
+
+        expect(summary).toMatchObject({ updated: 1, created: 0 });
+        expect(store.get('wikibooks-1')?.ingredients).toHaveLength(2);
+        expect(store.get('wikibooks-1')?.sourceRevision).toBe(101);
+        expect(store.get('wikibooks-1')?.createdAt).toEqual(created as Date);
+    });
+
+    it('removes a recipe whose page was deleted, and one that stopped being a recipe', async () => {
+        const { service, store, wiki } = setup();
+        for (let id = 1; id <= 10; id += 1) wiki.set(id, page(id, 100 + id));
+        await service.run();
+        wiki.delete(1);
+        wiki.set(2, { ...page(2, 999), wikitext: 'Now just an index page.' });
+
+        const summary = await service.run();
+
+        expect(summary).toMatchObject({ removed: 2, skipped: 1 });
+        expect(store.has('wikibooks-1')).toBe(false);
+        expect(store.has('wikibooks-2')).toBe(false);
+        expect(store.size).toBe(8);
+    });
+
+    it('refuses to delete an implausible share of the library when the listing looks broken', async () => {
+        const { service, store, wiki, discovery } = setup();
+        for (let id = 1; id <= 10; id += 1) wiki.set(id, page(id, 100));
+        await service.run();
+        for (let id = 1; id <= 8; id += 1) wiki.delete(id);
+
+        const summary = await service.run();
+
+        expect(summary).toMatchObject({ removed: 0, removalsBlocked: 8 });
+        expect(discovery.remove).not.toHaveBeenCalled();
+        expect(store.size).toBe(10);
+    });
+
+    it('survives a page that fails: logs it, keeps the old copy and retries it on the next run', async () => {
+        const { service, store, wiki, tagger } = setup();
+        wiki.set(1, page(1, 100));
+        wiki.set(2, page(2, 200));
+        await service.run();
+        wiki.set(1, page(1, 101));
+        wiki.set(2, page(2, 201));
+        tagger.generateTags.mockImplementation(async (title: string) => {
+            if (title === 'Recipe 1') throw new Error('rate limited');
+            return ['broth'];
+        });
+
+        const failing = await service.run();
+
+        expect(failing).toMatchObject({ updated: 1, failed: 1, removed: 0 });
+        expect(store.get('wikibooks-1')?.sourceRevision).toBe(100);
+        expect(store.get('wikibooks-2')?.sourceRevision).toBe(201);
+
+        tagger.generateTags.mockImplementation(async () => ['broth']);
+        const retry = await service.run();
+        expect(retry).toMatchObject({ updated: 1, failed: 0, unchanged: 1 });
+        expect(store.get('wikibooks-1')?.sourceRevision).toBe(101);
+    });
+
+    it('counts pages the source could not fetch as failed without aborting the run', async () => {
+        const { service, wiki, source, store } = setup();
+        wiki.set(1, page(1, 100));
+        wiki.set(2, page(2, 200));
+        source.fetchPages.mockImplementationOnce(async (refs: WikibooksPageRef[]) =>
+            refs.filter((r) => r.pageId === 2).map((r) => wiki.get(r.pageId) as WikibooksPage)
+        );
+
+        const summary = await service.run();
+
+        expect(summary).toMatchObject({ created: 1, failed: 1 });
+        expect(store.has('wikibooks-2')).toBe(true);
+    });
+
+    it('aborts before writing or removing anything when the listing itself fails', async () => {
+        const { service, source, discovery } = setup();
+        source.listRecipePages.mockRejectedValueOnce(new Error('Wikibooks API: HTTP 503'));
+
+        await expect(service.run()).rejects.toThrow('HTTP 503');
+        expect(discovery.save).not.toHaveBeenCalled();
+        expect(discovery.remove).not.toHaveBeenCalled();
+    });
+
+    it('limits a trial run to the first N new or changed pages', async () => {
+        const { service, store, wiki } = setup();
+        for (let id = 1; id <= 5; id += 1) wiki.set(id, page(id, 100));
+
+        const summary = await service.run({ limit: 2 });
+
+        expect(summary).toMatchObject({ created: 2 });
+        expect(store.size).toBe(2);
+    });
+
+    describe('estimated fields', () => {
+        it('does not call the estimator, or flag anything, when the source states every field', async () => {
+            const { service, store, wiki, estimator } = setup();
+            wiki.set(1, page(1, 100));
+            await service.run();
+
+            expect(estimator.estimate).not.toHaveBeenCalled();
+            expect(store.get('wikibooks-1')?.estimated).toBeUndefined();
+        });
+
+        it('estimates only the gaps and records exactly those fields in `estimated`', async () => {
+            const { service, store, wiki, estimator } = setup();
+            wiki.set(1, { ...page(1, 100), wikitext: page(1, 100).wikitext.replace('|servings=4', '') });
+            await service.run();
+
+            expect(estimator.estimate).toHaveBeenCalledTimes(1);
+            expect(estimator.estimate.mock.calls[0]?.[1]).toEqual(['servings']);
+            expect(store.get('wikibooks-1')).toMatchObject({ servings: 3, cookTime: 30, estimated: ['servings'] });
+        });
+
+        it('estimates both times when the source gives none, and never overrides a stated value', async () => {
+            const { service, store, wiki } = setup();
+            wiki.set(1, { ...page(1, 100), wikitext: page(1, 100).wikitext.replace('|time=30 minutes', '') });
+            await service.run();
+
+            const recipe = store.get('wikibooks-1');
+            expect(recipe).toMatchObject({ prepTime: 7, cookTime: 40, servings: 4, difficulty: 'medium' });
+            expect(recipe?.estimated).toEqual(['prepTime', 'cookTime']);
+        });
+
+        it('does not invent a prep time next to a single stated total', async () => {
+            const { service, store, wiki, estimator } = setup();
+            wiki.set(1, page(1, 100));
+            await service.run();
+
+            expect(store.get('wikibooks-1')?.prepTime).toBeUndefined();
+            expect(estimator.estimate).not.toHaveBeenCalled();
+        });
+
+        it('drops an estimate for a field that was not asked for', async () => {
+            const { service, store, wiki, estimator } = setup();
+            wiki.set(1, { ...page(1, 100), wikitext: page(1, 100).wikitext.replace('|servings=4', '') });
+            estimator.estimate.mockResolvedValueOnce({ servings: 2, difficulty: 'hard', prepTime: 99 });
+            await service.run();
+
+            expect(store.get('wikibooks-1')).toMatchObject({
+                servings: 2,
+                difficulty: 'medium',
+                estimated: ['servings'],
+            });
+            expect(store.get('wikibooks-1')?.prepTime).toBeUndefined();
+        });
+    });
+
+    it('fails a page that ends up with no tags rather than storing an unfindable recipe', async () => {
+        const { service, store, wiki, tagger } = setup();
+        wiki.set(1, { ...page(1, 100), wikitext: page(1, 100).wikitext.replace('category=Soup recipes|', '') });
+        tagger.generateTags.mockResolvedValue([]);
+
+        const summary = await service.run();
+
+        expect(summary).toMatchObject({ failed: 1, created: 0 });
+        expect(store.size).toBe(0);
+    });
+});

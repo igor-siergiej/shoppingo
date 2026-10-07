@@ -4,6 +4,7 @@ import type {
     DiscoveryRecipeSummary,
     DiscoverySearchQuery,
     DiscoverySearchResult,
+    DiscoverySource,
 } from '@shoppingo/types';
 import type { DiscoveryRecipeRepository } from '../DiscoveryRecipeRepository';
 import type { DiscoveryIndex, NormalizedDiscoveryQuery } from './types';
@@ -89,6 +90,14 @@ export class DiscoveryService {
     async remove(id: string): Promise<void> {
         await this.repository.deleteById(id);
         await this.index.remove(id);
+    }
+
+    /** What a source refresh diffs against: id and source revision of every library recipe from that source. */
+    // fallow-ignore-next-line unused-class-member
+    async listRevisions(
+        source: DiscoverySource
+    ): Promise<Array<Pick<DiscoveryRecipe, 'id' | 'sourceRevision' | 'createdAt'>>> {
+        return this.repository.listRevisions(source);
     }
 
     /** Rebuilds the whole search index from Mongo. Safe to run while the API serves traffic. */

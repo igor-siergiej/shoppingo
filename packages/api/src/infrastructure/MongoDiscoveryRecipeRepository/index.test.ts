@@ -24,6 +24,7 @@ const setup = (docs: DiscoveryRecipe[] = []) => {
         replaceOne: vi.fn(),
         deleteOne: vi.fn(),
         find: vi.fn(() => ({
+            toArray: async () => docs,
             sort: () =>
                 (async function* () {
                     yield* docs;
@@ -71,5 +72,15 @@ describe('MongoDiscoveryRecipeRepository', () => {
         const sizes: number[] = [];
         for await (const batch of repo.batches(2)) sizes.push(batch.length);
         expect(sizes).toEqual([]);
+    });
+
+    it('lists revisions for one source only, without loading whole recipes', async () => {
+        const { repo, collection } = setup([{ ...recipe('wikibooks-1'), sourceRevision: 7 }]);
+        const revisions = await repo.listRevisions('wikibooks');
+        expect(collection.find).toHaveBeenCalledWith(
+            { source: 'wikibooks' },
+            { projection: { _id: 0, id: 1, sourceRevision: 1, createdAt: 1 } }
+        );
+        expect(revisions).toHaveLength(1);
     });
 });

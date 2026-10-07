@@ -8,7 +8,9 @@
     "test": "bun test",
     "test:coverage": "bun test --coverage",
     "test:run": "bun test",
-    "reindex": "bun scripts/reindex-discovery.ts"
+    "reindex": "bun scripts/reindex-discovery.ts",
+    "ingest": "bun scripts/ingest-wikibooks.ts",
+    "validate-library": "bun scripts/validate-discovery-library.ts"
   },
   "dependencies": {
     "@imapps/api-utils": "0.6.0",

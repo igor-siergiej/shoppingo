@@ -33,6 +33,7 @@ const setup = () => {
             calls.push('mongo:delete');
             stored.delete(id);
         }),
+        listRevisions: vi.fn(async () => []),
         batches: vi.fn(async function* () {
             yield [...stored.values()];
         }),
