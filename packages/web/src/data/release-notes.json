@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.86.0",
+    "date": "2026-10-07",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Ingest the Wikibooks Cookbook into the discovery library"
+      }
+    ]
+  },
+  {
     "version": "1.85.0",
     "date": "2026-10-07",
     "notes": [

@@ -1,3 +1,10 @@
+# [1.86.0](https://github.com/igor-siergiej/shoppingo/compare/v1.85.0...v1.86.0) (2026-10-07)
+
+
+### Features
+
+* **api:** ingest the Wikibooks Cookbook into the discovery library ([#192](https://github.com/igor-siergiej/shoppingo/issues/192)) ([8c8a684](https://github.com/igor-siergiej/shoppingo/commit/8c8a684ea42184af88e4edd5ccf2098eaf938cce))
+
 # [1.85.0](https://github.com/igor-siergiej/shoppingo/compare/v1.84.2...v1.85.0) (2026-10-07)
 
 
