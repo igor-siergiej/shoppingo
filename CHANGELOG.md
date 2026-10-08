@@ -1,3 +1,10 @@
+# [1.88.0](https://github.com/igor-siergiej/shoppingo/compare/v1.87.0...v1.88.0) (2026-10-08)
+
+
+### Features
+
+* let users publish their own recipes to the Discover library ([#194](https://github.com/igor-siergiej/shoppingo/issues/194)) ([820de12](https://github.com/igor-siergiej/shoppingo/commit/820de1272155766aa7e770f3a004eb50d2679b74))
+
 # [1.87.0](https://github.com/igor-siergiej/shoppingo/compare/v1.86.0...v1.87.0) (2026-10-08)
 
 

@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.88.0",
+    "date": "2026-10-08",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "You can now make your own recipes public so other people can find them on Discover, and take them down again whenever you like."
+      }
+    ]
+  },
+  {
     "version": "1.87.0",
     "date": "2026-10-08",
     "notes": [
