@@ -2,6 +2,7 @@ import { test as base, type Page } from '@playwright/test';
 import { MongoClient } from 'mongodb';
 import { MOCK_TOKEN, mockAuthRoutes } from '../mocks/auth';
 import { resolveMongoUri } from '../mongo-uri';
+import { DiscoverPage } from '../page-objects/DiscoverPage';
 import { ItemsPage } from '../page-objects/ItemsPage';
 import { ListsPage } from '../page-objects/ListsPage';
 import { LoginPage } from '../page-objects/LoginPage';
@@ -20,6 +21,7 @@ interface Fixtures {
     itemsPage: ItemsPage;
     recipesPage: RecipesPage;
     recipeDetailPage: RecipeDetailPage;
+    discoverPage: DiscoverPage;
 }
 
 export const test = base.extend<Fixtures>({
@@ -70,6 +72,10 @@ export const test = base.extend<Fixtures>({
 
     recipeDetailPage: async ({ authenticatedPage }, use) => {
         await use(new RecipeDetailPage(authenticatedPage));
+    },
+
+    discoverPage: async ({ authenticatedPage }, use) => {
+        await use(new DiscoverPage(authenticatedPage));
     },
 });
 

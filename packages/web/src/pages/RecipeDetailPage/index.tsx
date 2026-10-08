@@ -359,6 +359,9 @@ const RecipeDetailPage = () => {
                                         ) : (
                                             <p className="text-sm text-muted-foreground">No link added yet.</p>
                                         )}
+                                        {!isEditing && recipe.attribution && (
+                                            <p className="text-xs text-muted-foreground">{recipe.attribution}</p>
+                                        )}
                                     </div>
                                 )}
 

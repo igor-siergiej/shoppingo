@@ -59,14 +59,14 @@ const ingredientSummary = (recipe: Recipe): string => {
     const count = recipe.ingredients?.length ?? 0;
     return `${count} ${count === 1 ? 'ingredient' : 'ingredients'}`;
 };
-const MetaChip = ({ icon: Icon, children }: { icon: typeof ListChecks; children: ReactNode }) => (
+export const MetaChip = ({ icon: Icon, children }: { icon: typeof ListChecks; children: ReactNode }) => (
     <span className="inline-flex items-center gap-1">
         <Icon className="h-3.5 w-3.5" />
         {children}
     </span>
 );
 
-const optionalTimeChip = (
+export const optionalTimeChip = (
     minutes: number | undefined,
     icon: typeof ListChecks,
     suffix: string
@@ -75,7 +75,9 @@ const optionalTimeChip = (
     return { icon, text: `${minutes}m ${suffix}` };
 };
 
-const optionalServingsChip = (servings: number | undefined): { icon: typeof ListChecks; text: string } | null => {
+export const optionalServingsChip = (
+    servings: number | undefined
+): { icon: typeof ListChecks; text: string } | null => {
     if (servings === undefined) return null;
     return {
         icon: Utensils,

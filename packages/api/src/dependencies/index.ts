@@ -5,6 +5,7 @@ import { Client } from '@opensearch-project/opensearch';
 import { config } from '../config';
 import { AuthorizationService } from '../domain/AuthorizationService';
 import { DailyReminderScheduler } from '../domain/DailyReminderScheduler';
+import { DiscoveryCopyService } from '../domain/DiscoveryCopyService';
 import { DiscoveryService } from '../domain/DiscoveryService';
 import { FriendService } from '../domain/FriendService';
 import { ImageService } from '../domain/ImageService';
@@ -483,6 +484,19 @@ export const registerDepdendencies = () => {
                     dependencyContainer.resolve(DependencyToken.DiscoveryRecipeRepository),
                     dependencyContainer.resolve(DependencyToken.DiscoveryIndex),
                     dependencyContainer.resolve(DependencyToken.Logger)
+                );
+            }
+        }
+    );
+
+    dependencyContainer.registerSingleton(
+        DependencyToken.DiscoveryCopyService,
+        // @ts-expect-error - Dependency injection requires constructor return override
+        class {
+            constructor() {
+                return new DiscoveryCopyService(
+                    dependencyContainer.resolve(DependencyToken.DiscoveryService),
+                    dependencyContainer.resolve(DependencyToken.RecipeService)
                 );
             }
         }

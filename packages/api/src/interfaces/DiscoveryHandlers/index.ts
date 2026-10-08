@@ -3,19 +3,23 @@ import { APIError } from '@imapps/api-utils/hono';
 import type { DiscoverySearchQuery, DiscoverySource, RecipeDifficulty } from '@shoppingo/types';
 import type { Context } from 'hono';
 
+import type { DiscoveryCopyService } from '../../domain/DiscoveryCopyService';
 import type { DiscoveryService } from '../../domain/DiscoveryService';
-import type { HonoVars } from '../handlerUtils';
+import { type HonoVars, withAuth } from '../handlerUtils';
 
 const DIFFICULTIES: readonly RecipeDifficulty[] = ['easy', 'medium', 'hard'];
 const SOURCES: readonly DiscoverySource[] = ['wikibooks', 'user'];
 
 const badRequest = (message: string) => new APIError(message, 400);
 
-/** `?tags=a&tags=b` and `?tags=a,b` both work; blanks are dropped. */
-const listParam = (c: Context<HonoVars>, name: string): string[] | undefined => {
+/**
+ * `?tags=a&tags=b` and `?tags=a,b` both work; blanks are dropped. Free-text values such as ingredient names can
+ * themselves contain commas ("onion, chopped"), so those are repeated-parameter only.
+ */
+const listParam = (c: Context<HonoVars>, name: string, splitCommas = true): string[] | undefined => {
     const values = c.req
         .queries(name)
-        ?.flatMap((v) => v.split(','))
+        ?.flatMap((v) => (splitCommas ? v.split(',') : [v]))
         .map((v) => v.trim())
         .filter(Boolean);
     return values?.length ? values : undefined;
@@ -41,7 +45,7 @@ const enumParam = <T extends string>(c: Context<HonoVars>, name: string, allowed
 const parseSearchQuery = (c: Context<HonoVars>): DiscoverySearchQuery => ({
     q: c.req.query('q'),
     tags: listParam(c, 'tags'),
-    ingredients: listParam(c, 'ingredients'),
+    ingredients: listParam(c, 'ingredients', false),
     difficulty: enumParam(c, 'difficulty', DIFFICULTIES),
     source: enumParam(c, 'source', SOURCES),
     minTime: intParam(c, 'minTime', 0),
@@ -60,8 +64,12 @@ const failWith = (logger: Logger, message: string, error: unknown): never => {
     throw new APIError(status === 500 ? 'Internal Server Error' : (e.message ?? 'Internal Server Error'), status);
 };
 
-// Discovery reads only the shared library. Nothing here touches personal recipes or their `users`.
-export const createDiscoveryHandlers = (service: DiscoveryService, logger: Logger) => ({
+// Search and lookups read only the shared library and never expose personal recipes or their `users`.
+export const createDiscoveryHandlers = (
+    service: DiscoveryService,
+    copyService: DiscoveryCopyService,
+    logger: Logger
+) => ({
     searchRecipes: async (c: Context<HonoVars>): Promise<Response> => {
         const query = parseSearchQuery(c);
         try {
@@ -87,4 +95,13 @@ export const createDiscoveryHandlers = (service: DiscoveryService, logger: Logge
             return failWith(logger, 'API: Discovery similar-recipes lookup failed', error);
         }
     },
+
+    // The one write: it creates a recipe in the CALLER's own collection and only reads the library.
+    copyRecipe: withAuth(async (c, user) => {
+        try {
+            return c.json(await copyService.copyToPersonal(c.req.param('id') ?? '', user), 201);
+        } catch (error) {
+            return failWith(logger, 'API: Discovery recipe copy failed', error);
+        }
+    }),
 });

@@ -21,11 +21,13 @@ export const mapDifficulty = (raw: string | undefined): RecipeDifficulty | undef
     return undefined;
 };
 
-/** `Dessert_recipes` / `Nigerian recipes` -> `dessert` / `nigerian`. */
+/** `Dessert_recipes` / `Nigerian recipes` / `Recipes for dessert` -> `dessert` / `nigerian` / `dessert`. */
 export const cleanCategory = (raw: string | undefined): string | undefined => {
     const cleaned = (raw ?? '')
         .replace(/^.*Category:/i, '')
+        .replace(/[\u200e\u200f]/g, '')
         .replace(/_/g, ' ')
+        .replace(/^recipes\s+(?:for|using|with)\s+/i, '')
         .replace(/\s+recipes?$/i, '')
         .replace(/\s+/g, ' ')
         .trim()

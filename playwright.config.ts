@@ -80,6 +80,8 @@ export default defineConfig({
                 BUCKET_NAME: 'shoppingo',
                 BUCKET_ACCESS_KEY: 'minioadmin',
                 BUCKET_SECRET_KEY: 'minioadmin',
+                // Only the dedicated e2e search engine, never a developer's OPENSEARCH_URL from .env. Empty = discovery off.
+                OPENSEARCH_URL: process.env.E2E_OPENSEARCH_URL ?? '',
             },
         },
     ],

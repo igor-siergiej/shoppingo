@@ -35,6 +35,9 @@ describe('cleanCategory', () => {
         expect(cleanCategory('Dessert_recipes')).toBe('dessert');
         expect(cleanCategory('Nigerian recipes')).toBe('nigerian');
         expect(cleanCategory('/wiki/Category:Salad_dressing_recipes')).toBe('salad dressing');
+        expect(cleanCategory('Recipes for dessert')).toBe('dessert');
+        expect(cleanCategory('Recipes using peanut butter')).toBe('peanut butter');
+        expect(cleanCategory('Recipes for dessert\u200e')).toBe('dessert');
         expect(cleanCategory(undefined)).toBeUndefined();
     });
 });

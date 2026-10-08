@@ -3,20 +3,32 @@ import { errorHandler } from '@imapps/api-utils/hono';
 import type { DiscoveryRecipe } from '@shoppingo/types';
 import { Hono } from 'hono';
 
+import type { DiscoveryCopyService } from '../../domain/DiscoveryCopyService';
 import { DiscoveryService } from '../../domain/DiscoveryService';
 import type { DiscoveryIndex } from '../../domain/DiscoveryService/types';
 import { MongoDiscoveryRecipeRepository } from '../../infrastructure/MongoDiscoveryRecipeRepository';
+import type { HonoVars } from '../handlerUtils';
 import { createDiscoveryHandlers } from './index';
 
 const logger = { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() };
 
-const appFor = (service: DiscoveryService) => {
-    const handlers = createDiscoveryHandlers(service, logger as never);
-    const app = new Hono();
+const appFor = (service: DiscoveryService, copyService: DiscoveryCopyService = {} as never) => {
+    const handlers = createDiscoveryHandlers(service, copyService, logger as never);
+    const app = new Hono<HonoVars>();
     app.onError(errorHandler);
     app.get('/api/discover/recipes', handlers.searchRecipes as never);
     app.get('/api/discover/recipes/:id/similar', handlers.getSimilarRecipes as never);
     app.get('/api/discover/recipes/:id', handlers.getRecipe as never);
+    // Auth middleware stand-in: `X-Test-User` names the authenticated user, absent means unauthenticated.
+    app.post(
+        '/api/discover/recipes/:id/copy',
+        async (c, next) => {
+            const id = c.req.header('x-test-user');
+            if (id) c.set('user', { id, username: id });
+            await next();
+        },
+        handlers.copyRecipe as never
+    );
     return app;
 };
 
@@ -87,6 +99,15 @@ describe('GET /api/discover/recipes', () => {
             page: 2,
             pageSize: 5,
         });
+    });
+
+    it('keeps a comma inside an ingredient name instead of splitting it into two filters', async () => {
+        const index = fakeIndex();
+        const app = appFor(new DiscoveryService({} as never, index));
+
+        await app.request('/api/discover/recipes?ingredients=onion%2C%20chopped&ingredients=salt');
+
+        expect(index.search).toHaveBeenCalledWith(expect.objectContaining({ ingredients: ['onion, chopped', 'salt'] }));
     });
 
     it.each([
@@ -162,5 +183,46 @@ describe('library recipe endpoints', () => {
         expect(index.similar).not.toHaveBeenCalled();
         // The discovery path read the library collection and nothing else.
         expect(new Set(db.touched)).toEqual(new Set(['discoveryRecipes']));
+    });
+});
+
+describe('POST /api/discover/recipes/:id/copy', () => {
+    const copyService = (impl: (id: string, user: unknown) => Promise<unknown>) =>
+        ({ copyToPersonal: vi.fn(impl) }) as unknown as DiscoveryCopyService;
+
+    it('creates the copy for the authenticated user and answers 201 with the new recipe', async () => {
+        const copy = copyService(async (id, user) => ({ id: 'personal-1', title: `from ${id}`, owner: user }));
+        const app = appFor(new DiscoveryService({} as never, fakeIndex()), copy);
+
+        const res = await app.request('/api/discover/recipes/lib-1/copy', {
+            method: 'POST',
+            headers: { 'x-test-user': 'u-me' },
+        });
+
+        expect(res.status).toBe(201);
+        expect(await res.json()).toMatchObject({ id: 'personal-1', owner: { id: 'u-me' } });
+        expect(copy.copyToPersonal).toHaveBeenCalledWith('lib-1', { id: 'u-me', username: 'u-me' });
+    });
+
+    it('rejects an unauthenticated caller without copying anything', async () => {
+        const copy = copyService(async () => ({}));
+        const app = appFor(new DiscoveryService({} as never, fakeIndex()), copy);
+
+        const res = await app.request('/api/discover/recipes/lib-1/copy', { method: 'POST' });
+
+        expect(res.status).toBe(401);
+        expect(copy.copyToPersonal).not.toHaveBeenCalled();
+    });
+
+    it('surfaces a duplicate as 409 with its message', async () => {
+        const copy = copyService(async () => {
+            throw Object.assign(new Error('This recipe is already in your recipes'), { status: 409 });
+        });
+        const res = await appFor(new DiscoveryService({} as never, fakeIndex()), copy).request(
+            '/api/discover/recipes/lib-1/copy',
+            { method: 'POST', headers: { 'x-test-user': 'u-me' } }
+        );
+        expect(res.status).toBe(409);
+        expect(await res.json()).toEqual({ error: 'This recipe is already in your recipes' });
     });
 });

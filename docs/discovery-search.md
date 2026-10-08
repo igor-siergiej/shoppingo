@@ -60,7 +60,7 @@ Instructions and ingredient quantities are **not** indexed; they live only in Mo
 | --- | --- |
 | `q` | Free text. Empty browses the library newest-first |
 | `tags` | Must carry **all** listed tags (repeat the param or comma-separate) |
-| `ingredients` | Must contain **all** listed ingredients, each as a phrase, stemmed and synonym-aware |
+| `ingredients` | Must contain **all** listed ingredients, each as a phrase, stemmed and synonym-aware. Repeat the param; commas are NOT separators, because names contain them ("onion, chopped") |
 | `difficulty`, `source` | Any-of (`easy,medium,hard`; `wikibooks,user`) |
 | `minTime`, `maxTime` | Inclusive bounds on total minutes. Recipes with no time never match a time bound |
 | `page`, `pageSize` | 1-based; page size capped at 50; results past 10,000 are refused with `400` |

@@ -49,6 +49,8 @@ const ShareTargetPage = lazyLoadPage(() => import('./pages/ShareTargetPage'), 's
 const CalendarPage = lazyLoadPage(() => import('./pages/CalendarPage'), 'calendar page');
 const FriendsPage = lazyLoadPage(() => import('./pages/FriendsPage'), 'friends page');
 const SettingsPage = lazyLoadPage(() => import('./pages/SettingsPage'), 'settings page');
+const DiscoverPage = lazyLoadPage(() => import('./pages/DiscoverPage'), 'discover page');
+const DiscoverRecipePage = lazyLoadPage(() => import('./pages/DiscoverRecipePage'), 'discover recipe page');
 const UseUpIngredientPage = lazyLoadPage(() => import('./pages/UseUpIngredientPage'), 'use up ingredient page');
 
 const queryClient = new QueryClient({
@@ -131,6 +133,22 @@ const router = createBrowserRouter([
                 element: (
                     <Suspense fallback={<LoadingPage />}>
                         <UseUpIngredientPage />
+                    </Suspense>
+                ),
+            },
+            {
+                path: 'discover',
+                element: (
+                    <Suspense fallback={<LoadingPage />}>
+                        <DiscoverPage />
+                    </Suspense>
+                ),
+            },
+            {
+                path: 'discover/:recipeId',
+                element: (
+                    <Suspense fallback={<LoadingPage />}>
+                        <DiscoverRecipePage />
                     </Suspense>
                 ),
             },

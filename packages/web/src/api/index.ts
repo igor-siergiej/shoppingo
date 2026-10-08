@@ -1,5 +1,18 @@
 import { getStorageItem } from '@imapps/web-utils';
-import type { Item, Label, ListResponse, ListType, Recipe, RecipeImportResult, Todo, User } from '@shoppingo/types';
+import type {
+    DiscoveryRecipe,
+    DiscoveryRecipeSummary,
+    DiscoverySearchQuery,
+    DiscoverySearchResult,
+    Item,
+    Label,
+    ListResponse,
+    ListType,
+    Recipe,
+    RecipeImportResult,
+    Todo,
+    User,
+} from '@shoppingo/types';
 
 import { getAuthConfig } from '../config/auth';
 import {
@@ -601,5 +614,54 @@ export const unfriend = async (friendId: string): Promise<void> => {
         pathname: `/api/friends/${encodeURIComponent(friendId)}`,
         method: MethodType.DELETE,
         operationString: 'unfriend',
+    });
+};
+
+// Repeated parameters (`tags=a&tags=b`), not one comma-joined value: ingredient names contain commas.
+// Skips empty values and repeats array values.
+// fallow-ignore-next-line complexity
+const discoveryQueryString = (query: DiscoverySearchQuery): string => {
+    const params = new URLSearchParams();
+    for (const [key, value] of Object.entries(query)) {
+        if (value === undefined || value === '') continue;
+        for (const entry of Array.isArray(value) ? value : [value]) params.append(key, String(entry));
+    }
+    return params.toString();
+};
+
+export const searchDiscoveryRecipes = async (query: DiscoverySearchQuery): Promise<DiscoverySearchResult> => {
+    const queryString = discoveryQueryString(query);
+    return await makeRequest({
+        pathname: `/api/discover/recipes${queryString ? `?${queryString}` : ''}`,
+        method: MethodType.GET,
+        operationString: 'search recipe library',
+    });
+};
+
+export const getDiscoveryRecipeQuery = (recipeId: string) => ({
+    queryKey: ['discover-recipe', recipeId],
+    queryFn: async (): Promise<DiscoveryRecipe> =>
+        await makeRequest({
+            pathname: `/api/discover/recipes/${encodeURIComponent(recipeId)}`,
+            method: MethodType.GET,
+            operationString: 'get library recipe',
+        }),
+});
+
+export const getSimilarDiscoveryRecipesQuery = (recipeId: string) => ({
+    queryKey: ['discover-similar', recipeId],
+    queryFn: async (): Promise<DiscoveryRecipeSummary[]> =>
+        await makeRequest({
+            pathname: `/api/discover/recipes/${encodeURIComponent(recipeId)}/similar`,
+            method: MethodType.GET,
+            operationString: 'get similar library recipes',
+        }),
+});
+
+export const copyDiscoveryRecipe = async (recipeId: string): Promise<Recipe> => {
+    return await makeRequest({
+        pathname: `/api/discover/recipes/${encodeURIComponent(recipeId)}/copy`,
+        method: MethodType.POST,
+        operationString: 'add library recipe to my recipes',
     });
 };

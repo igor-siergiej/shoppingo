@@ -18,6 +18,7 @@ interface LayoutProps {
 const NORMAL_SCROLL_ROUTES: Record<string, true> = {
     '/recipes': true,
     '/recipes/use-up': true,
+    '/discover': true,
     '/settings': true,
 };
 
@@ -27,8 +28,11 @@ const NORMAL_SCROLL_ROUTES: Record<string, true> = {
 // routes that also start with "/recipes/" and are handled elsewhere.
 const RECIPE_DETAIL_ROUTE = /^\/recipes\/(?!new$|use-up$)[^/]+$/;
 
+// A library recipe preview (`/discover/:recipeId`) scrolls its ingredients and steps the same way.
+const DISCOVER_PREVIEW_ROUTE = /^\/discover\/[^/]+$/;
+
 const isNormalScrollRoute = (pathname: string): boolean =>
-    !!NORMAL_SCROLL_ROUTES[pathname] || RECIPE_DETAIL_ROUTE.test(pathname);
+    !!NORMAL_SCROLL_ROUTES[pathname] || RECIPE_DETAIL_ROUTE.test(pathname) || DISCOVER_PREVIEW_ROUTE.test(pathname);
 
 // Routes with their own full-page header/footer (no bottom ToolBar) — they don't need
 // the bottom-24 space Layout normally reserves for it, or Layout's own padding.
