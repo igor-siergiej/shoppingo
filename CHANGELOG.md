@@ -1,3 +1,10 @@
+# [1.87.0](https://github.com/igor-siergiej/shoppingo/compare/v1.86.0...v1.87.0) (2026-10-08)
+
+
+### Features
+
+* **web:** Discover page to browse, search, preview and add library recipes ([#193](https://github.com/igor-siergiej/shoppingo/issues/193)) ([32630b5](https://github.com/igor-siergiej/shoppingo/commit/32630b5f64ea4addb0b0fd43ffa95aa434b5f138))
+
 # [1.86.0](https://github.com/igor-siergiej/shoppingo/compare/v1.85.0...v1.86.0) (2026-10-07)
 
 

@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.87.0",
+    "date": "2026-10-08",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "New Discover page: search thousands of recipes, narrow them by difficulty, time, tags and ingredients, preview one and add it to your own recipes in one tap."
+      }
+    ]
+  },
+  {
     "version": "1.86.0",
     "date": "2026-10-07",
     "notes": [
