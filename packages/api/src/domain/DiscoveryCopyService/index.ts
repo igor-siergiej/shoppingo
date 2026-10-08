@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import type { Logger } from '@imapps/api-utils';
 import type { Recipe, User } from '@shoppingo/types';
 
@@ -22,6 +23,8 @@ export class DiscoveryCopyService {
         private readonly logger?: Logger
     ) {}
 
+    // Duplicate check, cover copy with its credit, then the create.
+    // fallow-ignore-next-line complexity
     async copyToPersonal(libraryId: string, owner: User): Promise<Recipe> {
         const library = await this.discovery.getRecipe(libraryId);
 
@@ -30,6 +33,13 @@ export class DiscoveryCopyService {
         if (mine.some((recipe) => recipe.link === library.sourceUrl)) {
             throw Object.assign(new Error('This recipe is already in your recipes'), { status: 409 });
         }
+
+        // The cover is copied first so its credit can travel with it, but only when there really is a cover to credit.
+        const id = library.coverImageKey ? randomUUID() : undefined;
+        const coverKey = library.coverImageKey
+            ? await this.copyCover(library.coverImageKey, owner, id as string)
+            : undefined;
+        const credit = coverKey && library.coverImageAttribution ? ` ${library.coverImageAttribution}.` : '';
 
         const created = await this.recipes.createRecipe(
             library.title,
@@ -40,32 +50,27 @@ export class DiscoveryCopyService {
             library.instructions,
             // An explicit empty list: the default would share the copy with every friend.
             [],
-            undefined,
+            id,
             library.tags,
             library.prepTime,
             library.cookTime,
             library.servings,
             library.difficulty,
-            library.attribution
+            `${library.attribution}${credit}`
         );
-        return library.coverImageKey ? this.withCover(created, library.coverImageKey, owner) : created;
+        return coverKey ? this.recipes.setCoverImageKey(created.id, coverKey, owner.id) : created;
     }
 
     // A cover that cannot be copied leaves the copy without one (the app generates one); it never fails the add.
-    private async withCover(recipe: Recipe, libraryKey: string, owner: User): Promise<Recipe> {
+    private async copyCover(libraryKey: string, owner: User, recipeId: string): Promise<string | undefined> {
         try {
-            const key = await copyImage(
-                this.images,
-                libraryKey,
-                `recipe-upload/${owner.id}/${recipe.id}/${Date.now()}`
-            );
-            return await this.recipes.setCoverImageKey(recipe.id, key, owner.id);
+            return await copyImage(this.images, libraryKey, `recipe-upload/${owner.id}/${recipeId}/${Date.now()}`);
         } catch (error) {
             this.logger?.warn('Library cover could not be copied to the new recipe', {
-                recipeId: recipe.id,
+                recipeId,
                 error: (error as Error).message,
             });
-            return recipe;
+            return undefined;
         }
     }
 }

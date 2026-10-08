@@ -153,3 +153,47 @@ describe('ingredient lines from real pages become structured ingredients', () =>
         ]);
     });
 });
+
+describe('cover picture', () => {
+    const page = (image: string) => `{{recipesummary|category=Soup recipes|image=${image}|difficulty=2}}
+==Ingredients==
+* 2 cups water
+==Procedure==
+# Boil it.`;
+
+    it.each([
+        ['a File link with a size', '[[File:Nice Cup of Tea.jpg|300px]]', 'Nice Cup of Tea.jpg'],
+        [
+            'an Image link',
+            '[[Image:1-2-3-4 cake slice with chocolate sour cream icing.JPG|thumb|A cake]]',
+            '1-2-3-4 cake slice with chocolate sour cream icing.JPG',
+        ],
+        ['an unclosed link, as found on live pages', '[[File:Abak soup 02.jpg', 'Abak soup 02.jpg'],
+        ['a bare file name', 'Baked Ziti.jpg', 'Baked Ziti.jpg'],
+        ['a File: prefix without brackets', 'File:Affogato.JPG', 'Affogato.JPG'],
+        ['underscores', '[[File:Afghan_bread.png|200px]]', 'Afghan bread.png'],
+        ['non-ASCII names', '[[File:Àádùn2.jpg]]', 'Àádùn2.jpg'],
+        ['a trailing comment', '[[File:Agedashi.jpg]]<!-- cropped -->', 'Agedashi.jpg'],
+    ])('reads %s', (_label, raw, expected) => {
+        expect(parseWikibooksPage(page(raw))?.image).toBe(expected);
+    });
+
+    it.each([
+        ['an icon in a format browsers cannot all show', '[[File:PD-icon.svg]]'],
+        ['an animated format', '[[File:Whisk.gif]]'],
+        ['an empty value', ''],
+        ['a template placeholder', '{{{image|}}}'],
+    ])('ignores %s', (_label, raw) => {
+        expect(parseWikibooksPage(page(raw))?.image).toBeUndefined();
+    });
+
+    it('does not take a picture from the page body, where flags and icons live', () => {
+        const text = `{{recipesummary|category=Soup recipes}}
+[[File:Flag of Nigeria.jpg|thumb]]
+==Ingredients==
+* 2 cups water
+==Procedure==
+# Boil it.`;
+        expect(parseWikibooksPage(text)?.image).toBeUndefined();
+    });
+});

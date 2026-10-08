@@ -18,7 +18,7 @@ Wikibooks text is **CC BY-SA 4.0**. Every ingested recipe stores `licence: 'CC-B
 page) and `attribution` (`"<title>" from Wikibooks Cookbook, CC BY-SA 4.0 (<page url>)`). The Discover UI must show
 the attribution with every recipe, and a personal copy made from one keeps it. Rejected sources: RecipeNLG
 (non-commercial research licence, scraped) and `recipe_nlg_lite` (MIT label over scraped data). Wikibooks/Commons
-images have their own licences and are **not** copied, so ingested recipes have no cover image.
+images have their own licences, so a picture is only used when its own licence allows it (see Cover pictures below).
 
 ## How a run works
 
@@ -63,12 +63,41 @@ is the source value and `prepTime` is left unset (estimating it would double cou
 the missing fields and anything it returns for other fields is discarded. Estimated fields are listed in `estimated`;
 fields read from the source never are.
 
+## Cover pictures
+
+The infobox `image` of a recipe page (about 750 of 3,670 recipes) is its cover. The body of a page is not searched for
+pictures: that is where flags and icons live.
+
+1. One `prop=imageinfo` request per batch of 50 pictures returns each file's licence short name, author, restrictions,
+   type and a 640px rendition (`iiurlwidth`), for Wikibooks-hosted and Commons-hosted files alike.
+2. A picture is used **only if** its licence is CC BY, CC BY-SA (any version, ported or not), CC0 or public domain, it
+   carries no restrictions, and it is a jpeg, png or webp. Anything else, including a file with no licence stated, is
+   refused: a picture is shown only when we can say why we may show it. Non-commercial, no-derivatives, GFDL-only,
+   "Attribution" and "Copyrighted free use" files are refused. Measured on the live cookbook: 734 of 745 distinct
+   pictures qualify.
+3. The rendition is downloaded (same User-Agent, serial, paced, retried on 429/5xx, 5 MB cap) and stored in the object
+   store under `discovery-image/<libraryId>/<timestamp>.<ext>`: a key of its own, served only while a library recipe uses
+   it.
+4. The recipe stores `coverImageAttribution` (`Photo: <author>, <licence>, via Wikimedia Commons`) and
+   `coverImageSourceUrl` (the file's own page). The Discover preview shows the credit under the picture, linking to that
+   page, and a copy a user makes keeps the credit in its `attribution` text.
+
+Each recipe records `imageRevision`, the page revision whose picture has been looked at. A refused picture, a missing
+file and a page with no picture all count as looked at, so they are not fetched again. A download or storage failure does
+**not**: the recipe is saved without a cover and the next run retries just the picture.
+
+**Recipes loaded before covers existed** have no `imageRevision`, so the next `discover:ingest` gives them their cover
+without rebuilding them: no LLM calls, no other field changes, `updatedAt` untouched (browse order does not shuffle). The
+run summary reports `covers`, `coversRefused` and `coversFailed`; exit code 2 means a rerun is needed.
+
+Needs the object store (`BUCKET_*`) as well as Mongo, OpenSearch and `FAL_KEY`.
+
 ## What is not ingested
 
 - Pages whose ingredients are a wikitable (the Baker's-percentage layout, ~90 pages) or that have no
   Ingredients/Procedure sections (index pages, templates, policy pages): skipped, counted in `skipped`.
-- Cover images: none at ingest. Generating a fal.ai cover lazily on first view (rather than for all ~3.7k recipes
-  up front) is a card 3 decision; this card makes no image calls.
+- Recipes whose infobox has no picture (about 80%), or whose picture is refused (below), have no cover. Generating a
+  fal.ai cover lazily on first view is still undecided; the ingest makes no fal image calls.
 
 ## LLM cost
 

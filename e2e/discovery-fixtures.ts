@@ -53,6 +53,10 @@ export const DISCOVERY_FIXTURES: DiscoveryRecipe[] = [
         cookTime: 30,
         servings: 12,
         difficulty: 'medium',
+        // The only fixture with a cover. Not among the recipes the visual baselines show, so they stay as they are.
+        coverImageKey: 'discovery-image/e2e-library-2/1.jpg',
+        coverImageAttribution: 'Photo: Jane Doe, CC BY 2.0, via Wikimedia Commons',
+        coverImageSourceUrl: 'https://commons.wikimedia.org/wiki/File:Chocolate_brownies.jpg',
     }),
     library(3, 'Aubergine Parmigiana', {
         ingredients: [

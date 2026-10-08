@@ -13,7 +13,7 @@ export interface DiscoveryRecipeRepository {
     /** Id and source revision of every recipe from `source`: what a refresh diffs against, without loading the recipes. */
     listRevisions(
         source: DiscoverySource
-    ): Promise<Array<Pick<DiscoveryRecipe, 'id' | 'sourceRevision' | 'createdAt'>>>;
+    ): Promise<Array<Pick<DiscoveryRecipe, 'id' | 'sourceRevision' | 'imageRevision' | 'createdAt'>>>;
     /** Every library recipe, in stable order, in batches — feeds a full reindex without loading the library at once. */
     batches(size: number): AsyncGenerator<DiscoveryRecipe[]>;
 }

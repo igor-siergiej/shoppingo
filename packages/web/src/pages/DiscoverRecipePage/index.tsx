@@ -137,7 +137,32 @@ const RecipePreview = ({
 
     return (
         <div className="space-y-5">
-            <DiscoveryCover imageKey={recipe.coverImageKey} title={recipe.title} className="h-48 w-full rounded-2xl" />
+            {/* No wrapper at all without a cover: an empty one would still add a gap above the title. */}
+            {recipe.coverImageKey && (
+                <div className="space-y-1">
+                    <DiscoveryCover
+                        imageKey={recipe.coverImageKey}
+                        title={recipe.title}
+                        className="h-48 w-full rounded-2xl"
+                    />
+                    {recipe.coverImageAttribution && (
+                        <p className="text-[11px] text-muted-foreground">
+                            {recipe.coverImageSourceUrl ? (
+                                <a
+                                    href={recipe.coverImageSourceUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="underline"
+                                >
+                                    {recipe.coverImageAttribution}
+                                </a>
+                            ) : (
+                                recipe.coverImageAttribution
+                            )}
+                        </p>
+                    )}
+                </div>
+            )}
             <div className="space-y-2">
                 <h2 className="text-xl font-semibold leading-tight text-foreground">{recipe.title}</h2>
                 {recipe.publishedBy && <p className="text-xs text-muted-foreground">Shared by {recipe.publishedBy}</p>}

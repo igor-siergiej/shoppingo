@@ -107,7 +107,7 @@ export class DiscoveryService {
     // fallow-ignore-next-line unused-class-member
     async listRevisions(
         source: DiscoverySource
-    ): Promise<Array<Pick<DiscoveryRecipe, 'id' | 'sourceRevision' | 'createdAt'>>> {
+    ): Promise<Array<Pick<DiscoveryRecipe, 'id' | 'sourceRevision' | 'imageRevision' | 'createdAt'>>> {
         return this.repository.listRevisions(source);
     }
 
