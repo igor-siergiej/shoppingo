@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test';
+import { Readable } from 'node:stream';
 import type { DiscoveryRecipe, Recipe, User } from '@shoppingo/types';
 
 import { RecipeService } from '../RecipeService';
@@ -17,7 +18,7 @@ const library: DiscoveryRecipe = {
     cookTime: 20,
     servings: 12,
     difficulty: 'easy',
-    coverImageKey: 'library-owned-cover',
+    coverImageKey: 'library-owned-cover.png',
     source: 'wikibooks',
     sourceUrl: 'https://en.wikibooks.org/wiki/Cookbook:Fairy_Cakes',
     licence: 'CC-BY-SA-4.0',
@@ -34,6 +35,10 @@ const setup = (existing: Recipe[] = []) => {
             return recipe;
         },
         getById: async (id: string) => store.get(id) ?? null,
+        update: async (id: string, recipe: Recipe) => {
+            store.set(id, recipe);
+            return recipe;
+        },
         findByUserId: async (userId: string) =>
             [...store.values()].filter((recipe) => recipe.users.some((user) => user.id === userId)),
     };
@@ -54,7 +59,26 @@ const setup = (existing: Recipe[] = []) => {
             return library;
         },
     };
-    return { copy: new DiscoveryCopyService(discovery, recipes), store };
+    // An in-memory object store holding the library recipe's cover.
+    const objects = new Map<string, { buffer: Buffer; contentType: string }>([
+        ['library-owned-cover.png', { buffer: Buffer.from('cover-bytes'), contentType: 'image/png' }],
+    ]);
+    const images = {
+        getHeadObject: async (name: string) => {
+            const object = objects.get(name);
+            if (!object) throw new Error('not found');
+            return { metaData: { 'content-type': object.contentType } };
+        },
+        getObjectStream: async (name: string) => {
+            const object = objects.get(name);
+            if (!object) throw new Error('not found');
+            return Readable.from([object.buffer]);
+        },
+        putObject: async (name: string, buffer: Buffer, options?: { contentType: string }) => {
+            objects.set(name, { buffer, contentType: options?.contentType ?? 'application/octet-stream' });
+        },
+    };
+    return { copy: new DiscoveryCopyService(discovery, recipes, images, undefined), store, objects };
 };
 
 describe('DiscoveryCopyService', () => {
@@ -84,11 +108,24 @@ describe('DiscoveryCopyService', () => {
         expect(created.users).toEqual([me]);
     });
 
-    it('never points the personal recipe at a library-owned cover image', async () => {
-        const { copy } = setup();
+    it("copies the library cover to the user's own key instead of pointing at the library's", async () => {
+        const { copy, objects } = setup();
+
         const created = await copy.copyToPersonal('wikibooks-1', me);
+
+        expect(created.coverImageKey).toMatch(/^recipe-upload\/u-me\/.+\.png$/);
+        expect(created.coverImageKey).not.toBe('library-owned-cover.png');
+        expect(objects.get(created.coverImageKey as string)?.buffer.toString()).toBe('cover-bytes');
+    });
+
+    it('still creates the recipe, without a cover, when the library cover cannot be read', async () => {
+        const { copy, objects, store } = setup();
+        objects.delete('library-owned-cover.png');
+
+        const created = await copy.copyToPersonal('wikibooks-1', me);
+
+        expect(store.has(created.id)).toBe(true);
         expect(created.coverImageKey).toBeUndefined();
-        expect(created.aiImageKey).toBeUndefined();
     });
 
     it('does not reuse the library ingredient ids', async () => {

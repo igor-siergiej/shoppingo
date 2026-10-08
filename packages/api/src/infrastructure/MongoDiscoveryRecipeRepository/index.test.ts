@@ -23,6 +23,7 @@ const setup = (docs: DiscoveryRecipe[] = []) => {
         findOne: vi.fn(async () => docs[0] ?? null),
         replaceOne: vi.fn(),
         deleteOne: vi.fn(),
+        countDocuments: vi.fn(async () => 1),
         find: vi.fn(() => ({
             toArray: async () => docs,
             sort: () =>
@@ -82,5 +83,25 @@ describe('MongoDiscoveryRecipeRepository', () => {
             { projection: { _id: 0, id: 1, sourceRevision: 1, createdAt: 1 } }
         );
         expect(revisions).toHaveLength(1);
+    });
+
+    it('finds same-titled recipes case-insensitively, so a duplicate check is not fooled by capitals', async () => {
+        const { repo, collection } = setup([recipe('a')]);
+        await repo.findByTitle('Grandma Soup');
+        expect(collection.find).toHaveBeenCalledWith(
+            { title: 'Grandma Soup' },
+            { projection: { _id: 0 }, collation: { locale: 'en', strength: 2 } }
+        );
+    });
+
+    it('asks whether a cover key is still in use with a single-document count', async () => {
+        const { repo, collection } = setup();
+        expect(await repo.hasCoverImageKey('discovery-image/user-1/1.png')).toBe(true);
+        expect(collection.countDocuments).toHaveBeenCalledWith(
+            { coverImageKey: 'discovery-image/user-1/1.png' },
+            { limit: 1 }
+        );
+        collection.countDocuments.mockResolvedValueOnce(0);
+        expect(await repo.hasCoverImageKey('gone')).toBe(false);
     });
 });

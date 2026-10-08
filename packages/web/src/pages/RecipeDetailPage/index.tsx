@@ -34,6 +34,7 @@ import { ErrorState } from './ErrorState';
 import { IngredientSelectSection } from './IngredientSelectSection';
 import { IngredientsSection } from './IngredientsSection';
 import { InstructionsSection } from './InstructionsSection';
+import { PublishSection } from './PublishSection';
 import { RecipeDetailsSection } from './RecipeDetailsSection';
 import { TagsSection } from './TagsSection';
 
@@ -401,6 +402,8 @@ const RecipeDetailPage = () => {
                                     isEditing={isEditing}
                                     onChange={setEditedInstructions}
                                 />
+
+                                {!isEditing && isOwner && <PublishSection recipe={recipe} />}
 
                                 {isEditing && isOwner && (
                                     <div className="flex gap-2">

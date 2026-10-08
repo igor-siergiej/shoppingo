@@ -13,7 +13,11 @@ import type {
 import type { AuthorizationService } from '../domain/AuthorizationService';
 import type { DailyReminderScheduler } from '../domain/DailyReminderScheduler';
 import type { DiscoveryCopyService } from '../domain/DiscoveryCopyService';
+import type { DiscoveryModerationService } from '../domain/DiscoveryModeration';
+import type { DiscoveryPublication, DiscoveryPublicationRepository } from '../domain/DiscoveryPublicationRepository';
+import type { DiscoveryPublishService } from '../domain/DiscoveryPublish';
 import type { DiscoveryRecipeRepository } from '../domain/DiscoveryRecipeRepository';
+import type { DiscoveryReport, DiscoveryReportRepository } from '../domain/DiscoveryReportRepository';
 import type { DiscoveryService } from '../domain/DiscoveryService';
 import type { DiscoveryIndex } from '../domain/DiscoveryService/types';
 import type { FriendRepository } from '../domain/FriendRepository';
@@ -56,6 +60,8 @@ export type Collections = {
     [CollectionNames.Friendship]: Friendship;
     [CollectionNames.PairingCode]: PairingCode;
     [CollectionNames.DiscoveryRecipe]: DiscoveryRecipe;
+    [CollectionNames.DiscoveryPublication]: DiscoveryPublication;
+    [CollectionNames.DiscoveryReport]: DiscoveryReport;
 };
 
 export enum DependencyToken {
@@ -100,6 +106,10 @@ export enum DependencyToken {
     DiscoveryIndex = 'DiscoveryIndex',
     DiscoveryService = 'DiscoveryService',
     DiscoveryCopyService = 'DiscoveryCopyService',
+    DiscoveryPublicationRepository = 'DiscoveryPublicationRepository',
+    DiscoveryReportRepository = 'DiscoveryReportRepository',
+    DiscoveryPublishService = 'DiscoveryPublishService',
+    DiscoveryModerationService = 'DiscoveryModerationService',
     WikibooksSource = 'WikibooksSource',
     RecipeEstimator = 'RecipeEstimator',
     WikibooksIngestService = 'WikibooksIngestService',
@@ -148,6 +158,10 @@ export type Dependencies = {
     [DependencyToken.DiscoveryIndex]: DiscoveryIndex;
     [DependencyToken.DiscoveryService]: DiscoveryService;
     [DependencyToken.DiscoveryCopyService]: DiscoveryCopyService;
+    [DependencyToken.DiscoveryPublicationRepository]: DiscoveryPublicationRepository;
+    [DependencyToken.DiscoveryReportRepository]: DiscoveryReportRepository;
+    [DependencyToken.DiscoveryPublishService]: DiscoveryPublishService;
+    [DependencyToken.DiscoveryModerationService]: DiscoveryModerationService;
     [DependencyToken.WikibooksSource]: WikibooksSource;
     [DependencyToken.RecipeEstimator]: RecipeEstimator;
     [DependencyToken.WikibooksIngestService]: WikibooksIngestService;
@@ -162,4 +176,6 @@ export enum CollectionNames {
     Friendship = 'friendships',
     PairingCode = 'pairingCodes',
     DiscoveryRecipe = 'discoveryRecipes',
+    DiscoveryPublication = 'discoveryPublications',
+    DiscoveryReport = 'discoveryReports',
 }

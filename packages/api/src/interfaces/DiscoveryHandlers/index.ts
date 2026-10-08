@@ -1,9 +1,16 @@
 import type { Logger } from '@imapps/api-utils';
 import { APIError } from '@imapps/api-utils/hono';
-import type { DiscoverySearchQuery, DiscoverySource, RecipeDifficulty } from '@shoppingo/types';
+import type {
+    DiscoveryPublishRequest,
+    DiscoverySearchQuery,
+    DiscoverySource,
+    RecipeDifficulty,
+} from '@shoppingo/types';
 import type { Context } from 'hono';
 
 import type { DiscoveryCopyService } from '../../domain/DiscoveryCopyService';
+import type { DiscoveryModerationService } from '../../domain/DiscoveryModeration';
+import type { DiscoveryPublishService } from '../../domain/DiscoveryPublish';
 import type { DiscoveryService } from '../../domain/DiscoveryService';
 import { type HonoVars, withAuth } from '../handlerUtils';
 
@@ -65,9 +72,15 @@ const failWith = (logger: Logger, message: string, error: unknown): never => {
 };
 
 // Search and lookups read only the shared library and never expose personal recipes or their `users`.
+export interface DiscoveryHandlerServices {
+    discovery: DiscoveryService;
+    copy: DiscoveryCopyService;
+    publish: DiscoveryPublishService;
+    moderation: DiscoveryModerationService;
+}
+
 export const createDiscoveryHandlers = (
-    service: DiscoveryService,
-    copyService: DiscoveryCopyService,
+    { discovery: service, copy: copyService, publish: publishService, moderation }: DiscoveryHandlerServices,
     logger: Logger
 ) => ({
     searchRecipes: async (c: Context<HonoVars>): Promise<Response> => {
@@ -102,6 +115,61 @@ export const createDiscoveryHandlers = (
             return c.json(await copyService.copyToPersonal(c.req.param('id') ?? '', user), 201);
         } catch (error) {
             return failWith(logger, 'API: Discovery recipe copy failed', error);
+        }
+    }),
+
+    // Publishing is owner-only (checked in the service) and writes a snapshot; the private recipe is never exposed.
+    publishRecipe: withAuth(async (c, user) => {
+        const body = await c.req.json<DiscoveryPublishRequest>().catch(() => ({}) as DiscoveryPublishRequest);
+        try {
+            return c.json(await publishService.publish(c.req.param('recipeId') ?? '', user, body), 201);
+        } catch (error) {
+            return failWith(logger, 'API: Recipe publish failed', error);
+        }
+    }),
+
+    unpublishRecipe: withAuth(async (c, user) => {
+        try {
+            await publishService.unpublish(c.req.param('id') ?? '', user);
+            return c.body(null, 204);
+        } catch (error) {
+            return failWith(logger, 'API: Recipe unpublish failed', error);
+        }
+    }),
+
+    listPublished: withAuth(async (c, user) => {
+        try {
+            return c.json(await publishService.listMine(user), 200);
+        } catch (error) {
+            return failWith(logger, 'API: Listing published recipes failed', error);
+        }
+    }),
+
+    reportRecipe: withAuth(async (c, user) => {
+        const body = await c.req.json<{ reason?: unknown }>().catch(() => ({}) as { reason?: unknown });
+        const reason = typeof body.reason === 'string' ? body.reason : undefined;
+        try {
+            await moderation.report(c.req.param('id') ?? '', user, reason);
+            return c.body(null, 204);
+        } catch (error) {
+            return failWith(logger, 'API: Recipe report failed', error);
+        }
+    }),
+
+    listReports: withAuth(async (c, user) => {
+        try {
+            return c.json(await moderation.listReports(user), 200);
+        } catch (error) {
+            return failWith(logger, 'API: Listing reports failed', error);
+        }
+    }),
+
+    delistRecipe: withAuth(async (c, user) => {
+        try {
+            await moderation.delist(c.req.param('id') ?? '', user);
+            return c.body(null, 204);
+        } catch (error) {
+            return failWith(logger, 'API: Recipe delist failed', error);
         }
     }),
 });

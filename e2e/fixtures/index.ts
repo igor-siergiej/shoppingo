@@ -34,6 +34,9 @@ export const test = base.extend<Fixtures>({
         await db.collection('todo').deleteMany({});
         await db.collection('label').deleteMany({});
         await db.collection('friendships').deleteMany({});
+        // Publications and reports belong to the tests that make them; the library itself is seeded once (see global-setup).
+        await db.collection('discoveryPublications').deleteMany({});
+        await db.collection('discoveryReports').deleteMany({});
         await client.close();
 
         await mockAuthRoutes(page);

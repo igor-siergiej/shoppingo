@@ -23,6 +23,8 @@
     "packages/api/src/domain/NotificationService/index.ts",
     "packages/api/src/domain/FriendService/index.ts",
     "packages/api/src/infrastructure/MongoDiscoveryRecipeRepository/index.ts",
+    "packages/api/src/infrastructure/MongoDiscoveryPublicationRepository/index.ts",
+    "packages/api/src/infrastructure/MongoDiscoveryReportRepository/index.ts",
     "packages/api/src/infrastructure/MongoFriendRepository/index.ts",
     "packages/api/src/migrations/**",
     "packages/web/src/sw.ts",

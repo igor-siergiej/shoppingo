@@ -91,7 +91,7 @@ export const createRoutes = (): Hono<Vars> => {
 
     const conditionalImageAuth = async (c: Context<Vars>, next: Next) => {
         const name = c.req.param('name');
-        if (name.startsWith('recipe-upload/')) {
+        if (name.startsWith('recipe-upload/') || name.startsWith('discovery-image/')) {
             return authenticate(c, next);
         }
         return next();
@@ -115,14 +115,25 @@ export const createRoutes = (): Hono<Vars> => {
     router.post('/api/recipes/:recipeId/image/revert', authenticate, revertRecipeImage);
 
     const discovery = createDiscoveryHandlers(
-        dependencyContainer.resolve(DependencyToken.DiscoveryService),
-        dependencyContainer.resolve(DependencyToken.DiscoveryCopyService),
+        {
+            discovery: dependencyContainer.resolve(DependencyToken.DiscoveryService),
+            copy: dependencyContainer.resolve(DependencyToken.DiscoveryCopyService),
+            publish: dependencyContainer.resolve(DependencyToken.DiscoveryPublishService),
+            moderation: dependencyContainer.resolve(DependencyToken.DiscoveryModerationService),
+        },
         dependencyContainer.resolve(DependencyToken.Logger)
     );
     router.get('/api/discover/recipes', authenticate, discovery.searchRecipes);
     router.get('/api/discover/recipes/:id/similar', authenticate, discovery.getSimilarRecipes);
     router.get('/api/discover/recipes/:id', authenticate, discovery.getRecipe);
     router.post('/api/discover/recipes/:id/copy', authenticate, discovery.copyRecipe);
+    router.post('/api/discover/recipes/:id/report', authenticate, discovery.reportRecipe);
+    // Admin only (DISCOVERY_ADMIN_USER_IDS): removes a user-published recipe from Mongo and the index.
+    router.delete('/api/discover/recipes/:id', authenticate, discovery.delistRecipe);
+    router.get('/api/discover/reports', authenticate, discovery.listReports);
+    router.get('/api/discover/published', authenticate, discovery.listPublished);
+    router.delete('/api/discover/published/:id', authenticate, discovery.unpublishRecipe);
+    router.post('/api/recipes/:recipeId/publish', authenticate, discovery.publishRecipe);
 
     router.get('/api/todos', authenticate, getTodos);
     router.put('/api/todos', authenticate, createTodo);
