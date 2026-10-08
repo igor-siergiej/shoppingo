@@ -1,6 +1,11 @@
 import type { Logger } from '@imapps/api-utils';
 
-import type { WikibooksPage, WikibooksPageRef, WikibooksSource } from '../../domain/WikibooksIngest/types';
+import type {
+    WikibooksImageInfo,
+    WikibooksPage,
+    WikibooksPageRef,
+    WikibooksSource,
+} from '../../domain/WikibooksIngest/types';
 
 const API_URL = 'https://en.wikibooks.org/w/api.php';
 /** Wikimedia asks API clients to identify themselves and a way to contact the operator. */
@@ -14,6 +19,11 @@ const LIST_BATCH_SIZE = 500;
 const MAX_ATTEMPTS = 4;
 const MAX_LAG_SECONDS = 5;
 const REQUEST_TIMEOUT_MS = 30_000;
+/** `prop=imageinfo` takes up to 50 titles per request. */
+const IMAGE_INFO_BATCH_SIZE = 50;
+/** Pictures are shown at card/preview size; a larger rendition would only cost bandwidth and storage. */
+const IMAGE_WIDTH_PX = 640;
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const DEFAULT_MIN_INTERVAL_MS = 500;
 const DEFAULT_RETRY_SECONDS = 5;
 const MAX_RETRY_SECONDS = 60;
@@ -28,14 +38,33 @@ interface RevisionJson {
 interface PageJson {
     pageid?: number;
     title?: string;
-    missing?: unknown;
+    missing?: boolean;
+    /** Present on a file that lives on Commons: a "missing" local page is then not a missing file. */
+    known?: boolean;
     revisions?: RevisionJson[];
+    imageinfo?: ImageInfoJson[];
+}
+
+interface ExtMetadata {
+    [key: string]: { value?: string } | undefined;
+}
+
+interface ImageInfoJson {
+    url?: string;
+    thumburl?: string;
+    mime?: string;
+    descriptionurl?: string;
+    extmetadata?: ExtMetadata;
 }
 
 interface ApiJson {
     error?: { code?: string; info?: string };
     continue?: Params;
-    query?: { pages?: Record<string, PageJson> | PageJson[] };
+    query?: {
+        pages?: Record<string, PageJson> | PageJson[];
+        normalized?: Array<{ from: string; to: string }>;
+        redirects?: Array<{ from: string; to: string }>;
+    };
 }
 
 export interface MediaWikiCookbookSourceOptions {
@@ -46,6 +75,25 @@ export interface MediaWikiCookbookSourceOptions {
 }
 
 const defaultSleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+const metadata = (meta: ExtMetadata | undefined, key: string): string | undefined => meta?.[key]?.value;
+
+// A Commons file has no local page, so the wiki marks the page `missing` but `known`; only unknown+missing is absent.
+// One optional field per piece of image metadata.
+// fallow-ignore-next-line complexity
+const toImageInfo = (page: PageJson): WikibooksImageInfo => {
+    const info = page.imageinfo?.[0];
+    if (!info || (page.missing && !page.known)) return { found: false };
+    return {
+        found: true,
+        mime: info.mime,
+        thumbUrl: info.thumburl ?? info.url,
+        descriptionUrl: info.descriptionurl,
+        licenceShortName: metadata(info.extmetadata, 'LicenseShortName'),
+        restrictions: metadata(info.extmetadata, 'Restrictions'),
+        artistHtml: metadata(info.extmetadata, 'Artist'),
+    };
+};
 
 const asPages = (json: ApiJson): PageJson[] => {
     const pages = json.query?.pages;
@@ -62,6 +110,7 @@ export class MediaWikiCookbookSource implements WikibooksSource {
     private readonly minIntervalMs: number;
     private readonly fetchImpl: typeof fetch;
     private readonly sleep: (ms: number) => Promise<void>;
+    private tail: Promise<void> = Promise.resolve();
 
     // Option defaults, one line each.
     // fallow-ignore-next-line complexity
@@ -139,9 +188,90 @@ export class MediaWikiCookbookSource implements WikibooksSource {
         return fetched;
     }
 
+    // Batch loop, then each requested name is matched to its page through MediaWiki's title normalisation/redirects.
+    // fallow-ignore-next-line complexity
+    async fetchImageInfo(filenames: string[]): Promise<Map<string, WikibooksImageInfo>> {
+        const result = new Map<string, WikibooksImageInfo>();
+        const unique = [...new Set(filenames)];
+        for (let i = 0; i < unique.length; i += IMAGE_INFO_BATCH_SIZE) {
+            const batch = unique.slice(i, i + IMAGE_INFO_BATCH_SIZE);
+            try {
+                const json = await this.request({
+                    action: 'query',
+                    prop: 'imageinfo',
+                    iiprop: 'url|mime|extmetadata',
+                    iiurlwidth: String(IMAGE_WIDTH_PX),
+                    redirects: '1',
+                    titles: batch.map((name) => `File:${name}`).join('|'),
+                });
+                const byTitle = new Map(asPages(json).map((page) => [page.title, page]));
+                // Title normalisation, then at most one redirect.
+                // fallow-ignore-next-line complexity
+                const hop = (title: string): string => {
+                    const normalised = json.query?.normalized?.find((n) => n.from === title)?.to ?? title;
+                    return json.query?.redirects?.find((r) => r.from === normalised)?.to ?? normalised;
+                };
+                for (const name of batch) {
+                    const page = byTitle.get(hop(`File:${name}`));
+                    if (page) result.set(name, toImageInfo(page));
+                }
+            } catch (error) {
+                // A lost batch is simply absent from the result: those pictures are looked up again next run.
+                this.logger?.warn('Wikibooks image info batch failed', {
+                    files: batch.length,
+                    error: (error as Error).message,
+                });
+            }
+        }
+        return result;
+    }
+
+    downloadImage(url: string): Promise<{ buffer: Buffer; contentType: string }> {
+        return this.serial(() => this.downloadNow(url));
+    }
+
+    // Same pacing and User-Agent as API requests, retry on 429/5xx, and a size cap so a bad file cannot fill memory.
+    // fallow-ignore-next-line complexity
+    private async downloadNow(url: string): Promise<{ buffer: Buffer; contentType: string }> {
+        for (let attempt = 1; ; attempt += 1) {
+            await this.sleep(this.minIntervalMs);
+            const response = await this.fetchImpl(url, {
+                headers: { 'User-Agent': this.userAgent, Accept: 'image/*' },
+                signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+            });
+            if (response.status === 429 || response.status >= 500) {
+                if (attempt >= MAX_ATTEMPTS) throw new Error(`Image download: HTTP ${response.status} (gave up)`);
+                const wait = Math.min(
+                    Number(response.headers.get('retry-after')) || DEFAULT_RETRY_SECONDS,
+                    MAX_RETRY_SECONDS
+                );
+                await this.sleep(wait * 1000);
+                continue;
+            }
+            if (!response.ok) throw new Error(`Image download: HTTP ${response.status}`);
+            const buffer = Buffer.from(await response.arrayBuffer());
+            if (buffer.length > MAX_IMAGE_BYTES) throw new Error(`Image download: ${buffer.length} bytes is too large`);
+            return { buffer, contentType: response.headers.get('content-type')?.split(';')[0]?.trim() ?? '' };
+        }
+    }
+
+    /** One wiki request at a time, in call order, whoever asks: the pacing above is only polite if nothing overlaps. */
+    private serial<T>(work: () => Promise<T>): Promise<T> {
+        const run = this.tail.then(work);
+        this.tail = run.then(
+            () => undefined,
+            () => undefined
+        );
+        return run;
+    }
+
+    private request(params: Params): Promise<ApiJson> {
+        return this.serial(() => this.requestNow(params));
+    }
+
     // Retry loop: pacing, outcome check, bounded attempts.
     // fallow-ignore-next-line complexity
-    private async request(params: Params): Promise<ApiJson> {
+    private async requestNow(params: Params): Promise<ApiJson> {
         const url = new URL(API_URL);
         const query = { format: 'json', formatversion: '2', maxlag: String(MAX_LAG_SECONDS), ...params };
         for (const [key, value] of Object.entries(query)) url.searchParams.set(key, value);

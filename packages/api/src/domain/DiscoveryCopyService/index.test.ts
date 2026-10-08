@@ -23,6 +23,7 @@ const library: DiscoveryRecipe = {
     sourceUrl: 'https://en.wikibooks.org/wiki/Cookbook:Fairy_Cakes',
     licence: 'CC-BY-SA-4.0',
     attribution: '"Fairy Cakes" from Wikibooks Cookbook, CC BY-SA 4.0',
+    coverImageAttribution: 'Photo: Jane Doe, CC BY 2.0, via Wikimedia Commons',
     createdAt: new Date(0),
     updatedAt: new Date(0),
 };
@@ -91,7 +92,7 @@ describe('DiscoveryCopyService', () => {
             title: 'Fairy Cakes',
             ownerId: 'u-me',
             link: library.sourceUrl,
-            attribution: library.attribution,
+            attribution: `${library.attribution} Photo: Jane Doe, CC BY 2.0, via Wikimedia Commons.`,
             instructions: library.instructions,
             tags: ['cake'],
             prepTime: 15,
@@ -116,6 +117,25 @@ describe('DiscoveryCopyService', () => {
         expect(created.coverImageKey).toMatch(/^recipe-upload\/u-me\/.+\.png$/);
         expect(created.coverImageKey).not.toBe('library-owned-cover.png');
         expect(objects.get(created.coverImageKey as string)?.buffer.toString()).toBe('cover-bytes');
+    });
+
+    it("carries the cover picture's credit into the copy's attribution, along with the recipe's own", async () => {
+        const { copy } = setup();
+
+        const created = await copy.copyToPersonal('wikibooks-1', me);
+
+        expect(created.attribution).toBe(
+            '"Fairy Cakes" from Wikibooks Cookbook, CC BY-SA 4.0 Photo: Jane Doe, CC BY 2.0, via Wikimedia Commons.'
+        );
+    });
+
+    it('does not credit a photo the copy ended up without', async () => {
+        const { copy, objects } = setup();
+        objects.delete('library-owned-cover.png');
+
+        const created = await copy.copyToPersonal('wikibooks-1', me);
+
+        expect(created.attribution).toBe('"Fairy Cakes" from Wikibooks Cookbook, CC BY-SA 4.0');
     });
 
     it('still creates the recipe, without a cover, when the library cover cannot be read', async () => {

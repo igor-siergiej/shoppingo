@@ -317,6 +317,38 @@ describe('DiscoverRecipePage', () => {
         });
     });
 
+    describe('cover picture credit', () => {
+        const withCover: DiscoveryRecipe = {
+            ...library,
+            coverImageKey: 'discovery-image/wikibooks-1/1.jpg',
+            coverImageAttribution: 'Photo: Jane Doe, CC BY 2.0, via Wikimedia Commons',
+            coverImageSourceUrl: 'https://commons.wikimedia.org/wiki/File:Fairy_Cakes.jpg',
+        };
+
+        it("credits the picture with its licence, linking to the picture's own page", async () => {
+            setup({ recipe: withCover });
+
+            const credit = await screen.findByRole('link', { name: /Photo: Jane Doe, CC BY 2\.0/ });
+            expect(credit).toHaveAttribute('href', 'https://commons.wikimedia.org/wiki/File:Fairy_Cakes.jpg');
+            expect(credit).toHaveAttribute('target', '_blank');
+            expect(credit).toHaveAttribute('rel', expect.stringContaining('noopener'));
+        });
+
+        it('shows no picture credit for a recipe without a cover', async () => {
+            setup();
+
+            await screen.findByRole('heading', { name: 'Fairy Cakes' });
+            expect(screen.queryByText(/^Photo:/)).not.toBeInTheDocument();
+        });
+
+        it('shows no credit when the credit is there but the picture is not', async () => {
+            setup({ recipe: { ...withCover, coverImageKey: undefined } });
+
+            await screen.findByRole('heading', { name: 'Fairy Cakes' });
+            expect(screen.queryByText(/Photo: Jane Doe/)).not.toBeInTheDocument();
+        });
+    });
+
     it('still links to the original for Wikibooks recipes', async () => {
         setup();
 

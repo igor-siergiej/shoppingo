@@ -22,6 +22,7 @@ import { RuleIngredientStructurer } from '../domain/RuleIngredientStructurer';
 import { TodoReminderService } from '../domain/TodoReminderService';
 import { TodoService } from '../domain/TodoService';
 import { WikibooksIngestService } from '../domain/WikibooksIngest';
+import { WikibooksCoverService } from '../domain/WikibooksIngest/cover';
 import { WsTicketStore } from '../domain/WsTicketStore';
 import { HttpAuthClient } from '../infrastructure/AuthClient';
 import { BucketStore } from '../infrastructure/BucketStore';
@@ -602,6 +603,11 @@ export const registerDepdendencies = () => {
                     dependencyContainer.resolve(DependencyToken.RecipeTagger),
                     dependencyContainer.resolve(DependencyToken.RecipeEstimator),
                     dependencyContainer.resolve(DependencyToken.IdGenerator),
+                    new WikibooksCoverService(
+                        dependencyContainer.resolve(DependencyToken.WikibooksSource),
+                        dependencyContainer.resolve(DependencyToken.ImageStore),
+                        dependencyContainer.resolve(DependencyToken.Logger)
+                    ),
                     dependencyContainer.resolve(DependencyToken.Logger)
                 );
             }

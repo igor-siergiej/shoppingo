@@ -80,7 +80,7 @@ describe('MongoDiscoveryRecipeRepository', () => {
         const revisions = await repo.listRevisions('wikibooks');
         expect(collection.find).toHaveBeenCalledWith(
             { source: 'wikibooks' },
-            { projection: { _id: 0, id: 1, sourceRevision: 1, createdAt: 1 } }
+            { projection: { _id: 0, id: 1, sourceRevision: 1, imageRevision: 1, createdAt: 1 } }
         );
         expect(revisions).toHaveLength(1);
     });

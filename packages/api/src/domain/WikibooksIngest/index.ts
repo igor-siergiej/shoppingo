@@ -3,6 +3,7 @@ import type { DiscoveryEstimatedField, DiscoveryRecipe, DiscoverySource } from '
 
 import type { IdGenerator } from '../IdGenerator';
 import type { IngredientStructurer } from '../IngredientStructurer/types';
+import type { CoverOutcome, WikibooksCoverService } from './cover';
 import {
     attributionFor,
     cleanCategory,
@@ -19,19 +20,21 @@ import type {
     RecipeEstimate,
     RecipeEstimator,
     RecipeTagger,
+    WikibooksImageInfo,
     WikibooksPage,
     WikibooksPageRef,
     WikibooksSource,
 } from './types';
-import { parseWikibooksPage } from './wikitext';
+import { type ParsedWikibooksPage, parseWikibooksPage } from './wikitext';
 
 /** The slice of `DiscoveryService` the ingest needs: the shared write path plus the refresh diff. */
 export interface DiscoveryWriter {
     save(recipe: DiscoveryRecipe): Promise<void>;
     remove(id: string): Promise<void>;
+    getRecipe(id: string): Promise<DiscoveryRecipe>;
     listRevisions(
         source: DiscoverySource
-    ): Promise<Array<Pick<DiscoveryRecipe, 'id' | 'sourceRevision' | 'createdAt'>>>;
+    ): Promise<Array<Pick<DiscoveryRecipe, 'id' | 'sourceRevision' | 'imageRevision' | 'createdAt'>>>;
 }
 
 export interface IngestOptions {
@@ -75,18 +78,26 @@ export class WikibooksIngestService {
         private readonly tagger: RecipeTagger,
         private readonly estimator: RecipeEstimator,
         private readonly idGenerator: IdGenerator,
+        private readonly covers: Pick<WikibooksCoverService, 'resolve'>,
         private readonly logger?: Logger
     ) {}
 
     // Invoked by the ingest script via the DI container; fallow can't trace that indirection.
-    // fallow-ignore-next-line unused-class-member
+    // fallow-ignore-next-line unused-class-member, complexity
     async run(options: IngestOptions = {}): Promise<IngestSummary> {
         // A listing that throws aborts here, before anything is written or removed.
         const refs = await this.source.listRecipePages();
         const stored = new Map((await this.discovery.listRevisions('wikibooks')).map((row) => [row.id, row]));
 
-        const changed = refs.filter((ref) => stored.get(recipeIdFor(ref.pageId))?.sourceRevision !== ref.revisionId);
+        const isChanged = (ref: WikibooksPageRef) =>
+            stored.get(recipeIdFor(ref.pageId))?.sourceRevision !== ref.revisionId;
+        const changed = refs.filter(isChanged);
         const todo = options.limit === undefined ? changed : changed.slice(0, options.limit);
+        // Unchanged pages whose cover picture has not been looked at yet (recipes ingested before covers existed).
+        const needCover = refs.filter(
+            (ref) => !isChanged(ref) && stored.get(recipeIdFor(ref.pageId))?.imageRevision !== ref.revisionId
+        );
+        const coverTodo = options.limit === undefined ? needCover : needCover.slice(0, options.limit);
 
         const summary: IngestSummary = {
             listed: refs.length,
@@ -97,6 +108,9 @@ export class WikibooksIngestService {
             skipped: 0,
             failed: 0,
             removalsBlocked: 0,
+            covers: 0,
+            coversRefused: 0,
+            coversFailed: 0,
         };
         // Ids that must survive pruning: every listed page not being (re)processed now. Pages that fail below are
         // added too, so a bad fetch never deletes the copy we already have.
@@ -106,10 +120,25 @@ export class WikibooksIngestService {
         for (let i = 0; i < todo.length; i += CHUNK_SIZE) {
             await this.processChunk(todo.slice(i, i + CHUNK_SIZE), stored, summary, keep);
         }
+        for (let i = 0; i < coverTodo.length; i += CHUNK_SIZE) {
+            await this.addCovers(coverTodo.slice(i, i + CHUNK_SIZE), summary);
+        }
 
         await this.prune(stored, keep, summary);
         this.logger?.info('Wikibooks ingest finished', { ...summary });
         return summary;
+    }
+
+    /** One wiki lookup for every picture in a batch of pages, keyed by file name. */
+    private async imageInfoFor(parsed: Array<ParsedWikibooksPage | null>) {
+        const names = parsed.flatMap((page) => (page?.image ? [page.image] : []));
+        return names.length > 0 ? this.source.fetchImageInfo(names) : new Map();
+    }
+
+    private tally(summary: IngestSummary, outcome: CoverOutcome): void {
+        if (outcome.fields.coverImageKey) summary.covers += 1;
+        else if (outcome.refused) summary.coversRefused += 1;
+        else if (!outcome.decided) summary.coversFailed += 1;
     }
 
     private async processChunk(
@@ -127,10 +156,16 @@ export class WikibooksIngestService {
             }
         }
 
+        const parsed = new Map(pages.map((page) => [page.pageId, parseWikibooksPage(page.wikitext)]));
+        const imageInfo = await this.imageInfoFor([...parsed.values()]);
+
+        // Per page: parse result, cover and save in one guarded step, and each outcome has its own tally.
+        // fallow-ignore-next-line complexity
         await runPool(pages, ENRICH_CONCURRENCY, async (page) => {
             const id = recipeIdFor(page.pageId);
             try {
-                const outcome = await this.ingestPage(page, stored.get(id)?.createdAt);
+                const parsedPage = parsed.get(page.pageId) ?? null;
+                const outcome = await this.ingestPage(page, parsedPage, imageInfo, stored.get(id)?.createdAt, summary);
                 if (outcome === 'skipped') {
                     summary.skipped += 1;
                 } else {
@@ -148,11 +183,68 @@ export class WikibooksIngestService {
         });
     }
 
-    private async ingestPage(page: WikibooksPage, createdAt: Date | undefined): Promise<PageOutcome> {
-        const recipe = await this.buildRecipe(page, createdAt);
-        if (!recipe) return 'skipped';
-        await this.discovery.save(recipe);
+    // Cover and recipe saved together; a missing parse and a missing cover are separate outcomes.
+    // fallow-ignore-next-line complexity
+    private async ingestPage(
+        page: WikibooksPage,
+        parsed: ParsedWikibooksPage | null,
+        imageInfo: Map<string, WikibooksImageInfo>,
+        createdAt: Date | undefined,
+        summary: IngestSummary
+    ): Promise<PageOutcome> {
+        if (!parsed) return 'skipped';
+        const recipe = await this.buildRecipe(page, parsed, createdAt);
+        const cover = await this.covers.resolve(
+            recipe.id,
+            parsed.image,
+            parsed.image ? imageInfo.get(parsed.image) : undefined
+        );
+        this.tally(summary, cover);
+        await this.discovery.save({
+            ...recipe,
+            ...cover.fields,
+            ...(cover.decided && { imageRevision: page.revisionId }),
+        });
         return createdAt ? 'updated' : 'created';
+    }
+
+    /**
+     * Gives a cover to recipes that were ingested before covers existed, without rebuilding them: no LLM calls, no other
+     * field changes. A page with no picture (or an unusable one) is stamped as looked-at so it is not fetched again.
+     */
+    // Fetch, parse, look up, then one guarded save per recipe.
+    // fallow-ignore-next-line complexity
+    private async addCovers(chunk: WikibooksPageRef[], summary: IngestSummary): Promise<void> {
+        const pages = await this.source.fetchPages(chunk);
+        const parsed = new Map(pages.map((page) => [page.pageId, parseWikibooksPage(page.wikitext)]));
+        const imageInfo = await this.imageInfoFor([...parsed.values()]);
+
+        for (const page of pages) {
+            const parsedPage = parsed.get(page.pageId);
+            if (!parsedPage) continue;
+            const id = recipeIdFor(page.pageId);
+            try {
+                const existing = await this.discovery.getRecipe(id);
+                const cover = await this.covers.resolve(
+                    id,
+                    parsedPage.image,
+                    parsedPage.image ? imageInfo.get(parsedPage.image) : undefined
+                );
+                this.tally(summary, cover);
+                // Only the cover fields and the stamp change; `updatedAt` stays so browsing order is not shuffled.
+                await this.discovery.save({
+                    ...existing,
+                    ...cover.fields,
+                    ...(cover.decided && { imageRevision: page.revisionId }),
+                });
+            } catch (error) {
+                summary.coversFailed += 1;
+                this.logger?.warn('Wikibooks cover pass failed for a recipe, will retry next run', {
+                    title: page.title,
+                    error: (error as Error).message,
+                });
+            }
+        }
     }
 
     /** Deletes library recipes whose page is gone or no longer a recipe, unless that would gut the library. */
@@ -175,10 +267,11 @@ export class WikibooksIngestService {
 
     // Maps every source field, then fills only what the source left out.
     // fallow-ignore-next-line complexity
-    private async buildRecipe(page: WikibooksPage, createdAt: Date | undefined): Promise<DiscoveryRecipe | null> {
-        const parsed = parseWikibooksPage(page.wikitext);
-        if (!parsed) return null;
-
+    private async buildRecipe(
+        page: WikibooksPage,
+        parsed: ParsedWikibooksPage,
+        createdAt: Date | undefined
+    ): Promise<DiscoveryRecipe> {
         const { infobox } = parsed;
         const title = recipeTitle(page.title);
         const structured = await this.structurer.structure(parsed.ingredientLines);

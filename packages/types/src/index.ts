@@ -149,6 +149,12 @@ export interface DiscoveryRecipe {
     estimated?: DiscoveryEstimatedField[];
     /** Revision of the source page this copy was built from; lets a refresh skip unchanged pages. Ingested recipes only. */
     sourceRevision?: number;
+    /** Revision of the source page whose cover picture has been looked at (found, refused or absent). Ingested recipes only. */
+    imageRevision?: number;
+    /** Credit for the cover picture (author, licence, where it comes from): must be shown wherever the cover is. */
+    coverImageAttribution?: string;
+    /** The cover picture's own file page, for the credit to link to. */
+    coverImageSourceUrl?: string;
     createdAt: Date;
     updatedAt: Date;
 }

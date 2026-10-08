@@ -44,10 +44,12 @@ export class MongoDiscoveryRecipeRepository implements DiscoveryRecipeRepository
 
     async listRevisions(
         source: DiscoverySource
-    ): Promise<Array<Pick<DiscoveryRecipe, 'id' | 'sourceRevision' | 'createdAt'>>> {
+    ): Promise<Array<Pick<DiscoveryRecipe, 'id' | 'sourceRevision' | 'imageRevision' | 'createdAt'>>> {
         return this.collection()
-            .find({ source }, { projection: { _id: 0, id: 1, sourceRevision: 1, createdAt: 1 } })
-            .toArray() as Promise<Array<Pick<DiscoveryRecipe, 'id' | 'sourceRevision' | 'createdAt'>>>;
+            .find({ source }, { projection: { _id: 0, id: 1, sourceRevision: 1, imageRevision: 1, createdAt: 1 } })
+            .toArray() as Promise<
+            Array<Pick<DiscoveryRecipe, 'id' | 'sourceRevision' | 'imageRevision' | 'createdAt'>>
+        >;
     }
 
     async *batches(size: number): AsyncGenerator<DiscoveryRecipe[]> {

@@ -97,6 +97,27 @@ test.describe('Discover', () => {
         await expect(similar.getByRole('button', { name: /Vanilla Sponge Cake/ })).toBeVisible();
     });
 
+    test("shows a recipe's cover picture in results and the preview, credited with its licence", async ({
+        authenticatedPage,
+        discoverPage,
+    }) => {
+        await discoverPage.goto();
+        const card = discoverPage.card('Chocolate Brownies');
+        await expect(card.locator('img[alt="Chocolate Brownies"]')).toBeAttached();
+        // A recipe without a cover has no picture slot at all.
+        await expect(discoverPage.card('Lemon Drizzle Cake').locator('img')).toHaveCount(0);
+
+        await card.click();
+
+        await authenticatedPage.waitForURL(/\/discover\/e2e-library-2$/);
+        await expect(authenticatedPage.locator('img[alt="Chocolate Brownies"]')).toBeAttached();
+        const credit = authenticatedPage.getByRole('link', {
+            name: /Photo: Jane Doe, CC BY 2\.0, via Wikimedia Commons/,
+        });
+        await expect(credit).toBeVisible();
+        await expect(credit).toHaveAttribute('href', 'https://commons.wikimedia.org/wiki/File:Chocolate_brownies.jpg');
+    });
+
     test('adds a recipe to my recipes in one tap, keeps its attribution, and does not add it twice', async ({
         authenticatedPage,
     }) => {

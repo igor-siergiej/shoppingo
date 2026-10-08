@@ -6,6 +6,8 @@
 export interface ParsedWikibooksPage {
     /** Infobox (`{{Recipe summary}}`) parameters, lowercased names, raw (wikitext-stripped) values. */
     infobox: Record<string, string>;
+    /** The infobox's cover picture as a wiki file name (`Baked Ziti.jpg`), when it names a jpg, png or webp. */
+    image?: string;
     ingredientLines: string[];
     instructions: string[];
 }
@@ -131,25 +133,42 @@ const plainText = (wikitext: string): string =>
         .replace(/\s+/g, ' ')
         .trim();
 
+// `[[File:Foo bar.jpg|300px]]`, `[[Image:Foo.JPG`, `File:Foo.png` or a bare `Foo.jpg`. Only formats a browser can show.
+const IMAGE_FILE = /^\s*(?:\[\[\s*)?(?:(?:file|image)\s*:\s*)?([^|\]\n]+?\.(?:jpe?g|png|webp))\s*(?:[|\]][\s\S]*)?$/i;
+
+const imageFileName = (rawValue: string): string | undefined => {
+    const match = IMAGE_FILE.exec(rawValue.replace(/<!--[\s\S]*?-->/g, ''));
+    return match?.[1]?.replace(/_/g, ' ').trim() || undefined;
+};
+
+interface ParsedInfobox {
+    params: Record<string, string>;
+    image?: string;
+}
+
 // Locates the template, then reads each parameter defensively.
 // fallow-ignore-next-line complexity
-const parseInfobox = (wikitext: string): Record<string, string> => {
+const parseInfobox = (wikitext: string): ParsedInfobox => {
     const start = wikitext.search(INFOBOX_START);
-    if (start === -1) return {};
+    if (start === -1) return { params: {} };
     const end = closingBraces(wikitext, start);
-    if (end === -1) return {};
+    if (end === -1) return { params: {} };
 
     const [, ...params] = splitTopLevel(wikitext.slice(start + 2, end - 2));
     const infobox: Record<string, string> = {};
+    let image: string | undefined;
     for (const param of params) {
         const equals = param.indexOf('=');
         if (equals === -1) continue;
         const name = param.slice(0, equals).trim().toLowerCase();
+        const raw = param.slice(equals + 1);
+        // The picture is a wiki link, which plainText() would strip, so it is read from the raw value.
+        if (name === 'image') image ??= imageFileName(raw);
         // Keep `<br>` as a `;` separator: a time like "Prep: 10 min<br/>Cooking: 5 min" is two values.
-        const value = plainText(param.slice(equals + 1).replace(/<\/?br\s*\/?>/gi, ' ; '));
+        const value = plainText(raw.replace(/<\/?br\s*\/?>/gi, ' ; '));
         if (name && value && !(name in infobox)) infobox[name] = value;
     }
-    return infobox;
+    return { params: infobox, ...(image && { image }) };
 };
 
 interface Section {
@@ -207,5 +226,6 @@ export const parseWikibooksPage = (wikitext: string): ParsedWikibooksPage | null
     const instructions = numbered.length > 0 ? numbered : typedSteps(procedure.lines);
     if (ingredientLines.length === 0 || instructions.length === 0) return null;
 
-    return { infobox: parseInfobox(wikitext), ingredientLines, instructions };
+    const { params, image } = parseInfobox(wikitext);
+    return { infobox: params, ingredientLines, instructions, ...(image && { image }) };
 };
