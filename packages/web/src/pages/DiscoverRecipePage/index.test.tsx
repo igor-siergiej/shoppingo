@@ -1,4 +1,4 @@
-import type { DiscoveryRecipe, Recipe } from '@shoppingo/types';
+import type { DiscoveryRecipe, PublishedRecipeRef, Recipe } from '@shoppingo/types';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from 'react-query';
@@ -54,11 +54,13 @@ const setup = ({
     recipe = library,
     mine = [] as Recipe[],
     similar = [] as Array<Record<string, unknown>>,
+    published = [] as PublishedRecipeRef[],
     copy = vi.fn(async () => personal({ id: 'new-1', link: SOURCE_URL })),
 }: {
     recipe?: DiscoveryRecipe | Error;
     mine?: Recipe[];
     similar?: Array<Record<string, unknown>>;
+    published?: PublishedRecipeRef[];
     copy?: ReturnType<typeof vi.fn>;
 } = {}) => {
     vi.spyOn(api, 'getDiscoveryRecipeQuery').mockReturnValue({
@@ -75,6 +77,10 @@ const setup = ({
     vi.spyOn(api, 'getRecipesQuery').mockReturnValue({
         queryKey: ['recipes', 'user-1'],
         queryFn: async () => mine,
+    } as never);
+    vi.spyOn(api, 'getPublishedRecipesQuery').mockReturnValue({
+        queryKey: ['discover-published'],
+        queryFn: async () => published,
     } as never);
     vi.spyOn(api, 'copyDiscoveryRecipe').mockImplementation(copy as never);
 
@@ -227,5 +233,94 @@ describe('DiscoverRecipePage', () => {
         await userEvent.click(await screen.findByRole('button', { name: 'Discover' }));
 
         await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/discover'));
+    });
+
+    describe('user-published recipes', () => {
+        const userRecipe: DiscoveryRecipe = {
+            ...library,
+            id: 'user-1',
+            source: 'user',
+            sourceUrl: '/discover/user-1',
+            publishedBy: 'alice',
+            attribution: '"Fairy Cakes" by alice, CC BY-SA 4.0',
+            estimated: undefined,
+        };
+
+        it('says who shared it and links to no outside source, because this page is the source', async () => {
+            setup({ recipe: userRecipe });
+
+            expect(await screen.findByText('Shared by alice')).toBeInTheDocument();
+            const source = screen.getByRole('region', { name: 'Source' });
+            expect(within(source).getByText(/by alice, CC BY-SA 4.0/)).toBeInTheDocument();
+            expect(within(source).queryByRole('link')).not.toBeInTheDocument();
+        });
+
+        it('shows no author line when the publisher did not opt in', async () => {
+            setup({ recipe: { ...userRecipe, publishedBy: undefined } });
+
+            await screen.findByRole('heading', { name: 'Fairy Cakes' });
+            expect(screen.queryByText(/Shared by/)).not.toBeInTheDocument();
+        });
+
+        it('lets anyone else report it, with an optional reason', async () => {
+            const report = vi.spyOn(api, 'reportDiscoveryRecipe').mockResolvedValue(undefined);
+            setup({ recipe: userRecipe });
+
+            await userEvent.click(await screen.findByRole('button', { name: 'Report' }));
+            const dialog = await screen.findByRole('alertdialog');
+            await userEvent.type(within(dialog).getByLabelText('Reason for the report'), 'copied from a blog');
+            await userEvent.click(within(dialog).getByRole('button', { name: 'Send report' }));
+
+            await waitFor(() => expect(report).toHaveBeenCalledWith('user-1', 'copied from a blog'));
+            expect(await screen.findByText(/we'll take a look/)).toBeInTheDocument();
+        });
+
+        it('sends a report without a reason as undefined, not an empty string', async () => {
+            const report = vi.spyOn(api, 'reportDiscoveryRecipe').mockResolvedValue(undefined);
+            setup({ recipe: userRecipe });
+
+            await userEvent.click(await screen.findByRole('button', { name: 'Report' }));
+            await userEvent.click(
+                within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Send report' })
+            );
+
+            await waitFor(() => expect(report).toHaveBeenCalledWith('user-1', undefined));
+        });
+
+        it('gives the publisher Unpublish instead of Report, and goes back to Discover afterwards', async () => {
+            const unpublish = vi.spyOn(api, 'unpublishRecipe').mockResolvedValue(undefined);
+            setup({
+                recipe: userRecipe,
+                published: [{ recipeId: 'gone-private-recipe', libraryId: 'user-1', publishedAt: new Date(0) }],
+            });
+
+            expect(await screen.findByText('Your public recipe')).toBeInTheDocument();
+            expect(screen.queryByRole('button', { name: 'Report' })).not.toBeInTheDocument();
+
+            await userEvent.click(screen.getByRole('button', { name: 'Unpublish' }));
+            await userEvent.click(
+                within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Unpublish' })
+            );
+
+            await waitFor(() => expect(unpublish).toHaveBeenCalledWith('user-1'));
+            await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/discover'));
+        });
+
+        it("does not treat somebody else's publication as the viewer's own", async () => {
+            setup({
+                recipe: userRecipe,
+                published: [{ recipeId: 'r', libraryId: 'user-77', publishedAt: new Date(0) }],
+            });
+
+            expect(await screen.findByRole('button', { name: 'Report' })).toBeInTheDocument();
+            expect(screen.queryByText('Your public recipe')).not.toBeInTheDocument();
+        });
+    });
+
+    it('still links to the original for Wikibooks recipes', async () => {
+        setup();
+
+        const source = await screen.findByRole('region', { name: 'Source' });
+        expect(within(source).getByRole('link', { name: /View the original recipe/ })).toBeInTheDocument();
     });
 });

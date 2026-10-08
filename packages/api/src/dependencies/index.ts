@@ -6,6 +6,8 @@ import { config } from '../config';
 import { AuthorizationService } from '../domain/AuthorizationService';
 import { DailyReminderScheduler } from '../domain/DailyReminderScheduler';
 import { DiscoveryCopyService } from '../domain/DiscoveryCopyService';
+import { DiscoveryModerationService } from '../domain/DiscoveryModeration';
+import { DiscoveryPublishService } from '../domain/DiscoveryPublish';
 import { DiscoveryService } from '../domain/DiscoveryService';
 import { FriendService } from '../domain/FriendService';
 import { ImageService } from '../domain/ImageService';
@@ -33,7 +35,9 @@ import { FalRecipeTagger } from '../infrastructure/FalRecipeTagger';
 import { HttpImageFetcher } from '../infrastructure/HttpImageFetcher';
 import { HttpPageFetcher } from '../infrastructure/HttpPageFetcher';
 import { MediaWikiCookbookSource } from '../infrastructure/MediaWikiCookbookSource';
+import { MongoDiscoveryPublicationRepository } from '../infrastructure/MongoDiscoveryPublicationRepository';
 import { MongoDiscoveryRecipeRepository } from '../infrastructure/MongoDiscoveryRecipeRepository';
+import { MongoDiscoveryReportRepository } from '../infrastructure/MongoDiscoveryReportRepository';
 import { MongoFriendRepository } from '../infrastructure/MongoFriendRepository';
 import { MongoLabelRepository } from '../infrastructure/MongoLabelRepository';
 import { MongoListRepository } from '../infrastructure/MongoListRepository';
@@ -496,7 +500,68 @@ export const registerDepdendencies = () => {
             constructor() {
                 return new DiscoveryCopyService(
                     dependencyContainer.resolve(DependencyToken.DiscoveryService),
-                    dependencyContainer.resolve(DependencyToken.RecipeService)
+                    dependencyContainer.resolve(DependencyToken.RecipeService),
+                    dependencyContainer.resolve(DependencyToken.ImageStore),
+                    dependencyContainer.resolve(DependencyToken.Logger)
+                );
+            }
+        }
+    );
+
+    // User publishing and moderation of the library.
+    dependencyContainer.registerSingleton(
+        DependencyToken.DiscoveryPublicationRepository,
+        // @ts-expect-error - Dependency injection requires constructor return override
+        class {
+            constructor() {
+                return new MongoDiscoveryPublicationRepository(dependencyContainer.resolve(DependencyToken.Database));
+            }
+        }
+    );
+
+    dependencyContainer.registerSingleton(
+        DependencyToken.DiscoveryReportRepository,
+        // @ts-expect-error - Dependency injection requires constructor return override
+        class {
+            constructor() {
+                return new MongoDiscoveryReportRepository(dependencyContainer.resolve(DependencyToken.Database));
+            }
+        }
+    );
+
+    dependencyContainer.registerSingleton(
+        DependencyToken.DiscoveryPublishService,
+        // @ts-expect-error - Dependency injection requires constructor return override
+        class {
+            constructor() {
+                return new DiscoveryPublishService(
+                    dependencyContainer.resolve(DependencyToken.DiscoveryService),
+                    dependencyContainer.resolve(DependencyToken.DiscoveryPublicationRepository),
+                    dependencyContainer.resolve(DependencyToken.RecipeService),
+                    dependencyContainer.resolve(DependencyToken.ImageStore),
+                    dependencyContainer.resolve(DependencyToken.IdGenerator),
+                    dependencyContainer.resolve(DependencyToken.Logger)
+                );
+            }
+        }
+    );
+
+    dependencyContainer.registerSingleton(
+        DependencyToken.DiscoveryModerationService,
+        // @ts-expect-error - Dependency injection requires constructor return override
+        class {
+            constructor() {
+                const admins = (config.get('discoveryAdminUserIds') ?? '')
+                    .split(',')
+                    .map((id) => id.trim())
+                    .filter(Boolean);
+                return new DiscoveryModerationService(
+                    dependencyContainer.resolve(DependencyToken.DiscoveryService),
+                    dependencyContainer.resolve(DependencyToken.DiscoveryReportRepository),
+                    dependencyContainer.resolve(DependencyToken.DiscoveryPublicationRepository),
+                    dependencyContainer.resolve(DependencyToken.IdGenerator),
+                    new Set(admins),
+                    dependencyContainer.resolve(DependencyToken.Logger)
                 );
             }
         }

@@ -1,5 +1,6 @@
 import { getStorageItem } from '@imapps/web-utils';
 import type {
+    DiscoveryPublishRequest,
     DiscoveryRecipe,
     DiscoveryRecipeSummary,
     DiscoverySearchQuery,
@@ -8,6 +9,7 @@ import type {
     Label,
     ListResponse,
     ListType,
+    PublishedRecipeRef,
     Recipe,
     RecipeImportResult,
     Todo,
@@ -663,5 +665,44 @@ export const copyDiscoveryRecipe = async (recipeId: string): Promise<Recipe> => 
         pathname: `/api/discover/recipes/${encodeURIComponent(recipeId)}/copy`,
         method: MethodType.POST,
         operationString: 'add library recipe to my recipes',
+    });
+};
+
+export const publishRecipe = async (
+    recipeId: string,
+    request: DiscoveryPublishRequest
+): Promise<PublishedRecipeRef> => {
+    return await makeRequest({
+        pathname: `/api/recipes/${encodeURIComponent(recipeId)}/publish`,
+        method: MethodType.POST,
+        operationString: 'make recipe public',
+        body: JSON.stringify(request),
+    });
+};
+
+export const getPublishedRecipesQuery = () => ({
+    queryKey: ['discover-published'],
+    queryFn: async (): Promise<PublishedRecipeRef[]> =>
+        await makeRequest({
+            pathname: '/api/discover/published',
+            method: MethodType.GET,
+            operationString: 'get my published recipes',
+        }),
+});
+
+export const unpublishRecipe = async (libraryId: string): Promise<void> => {
+    await makeRequest({
+        pathname: `/api/discover/published/${encodeURIComponent(libraryId)}`,
+        method: MethodType.DELETE,
+        operationString: 'unpublish recipe',
+    });
+};
+
+export const reportDiscoveryRecipe = async (recipeId: string, reason?: string): Promise<void> => {
+    await makeRequest({
+        pathname: `/api/discover/recipes/${encodeURIComponent(recipeId)}/report`,
+        method: MethodType.POST,
+        operationString: 'report library recipe',
+        body: JSON.stringify({ reason }),
     });
 };

@@ -167,6 +167,30 @@ export interface DiscoveryRecipeSummary {
     estimated?: DiscoveryEstimatedField[];
 }
 
+/** What a user sends to publish one of their recipes. The licence is only accepted explicitly. */
+export interface DiscoveryPublishRequest {
+    agreeToLicence: boolean;
+    /** Opt in to showing the author's username on the public recipe. Off by default. */
+    showName?: boolean;
+}
+
+/** One of the caller's own publications: how the app knows a personal recipe is public. */
+export interface PublishedRecipeRef {
+    recipeId: string;
+    libraryId: string;
+    publishedAt: Date;
+}
+
+/** What an admin sees per reported library recipe. Reporters are never named. */
+export interface DiscoveryReportSummary {
+    recipeId: string;
+    title: string;
+    source: DiscoverySource;
+    reports: number;
+    reasons: string[];
+    lastReportedAt: Date;
+}
+
 export interface DiscoveryFacetBucket {
     key: string;
     count: number;

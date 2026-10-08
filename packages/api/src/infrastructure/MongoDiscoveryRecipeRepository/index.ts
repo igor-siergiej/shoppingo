@@ -16,6 +16,7 @@ export class MongoDiscoveryRecipeRepository implements DiscoveryRecipeRepository
 
     async ensureIndexes(): Promise<void> {
         await this.collection().createIndex({ id: 1 }, { unique: true });
+        await this.collection().createIndex({ coverImageKey: 1 }, { sparse: true });
     }
 
     async getById(id: string): Promise<DiscoveryRecipe | null> {
@@ -28,6 +29,17 @@ export class MongoDiscoveryRecipeRepository implements DiscoveryRecipeRepository
 
     async deleteById(id: string): Promise<void> {
         await this.collection().deleteOne({ id });
+    }
+
+    async findByTitle(title: string): Promise<DiscoveryRecipe[]> {
+        // Case-insensitive equality (collation strength 2); the library is a few thousand documents, so no title index.
+        return this.collection()
+            .find({ title }, { ...NO_OBJECT_ID, collation: { locale: 'en', strength: 2 } })
+            .toArray() as Promise<DiscoveryRecipe[]>;
+    }
+
+    async hasCoverImageKey(key: string): Promise<boolean> {
+        return (await this.collection().countDocuments({ coverImageKey: key }, { limit: 1 })) > 0;
     }
 
     async listRevisions(

@@ -1,6 +1,9 @@
+import type { Logger } from '@imapps/api-utils';
 import type { Recipe, User } from '@shoppingo/types';
 
+import { copyImage } from '../DiscoveryPublish/copyImage';
 import type { DiscoveryService } from '../DiscoveryService';
+import type { ImageStore } from '../ImageService/types';
 import type { RecipeService } from '../RecipeService';
 
 /**
@@ -8,14 +11,15 @@ import type { RecipeService } from '../RecipeService';
  * ownership, tagging and `users` scoping are exactly those of any recipe the user creates; the library document is only
  * read. The copy keeps the source page as `link` and the licence `attribution`, which CC BY-SA requires.
  *
- * The library's `coverImageKey` is deliberately NOT carried over: a key owned by the library can be deleted by an
- * unpublish or refresh, so a personal recipe must never point at it. The copy starts without a cover and gets the
- * normal generated one.
+ * The library's `coverImageKey` is never referenced: a key owned by the library stops being served the moment the
+ * recipe is unpublished or delisted. The cover is copied to the user's own key instead, so the copy keeps its picture.
  */
 export class DiscoveryCopyService {
     constructor(
         private readonly discovery: Pick<DiscoveryService, 'getRecipe'>,
-        private readonly recipes: Pick<RecipeService, 'createRecipe' | 'getRecipesByUserId'>
+        private readonly recipes: Pick<RecipeService, 'createRecipe' | 'getRecipesByUserId' | 'setCoverImageKey'>,
+        private readonly images: ImageStore,
+        private readonly logger?: Logger
     ) {}
 
     async copyToPersonal(libraryId: string, owner: User): Promise<Recipe> {
@@ -27,7 +31,7 @@ export class DiscoveryCopyService {
             throw Object.assign(new Error('This recipe is already in your recipes'), { status: 409 });
         }
 
-        return this.recipes.createRecipe(
+        const created = await this.recipes.createRecipe(
             library.title,
             library.ingredients,
             owner.id,
@@ -44,5 +48,24 @@ export class DiscoveryCopyService {
             library.difficulty,
             library.attribution
         );
+        return library.coverImageKey ? this.withCover(created, library.coverImageKey, owner) : created;
+    }
+
+    // A cover that cannot be copied leaves the copy without one (the app generates one); it never fails the add.
+    private async withCover(recipe: Recipe, libraryKey: string, owner: User): Promise<Recipe> {
+        try {
+            const key = await copyImage(
+                this.images,
+                libraryKey,
+                `recipe-upload/${owner.id}/${recipe.id}/${Date.now()}`
+            );
+            return await this.recipes.setCoverImageKey(recipe.id, key, owner.id);
+        } catch (error) {
+            this.logger?.warn('Library cover could not be copied to the new recipe', {
+                recipeId: recipe.id,
+                error: (error as Error).message,
+            });
+            return recipe;
+        }
     }
 }

@@ -35,6 +35,7 @@ vi.mock('./IngredientSelectSection', () => ({ IngredientSelectSection: () => nul
 vi.mock('./IngredientsSection', () => ({ IngredientsSection: () => null }));
 vi.mock('./InstructionsSection', () => ({ InstructionsSection: () => null }));
 vi.mock('./TagsSection', () => ({ TagsSection: () => null }));
+vi.mock('./PublishSection', () => ({ PublishSection: () => null }));
 
 let mockRecipe: Recipe;
 

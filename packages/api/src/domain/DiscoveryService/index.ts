@@ -92,6 +92,17 @@ export class DiscoveryService {
         await this.index.remove(id);
     }
 
+    // fallow-ignore-next-line unused-class-member
+    async findByTitle(title: string): Promise<DiscoveryRecipe[]> {
+        return this.repository.findByTitle(title);
+    }
+
+    /** Whether any library recipe still uses this cover image. */
+    // fallow-ignore-next-line unused-class-member
+    async hasCoverImageKey(key: string): Promise<boolean> {
+        return this.repository.hasCoverImageKey(key);
+    }
+
     /** What a source refresh diffs against: id and source revision of every library recipe from that source. */
     // fallow-ignore-next-line unused-class-member
     async listRevisions(

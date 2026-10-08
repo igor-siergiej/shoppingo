@@ -6,10 +6,14 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
     copyDiscoveryRecipe,
     getDiscoveryRecipeQuery,
+    getPublishedRecipesQuery,
     getRecipesQuery,
     getSimilarDiscoveryRecipesQuery,
 } from '../../api';
+import { DiscoveryCover } from '../../components/DiscoveryCover';
 import { DiscoveryMeta, ESTIMATE_LEGEND, hasEstimates } from '../../components/DiscoveryMeta';
+import { ReportButton } from '../../components/PublishControls/ReportButton';
+import { UnpublishButton } from '../../components/PublishControls/UnpublishButton';
 import ToolBar from '../../components/ToolBar';
 import { Button } from '../../components/ui/button';
 import { Skeleton } from '../../components/ui/skeleton';
@@ -99,6 +103,29 @@ const Section = ({ title, children }: { title: string; children: React.ReactNode
     </section>
 );
 
+// Whoever published a recipe can take it down from here (also after deleting their private recipe, when this is the
+// only place left that shows it); everybody else can report it.
+const PublicRecipeActions = ({ recipe }: { recipe: DiscoveryRecipe }) => {
+    const navigate = useNavigate();
+    const { data: published = [] } = useQuery(getPublishedRecipesQuery());
+    const isMine = recipe.source === 'user' && published.some((ref) => ref.libraryId === recipe.id);
+
+    return (
+        <div className="flex items-center justify-between">
+            {isMine ? (
+                <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold text-primary">Your public recipe</span>
+                    <UnpublishButton libraryId={recipe.id} onUnpublished={() => navigate('/discover')} />
+                </div>
+            ) : (
+                <ReportButton recipeId={recipe.id} />
+            )}
+        </div>
+    );
+};
+
+// Preview sections, each shown only when the recipe has that content.
+// fallow-ignore-next-line complexity
 const RecipePreview = ({
     recipe,
     onSelectSimilar,
@@ -110,8 +137,10 @@ const RecipePreview = ({
 
     return (
         <div className="space-y-5">
+            <DiscoveryCover imageKey={recipe.coverImageKey} title={recipe.title} className="h-48 w-full rounded-2xl" />
             <div className="space-y-2">
                 <h2 className="text-xl font-semibold leading-tight text-foreground">{recipe.title}</h2>
+                {recipe.publishedBy && <p className="text-xs text-muted-foreground">Shared by {recipe.publishedBy}</p>}
                 <DiscoveryMeta recipe={recipe} />
                 {hasEstimates(recipe) && <p className="text-xs text-muted-foreground">{ESTIMATE_LEGEND}</p>}
                 {recipe.tags.length > 0 && (
@@ -160,16 +189,21 @@ const RecipePreview = ({
             <section aria-label="Source" className="space-y-1 rounded-xl bg-muted/40 p-3 text-xs text-muted-foreground">
                 <p>{recipe.attribution}</p>
                 <p>Licence: {recipe.licence}</p>
-                <a
-                    href={recipe.sourceUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-primary underline"
-                >
-                    View the original recipe
-                    <ExternalLink className="h-3 w-3" />
-                </a>
+                {/* A user recipe's "source" is this very page, so there is no original to link to. */}
+                {recipe.source !== 'user' && (
+                    <a
+                        href={recipe.sourceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-primary underline"
+                    >
+                        View the original recipe
+                        <ExternalLink className="h-3 w-3" />
+                    </a>
+                )}
             </section>
+
+            <PublicRecipeActions recipe={recipe} />
 
             <SimilarStrip recipes={similar} onSelect={onSelectSimilar} />
         </div>

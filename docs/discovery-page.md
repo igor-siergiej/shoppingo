@@ -35,9 +35,9 @@ ownership and `users` scoping are those of any recipe the user creates (`Discove
   the recipe detail page. CC BY-SA requires it to stay with the text.
 - **No duplicates.** A user who already has a recipe whose `link` is the library recipe's `sourceUrl` gets a 409 and the
   preview shows "Already in your recipes" with a link to it. The same match catches a URL import of the same page.
-- **Covers.** The library's `coverImageKey` is never copied or referenced: a key owned by the library can be deleted by
-  an unpublish or refresh. Wikibooks recipes have no cover, so the copy gets the normal generated cover. When
-  user-published recipes bring library covers (card 4), the copy must write them to the user's own key.
+- **Covers.** The library's `coverImageKey` is never referenced: a key owned by the library stops being served when the
+  recipe is unpublished. Wikibooks recipes have no cover, so the copy gets the normal generated cover. A user-published
+  recipe's cover is copied to the adding user's own `recipe-upload/` key (see [discovery-publish.md](./discovery-publish.md)).
 
 ## When OpenSearch is down
 

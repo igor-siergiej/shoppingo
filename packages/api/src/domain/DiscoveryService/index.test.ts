@@ -33,6 +33,8 @@ const setup = () => {
             calls.push('mongo:delete');
             stored.delete(id);
         }),
+        findByTitle: vi.fn(async () => []),
+        hasCoverImageKey: vi.fn(async () => false),
         listRevisions: vi.fn(async () => []),
         batches: vi.fn(async function* () {
             yield [...stored.values()];
