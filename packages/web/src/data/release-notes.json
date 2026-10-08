@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.89.0",
+    "date": "2026-10-08",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Recipes from the Wikibooks Cookbook now show their photos in Discover, with the photographer credited."
+      }
+    ]
+  },
+  {
     "version": "1.88.0",
     "date": "2026-10-08",
     "notes": [

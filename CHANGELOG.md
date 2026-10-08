@@ -1,3 +1,10 @@
+# [1.89.0](https://github.com/igor-siergiej/shoppingo/compare/v1.88.0...v1.89.0) (2026-10-08)
+
+
+### Features
+
+* show Wikibooks recipe pictures in Discover, credited ([#195](https://github.com/igor-siergiej/shoppingo/issues/195)) ([e6369c6](https://github.com/igor-siergiej/shoppingo/commit/e6369c6effae0c6d13d736bbf8367b1109aebb00))
+
 # [1.88.0](https://github.com/igor-siergiej/shoppingo/compare/v1.87.0...v1.88.0) (2026-10-08)
 
 
