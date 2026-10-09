@@ -1,0 +1,69 @@
+name: Load
+
+# API performance guard. Deliberately a separate workflow from PR: it is not in kanban-cli's
+# ci.workflowNames / checkNamesRequired, so a slow or flaky run cannot block a merge. Make it a
+# required check in branch protection only once its numbers have proven stable.
+on:
+  pull_request:
+    branches: '**'
+    paths:
+      - 'packages/api/**'
+      - 'packages/types/**'
+      - 'scripts/load/**'
+      - '.github/workflows/load.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: load-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  load:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      packages: read
+    services:
+      mongodb:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        env:
+          MONGO_INITDB_ROOT_USERNAME: devuser
+          MONGO_INITDB_ROOT_PASSWORD: devpassword
+    steps:
+      - uses: actions/checkout@v6
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GH_TOKEN }}
+      - name: Find the Mongo service container
+        run: echo "MONGO_CONTAINER=$(docker ps --filter ancestor=mongo:7 --format '{{.Names}}' | head -1)" >> "$GITHUB_ENV"
+      # Two steps, both well below the ~200 sessions/s cap measured locally (scripts/load/README.md), so this
+      # guards against order-of-magnitude regressions (a reintroduced collection scan, an N+1) rather than
+      # trying to find the cap on a noisy shared runner. Locally p95 is ~5 ms at these rates; 100 ms leaves
+      # headroom for a slower runner. GATE_RATE makes the budget a hard threshold (exit 99).
+      - name: Capacity run
+        run: bun run load:local
+        env:
+          STEPS: '100,150'
+          STEP_DURATION: 20s
+          WARMUP: 10s
+          P95_MS: '100'
+          ERROR_RATE: '0.01'
+          GATE_RATE: '150'
+      - name: Report
+        if: always()
+        run: |
+          dir=$(ls -d scripts/load/results/*/ | tail -1)
+          { echo '```'; cat "$dir/report.txt" 2>/dev/null || echo 'no report produced'; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: k6-report
+          path: scripts/load/results/
+          retention-days: 14
+          if-no-files-found: ignore

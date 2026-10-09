@@ -44,6 +44,7 @@ Run these from the root directory:
 ### Testing
 - `bun run --filter @shoppingo/api test` - Run API tests (Bun native test runner, 90% coverage threshold)
 - `bun run --filter @shoppingo/web test` - Run web component tests (Bun native test runner)
+- `bun run load:local` - On-demand k6 API capacity test against a throwaway local API/DB with a mock auth verifier (not in CI; see `scripts/load/README.md`)
 - **IMPORTANT**: All tests use Bun's native test runner (`bun:test`). Import from `bun:test` only.
 
 ## Environment Setup
