@@ -74,8 +74,16 @@ class MockCollection {
         return 'index';
     }
 
+    updateManyCalls: Array<[unknown, unknown]> = [];
+
+    async updateMany(query: unknown, update: unknown) {
+        this.updateManyCalls.push([query, update]);
+        return { modifiedCount: 1 };
+    }
+
     reset() {
         this.createIndexCalls = [];
+        this.updateManyCalls = [];
         this.calls = {
             findOne: [],
             find: [],
@@ -244,23 +252,42 @@ describe('MongoListRepository', () => {
         });
     });
 
-    describe('Replacing lists by title', () => {
-        describe('When replacing a list by title', () => {
-            it('should update the list in the database', async () => {
-                const mockList: List = {
-                    id: 'list-1',
-                    title: 'Updated List',
-                    dateAdded: new Date('2023-01-01'),
-                    items: [],
-                    users: [{ id: 'user-1', username: 'testuser' }],
-                };
+    describe('Replacing lists when unchanged', () => {
+        const mockList: List = {
+            id: 'list-1',
+            title: 'Updated List',
+            dateAdded: new Date('2023-01-01'),
+            items: [],
+            users: [{ id: 'user-1', username: 'testuser' }],
+            revision: 4,
+        };
 
-                mockCollection.resolvedValues.findOneAndReplace = { modifiedCount: 1 };
+        it('writes only if the revision it read is still current, and returns the next one', async () => {
+            mockCollection.resolvedValues.replaceOne = { matchedCount: 1 };
 
-                await repository.replaceByTitle('Test List', mockList);
+            const next = await repository.replaceIfUnchanged('Test List', mockList);
 
-                expect(mockCollection.calls.findOneAndReplace[0]).toEqual([{ title: 'Test List' }, mockList]);
-            });
+            expect(next).toBe(5);
+            expect(mockCollection.calls.replaceOne[0]).toEqual([
+                { title: 'Test List', revision: 4 },
+                { ...mockList, revision: 5 },
+            ]);
+        });
+
+        it('matches a list that predates revisions by the field being absent', async () => {
+            mockCollection.resolvedValues.replaceOne = { matchedCount: 1 };
+            const { revision: _revision, ...legacy } = mockList;
+
+            const next = await repository.replaceIfUnchanged('Test List', legacy);
+
+            expect(next).toBe(1);
+            expect(mockCollection.calls.replaceOne[0][0]).toEqual({ title: 'Test List', revision: { $exists: false } });
+        });
+
+        it('reports null when the list changed or was deleted since it was read', async () => {
+            mockCollection.resolvedValues.replaceOne = { matchedCount: 0 };
+
+            expect(await repository.replaceIfUnchanged('Test List', mockList)).toBeNull();
         });
     });
 
@@ -280,9 +307,19 @@ describe('MongoListRepository', () => {
 
                 expect(mockCollection.calls.findOneAndUpdate[0]).toEqual([
                     { title: 'Test List' },
-                    { $push: { items: mockItem } },
+                    { $push: { items: mockItem }, $inc: { revision: 1 } },
                 ]);
             });
+        });
+    });
+
+    describe('Removing a member from every list an owner has', () => {
+        it('bumps the revision so a concurrent read-modify-write cannot bring the member back', async () => {
+            await repository.removeMemberFromAll('friend-1', 'owner-1');
+
+            expect(mockCollection.updateManyCalls).toEqual([
+                [{ ownerId: 'owner-1' }, { $pull: { users: { id: 'friend-1' } }, $inc: { revision: 1 } }],
+            ]);
         });
     });
 });
