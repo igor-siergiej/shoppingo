@@ -61,7 +61,7 @@ Local, isolated auth, budget p95 < 300 ms, 30 s per step. Host: 4 cores shared w
 | 2026-10-09 | list indexes created at startup | 200 (~716) | 111 ms | 300: p95 1.4 s | 0, 0, 0, 8, 599, 1190, 1219 | 87% peak |
 | 2026-10-09 | + compare-and-swap list writes | 200 (~684) | 248 ms | 300: p95 3.0 s, 0.06% errors | **0 at every step** | 77% peak |
 
-**With recipe reads** (adds 10 recipes per user + 5000 background recipes; 50% of sessions read `GET /api/recipes` and `GET /api/recipes/:id`; steps 100/150/200), 150 sessions/s step:
+**With recipe reads** (adds 10 recipes per user + 5000 background recipes; 50% of sessions read `GET /api/recipes` and `GET /api/recipes/:id`; steps 100/150/200), 150 sessions/s step, local box at load average 3.4-5.4 (the runs were not on a quiet host, so read the table as noise, not as a comparison):
 
 | Variant | req/s | p95 all requests | p95 `GET /api/recipes` | p95 `GET /api/recipes/:id` |
 |---|---|---|---|---|
@@ -77,7 +77,7 @@ What this says:
 2. **Missing list indexes cost latency, not throughput.** Without indexes on `list.title` and `list.users.id` every request scanned the collection: below the knee (150 sessions/s) p95 was 23 ms without indexes vs 5-10 ms with. The API creates them at startup, so production gets them on the next deploy.
 3. **Lost updates are fixed.** Item edits used to be read-modify-write on the whole list document, so concurrent edits to one list overwrote each other (a toggle or delete got a 404 for an item the same session had just added; up to 1300 per step). Every such write is now a compare-and-swap on a `revision` counter (`ListService.modifyList`, `ListRepository.replaceIfUnchanged`): a write that lost the race re-reads and retries, up to 8 times, then answers 503. `lost` is 0 at every step. The price shows only past the cap: queueing stretches the read-to-write window, and 64 requests (of tens of thousands) hit 503 in the overloaded steps. `ListService/concurrency.test.ts` reproduces the race deterministically.
 4. **Recipe indexes remove the Mongo scan but this harness cannot show a latency win.** Query plan on 5000 recipes: `users.id` goes from a full collection scan (5000 documents, 7 ms) to an index fetch (50 documents, 1 ms); `id` lookups from 5000 documents to 1. End to end, the two recipe rows above differ by less than the run-to-run noise, because the API thread saturates before Mongo does. The scan cost grows linearly with the collection, so the index is insurance against growth rather than a measured speed-up today.
-5. **Recipe reads are not free for the API.** Turning them on raises req/s from ~450 to ~575 at 150 sessions/s and p95 from 24 ms to 100+ ms; they are served from the same single thread, and that cost is serialization and logging, not Mongo.
+5. **The ~100 ms p95 in the recipe-read rows is host contention, not recipe cost.** The first version of this note blamed the recipe endpoints. The same session mix (recipe reads, recipe indexes, compare-and-swap list writes) on a GitHub runner in the `Load` workflow gives p95 1-3 ms on every route at 150 sessions/s, so the local gap came from other work on the shared box. Benchmark on a quiet host, or use the `Load` run, before drawing conclusions from small differences.
 6. kivo is out of these numbers by construction (see above).
 
 ## Not done yet
