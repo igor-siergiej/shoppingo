@@ -19,6 +19,7 @@ const makeMockCollection = () => ({
     findOneAndReplace: vi.fn(),
     deleteOne: vi.fn(),
     findOneAndUpdate: vi.fn(),
+    createIndex: vi.fn(),
 });
 
 const makeMockDb = (collection: ReturnType<typeof makeMockCollection>) => ({
@@ -33,6 +34,13 @@ describe('MongoRecipeRepository', () => {
         collection = makeMockCollection();
         const db = makeMockDb(collection);
         repo = new MongoRecipeRepository(db as any);
+    });
+
+    describe('ensureIndexes', () => {
+        it('indexes the fields every recipe lookup filters on', async () => {
+            await repo.ensureIndexes();
+            expect(collection.createIndex.mock.calls).toEqual([[{ id: 1 }], [{ 'users.id': 1 }]]);
+        });
     });
 
     describe('getById', () => {

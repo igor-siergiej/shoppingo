@@ -11,6 +11,14 @@ export class MongoRecipeRepository implements RecipeRepository {
         return this.db.getCollection(CollectionNames.Recipe);
     }
 
+    // getById/update/addUser/removeUser filter on id and findByUserId on users.id; without these every request
+    // scans the whole collection. Not unique: the create path does not rule out a repeated id in existing data,
+    // and a failed unique build would stop startup.
+    async ensureIndexes(): Promise<void> {
+        await this.collection().createIndex({ id: 1 });
+        await this.collection().createIndex({ 'users.id': 1 });
+    }
+
     async getById(recipeId: string): Promise<Recipe | null> {
         return this.collection().findOne({ id: recipeId });
     }

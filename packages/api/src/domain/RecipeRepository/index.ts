@@ -1,6 +1,7 @@
 import type { Recipe, User } from '@shoppingo/types';
 
 export interface RecipeRepository {
+    ensureIndexes(): Promise<void>;
     getById(recipeId: string): Promise<Recipe | null>;
     getAll(): Promise<Recipe[]>;
     findByUserId(userId: string): Promise<Recipe[]>;
