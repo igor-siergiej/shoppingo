@@ -29,6 +29,9 @@ const ITEMS_PER_LIST = num('ITEMS_PER_LIST', 15);
 const BACKGROUND_LISTS = num('BACKGROUND_LISTS', 2000);
 const MUTATION_SHARE = num('MUTATION_SHARE', 0.35);
 const RECIPES_SHARE = num('RECIPES_SHARE', 0.5);
+const RECIPES_PER_USER = num('RECIPES_PER_USER', 10);
+const INGREDIENTS_PER_RECIPE = num('INGREDIENTS_PER_RECIPE', 8);
+const BACKGROUND_RECIPES = num('BACKGROUND_RECIPES', 1000);
 const STEPS = (__ENV.STEPS ?? '50,100,150,200,300,400,600').split(',').map(Number);
 const STEP_DURATION = seconds(__ENV.STEP_DURATION ?? '30s');
 const RAMP = 2;
@@ -51,6 +54,17 @@ if (!ALLOWED_HOSTS.includes(host)) {
 // Paths that cost money or hit third parties (fal.ai, recipe-page fetches). The script never calls
 // them; teardown proves it from the server's own counters.
 const FORBIDDEN_ROUTE = /\/api\/recipes\/import|\/image\/generate|\/api\/recipes\/substitutes/;
+
+// The routes a session hits, as tagged on each request; the report prints a latency line for each.
+const ROUTES = [
+    'GET /api/lists/user/:userId',
+    'GET /api/lists/title/:title',
+    'GET /api/recipes',
+    'GET /api/recipes/:recipeId',
+    'PUT /api/lists/:title/items',
+    'POST /api/lists/:title/items/:itemId',
+    'DELETE /api/lists/:title/items/:itemId',
+];
 
 // Step windows on the test clock: warm-up first (untagged by step), then one window per step.
 const stepWindows = [];
@@ -86,6 +100,10 @@ for (const w of stepWindows) {
     thresholds[`api_eventloop_lag_p99_ms{step:${w.step}}`] = [];
     thresholds[`lost_updates{step:${w.step}}`] = [];
 }
+// Per-route latency is reported for one step below the cap, so routes (and runs) can be compared without the
+// queueing noise of overloaded steps. Declared as thresholds so k6 keeps the sub-metric; no budget is attached.
+const routeStep = (stepWindows.find((w) => w.rate === num('ROUTE_REPORT_RATE', 150)) ?? stepWindows[0]).step;
+for (const name of ROUTES) thresholds[`http_req_duration{name:${name},step:${routeStep}}`] = [];
 
 const sessionStages = [
     { target: WARMUP_RATE, duration: '1s' },
@@ -124,7 +142,7 @@ const lostUpdates = new Counter('lost_updates');
 const apiCpu = new Trend('api_cpu_cores');
 const apiLag = new Trend('api_eventloop_lag_p99_ms');
 
-http.setResponseCallback(http.expectedStatuses(200));
+http.setResponseCallback(http.expectedStatuses(200, 201, 204));
 
 const mockToken = (id, username) => {
     const part = (o) => encoding.b64encode(JSON.stringify(o), 'rawstd');
@@ -147,11 +165,28 @@ const putItem = (user, title, name) => [
     JSON.stringify({ itemName: name, dateAdded: new Date().toISOString(), quantity: 1, unit: 'pcs' }),
     { headers: headers(user.token), tags: { phase: 'seed' } },
 ];
+// Recipes are created with a client-chosen id so teardown can delete them without reading responses.
+const putRecipe = (user, id) => [
+    'PUT',
+    `${BASE_URL}/api/recipes`,
+    JSON.stringify({
+        id,
+        title: `Recipe ${id}`,
+        ingredients: Array.from({ length: INGREDIENTS_PER_RECIPE }, (_, n) => ({
+            name: `ingredient-${n}`,
+            quantity: n + 1,
+            unit: 'g',
+        })),
+        instructions: ['Mix.', 'Cook.'],
+    }),
+    { headers: headers(user.token), tags: { phase: 'seed' } },
+];
 
 const batched = (requests, size = 25) => {
     for (let i = 0; i < requests.length; i += size) {
         for (const res of http.batch(requests.slice(i, i + size))) {
-            if (res.status !== 200) fail(`seed request failed: ${res.status} ${res.url} ${res.body}`);
+            if (res.status !== 200 && res.status !== 201)
+                fail(`seed request failed: ${res.status} ${res.url} ${res.body}`);
         }
     }
 };
@@ -182,9 +217,9 @@ export function setup() {
     const users = [];
     for (let i = 0; i < USERS; i++) {
         const id = `k6-${runId}-user-${i}`;
-        users.push({ id, token: mockToken(id, id), lists: [] });
+        users.push({ id, token: mockToken(id, id), lists: [], recipes: [] });
     }
-    const bg = { id: `k6-${runId}-bg`, token: mockToken(`k6-${runId}-bg`, `k6-${runId}-bg`), lists: [] };
+    const bg = { id: `k6-${runId}-bg`, token: mockToken(`k6-${runId}-bg`, `k6-${runId}-bg`), lists: [], recipes: [] };
 
     const health = http.get(`${BASE_URL}/api/health`);
     if (health.status !== 200) fail(`${BASE_URL}/api/health returned ${health.status}`);
@@ -206,6 +241,18 @@ export function setup() {
         bg.lists.push(title);
         creates.push(putList(bg, title));
     }
+    for (const [ui, user] of users.entries()) {
+        for (let n = 0; n < RECIPES_PER_USER; n++) {
+            const id = `k6-${runId}-u${ui}-r${n}`;
+            user.recipes.push(id);
+            creates.push(putRecipe(user, id));
+        }
+    }
+    for (let n = 0; n < BACKGROUND_RECIPES; n++) {
+        const id = `k6-${runId}-bg-r${n}`;
+        bg.recipes.push(id);
+        creates.push(putRecipe(bg, id));
+    }
     batched(creates);
 
     const items = [];
@@ -217,7 +264,7 @@ export function setup() {
     batched(items);
 
     console.log(
-        `seeded ${users.length} users, ${creates.length} lists (${BACKGROUND_LISTS} background), ${items.length} items; run ${runId}`
+        `seeded ${users.length} users, ${creates.length} lists and recipes (${BACKGROUND_LISTS} background lists, ${BACKGROUND_RECIPES} background recipes), ${items.length} items; run ${runId}`
     );
     return { runId, users, bg, baseline };
 }
@@ -237,6 +284,7 @@ export function session(data) {
 
     if (Math.random() < RECIPES_SHARE) {
         http.get(`${BASE_URL}/api/recipes`, params('GET /api/recipes'));
+        http.get(`${BASE_URL}/api/recipes/${enc(pick(user.recipes))}`, params('GET /api/recipes/:recipeId'));
     }
 
     if (Math.random() < MUTATION_SHARE) {
@@ -289,12 +337,15 @@ export function teardown(data) {
         for (const title of owner.lists) {
             deletes.push(['DELETE', `${BASE_URL}/api/lists/${enc(title)}`, null, { headers: headers(owner.token) }]);
         }
+        for (const id of owner.recipes) {
+            deletes.push(['DELETE', `${BASE_URL}/api/recipes/${enc(id)}`, null, { headers: headers(owner.token) }]);
+        }
     }
     let deleted = 0;
     for (let i = 0; i < deletes.length; i += 25) {
-        for (const res of http.batch(deletes.slice(i, i + 25))) if (res.status === 200) deleted++;
+        for (const res of http.batch(deletes.slice(i, i + 25))) if (res.status === 200 || res.status === 204) deleted++;
     }
-    console.log(`cleanup: deleted ${deleted}/${deletes.length} fixture lists`);
+    console.log(`cleanup: deleted ${deleted}/${deletes.length} fixture lists and recipes`);
 
     // Prove the run spent nothing: the server's own counters must not have moved for the AI/import routes.
     const after = readMetrics();
@@ -346,10 +397,19 @@ export function handleSummary(data) {
     const lines = [
         '',
         `shoppingo API capacity (auth: isolated mock verifier, target: ${BASE_URL})`,
-        `budget: p95 < ${P95_MS} ms and error rate < ${(ERROR_RATE * 100).toFixed(1)}%; fixtures: ${USERS} users x ${LISTS_PER_USER} lists x ${ITEMS_PER_LIST} items + ${BACKGROUND_LISTS} background lists`,
+        `budget: p95 < ${P95_MS} ms and error rate < ${(ERROR_RATE * 100).toFixed(1)}%; fixtures: ${USERS} users x (${LISTS_PER_USER} lists x ${ITEMS_PER_LIST} items + ${RECIPES_PER_USER} recipes) + ${BACKGROUND_LISTS} background lists + ${BACKGROUND_RECIPES} background recipes`,
         '',
         'step  sess/s(t)  req/s    p50 ms   p95 ms   p99 ms   err %   lost  api cores  lag p99 ms  verdict',
         ...rows,
+        '',
+        `per route at step ${routeStep} (${stepWindows[routeStep - 1].rate} sessions/s):`,
+        '  route                                     p50 ms   p95 ms   p99 ms',
+        ...ROUTES.map((name) => {
+            const d = m[`http_req_duration{name:${name},step:${routeStep}}`]?.values;
+            return d
+                ? `  ${name.padEnd(40)} ${pad(ms(d.med), 8)} ${pad(ms(d['p(95)']), 8)} ${pad(ms(d['p(99)']), 8)}`
+                : `  ${name.padEnd(40)} (no samples)`;
+        }),
         '',
         cap
             ? `CAP: last step inside budget = ${cap.rate} sessions/s (~${cap.rps.toFixed(0)} req/s, p95 ${ms(cap.p95)} ms)`
