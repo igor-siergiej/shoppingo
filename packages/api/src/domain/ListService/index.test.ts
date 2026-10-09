@@ -8,6 +8,8 @@ import { ListService } from './index';
 import type { AuthClient } from './types';
 
 class MockListRepository implements ListRepository {
+    async ensureIndexes(): Promise<void> {}
+
     private lists: Array<List> = [];
 
     async getByTitle(title: string): Promise<List | null> {

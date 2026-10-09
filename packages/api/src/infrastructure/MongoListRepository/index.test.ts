@@ -67,7 +67,15 @@ class MockCollection {
         return this.resolvedValues.findOneAndUpdate;
     }
 
+    createIndexCalls: Array<unknown> = [];
+
+    async createIndex(keys: unknown) {
+        this.createIndexCalls.push(keys);
+        return 'index';
+    }
+
     reset() {
+        this.createIndexCalls = [];
         this.calls = {
             findOne: [],
             find: [],
@@ -102,6 +110,14 @@ describe('MongoListRepository', () => {
     beforeEach(() => {
         mockCollection.reset();
         repository = new MongoListRepository(mockConnection);
+    });
+
+    describe('Ensuring indexes', () => {
+        it('indexes the fields every list lookup filters on', async () => {
+            await repository.ensureIndexes();
+
+            expect(mockCollection.createIndexCalls).toEqual([{ title: 1 }, { 'users.id': 1 }]);
+        });
     });
 
     describe('Finding lists by title', () => {

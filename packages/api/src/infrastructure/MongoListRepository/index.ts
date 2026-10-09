@@ -11,6 +11,14 @@ export class MongoListRepository implements ListRepository {
         return this.db.getCollection(CollectionNames.List);
     }
 
+    // getByTitle/replaceByTitle/pushItem filter on title and findByUserId on users.id; without these every
+    // request scans the whole collection (scripts/load/README.md: p95 225 ms -> 9 ms at 200 sessions/s).
+    // Not unique: titles are not guaranteed unique in existing data, and a failed unique build would stop startup.
+    async ensureIndexes(): Promise<void> {
+        await this.collection().createIndex({ title: 1 });
+        await this.collection().createIndex({ 'users.id': 1 });
+    }
+
     async getByTitle(title: string): Promise<List | null> {
         return this.collection().findOne({ title });
     }

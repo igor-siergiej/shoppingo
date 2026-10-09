@@ -1,6 +1,7 @@
 import type { Item, List } from '@shoppingo/types';
 
 export interface ListRepository {
+    ensureIndexes(): Promise<void>;
     getByTitle(title: string): Promise<List | null>;
     getAll(): Promise<Array<List>>;
     findByUserId(userId: string): Promise<Array<List>>;
