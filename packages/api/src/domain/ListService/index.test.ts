@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, type Mock, mock, vi } from 'bun:test';
+import { beforeEach, describe, expect, it, type Mock, mock, spyOn, vi } from 'bun:test';
 import type { Item, ItemCategory, List, User } from '@shoppingo/types';
 import { ListType } from '@shoppingo/types';
 
@@ -1559,6 +1559,72 @@ describe('ListService item categories', () => {
         await flush();
 
         expect((await repo.getByRef('Groceries'))?.items[0].category).toBe('household');
+    });
+
+    describe('backfill on read', () => {
+        const seedUncategorised = async () => {
+            const list = await repo.getByRef('Groceries');
+            list?.items.push(
+                { id: 'i1', name: 'milk', dateAdded: new Date(), isSelected: false },
+                { id: 'i2', name: 'apple', dateAdded: new Date(), isSelected: false, category: 'household' }
+            );
+        };
+
+        it('categorises items that never got an aisle when the list is read', async () => {
+            await seedUncategorised();
+
+            await service.getList('Groceries');
+            await flush();
+
+            const items = (await repo.getByRef('Groceries'))?.items;
+            expect(items?.map((i) => i.category)).toEqual(['dairy', 'household']);
+            expect(categorise).toHaveBeenCalledTimes(1);
+            expect(changed).toHaveBeenCalledWith('l1');
+        });
+
+        it('does nothing when every item already has an aisle', async () => {
+            await seedUncategorised();
+            await service.setItemCategory('Groceries', 'i1', 'dairy');
+
+            await service.getList('Groceries');
+            await flush();
+
+            expect(categorise).not.toHaveBeenCalled();
+        });
+
+        it('retries a failed classification on a later read, but not on every read', async () => {
+            await seedUncategorised();
+            categorise.mockResolvedValue(null);
+            const now = Date.now();
+            const clock = spyOn(Date, 'now').mockReturnValue(now);
+
+            await service.getList('Groceries');
+            await flush();
+            await service.getList('Groceries');
+            await flush();
+            expect(categorise).toHaveBeenCalledTimes(1);
+
+            categorise.mockResolvedValue('dairy');
+            clock.mockReturnValue(now + 61_000);
+            await service.getList('Groceries');
+            await flush();
+            clock.mockRestore();
+
+            expect((await repo.getByRef('Groceries'))?.items[0].category).toBe('dairy');
+        });
+
+        it('keeps a category the user set while a read-triggered pass was running', async () => {
+            await seedUncategorised();
+            categorise.mockImplementation(async () => {
+                await service.setItemCategory('Groceries', 'i1', 'household');
+                return 'dairy';
+            });
+
+            await service.getList('Groceries');
+            await flush();
+
+            expect((await repo.getByRef('Groceries'))?.items[0].category).toBe('household');
+        });
     });
 
     it('rejects an unknown category', async () => {

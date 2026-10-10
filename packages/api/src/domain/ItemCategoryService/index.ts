@@ -32,7 +32,10 @@ export class ItemCategoryService {
             await this.repo.set(key, category);
             return category;
         } catch (error) {
-            this.logger?.warn('Item categorisation failed, leaving uncategorised', { itemName: key, error });
+            this.logger?.warn('Item categorisation failed, leaving uncategorised', {
+                itemName: key,
+                error: error instanceof Error ? error.message : String(error),
+            });
             return null;
         }
     }

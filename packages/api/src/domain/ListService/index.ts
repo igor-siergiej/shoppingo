@@ -18,8 +18,13 @@ const MAX_WRITE_ATTEMPTS = 8;
 // Bounds the LLM calls one add can trigger when a long-standing list has many unclassified items.
 const MAX_CATEGORISE_PER_PASS = 30;
 
+// Minimum gap between fetch-triggered categorisation passes per list, so a failing classifier isn't hit on every read.
+const BACKFILL_COOLDOWN_MS = 60_000;
+
 export class ListService {
     private readonly authorizationService: AuthorizationService;
+    private readonly categorising = new Set<string>();
+    private readonly lastBackfill = new Map<string, number>();
 
     constructor(
         private readonly repo: ListRepository,
@@ -40,7 +45,8 @@ export class ListService {
      * uncategorised (shown under "other") and never surface to the caller.
      */
     private async categoriseInBackground(ref: string): Promise<void> {
-        if (!this.itemCategoryService) return;
+        if (!this.itemCategoryService || this.categorising.has(ref)) return;
+        this.categorising.add(ref);
         try {
             const list = await this.repo.getByRef(ref);
             if (!list) return;
@@ -53,7 +59,18 @@ export class ListService {
             if (changed) this.onListChanged?.(list.id);
         } catch (error) {
             this.logger?.warn('Background item categorisation failed', { listRef: ref, error });
+        } finally {
+            this.categorising.delete(ref);
         }
+    }
+
+    /** Picks up items that never got an aisle (added before grouping shipped, or while the classifier was failing). */
+    private backfillCategories(list: List): void {
+        if (!this.itemCategoryService || list.items.every((item) => item.category)) return;
+        const now = Date.now();
+        if (now - (this.lastBackfill.get(list.id) ?? 0) < BACKFILL_COOLDOWN_MS) return;
+        this.lastBackfill.set(list.id, now);
+        void this.categoriseInBackground(list.id);
     }
 
     async setItemCategory(title: string, itemId: string, category: ItemCategory) {
@@ -141,6 +158,8 @@ export class ListService {
             });
             list.listType = ListTypeEnum.SHOPPING;
         }
+
+        this.backfillCategories(list);
 
         return list;
     }
