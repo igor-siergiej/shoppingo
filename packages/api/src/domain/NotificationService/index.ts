@@ -98,7 +98,7 @@ export class NotificationService {
         await this.fanOut(recipientIds, entry.list.title, {
             title: entry.list.title,
             body: formatAddedBody(entry.actor.username, entry.names),
-            data: { url: `/list/${entry.list.title}` },
+            data: { url: `/list/${entry.list.id}` },
         });
     }
 

@@ -37,17 +37,18 @@ export class ListService {
      * Fills in aisles for items that have none, after the add response is already sent. Failures leave the item
      * uncategorised (shown under "other") and never surface to the caller.
      */
-    private async categoriseInBackground(title: string): Promise<void> {
+    private async categoriseInBackground(ref: string): Promise<void> {
         if (!this.itemCategoryService) return;
         try {
-            const list = await this.repo.getByTitle(title);
-            const pending = (list?.items ?? []).filter((item) => !item.category).slice(0, MAX_CATEGORISE_PER_PASS);
+            const list = await this.repo.getByRef(ref);
+            if (!list) return;
+            const pending = list.items.filter((item) => !item.category).slice(0, MAX_CATEGORISE_PER_PASS);
             let changed = false;
             for (const item of pending) {
                 const category = await this.itemCategoryService.categorise(item.name);
-                if (category && (await this.repo.setCategoryIfUnset(title, item.id, category))) changed = true;
+                if (category && (await this.repo.setCategoryIfUnset(list.id, item.id, category))) changed = true;
             }
-            if (changed) this.onListChanged?.(title);
+            if (changed) this.onListChanged?.(list.id);
         } catch (error) {
             this.logger?.warn('Background item categorisation failed', { listTitle: title, error });
         }
@@ -86,14 +87,14 @@ export class ListService {
         mutate: (list: List) => T | Promise<T>
     ): Promise<{ list: List; result: T }> {
         for (let attempt = 0; attempt < MAX_WRITE_ATTEMPTS; attempt++) {
-            const list = await this.repo.getByTitle(title);
+            const list = await this.repo.getByRef(title);
 
             if (!list) {
                 throw Object.assign(new Error('List not found'), { status: 404 });
             }
 
             const result = await mutate(list);
-            const revision = await this.repo.replaceIfUnchanged(title, list);
+            const revision = await this.repo.replaceIfUnchanged(list.id, list);
 
             if (revision !== null) {
                 list.revision = revision;
@@ -146,7 +147,7 @@ export class ListService {
     }
 
     async getList(title: string): Promise<List> {
-        const list = await this.repo.getByTitle(title);
+        const list = await this.repo.getByRef(title);
 
         if (!list) {
             throw Object.assign(new Error('List not found'), { status: 404 });
@@ -196,11 +197,13 @@ export class ListService {
         id?: string
     ) {
         try {
-            const existing = await this.repo.getByTitle(title);
-            if (existing) {
-                if (id && existing.id === id) {
-                    return existing; // idempotent replay
-                }
+            const replay = id ? await this.repo.getByRef(id) : null;
+            if (replay && replay.id === id) {
+                return replay; // idempotent replay
+            }
+
+            // Titles are display-only now, so they may repeat across users; one person still can't hold two with the same name.
+            if ((await this.repo.findByUserId(owner.id)).some((existing) => existing.title === title)) {
                 throw Object.assign(new Error('A list with that name already exists'), { status: 409 });
             }
 
@@ -246,7 +249,7 @@ export class ListService {
         id?: string
     ) {
         try {
-            const list = await this.repo.getByTitle(title);
+            const list = await this.repo.getByRef(title);
 
             if (!list) {
                 throw Object.assign(new Error('List not found'), { status: 404 });
@@ -273,8 +276,8 @@ export class ListService {
                 ...(unit !== undefined && { unit }),
             };
 
-            await this.repo.pushItem(title, item);
-            void this.categoriseInBackground(title);
+            await this.repo.pushItem(list.id, item);
+            void this.categoriseInBackground(list.id);
             this.logger?.info('Item added to list', {
                 listTitle: title,
                 itemName,
@@ -455,9 +458,9 @@ export class ListService {
             }
 
             const { list } = await this.modifyList(title, async (current) => {
-                const existingList = await this.repo.getByTitle(newTitle.trim());
+                const owned = current.ownerId ? await this.repo.findByUserId(current.ownerId) : [];
 
-                if (existingList) {
+                if (owned.some((other) => other.id !== current.id && other.title === newTitle.trim())) {
                     throw Object.assign(new Error('A list with that name already exists'), {
                         status: 409,
                     });
@@ -485,7 +488,8 @@ export class ListService {
 
     async deleteList(title: string) {
         try {
-            await this.repo.deleteByTitle(title);
+            const list = await this.repo.getByRef(title);
+            if (list) await this.repo.deleteById(list.id);
 
             this.logger?.info('List deleted', { listTitle: title });
 
@@ -644,7 +648,7 @@ export class ListService {
                 return { added: addedCount, skipped: skippedCount, addedNames: names };
             });
 
-            if (added > 0) void this.categoriseInBackground(title);
+            if (added > 0) void this.categoriseInBackground(list.id);
 
             this.logger?.info('Items bulk added to list', {
                 listTitle: title,

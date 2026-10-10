@@ -27,14 +27,14 @@ class SingleListRepository implements ListRepository {
 
     async ensureIndexes(): Promise<void> {}
 
-    async getByTitle(title: string): Promise<List | null> {
+    async getByRef(ref: string): Promise<List | null> {
         await yieldToEventLoop();
-        return title === this.doc.title ? structuredClone(this.doc) : null;
+        return ref === this.doc.id || ref === this.doc.title ? structuredClone(this.doc) : null;
     }
 
-    async replaceIfUnchanged(title: string, list: List): Promise<number | null> {
+    async replaceIfUnchanged(listId: string, list: List): Promise<number | null> {
         await yieldToEventLoop();
-        if (this.alwaysConflict || title !== this.doc.title || (this.doc.revision ?? 0) !== (list.revision ?? 0)) {
+        if (this.alwaysConflict || listId !== this.doc.id || (this.doc.revision ?? 0) !== (list.revision ?? 0)) {
             return null;
         }
         const revision = (this.doc.revision ?? 0) + 1;
@@ -42,9 +42,9 @@ class SingleListRepository implements ListRepository {
         return revision;
     }
 
-    async pushItem(title: string, item: Item): Promise<void> {
+    async pushItem(listId: string, item: Item): Promise<void> {
         await yieldToEventLoop();
-        if (title !== this.doc.title) return;
+        if (listId !== this.doc.id) return;
         this.doc.items.push(structuredClone(item));
         this.doc.revision = (this.doc.revision ?? 0) + 1;
     }
@@ -59,7 +59,7 @@ class SingleListRepository implements ListRepository {
 
     async insert(): Promise<void> {}
 
-    async deleteByTitle(): Promise<void> {}
+    async deleteById(): Promise<void> {}
 
     async removeMemberFromAll(): Promise<void> {}
 }

@@ -42,18 +42,18 @@ describe('ShoppingPreviewDrawer', () => {
         expect(screen.getByText('400 g')).toBeInTheDocument();
         fireEvent.click(screen.getByRole('button', { name: 'Add 2 ingredients' }));
 
-        await waitFor(() => expect(onConfirm).toHaveBeenCalledWith('Weekly', rows));
+        await waitFor(() => expect(onConfirm).toHaveBeenCalledWith('l1', rows));
         expect(onOpenChange).toHaveBeenCalledWith(false);
     });
 
     it('adds to the chosen list and only the ticked rows', async () => {
         const { onConfirm } = setup();
 
-        fireEvent.change(screen.getByLabelText('Add to list'), { target: { value: 'Party' } });
+        fireEvent.change(screen.getByLabelText('Add to list'), { target: { value: 'l2' } });
         fireEvent.click(screen.getByRole('checkbox', { name: /garlic/ }));
         fireEvent.click(screen.getByRole('button', { name: 'Add 1 ingredient' }));
 
-        await waitFor(() => expect(onConfirm).toHaveBeenCalledWith('Party', [rows[0]]));
+        await waitFor(() => expect(onConfirm).toHaveBeenCalledWith('l2', [rows[0]]));
     });
 
     it('keeps the drawer open and shows the failure', async () => {

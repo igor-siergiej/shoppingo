@@ -83,8 +83,17 @@ export const createRoutes = (): Hono<Vars> => {
         tickets: dependencyContainer.resolve(DependencyToken.WsTicketStore),
         getList: (listTitle) => listService.getList(listTitle),
     });
-    const changed = notifyListChanged(hub);
-    const removedMember = notifyListChanged(hub, (c, listTitle) => hub.kick(listTitle, c.req.param('userId') ?? ''));
+    const resolveListId = async (listRef: string): Promise<string | undefined> => {
+        try {
+            return (await dependencyContainer.resolve(DependencyToken.ListService).getList(listRef)).id;
+        } catch {
+            return undefined;
+        }
+    };
+    const changed = notifyListChanged(hub, resolveListId);
+    const removedMember = notifyListChanged(hub, resolveListId, (c, listId) =>
+        hub.kick(listId, c.req.param('userId') ?? '')
+    );
 
     router.delete('/api/lists/:title', authenticate, changed, deleteList);
     router.post('/api/lists/:title', authenticate, changed, updateList);

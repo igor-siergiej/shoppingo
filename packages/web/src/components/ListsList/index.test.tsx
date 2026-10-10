@@ -48,12 +48,14 @@ vi.mock('./ListItem', () => ({
 describe('ListsList', () => {
     const mockLists = [
         {
+            id: 'list-shopping',
             title: 'Shopping',
             items: [],
             users: ['user1', 'user2'],
             ownerId: 'user1',
         },
         {
+            id: 'list-todo',
             title: 'Todo',
             items: [],
             users: ['user1'],
@@ -78,7 +80,7 @@ describe('ListsList', () => {
 
         await user.click(screen.getByRole('button', { name: /open shopping/i }));
 
-        expect(mockNavigate).toHaveBeenCalledWith('/list/Shopping');
+        expect(mockNavigate).toHaveBeenCalledWith('/list/list-shopping');
     });
 
     it('deletes list when delete button is clicked', async () => {
@@ -88,7 +90,7 @@ describe('ListsList', () => {
         const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
         await user.click(deleteButtons[0]);
 
-        expect(mockDeleteList).toHaveBeenCalled();
+        expect(mockDeleteList).toHaveBeenCalledWith('list-shopping');
         expect(mockRefetch).toHaveBeenCalled();
     });
 

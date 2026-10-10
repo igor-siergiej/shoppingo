@@ -94,7 +94,7 @@ describe('IngredientSelectSection', () => {
         await userEvent.click(screen.getByText('Groceries'));
         await userEvent.click(screen.getByRole('button', { name: /Add 1 items/ }));
 
-        expect(onConfirm).toHaveBeenCalledWith('Groceries', [{ itemName: 'Carrot', quantity: 2.5, unit: 'cups' }]);
+        expect(onConfirm).toHaveBeenCalledWith('list-1', [{ itemName: 'Carrot', quantity: 2.5, unit: 'cups' }]);
     });
 
     it('sends unscaled quantities when portions are left at the default', async () => {
@@ -112,6 +112,6 @@ describe('IngredientSelectSection', () => {
         await userEvent.click(screen.getByText('Groceries'));
         await userEvent.click(screen.getByRole('button', { name: /Add 1 items/ }));
 
-        expect(onConfirm).toHaveBeenCalledWith('Groceries', [{ itemName: 'Carrot', quantity: 2, unit: 'cups' }]);
+        expect(onConfirm).toHaveBeenCalledWith('list-1', [{ itemName: 'Carrot', quantity: 2, unit: 'cups' }]);
     });
 });

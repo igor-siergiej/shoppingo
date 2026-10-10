@@ -2,6 +2,8 @@ import { apiAddItem, apiCreateList, apiUpdateItem } from '../api-helpers';
 import { expect, test } from '../fixtures';
 
 const LIST_TITLE = 'Groceries';
+// Lists are opened by their id, so the URL no longer carries the title.
+const LIST_URL = /\/list\/[^/]+$/;
 
 test.describe('Items page', () => {
     test('shows empty state for empty list', async ({ authenticatedPage }) => {
@@ -103,7 +105,8 @@ test.describe('Items page', () => {
         // there's genuine SPA history to pop into.
         await authenticatedPage.goto('/');
         await authenticatedPage.getByRole('button', { name: LIST_TITLE }).click();
-        await authenticatedPage.waitForURL(`/list/${LIST_TITLE}`);
+        await authenticatedPage.waitForURL(LIST_URL);
+        const itemsUrl = authenticatedPage.url();
 
         await authenticatedPage.getByRole('button', { name: 'Go back' }).click();
         await authenticatedPage.waitForURL('/');
@@ -114,7 +117,7 @@ test.describe('Items page', () => {
         // instead leave the SPA's list history (landing wherever the page
         // was loaded from, not back on the Items page).
         await authenticatedPage.goBack();
-        await expect(authenticatedPage).not.toHaveURL(`/list/${LIST_TITLE}`);
+        await expect(authenticatedPage).not.toHaveURL(itemsUrl);
     });
 
     test('swipe left reveals delete — deletes item', async ({ authenticatedPage }) => {

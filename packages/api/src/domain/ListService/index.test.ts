@@ -12,8 +12,8 @@ class MockListRepository implements ListRepository {
 
     private lists: Array<List> = [];
 
-    async getByTitle(title: string): Promise<List | null> {
-        return this.lists.find((list) => list.title === title) || null;
+    async getByRef(ref: string): Promise<List | null> {
+        return this.lists.find((list) => list.id === ref) ?? this.lists.find((list) => list.title === ref) ?? null;
     }
 
     async getAll(): Promise<Array<List>> {
@@ -28,13 +28,13 @@ class MockListRepository implements ListRepository {
         this.lists.push(list);
     }
 
-    async deleteByTitle(title: string): Promise<void> {
-        this.lists = this.lists.filter((list) => list.title !== title);
+    async deleteById(listId: string): Promise<void> {
+        this.lists = this.lists.filter((list) => list.id !== listId);
     }
 
-    async replaceIfUnchanged(title: string, list: List): Promise<number | null> {
+    async replaceIfUnchanged(listId: string, list: List): Promise<number | null> {
         // The mock hands out the stored object itself, so a rename has already changed its title by now.
-        const index = this.lists.findIndex((l) => l.title === title || l === list);
+        const index = this.lists.findIndex((l) => l.id === listId || l === list);
 
         if (index === -1) {
             return null;
@@ -44,16 +44,16 @@ class MockListRepository implements ListRepository {
         return (list.revision ?? 0) + 1;
     }
 
-    async pushItem(title: string, item: Item): Promise<void> {
-        const list = this.lists.find((l) => l.title === title);
+    async pushItem(listId: string, item: Item): Promise<void> {
+        const list = this.lists.find((l) => l.id === listId);
 
         if (list) {
             list.items.push(item);
         }
     }
 
-    async setCategoryIfUnset(title: string, itemId: string, category: ItemCategory): Promise<boolean> {
-        const item = this.lists.find((l) => l.title === title)?.items.find((i) => i.id === itemId);
+    async setCategoryIfUnset(listId: string, itemId: string, category: ItemCategory): Promise<boolean> {
+        const item = this.lists.find((l) => l.id === listId)?.items.find((i) => i.id === itemId);
         if (!item || item.category) return false;
         item.category = category;
         return true;
@@ -603,7 +603,7 @@ describe('ListService', () => {
 
                 expect(result.message).toBe('Quantity updated successfully');
 
-                const updatedList = await mockRepository.getByTitle('Test List');
+                const updatedList = await mockRepository.getByRef('Test List');
                 expect(updatedList?.items[0].quantity).toBe(3);
                 expect(updatedList?.items[0].unit).toBe('ml');
             });
@@ -632,7 +632,7 @@ describe('ListService', () => {
 
                 await listService.updateItemQuantity('Test List', 'item-1', 10, undefined);
 
-                const updatedList = await mockRepository.getByTitle('Test List');
+                const updatedList = await mockRepository.getByRef('Test List');
                 expect(updatedList?.items[0].quantity).toBe(10);
                 expect(updatedList?.items[0].unit).toBe('kg');
             });
@@ -661,7 +661,7 @@ describe('ListService', () => {
 
                 await listService.updateItemQuantity('Test List', 'item-1', undefined, 'L');
 
-                const updatedList = await mockRepository.getByTitle('Test List');
+                const updatedList = await mockRepository.getByRef('Test List');
                 expect(updatedList?.items[0].quantity).toBe(5);
                 expect(updatedList?.items[0].unit).toBe('L');
             });
@@ -838,6 +838,7 @@ describe('ListService', () => {
                     dateAdded: new Date('2023-01-01'),
                     items: [],
                     users: [mockUser],
+                    ownerId: mockUser.id,
                 };
                 const mockList2: List = {
                     id: 'list-2',
@@ -845,6 +846,7 @@ describe('ListService', () => {
                     dateAdded: new Date('2023-01-01'),
                     items: [],
                     users: [mockUser],
+                    ownerId: mockUser.id,
                 };
 
                 await mockRepository.insert(mockList1);
@@ -1224,7 +1226,7 @@ describe('ListService', () => {
                 expect(result.added).toBe(2);
                 expect(result.skipped).toBe(1);
 
-                const updatedList = await mockRepository.getByTitle('Test List');
+                const updatedList = await mockRepository.getByRef('Test List');
                 expect(updatedList?.items).toHaveLength(3);
             });
         });
@@ -1253,7 +1255,7 @@ describe('ListService', () => {
                 expect(result.added).toBe(2);
                 expect(result.skipped).toBe(0);
 
-                const updatedList = await mockRepository.getByTitle('Test List');
+                const updatedList = await mockRepository.getByRef('Test List');
                 const milkItem = updatedList?.items.find((i) => i.name === 'Milk');
                 expect(milkItem?.quantity).toBe(2);
                 expect(milkItem?.unit).toBe('liters');
@@ -1294,7 +1296,7 @@ describe('ListService', () => {
                 expect(result.added).toBe(0);
                 expect(result.skipped).toBe(1);
 
-                const updatedList = await mockRepository.getByTitle('Test List');
+                const updatedList = await mockRepository.getByRef('Test List');
                 expect(updatedList?.items).toHaveLength(1);
                 expect(updatedList?.items[0].name).toBe('eggs');
                 expect(updatedList?.items[0].quantity).toBe(7);
@@ -1324,7 +1326,7 @@ describe('ListService', () => {
                 expect(result.added).toBe(1);
                 expect(result.skipped).toBe(1);
 
-                const updatedList = await mockRepository.getByTitle('Test List');
+                const updatedList = await mockRepository.getByRef('Test List');
                 expect(updatedList?.items).toHaveLength(1);
                 expect(updatedList?.items[0].quantity).toBe(7);
             });
@@ -1358,7 +1360,7 @@ describe('ListService', () => {
                 expect(result.added).toBe(1);
                 expect(result.skipped).toBe(0);
 
-                const updatedList = await mockRepository.getByTitle('Test List');
+                const updatedList = await mockRepository.getByRef('Test List');
                 expect(updatedList?.items).toHaveLength(2);
             });
         });
@@ -1368,7 +1370,7 @@ describe('ListService', () => {
 describe('Item id-addressing', () => {
     let service: ListService;
     let repo: {
-        getByTitle: Mock<(title: string) => Promise<List | null>>;
+        getByRef: Mock<(title: string) => Promise<List | null>>;
         replaceIfUnchanged: Mock<(title: string, list: List) => Promise<number | null>>;
         pushItem: Mock<(title: string, item: Item) => Promise<void>>;
     };
@@ -1384,7 +1386,7 @@ describe('Item id-addressing', () => {
 
     beforeEach(() => {
         repo = {
-            getByTitle: vi.fn(),
+            getByRef: vi.fn(),
             replaceIfUnchanged: vi.fn().mockResolvedValue(1),
             pushItem: vi.fn().mockResolvedValue(undefined),
         };
@@ -1398,7 +1400,7 @@ describe('Item id-addressing', () => {
                 { id: 'a2', name: 'Milk', isSelected: false, dateAdded: new Date() },
             ],
         });
-        repo.getByTitle.mockResolvedValue(list);
+        repo.getByRef.mockResolvedValue(list);
         await service.setItemSelected('Test List', 'a2', true);
         const saved = repo.replaceIfUnchanged.mock.calls[0][1] as List;
         expect(saved.items.find((i: Item) => i.id === 'a2')?.isSelected).toBe(true);
@@ -1412,14 +1414,14 @@ describe('Item id-addressing', () => {
                 { id: 'a2', name: 'Bread', isSelected: false, dateAdded: new Date() },
             ],
         });
-        repo.getByTitle.mockResolvedValue(list);
+        repo.getByRef.mockResolvedValue(list);
         await service.deleteItem('Test List', 'a1');
         const saved = repo.replaceIfUnchanged.mock.calls[0][1] as List;
         expect(saved.items.map((i: Item) => i.id)).toEqual(['a2']);
     });
 
     it('addItem uses caller-provided id when given', async () => {
-        repo.getByTitle.mockResolvedValue(makeList({ items: [] }));
+        repo.getByRef.mockResolvedValue(makeList({ items: [] }));
         const item = await service.addItem(
             'Test List',
             'Eggs',
@@ -1434,7 +1436,7 @@ describe('Item id-addressing', () => {
 
     it('addItem with an already-present id returns the existing item (idempotent replay)', async () => {
         const existing: Item = { id: 'dup', name: 'Eggs', isSelected: false, dateAdded: new Date() };
-        repo.getByTitle.mockResolvedValue(makeList({ items: [existing] }));
+        repo.getByRef.mockResolvedValue(makeList({ items: [existing] }));
         const item = await service.addItem('Test List', 'Eggs', new Date(), undefined, undefined, undefined, 'dup');
         expect(item.id).toBe('dup');
         expect(repo.pushItem).not.toHaveBeenCalled();
@@ -1456,7 +1458,7 @@ describe('ListService notifications', () => {
             ownerId: 'u1',
         };
         const repo = {
-            getByTitle: async () => list,
+            getByRef: async () => list,
             pushItem: async () => {},
         } as never;
         const idGenerator = { generate: () => 'i1' } as never;
@@ -1514,8 +1516,8 @@ describe('ListService item categories', () => {
         expect(item.category).toBeUndefined();
         await flush();
 
-        expect((await repo.getByTitle('Groceries'))?.items[0].category).toBe('dairy');
-        expect(changed).toHaveBeenCalledWith('Groceries');
+        expect((await repo.getByRef('Groceries'))?.items[0].category).toBe('dairy');
+        expect(changed).toHaveBeenCalledWith('l1');
     });
 
     it('categorises bulk-added items too', async () => {
@@ -1529,7 +1531,7 @@ describe('ListService item categories', () => {
         );
         await flush();
 
-        expect((await repo.getByTitle('Groceries'))?.items.map((i) => i.category)).toEqual(['dairy', 'produce']);
+        expect((await repo.getByRef('Groceries'))?.items.map((i) => i.category)).toEqual(['dairy', 'produce']);
     });
 
     it('leaves the item uncategorised and still succeeds when classification yields nothing', async () => {
@@ -1538,7 +1540,7 @@ describe('ListService item categories', () => {
         await service.addItem('Groceries', 'mystery', new Date(), undefined, undefined, undefined, 'i1');
         await flush();
 
-        expect((await repo.getByTitle('Groceries'))?.items[0].category).toBeUndefined();
+        expect((await repo.getByRef('Groceries'))?.items[0].category).toBeUndefined();
         expect(changed).not.toHaveBeenCalled();
     });
 
@@ -1556,7 +1558,7 @@ describe('ListService item categories', () => {
         await service.setItemCategory('Groceries', 'i1', 'household');
         await flush();
 
-        expect((await repo.getByTitle('Groceries'))?.items[0].category).toBe('household');
+        expect((await repo.getByRef('Groceries'))?.items[0].category).toBe('household');
     });
 
     it('rejects an unknown category', async () => {
@@ -1565,5 +1567,79 @@ describe('ListService item categories', () => {
         await expect(service.setItemCategory('Groceries', 'i1', 'nope' as never)).rejects.toMatchObject({
             status: 400,
         });
+    });
+});
+
+describe('ListService list references and titles', () => {
+    const owner: User = { id: 'user-1', username: 'owner' };
+    const other: User = { id: 'user-2', username: 'other' };
+    let repo: MockListRepository;
+    let service: ListService;
+
+    const stored = (over: Partial<List>): List => ({
+        id: 'l1',
+        title: 'Groceries',
+        dateAdded: new Date('2023-01-01'),
+        items: [],
+        users: [owner],
+        listType: ListType.SHOPPING,
+        ownerId: owner.id,
+        ...over,
+    });
+
+    beforeEach(() => {
+        repo = new MockListRepository();
+        service = new ListService(repo, new MockIdGenerator());
+    });
+
+    it('resolves a list by id or by legacy title', async () => {
+        await repo.insert(stored({}));
+
+        expect((await service.getList('l1')).id).toBe('l1');
+        expect((await service.getList('Groceries')).id).toBe('l1');
+    });
+
+    it('writes to the list that the id names even when another list shares its title', async () => {
+        await repo.insert(stored({ id: 'l1', title: 'Weekly' }));
+        await repo.insert(stored({ id: 'l2', title: 'Weekly', users: [other], ownerId: other.id }));
+
+        await service.addItem('l2', 'milk', new Date(), undefined, undefined, undefined, 'i1');
+
+        expect((await repo.getByRef('l1'))?.items).toHaveLength(0);
+        expect((await repo.getByRef('l2'))?.items.map((i) => i.name)).toEqual(['milk']);
+    });
+
+    it('lets two different users each have a list with the same title', async () => {
+        await repo.insert(stored({ id: 'l1', title: 'Weekly' }));
+
+        const created = await service.addList('Weekly', new Date(), other, [], undefined, 'l2');
+
+        expect(created.id).toBe('l2');
+    });
+
+    it('still rejects the same user creating a second list with a title they already use', async () => {
+        await repo.insert(stored({ id: 'l1', title: 'Weekly' }));
+
+        await expect(service.addList('Weekly', new Date(), owner, [], undefined, 'l9')).rejects.toMatchObject({
+            status: 409,
+        });
+    });
+
+    it('treats a repeated create with the same id as an idempotent replay even though the title exists', async () => {
+        await repo.insert(stored({ id: 'l1', title: 'Weekly' }));
+
+        const again = await service.addList('Weekly', new Date(), owner, [], undefined, 'l1');
+
+        expect(again.id).toBe('l1');
+    });
+
+    it('deletes by id', async () => {
+        await repo.insert(stored({ id: 'l1', title: 'Weekly' }));
+        await repo.insert(stored({ id: 'l2', title: 'Weekly', users: [other], ownerId: other.id }));
+
+        await service.deleteList('l2');
+
+        expect(await repo.getByRef('l2')).toBeNull();
+        expect((await repo.getByRef('l1'))?.id).toBe('l1');
     });
 });

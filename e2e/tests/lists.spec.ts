@@ -60,7 +60,14 @@ test.describe('Lists page', () => {
         await apiCreateList('Groceries');
         await authenticatedPage.goto('/');
         await authenticatedPage.getByRole('button', { name: 'Groceries' }).click();
-        await authenticatedPage.waitForURL('/list/Groceries');
+        await authenticatedPage.waitForURL(/\/list\/[^/]+$/);
+        expect(authenticatedPage.url()).not.toContain('Groceries');
+    });
+
+    test('a list can still be opened by its title (old links and notifications)', async ({ authenticatedPage }) => {
+        await apiCreateList('Legacy Link');
+        await authenticatedPage.goto('/list/Legacy Link');
+        await expect(authenticatedPage.getByRole('button', { name: 'Go back' })).toBeVisible();
     });
 
     test('navigate to recipes via toolbar', async ({ authenticatedPage }) => {

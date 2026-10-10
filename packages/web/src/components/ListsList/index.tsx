@@ -16,21 +16,22 @@ import { useConfirmation } from '../../hooks/useConfirmation';
 import { ListItem } from './ListItem';
 import type { ListsListProps } from './types';
 
+// fallow-ignore-next-line complexity
 const ListsList = ({ lists, refetch, currentUserId }: ListsListProps) => {
     const navigate = useNavigate();
     const [editingList, setEditingList] = useState<string | null>(null);
     const [editValue, setEditValue] = useState<string>('');
     const { confirm, isOpen, config, handleConfirm, handleCancel } = useConfirmation();
 
-    const handleEditStart = (listTitle: string) => {
-        setEditingList(listTitle);
-        setEditValue(listTitle);
+    const handleEditStart = (list: ListResponse) => {
+        setEditingList(list.id);
+        setEditValue(list.title);
     };
 
-    const handleEditSave = async (originalTitle: string) => {
-        if (editValue.trim() && editValue !== originalTitle) {
+    const handleEditSave = async (list: ListResponse) => {
+        if (editValue.trim() && editValue !== list.title) {
             try {
-                await updateListName(originalTitle, editValue.trim());
+                await updateListName(list.id, editValue.trim());
                 refetch();
             } catch (error) {
                 console.error('Error updating list name:', error);
@@ -48,15 +49,15 @@ const ListsList = ({ lists, refetch, currentUserId }: ListsListProps) => {
 
     const renderedOutput = lists.map((list: ListResponse) => (
         <ListItem
-            key={list.title}
+            key={list.id}
             list={list}
             isOwner={list.ownerId === currentUserId}
             currentUserId={currentUserId}
-            isEditing={editingList === list.title}
+            isEditing={editingList === list.id}
             editValue={editValue}
             onEditChange={setEditValue}
-            onEditStart={() => handleEditStart(list.title)}
-            onEditSave={() => handleEditSave(list.title)}
+            onEditStart={() => handleEditStart(list)}
+            onEditSave={() => handleEditSave(list)}
             onEditCancel={handleEditCancel}
             onDelete={() => {
                 confirm({
@@ -64,12 +65,12 @@ const ListsList = ({ lists, refetch, currentUserId }: ListsListProps) => {
                     description: `Are you sure you want to delete "${list.title}"? This action cannot be undone and all items will be permanently removed.`,
                     actionLabel: 'Delete List',
                     onConfirm: async () => {
-                        await deleteList(list.title);
+                        await deleteList(list.id);
                         refetch();
                     },
                 });
             }}
-            onNavigate={() => navigate(`/list/${list.title}`)}
+            onNavigate={() => navigate(`/list/${list.id}`)}
         />
     ));
 
