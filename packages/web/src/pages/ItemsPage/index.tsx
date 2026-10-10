@@ -146,6 +146,7 @@ const ItemsPage = () => {
                     listTitle && users.length > 0
                         ? {
                               title: listTitle,
+                              displayTitle: data?.title,
                               users,
                               ownerId,
                           }

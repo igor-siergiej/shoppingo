@@ -18,6 +18,7 @@ interface IngredientSelectSectionProps {
     ) => Promise<void>;
 }
 
+// fallow-ignore-next-line complexity
 export const IngredientSelectSection = ({ recipe, lists, onCancel, onConfirm }: IngredientSelectSectionProps) => {
     const { selectedIds, toggleIngredient, portions, setPortions, scaledIngredients, selectedScaledIngredients } =
         useIngredientSelection(recipe.ingredients, recipe.servings ?? 1);
@@ -72,10 +73,10 @@ export const IngredientSelectSection = ({ recipe, lists, onCancel, onConfirm }: 
                     <div className="flex flex-wrap gap-2">
                         {shoppingLists.map((list) => (
                             <button
-                                key={list.title}
-                                onClick={() => setChosenList(list.title)}
+                                key={list.id}
+                                onClick={() => setChosenList(list.id)}
                                 className={`px-4 py-2 rounded-full border font-medium transition-all ${
-                                    chosenList === list.title
+                                    chosenList === list.id
                                         ? 'bg-primary text-primary-foreground border-primary'
                                         : 'bg-muted border-muted-foreground/30 text-foreground hover:bg-muted/80'
                                 }`}

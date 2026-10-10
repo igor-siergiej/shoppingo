@@ -27,8 +27,12 @@ class MockCollection {
         findOneAndUpdate: { modifiedCount: 0 },
     };
 
+    /** When set, successive findOne calls return these in order (then fall back to resolvedValues.findOne). */
+    findOneSequence: Array<unknown> = [];
+
     async findOne(query: unknown) {
         this.calls.findOne.push([query]);
+        if (this.findOneSequence.length > 0) return this.findOneSequence.shift();
         return this.resolvedValues.findOne;
     }
 
@@ -82,6 +86,7 @@ class MockCollection {
     }
 
     reset() {
+        this.findOneSequence = [];
         this.createIndexCalls = [];
         this.updateManyCalls = [];
         this.calls = {
@@ -124,38 +129,41 @@ describe('MongoListRepository', () => {
         it('indexes the fields every list lookup filters on', async () => {
             await repository.ensureIndexes();
 
-            expect(mockCollection.createIndexCalls).toEqual([{ title: 1 }, { 'users.id': 1 }]);
+            expect(mockCollection.createIndexCalls).toEqual([{ id: 1 }, { title: 1 }, { 'users.id': 1 }]);
         });
     });
 
-    describe('Finding lists by title', () => {
-        describe('When a list with the given title exists', () => {
-            it('should return the list', async () => {
-                const mockList: List = {
-                    id: 'list-1',
-                    title: 'Test List',
-                    dateAdded: new Date('2023-01-01'),
-                    items: [],
-                    users: [{ id: 'user-1', username: 'testuser' }],
-                };
+    describe('Resolving a list reference', () => {
+        const mockList: List = {
+            id: 'list-1',
+            title: 'Test List',
+            dateAdded: new Date('2023-01-01'),
+            items: [],
+            users: [{ id: 'user-1', username: 'testuser' }],
+        };
 
-                mockCollection.resolvedValues.findOne = mockList;
+        it('finds a list by its id first', async () => {
+            mockCollection.findOneSequence = [mockList];
 
-                const result = await repository.getByTitle('Test List');
+            const result = await repository.getByRef('list-1');
 
-                expect(mockCollection.calls.findOne[0]).toEqual([{ title: 'Test List' }]);
-                expect(result).toEqual(mockList);
-            });
+            expect(mockCollection.calls.findOne).toEqual([[{ id: 'list-1' }]]);
+            expect(result).toEqual(mockList);
         });
 
-        describe('When no list with the given title exists', () => {
-            it('should return null', async () => {
-                mockCollection.resolvedValues.findOne = null;
+        it('falls back to the title for links and queued offline intents made before ids were used', async () => {
+            mockCollection.findOneSequence = [null, mockList];
 
-                const result = await repository.getByTitle('Non-existent List');
+            const result = await repository.getByRef('Test List');
 
-                expect(result).toBeNull();
-            });
+            expect(mockCollection.calls.findOne).toEqual([[{ id: 'Test List' }], [{ title: 'Test List' }]]);
+            expect(result).toEqual(mockList);
+        });
+
+        it('returns null when neither an id nor a title matches', async () => {
+            mockCollection.findOneSequence = [null, null];
+
+            expect(await repository.getByRef('Non-existent List')).toBeNull();
         });
     });
 
@@ -240,14 +248,14 @@ describe('MongoListRepository', () => {
         });
     });
 
-    describe('Deleting lists by title', () => {
-        describe('When deleting a list by title', () => {
+    describe('Deleting lists by id', () => {
+        describe('When deleting a list by id', () => {
             it('should remove the list from the database', async () => {
                 mockCollection.resolvedValues.deleteOne = { deletedCount: 1 };
 
-                await repository.deleteByTitle('Test List');
+                await repository.deleteById('list-1');
 
-                expect(mockCollection.calls.deleteOne[0]).toEqual([{ title: 'Test List' }]);
+                expect(mockCollection.calls.deleteOne[0]).toEqual([{ id: 'list-1' }]);
             });
         });
     });
@@ -265,11 +273,11 @@ describe('MongoListRepository', () => {
         it('writes only if the revision it read is still current, and returns the next one', async () => {
             mockCollection.resolvedValues.replaceOne = { matchedCount: 1 };
 
-            const next = await repository.replaceIfUnchanged('Test List', mockList);
+            const next = await repository.replaceIfUnchanged('list-1', mockList);
 
             expect(next).toBe(5);
             expect(mockCollection.calls.replaceOne[0]).toEqual([
-                { title: 'Test List', revision: 4 },
+                { id: 'list-1', revision: 4 },
                 { ...mockList, revision: 5 },
             ]);
         });
@@ -278,16 +286,16 @@ describe('MongoListRepository', () => {
             mockCollection.resolvedValues.replaceOne = { matchedCount: 1 };
             const { revision: _revision, ...legacy } = mockList;
 
-            const next = await repository.replaceIfUnchanged('Test List', legacy);
+            const next = await repository.replaceIfUnchanged('list-1', legacy);
 
             expect(next).toBe(1);
-            expect(mockCollection.calls.replaceOne[0][0]).toEqual({ title: 'Test List', revision: { $exists: false } });
+            expect(mockCollection.calls.replaceOne[0][0]).toEqual({ id: 'list-1', revision: { $exists: false } });
         });
 
         it('reports null when the list changed or was deleted since it was read', async () => {
             mockCollection.resolvedValues.replaceOne = { matchedCount: 0 };
 
-            expect(await repository.replaceIfUnchanged('Test List', mockList)).toBeNull();
+            expect(await repository.replaceIfUnchanged('list-1', mockList)).toBeNull();
         });
     });
 
@@ -303,10 +311,10 @@ describe('MongoListRepository', () => {
 
                 mockCollection.resolvedValues.findOneAndUpdate = { modifiedCount: 1 };
 
-                await repository.pushItem('Test List', mockItem);
+                await repository.pushItem('list-1', mockItem);
 
                 expect(mockCollection.calls.findOneAndUpdate[0]).toEqual([
-                    { title: 'Test List' },
+                    { id: 'list-1' },
                     { $push: { items: mockItem }, $inc: { revision: 1 } },
                 ]);
             });
@@ -317,11 +325,11 @@ describe('MongoListRepository', () => {
         it('filters on the item having no category so a user choice is never overwritten', async () => {
             mockCollection.resolvedValues.updateOne = { modifiedCount: 1 };
 
-            const changed = await repository.setCategoryIfUnset('Test List', 'item-1', 'dairy');
+            const changed = await repository.setCategoryIfUnset('list-1', 'item-1', 'dairy');
 
             expect(changed).toBe(true);
             expect(mockCollection.calls.updateOne[0]).toEqual([
-                { title: 'Test List' },
+                { id: 'list-1' },
                 { $set: { 'items.$[item].category': 'dairy' }, $inc: { revision: 1 } },
                 { arrayFilters: [{ 'item.id': 'item-1', 'item.category': { $exists: false } }] },
             ]);
@@ -330,7 +338,7 @@ describe('MongoListRepository', () => {
         it('reports false when nothing was modified', async () => {
             mockCollection.resolvedValues.updateOne = { modifiedCount: 0 };
 
-            expect(await repository.setCategoryIfUnset('Test List', 'item-1', 'dairy')).toBe(false);
+            expect(await repository.setCategoryIfUnset('list-1', 'item-1', 'dairy')).toBe(false);
         });
     });
 

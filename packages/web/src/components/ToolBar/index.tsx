@@ -58,7 +58,10 @@ interface ToolBarProps {
     placeholder?: string;
     currentListType?: ListType;
     currentList?: {
+        /** The list reference used for API calls: its id (legacy links may carry the title). */
         title: string;
+        /** The list's real title, for display. */
+        displayTitle?: string;
         users: Array<{ id: string; username: string }>;
         ownerId?: string;
     };
@@ -395,7 +398,7 @@ const ToolBar = ({
                 <ManageUsersDrawer
                     open={isManageUsersOpen}
                     onOpenChange={setIsManageUsersOpen}
-                    title={currentList.title}
+                    title={currentList.displayTitle ?? currentList.title}
                     currentUsers={currentList.users}
                     ownerId={currentList.ownerId ?? ''}
                     currentUserId={userId ?? ''}

@@ -101,7 +101,7 @@ describe('registerWebMcpTools', () => {
             ctx
         );
 
-        expect(api.addItemsBulk).toHaveBeenCalledWith('Groceries', [
+        expect(api.addItemsBulk).toHaveBeenCalledWith('l1', [
             { itemName: 'milk', quantity: 2, unit: 'l' },
             { itemName: 'bread' },
         ]);
@@ -125,7 +125,7 @@ describe('registerWebMcpTools', () => {
 
         await tool('addRecipeToList').execute({ listTitle: 'Party', recipe: 'pasta', portions: 6 }, ctx);
 
-        expect(api.addItemsBulk).toHaveBeenCalledWith('Party', [
+        expect(api.addItemsBulk).toHaveBeenCalledWith('l2', [
             { itemName: 'spaghetti', quantity: 600, unit: 'g' },
             { itemName: 'garlic', quantity: undefined, unit: undefined },
         ]);

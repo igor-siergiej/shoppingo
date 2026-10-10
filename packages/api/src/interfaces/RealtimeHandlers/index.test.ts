@@ -20,10 +20,13 @@ const { issueListSocketTicket, connectListSocket } = createRealtimeHandlers({
 const ALICE = { id: 'u-alice', username: 'alice' };
 const BOB = { id: 'u-bob', username: 'bob' };
 const MALLORY = { id: 'u-mallory', username: 'mallory' };
-const LISTS: Record<string, { users: Array<{ id: string; username: string }> }> = {
-    Groceries: { users: [ALICE, BOB] },
-    Private: { users: [ALICE] },
+const LISTS: Record<string, { id: string; users: Array<{ id: string; username: string }> }> = {
+    Groceries: { id: 'list-groceries', users: [ALICE, BOB] },
+    Private: { id: 'list-private', users: [ALICE] },
 };
+const GROCERIES_ID = LISTS.Groceries.id;
+// Lists resolve by id or by (legacy) title, as ListService.getList does.
+const findList = (ref: string) => Object.values(LISTS).find((list) => list.id === ref) ?? LISTS[ref];
 
 // Stands in for `authenticate`: the bearer token IS the user id, resolved from a fixed directory.
 const USERS: Record<string, typeof ALICE> = { alice: ALICE, bob: BOB, mallory: MALLORY };
@@ -42,7 +45,8 @@ let base: string;
 beforeAll(() => {
     app.post('/api/lists/:title/socket-ticket', fakeAuth, issueListSocketTicket);
     app.get('/api/ws/lists/:title', connectListSocket);
-    app.post('/api/lists/:title/items', fakeAuth, notifyListChanged(hub), (c) =>
+    const resolveListId = async (ref: string) => findList(ref)?.id;
+    app.post('/api/lists/:title/items', fakeAuth, notifyListChanged(hub, resolveListId), (c) =>
         c.json({ ok: true }, c.req.query('fail') ? 500 : 200)
     );
     server = Bun.serve({ port: 0, fetch: app.fetch, websocket });
@@ -53,7 +57,7 @@ afterAll(() => server.stop(true));
 
 beforeEach(() => {
     listService.getList.mockImplementation(async (title: string) => {
-        const list = LISTS[title];
+        const list = findList(title);
         if (!list) throw new Error('not found');
         return list;
     });
@@ -89,6 +93,11 @@ describe('list socket tickets', () => {
     it('refuses a ticket to someone who is not a member of the list', async () => {
         expect((await getTicket('bob', 'Private')).status).toBe(403);
         expect((await getTicket('mallory', 'Groceries')).status).toBe(403);
+    });
+
+    it('issues tickets for a list referenced by id as well as by title', async () => {
+        expect((await getTicket('alice', GROCERIES_ID)).status).toBe(200);
+        expect((await getTicket('alice', 'Groceries')).status).toBe(200);
     });
 
     it('refuses a ticket for an invalid or expired access token', async () => {
@@ -134,13 +143,27 @@ describe('list websocket', () => {
         a.socket.close();
     });
 
+    it('puts a socket opened by title and one opened by id in the same room', async () => {
+        const byTitle = await connect('Groceries', (await getTicket('alice', 'Groceries')).ticket);
+        if ('rejected' in byTitle) throw new Error('alice was rejected');
+        const byId = await connect(GROCERIES_ID, (await getTicket('bob', GROCERIES_ID)).ticket);
+        if ('rejected' in byId) throw new Error('bob was rejected');
+
+        await until(() => byTitle.messages.some((m) => m.type === 'presence' && m.users?.length === 2));
+
+        await app.request('/api/lists/Groceries/items', { method: 'POST', headers: { Authorization: 'Bearer bob' } });
+        await until(() => byId.messages.some((m) => m.type === 'changed'));
+        byTitle.socket.close();
+        byId.socket.close();
+    });
+
     it('does not leak events from a list the socket did not subscribe to', async () => {
         const a = await connect('Groceries', (await getTicket('alice', 'Groceries')).ticket);
         if ('rejected' in a) throw new Error('alice was rejected');
         await until(() => a.messages.length > 0);
         const before = a.messages.length;
 
-        hub.notifyChanged('Private');
+        hub.notifyChanged(LISTS.Private.id);
         await Bun.sleep(50);
         expect(a.messages.length).toBe(before);
         a.socket.close();
@@ -173,7 +196,7 @@ describe('notifyListChanged', () => {
         if ('rejected' in b) throw new Error('bob was rejected');
         await until(() => b.messages.length > 0);
 
-        hub.kick('Groceries', BOB.id);
+        hub.kick(GROCERIES_ID, BOB.id);
         expect(await b.closed).toBe(4403);
     });
 });

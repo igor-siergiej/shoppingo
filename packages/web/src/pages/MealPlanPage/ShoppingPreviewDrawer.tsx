@@ -35,7 +35,7 @@ export const ShoppingPreviewDrawer = ({
         if (!open) return;
         setDropped(new Set());
         setError(null);
-        setListTitle((current) => current || lists[0]?.title || '');
+        setListTitle((current) => current || lists[0]?.id || '');
     }, [open, lists]);
 
     const kept = rows.filter((row) => !dropped.has(row.key));
@@ -77,7 +77,7 @@ export const ShoppingPreviewDrawer = ({
                                 onChange={(event) => setListTitle(event.target.value)}
                             >
                                 {lists.map((list) => (
-                                    <option key={list.id} value={list.title}>
+                                    <option key={list.id} value={list.id}>
                                         {list.title}
                                     </option>
                                 ))}

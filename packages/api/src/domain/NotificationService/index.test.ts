@@ -73,7 +73,7 @@ describe('NotificationService coalescing', () => {
         expect(JSON.parse(payload as string)).toEqual({
             title: 'Groceries',
             body: 'owner added Milk, Eggs, Bread and 1 more',
-            data: { url: '/list/Groceries' },
+            data: { url: '/list/l1' },
         });
     });
 

@@ -112,7 +112,7 @@ export const registerWebMcpTools = (userId: string): (() => void) => {
             annotations: { consequentialHint: true },
             execute: async (args) => {
                 const list = findList(await fetchLists(), asString(args.listTitle, 'listTitle'));
-                const result = await addItemsBulk(list.title, parseItems(args.items));
+                const result = await addItemsBulk(list.id, parseItems(args.items));
                 return asText({ list: list.title, added: result.added, merged: result.skipped });
             },
         },
@@ -139,7 +139,7 @@ export const registerWebMcpTools = (userId: string): (() => void) => {
                 const portions = typeof args.portions === 'number' && args.portions > 0 ? args.portions : baseline;
                 const scaled = scaleIngredients(recipe.ingredients, portions / baseline);
                 const result = await addItemsBulk(
-                    list.title,
+                    list.id,
                     scaled.map((ingredient) => ({
                         itemName: ingredient.name,
                         quantity: ingredient.quantity,
