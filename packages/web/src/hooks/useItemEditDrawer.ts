@@ -4,12 +4,15 @@ interface EditValues {
     name: string;
     quantity: string;
     unit: string;
+    /** An ItemCategory, or '' while the item is still unclassified and the user hasn't picked one. */
+    category: string;
 }
 
 interface EditItemData {
     name: string;
     quantity: number | undefined;
     unit: string | undefined;
+    category?: string;
 }
 
 export const useItemEditDrawer = () => {
@@ -18,11 +21,13 @@ export const useItemEditDrawer = () => {
         name: '',
         quantity: '',
         unit: '',
+        category: '',
     });
     const [originalValues, setOriginalValues] = useState<EditValues>({
         name: '',
         quantity: '',
         unit: '',
+        category: '',
     });
 
     const openDrawer = (item: EditItemData) => {
@@ -30,6 +35,7 @@ export const useItemEditDrawer = () => {
             name: item.name,
             quantity: item.quantity?.toString() ?? '',
             unit: item.unit ?? '',
+            category: item.category ?? '',
         };
         setValues(newValues);
         setOriginalValues(newValues);
@@ -42,11 +48,13 @@ export const useItemEditDrawer = () => {
             name: '',
             quantity: '',
             unit: '',
+            category: '',
         });
         setOriginalValues({
             name: '',
             quantity: '',
             unit: '',
+            category: '',
         });
     };
 
@@ -62,11 +70,16 @@ export const useItemEditDrawer = () => {
         setValues((prev) => ({ ...prev, unit }));
     };
 
+    const updateCategory = (category: string) => {
+        setValues((prev) => ({ ...prev, category }));
+    };
+
     const hasChanges = () => {
         return (
             values.name !== originalValues.name ||
             values.quantity !== originalValues.quantity ||
-            values.unit !== originalValues.unit
+            values.unit !== originalValues.unit ||
+            values.category !== originalValues.category
         );
     };
 
@@ -78,6 +91,7 @@ export const useItemEditDrawer = () => {
         updateName,
         updateQuantity,
         updateUnit,
+        updateCategory,
         hasChanges,
     };
 };

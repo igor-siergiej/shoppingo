@@ -11,6 +11,7 @@ import { DiscoveryPublishService } from '../domain/DiscoveryPublish';
 import { DiscoveryService } from '../domain/DiscoveryService';
 import { FriendService } from '../domain/FriendService';
 import { ImageService } from '../domain/ImageService';
+import { ItemCategoryService } from '../domain/ItemCategoryService';
 import { LabelService } from '../domain/LabelService';
 import { ListRealtimeHub } from '../domain/ListRealtimeHub';
 import { ListService } from '../domain/ListService';
@@ -29,6 +30,7 @@ import { BucketStore } from '../infrastructure/BucketStore';
 import { CachedIngredientSubstituter } from '../infrastructure/CachedIngredientSubstituter';
 import { FalImageGenerator } from '../infrastructure/FalImageGenerator';
 import { FalIngredientSubstituter } from '../infrastructure/FalIngredientSubstituter';
+import { FalItemCategoriser } from '../infrastructure/FalItemCategoriser';
 import { FalLlmClient } from '../infrastructure/FalLlmClient';
 import { FalRecipeEstimator } from '../infrastructure/FalRecipeEstimator';
 import { FalRecipeExtractor } from '../infrastructure/FalRecipeExtractor';
@@ -41,6 +43,7 @@ import { MongoDiscoveryPublicationRepository } from '../infrastructure/MongoDisc
 import { MongoDiscoveryRecipeRepository } from '../infrastructure/MongoDiscoveryRecipeRepository';
 import { MongoDiscoveryReportRepository } from '../infrastructure/MongoDiscoveryReportRepository';
 import { MongoFriendRepository } from '../infrastructure/MongoFriendRepository';
+import { MongoItemCategoryRepository } from '../infrastructure/MongoItemCategoryRepository';
 import { MongoLabelRepository } from '../infrastructure/MongoLabelRepository';
 import { MongoListRepository } from '../infrastructure/MongoListRepository';
 import { MongoPushSubscriptionRepository } from '../infrastructure/MongoPushSubscriptionRepository';
@@ -129,6 +132,30 @@ export const registerDepdendencies = () => {
                     dependencyContainer.resolve(DependencyToken.AuthorizationService),
                     dependencyContainer.resolve(DependencyToken.NotificationService),
                     dependencyContainer.resolve(DependencyToken.FriendService)
+                );
+            }
+        }
+    );
+
+    dependencyContainer.registerSingleton(
+        DependencyToken.ItemCategoryRepository,
+        // @ts-expect-error - Dependency injection requires constructor return override
+        class {
+            constructor() {
+                return new MongoItemCategoryRepository(dependencyContainer.resolve(DependencyToken.Database));
+            }
+        }
+    );
+
+    dependencyContainer.registerSingleton(
+        DependencyToken.ItemCategoryService,
+        // @ts-expect-error - Dependency injection requires constructor return override
+        class {
+            constructor() {
+                return new ItemCategoryService(
+                    dependencyContainer.resolve(DependencyToken.ItemCategoryRepository),
+                    new FalItemCategoriser(dependencyContainer.resolve(DependencyToken.FalLlmClient)),
+                    dependencyContainer.resolve(DependencyToken.Logger)
                 );
             }
         }

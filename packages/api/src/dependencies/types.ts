@@ -25,6 +25,8 @@ import type { FriendService } from '../domain/FriendService';
 import type { IdGenerator } from '../domain/IdGenerator';
 import type { ImageService } from '../domain/ImageService';
 import type { ImageGenerator, ImageStore } from '../domain/ImageService/types';
+import type { ItemCategoryRepository } from '../domain/ItemCategoryRepository';
+import type { ItemCategoryService } from '../domain/ItemCategoryService';
 import type { LabelRepository } from '../domain/LabelRepository';
 import type { LabelService } from '../domain/LabelService';
 import type { ListRealtimeHub } from '../domain/ListRealtimeHub';
@@ -47,6 +49,7 @@ import type { WsTicketStore } from '../domain/WsTicketStore';
 import type { CachedIngredientSubstituter } from '../infrastructure/CachedIngredientSubstituter';
 import type { FalLlmClient } from '../infrastructure/FalLlmClient';
 import type { FalRecipeTagger } from '../infrastructure/FalRecipeTagger';
+import type { ItemCategoryDoc } from '../infrastructure/MongoItemCategoryRepository';
 import type { WebPushSender } from '../infrastructure/WebPushSender';
 import type { RecipeHandlers } from '../interfaces/RecipeHandlers';
 
@@ -62,6 +65,7 @@ export type Collections = {
     [CollectionNames.DiscoveryRecipe]: DiscoveryRecipe;
     [CollectionNames.DiscoveryPublication]: DiscoveryPublication;
     [CollectionNames.DiscoveryReport]: DiscoveryReport;
+    [CollectionNames.ItemCategory]: ItemCategoryDoc;
 };
 
 export enum DependencyToken {
@@ -88,6 +92,8 @@ export enum DependencyToken {
     RecipeTextExtractor = 'RecipeTextExtractor',
     RecipeParser = 'RecipeParser',
     IngredientSubstituter = 'IngredientSubstituter',
+    ItemCategoryRepository = 'ItemCategoryRepository',
+    ItemCategoryService = 'ItemCategoryService',
     RecipeImportService = 'RecipeImportService',
     TodoRepository = 'TodoRepository',
     TodoService = 'TodoService',
@@ -140,6 +146,8 @@ export type Dependencies = {
     [DependencyToken.RecipeTextExtractor]: RecipeTextExtractor;
     [DependencyToken.RecipeParser]: RecipeParser;
     [DependencyToken.IngredientSubstituter]: CachedIngredientSubstituter;
+    [DependencyToken.ItemCategoryRepository]: ItemCategoryRepository;
+    [DependencyToken.ItemCategoryService]: ItemCategoryService;
     [DependencyToken.RecipeImportService]: RecipeImportService;
     [DependencyToken.TodoRepository]: TodoRepository;
     [DependencyToken.TodoService]: TodoService;
@@ -178,4 +186,5 @@ export enum CollectionNames {
     DiscoveryRecipe = 'discoveryRecipes',
     DiscoveryPublication = 'discoveryPublications',
     DiscoveryReport = 'discoveryReports',
+    ItemCategory = 'itemCategories',
 }

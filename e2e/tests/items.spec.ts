@@ -31,6 +31,21 @@ test.describe('Items page', () => {
         await expect(authenticatedPage.getByText('Eggs')).toBeVisible();
     });
 
+    test('can group items by aisle and the choice is remembered', async ({ authenticatedPage }) => {
+        await apiCreateList(LIST_TITLE);
+        await apiAddItem(LIST_TITLE, 'Milk');
+        await authenticatedPage.goto(`/list/${LIST_TITLE}`);
+        await expect(authenticatedPage.getByText('Milk')).toBeVisible();
+        await expect(authenticatedPage.getByRole('heading', { level: 2 })).toHaveCount(0);
+
+        await authenticatedPage.getByRole('button', { name: 'Group by aisle' }).click();
+        await expect(authenticatedPage.getByRole('heading', { level: 2 }).first()).toBeVisible();
+
+        await authenticatedPage.reload();
+        await expect(authenticatedPage.getByRole('button', { name: 'Ungroup' })).toBeVisible();
+        await expect(authenticatedPage.getByRole('heading', { level: 2 }).first()).toBeVisible();
+    });
+
     test('can toggle item selection', async ({ authenticatedPage }) => {
         await apiCreateList(LIST_TITLE);
         await apiAddItem(LIST_TITLE, 'Milk');

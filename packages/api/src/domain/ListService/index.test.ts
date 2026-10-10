@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, type Mock, mock, vi } from 'bun:test';
-import type { Item, List, User } from '@shoppingo/types';
+import type { Item, ItemCategory, List, User } from '@shoppingo/types';
 import { ListType } from '@shoppingo/types';
 
 import type { IdGenerator } from '../IdGenerator';
@@ -50,6 +50,13 @@ class MockListRepository implements ListRepository {
         if (list) {
             list.items.push(item);
         }
+    }
+
+    async setCategoryIfUnset(title: string, itemId: string, category: ItemCategory): Promise<boolean> {
+        const item = this.lists.find((l) => l.title === title)?.items.find((i) => i.id === itemId);
+        if (!item || item.category) return false;
+        item.category = category;
+        return true;
     }
 
     async removeMemberFromAll(memberId: string, ownerId: string): Promise<void> {
@@ -1464,5 +1471,99 @@ describe('ListService notifications', () => {
         // fan-out is fire-and-forget — allow the microtask queue to drain
         await Promise.resolve();
         expect(notify.notifyItemAdded).toHaveBeenCalledTimes(1);
+    });
+});
+
+describe('ListService item categories', () => {
+    const owner: User = { id: 'user-1', username: 'testuser' };
+    let repo: MockListRepository;
+    let categorise: Mock<(name: string) => Promise<ItemCategory | null>>;
+    let changed: Mock<(title: string) => void>;
+    let service: ListService;
+    const flush = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
+
+    beforeEach(async () => {
+        repo = new MockListRepository();
+        await repo.insert({
+            id: 'l1',
+            title: 'Groceries',
+            dateAdded: new Date(),
+            items: [],
+            users: [owner],
+            listType: ListType.SHOPPING,
+            ownerId: owner.id,
+        });
+        categorise = mock(async (name: string) => (name === 'milk' ? 'dairy' : 'produce'));
+        changed = mock();
+        service = new ListService(
+            repo,
+            new MockIdGenerator(),
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            { categorise } as never,
+            changed
+        );
+    });
+
+    it('adds the item immediately and categorises it afterwards', async () => {
+        const item = await service.addItem('Groceries', 'milk', new Date(), undefined, undefined, undefined, 'i1');
+
+        expect(item.category).toBeUndefined();
+        await flush();
+
+        expect((await repo.getByTitle('Groceries'))?.items[0].category).toBe('dairy');
+        expect(changed).toHaveBeenCalledWith('Groceries');
+    });
+
+    it('categorises bulk-added items too', async () => {
+        await service.addItems(
+            'Groceries',
+            [
+                { itemName: 'milk', dateAdded: new Date() },
+                { itemName: 'apple', dateAdded: new Date() },
+            ],
+            owner.id
+        );
+        await flush();
+
+        expect((await repo.getByTitle('Groceries'))?.items.map((i) => i.category)).toEqual(['dairy', 'produce']);
+    });
+
+    it('leaves the item uncategorised and still succeeds when classification yields nothing', async () => {
+        categorise.mockResolvedValue(null);
+
+        await service.addItem('Groceries', 'mystery', new Date(), undefined, undefined, undefined, 'i1');
+        await flush();
+
+        expect((await repo.getByTitle('Groceries'))?.items[0].category).toBeUndefined();
+        expect(changed).not.toHaveBeenCalled();
+    });
+
+    it('never fails the add when the categoriser throws', async () => {
+        categorise.mockRejectedValue(new Error('llm down'));
+
+        await expect(
+            service.addItem('Groceries', 'milk', new Date(), undefined, undefined, undefined, 'i1')
+        ).resolves.toMatchObject({ name: 'milk' });
+        await flush();
+    });
+
+    it('does not overwrite a category the user already set', async () => {
+        await service.addItem('Groceries', 'milk', new Date(), undefined, undefined, undefined, 'i1');
+        await service.setItemCategory('Groceries', 'i1', 'household');
+        await flush();
+
+        expect((await repo.getByTitle('Groceries'))?.items[0].category).toBe('household');
+    });
+
+    it('rejects an unknown category', async () => {
+        await service.addItem('Groceries', 'milk', new Date(), undefined, undefined, undefined, 'i1');
+
+        await expect(service.setItemCategory('Groceries', 'i1', 'nope' as never)).rejects.toMatchObject({
+            status: 400,
+        });
     });
 });

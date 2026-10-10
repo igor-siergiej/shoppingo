@@ -52,8 +52,8 @@ class MockCollection {
         return this.resolvedValues.replaceOne;
     }
 
-    async updateOne(query: unknown, update: unknown) {
-        this.calls.updateOne.push([query, update]);
+    async updateOne(query: unknown, update: unknown, options?: unknown) {
+        this.calls.updateOne.push(options === undefined ? [query, update] : [query, update, options]);
         return this.resolvedValues.updateOne;
     }
 
@@ -310,6 +310,27 @@ describe('MongoListRepository', () => {
                     { $push: { items: mockItem }, $inc: { revision: 1 } },
                 ]);
             });
+        });
+    });
+
+    describe('Setting an item category only while unset', () => {
+        it('filters on the item having no category so a user choice is never overwritten', async () => {
+            mockCollection.resolvedValues.updateOne = { modifiedCount: 1 };
+
+            const changed = await repository.setCategoryIfUnset('Test List', 'item-1', 'dairy');
+
+            expect(changed).toBe(true);
+            expect(mockCollection.calls.updateOne[0]).toEqual([
+                { title: 'Test List' },
+                { $set: { 'items.$[item].category': 'dairy' }, $inc: { revision: 1 } },
+                { arrayFilters: [{ 'item.id': 'item-1', 'item.category': { $exists: false } }] },
+            ]);
+        });
+
+        it('reports false when nothing was modified', async () => {
+            mockCollection.resolvedValues.updateOne = { modifiedCount: 0 };
+
+            expect(await repository.setCategoryIfUnset('Test List', 'item-1', 'dairy')).toBe(false);
         });
     });
 

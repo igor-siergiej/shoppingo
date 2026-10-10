@@ -2,6 +2,20 @@ export enum ListType {
     SHOPPING = 'shopping',
 }
 
+export const ITEM_CATEGORIES = [
+    'produce',
+    'dairy',
+    'bakery',
+    'meat-fish',
+    'frozen',
+    'pantry',
+    'drinks',
+    'household',
+    'other',
+] as const;
+
+export type ItemCategory = (typeof ITEM_CATEGORIES)[number];
+
 export interface Item {
     id: string;
     name: string;
@@ -10,6 +24,8 @@ export interface Item {
     quantity?: number;
     unit?: string;
     dueDate?: Date;
+    /** Aisle the item belongs to. Absent until classified; a user-set value is never overwritten by the classifier. */
+    category?: ItemCategory;
 }
 
 export interface List {

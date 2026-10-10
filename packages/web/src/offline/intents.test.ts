@@ -30,6 +30,9 @@ describe('applyItemIntent', () => {
         expect(r.quantity).toBe(2);
         expect(r.unit).toBe('L');
     });
+    it('category sets the aisle by id', () => {
+        expect(applyItemIntent(items, base('item.category', 'a', { category: 'dairy' }))[0].category).toBe('dairy');
+    });
     it('add appends a new item when absent', () => {
         const r = applyItemIntent(items, base('item.add', 'b', { name: 'Bread' }));
         expect(r.map((i) => i.id)).toEqual(['a', 'b']);

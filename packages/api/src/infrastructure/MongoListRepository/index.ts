@@ -1,5 +1,5 @@
 import type { MongoDbConnection } from '@imapps/api-utils';
-import type { Item, List } from '@shoppingo/types';
+import type { Item, ItemCategory, List } from '@shoppingo/types';
 
 import { CollectionNames } from '../../dependencies/types';
 import type { ListRepository } from '../../domain/ListRepository';
@@ -52,6 +52,15 @@ export class MongoListRepository implements ListRepository {
     // read-modify-write would overwrite its change without noticing.
     async pushItem(title: string, item: Item): Promise<void> {
         await this.collection().findOneAndUpdate({ title }, { $push: { items: item }, $inc: { revision: 1 } });
+    }
+
+    async setCategoryIfUnset(title: string, itemId: string, category: ItemCategory): Promise<boolean> {
+        const result = await this.collection().updateOne(
+            { title },
+            { $set: { 'items.$[item].category': category }, $inc: { revision: 1 } },
+            { arrayFilters: [{ 'item.id': itemId, 'item.category': { $exists: false } }] }
+        );
+        return result.modifiedCount === 1;
     }
 
     async removeMemberFromAll(memberId: string, ownerId: string): Promise<void> {

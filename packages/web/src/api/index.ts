@@ -6,6 +6,7 @@ import type {
     DiscoverySearchQuery,
     DiscoverySearchResult,
     Item,
+    ItemCategory,
     Label,
     ListResponse,
     ListType,
@@ -214,6 +215,14 @@ export const updateItemQuantity = async (listTitle: string, itemId: string, quan
             ...(quantity !== undefined && { quantity }),
             ...(unit !== undefined && { unit }),
         }),
+    });
+
+export const updateItemCategory = async (listTitle: string, itemId: string, category: ItemCategory) =>
+    makeRequest({
+        pathname: `/api/lists/${encodeURIComponent(listTitle)}/items/${encodeURIComponent(itemId)}/category`,
+        method: MethodType.PUT,
+        operationString: 'update item category',
+        body: JSON.stringify({ category }),
     });
 
 export const addUserToList = async (listTitle: string, friendId: string): Promise<ListResponse> => {

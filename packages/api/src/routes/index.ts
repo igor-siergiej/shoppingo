@@ -22,6 +22,7 @@ import {
     updateItem,
     updateList,
 } from '../interfaces/ListHandlers';
+import { setItemCategory } from '../interfaces/ListHandlers/category';
 import { receiveLogs } from '../interfaces/LogHandlers';
 import { getVapidPublicKey, subscribe, unsubscribe } from '../interfaces/PushHandlers';
 import { createRealtimeHandlers } from '../interfaces/RealtimeHandlers';
@@ -84,6 +85,7 @@ export const createRoutes = (): Hono<Vars> => {
     router.put('/api/lists/:title/items/bulk', authenticate, changed, addItems);
     router.put('/api/lists/:title/items', authenticate, changed, addItem);
     router.post('/api/lists/:title/items/:itemId', authenticate, changed, updateItem);
+    router.put('/api/lists/:title/items/:itemId/category', authenticate, changed, setItemCategory);
     router.delete('/api/lists/:title/items/:itemId', authenticate, changed, deleteItem);
     router.delete('/api/lists/:title/clear', authenticate, changed, clearList);
     router.delete('/api/lists/:title/clearSelected', authenticate, changed, deleteSelected);

@@ -62,6 +62,7 @@ export const onStartup = async () => {
 
         await dependencyContainer.resolve(DependencyToken.ListRepository).ensureIndexes();
         await dependencyContainer.resolve(DependencyToken.RecipeRepository).ensureIndexes();
+        await dependencyContainer.resolve(DependencyToken.ItemCategoryRepository).ensureIndexes();
         await dependencyContainer.resolve(DependencyToken.DiscoveryRecipeRepository).ensureIndexes();
         await dependencyContainer.resolve(DependencyToken.DiscoveryPublicationRepository).ensureIndexes();
         await dependencyContainer.resolve(DependencyToken.DiscoveryReportRepository).ensureIndexes();

@@ -1,5 +1,4 @@
-import type { Item, ListType } from '@shoppingo/types';
-import { ListType as ListTypeEnum } from '@shoppingo/types';
+import { type Item, type ItemCategory, type ListType, ListType as ListTypeEnum } from '@shoppingo/types';
 import { motion } from 'motion/react';
 import { type MouseEvent, useId, useRef, useState } from 'react';
 import { QuantityUnitField } from '../../components/QuantityUnitField';
@@ -19,6 +18,7 @@ import { useItemImage } from '../../hooks/useItemImage';
 import { useItemMutations } from '../../hooks/useItemMutations';
 import { usePendingItemIds } from '../../hooks/usePendingItemIds';
 import { useSwipeGesture } from '../../hooks/useSwipeGesture';
+import { AisleSelect } from '../AisleSelect';
 import { SwipeRevealShell } from '../SwipeRevealShell';
 import { ItemCheckBoxCard } from './ItemCheckBoxCard';
 
@@ -28,6 +28,8 @@ interface ItemCheckBoxProps {
     listType: ListType;
 }
 
+// One row: swipe, edit drawer and mutations share state, so they stay in one component.
+// fallow-ignore-next-line complexity
 const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
     const [isDeleting, setIsDeleting] = useState(false);
     const drawerInputRef = useRef<HTMLInputElement>(null);
@@ -36,10 +38,8 @@ const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
     const itemUnitId = useId();
 
     const { imageBlobUrl, hasLoadedImage, hasImageError, onImageLoad, onImageError } = useItemImage(item.name);
-    const { toggleMutation, deleteMutation, updateNameMutation, updateQuantityMutation } = useItemMutations(
-        listTitle,
-        item.id
-    );
+    const { toggleMutation, deleteMutation, updateNameMutation, updateQuantityMutation, updateCategoryMutation } =
+        useItemMutations(listTitle, item.id);
     const drawerState = useItemEditDrawer();
     const isPending = usePendingItemIds(listTitle).has(item.id);
 
@@ -59,6 +59,7 @@ const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
             name: item.name,
             quantity: item.quantity,
             unit: item.unit,
+            category: item.category,
         });
         setTimeout(() => {
             drawerInputRef.current?.focus();
@@ -71,6 +72,7 @@ const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
         toggleMutation.mutate(next);
     };
 
+    // fallow-ignore-next-line complexity
     const handleDrawerSave = () => {
         const { values } = drawerState;
         const hasNameChange = values.name.trim() && values.name !== item.name;
@@ -80,6 +82,10 @@ const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
 
         if (hasNameChange) updateNameMutation.mutate(values.name.trim());
         if (hasQuantityChange) updateQuantityMutation.mutate({ quantity: newQuantity, unit: newUnit });
+
+        if (values.category && values.category !== (item.category ?? '')) {
+            updateCategoryMutation.mutate(values.category as ItemCategory);
+        }
 
         drawerState.closeDrawer();
     };
@@ -155,6 +161,13 @@ const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
                                     className="mt-2"
                                 />
                             </div>
+
+                            {listType === ListTypeEnum.SHOPPING && (
+                                <AisleSelect
+                                    value={drawerState.values.category}
+                                    onChange={drawerState.updateCategory}
+                                />
+                            )}
 
                             {listType === ListTypeEnum.SHOPPING && (
                                 <QuantityUnitField

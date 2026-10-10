@@ -108,4 +108,27 @@ describe('useItemEditDrawer', () => {
 
         expect(result.current.hasChanges()).toBe(true);
     });
+
+    it('tracks the aisle and counts a change of it as an edit', () => {
+        const { result } = renderHook(() => useItemEditDrawer());
+
+        act(() => {
+            result.current.openDrawer({ name: 'Milk', quantity: undefined, unit: undefined, category: 'dairy' });
+        });
+        expect(result.current.values.category).toBe('dairy');
+        expect(result.current.hasChanges()).toBe(false);
+
+        act(() => result.current.updateCategory('household'));
+        expect(result.current.hasChanges()).toBe(true);
+    });
+
+    it('starts with no aisle chosen for an unclassified item', () => {
+        const { result } = renderHook(() => useItemEditDrawer());
+
+        act(() => {
+            result.current.openDrawer({ name: 'Milk', quantity: undefined, unit: undefined });
+        });
+
+        expect(result.current.values.category).toBe('');
+    });
 });
