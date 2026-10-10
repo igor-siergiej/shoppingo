@@ -18,8 +18,10 @@ import { PWAProvider } from './contexts/PWAContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { UnitSystemProvider } from './contexts/UnitSystemContext';
 import { applyManifestForTheme } from './utils/applyManifestForTheme';
+import { installWebMcpOriginTrialToken } from './webmcp/originTrial';
 
 applyManifestForTheme();
+installWebMcpOriginTrialToken(import.meta.env.VITE_WEBMCP_OT_TOKEN, __IS_PROD__);
 
 const lazyLoadPage = (importFn: () => Promise<unknown>, fallbackName: string) =>
     React.lazy(() =>

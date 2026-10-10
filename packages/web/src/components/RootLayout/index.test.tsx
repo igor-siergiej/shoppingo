@@ -6,6 +6,8 @@ const { mockRecordInAppNavigation } = vi.hoisted(() => ({
     mockRecordInAppNavigation: vi.fn(),
 }));
 
+vi.mock('../../hooks/useWebMcpTools', () => ({ useWebMcpTools: vi.fn() }));
+
 vi.mock('../Appbar', () => ({
     default: () => <div data-testid="appbar">Appbar</div>,
 }));
