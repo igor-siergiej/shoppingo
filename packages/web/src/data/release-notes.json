@@ -1,5 +1,23 @@
 [
   {
+    "version": "1.94.1",
+    "date": "2026-10-10",
+    "notes": [
+      {
+        "type": "improvement",
+        "text": "Todos, labels, friends and push notifications respond faster as more people use the app, and the moderation report list loads in one go."
+      },
+      {
+        "type": "improvement",
+        "text": "The server now checks every request more strictly and reports exactly which field is wrong, instead of failing in unexpected ways."
+      },
+      {
+        "type": "improvement",
+        "text": "Lists are now tracked by an internal id rather than their name, so two people can have lists with the same name and renaming a list no longer breaks links or queued offline changes."
+      }
+    ]
+  },
+  {
     "version": "1.94.0",
     "date": "2026-10-10",
     "notes": [

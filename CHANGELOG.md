@@ -1,3 +1,10 @@
+## [1.94.1](https://github.com/igor-siergiej/shoppingo/compare/v1.94.0...v1.94.1) (2026-10-10)
+
+
+### Performance Improvements
+
+* **api:** index todos, labels, friends and push; remove two N+1s ([#210](https://github.com/igor-siergiej/shoppingo/issues/210)) ([5dfb473](https://github.com/igor-siergiej/shoppingo/commit/5dfb473b2f62c18f191afc6c33157fbd4d89d469))
+
 # [1.94.0](https://github.com/igor-siergiej/shoppingo/compare/v1.93.0...v1.94.0) (2026-10-10)
 
 
