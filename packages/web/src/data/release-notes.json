@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.89.7",
+    "date": "2026-10-10",
+    "notes": [
+      {
+        "type": "improvement",
+        "text": "Saving a new recipe is now instant; its suggested tags appear a few seconds later instead of making you wait."
+      }
+    ]
+  },
+  {
     "version": "1.89.6",
     "date": "2026-10-10",
     "notes": [

@@ -1,3 +1,10 @@
+## [1.89.7](https://github.com/igor-siergiej/shoppingo/compare/v1.89.6...v1.89.7) (2026-10-10)
+
+
+### Performance Improvements
+
+* **api:** tag new recipes in the background ([#202](https://github.com/igor-siergiej/shoppingo/issues/202)) ([28cb1f2](https://github.com/igor-siergiej/shoppingo/commit/28cb1f2c0640771fc58fba3567bb6f2906b73e22))
+
 ## [1.89.6](https://github.com/igor-siergiej/shoppingo/compare/v1.89.5...v1.89.6) (2026-10-10)
 
 
