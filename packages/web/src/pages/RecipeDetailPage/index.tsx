@@ -26,6 +26,7 @@ import { useConfirmation } from '../../hooks/useConfirmation';
 import { useGoBack } from '../../hooks/useGoBack';
 import { useManageRecipeUsers } from '../../hooks/useManageRecipeUsers';
 import { useRecipeMutations } from '../../hooks/useRecipeMutations';
+import { aiTagPollInterval } from '../../utils/aiTagPoll';
 import { logger } from '../../utils/logger';
 import { toOptionalNumber } from '../../utils/parseRecipeMeta';
 import { notifyError, notifySuccess } from '../../utils/toast';
@@ -71,7 +72,11 @@ const RecipeDetailPage = () => {
         isLoading,
         isError,
         refetch,
-    } = useQuery(recipeId ? getRecipeQuery(recipeId) : { queryKey: [], queryFn: async () => null });
+    } = useQuery(
+        recipeId
+            ? { ...getRecipeQuery(recipeId), refetchInterval: aiTagPollInterval }
+            : { queryKey: [], queryFn: async () => null }
+    );
 
     const { data: lists = [] } = useQuery(
         user?.id ? getListsQuery(user.id) : { queryKey: [], queryFn: async () => [] }

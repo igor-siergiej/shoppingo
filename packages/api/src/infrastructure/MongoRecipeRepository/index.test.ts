@@ -148,6 +148,17 @@ describe('MongoRecipeRepository', () => {
         });
     });
 
+    describe('addTags', () => {
+        it('adds the tags with $addToSet so existing and concurrent edits survive', async () => {
+            collection.findOneAndUpdate.mockResolvedValue({});
+            await repo.addTags('r1', ['pasta', 'quick']);
+            expect(collection.findOneAndUpdate).toHaveBeenCalledWith(
+                { id: 'r1' },
+                { $addToSet: { tags: { $each: ['pasta', 'quick'] } } }
+            );
+        });
+    });
+
     describe('setCoverImageKey', () => {
         it('calls findOneAndUpdate with correct args', async () => {
             collection.findOneAndUpdate.mockResolvedValue({});

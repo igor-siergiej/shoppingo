@@ -43,6 +43,14 @@ class MockRepository {
         return r;
     }
 
+    async addTags(id: string, tags: string[]): Promise<void> {
+        const r = this.store.get(id);
+        if (r) {
+            // Replace the stored document (as a DB write would) rather than mutate the object a caller already holds.
+            this.store.set(id, { ...r, tags: [...new Set([...(r.tags ?? []), ...tags])] });
+        }
+    }
+
     async setCoverImageKey(id: string, key: string): Promise<void> {
         const r = this.store.get(id);
         if (r) {
@@ -269,6 +277,8 @@ class MockRecipeTagger {
 
 const mockTagger = new MockRecipeTagger();
 
+const flushBackground = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
+
 beforeEach(() => {
     mockTagger.reset();
 });
@@ -290,8 +300,14 @@ describe('RecipeService.createRecipe tags', () => {
         expect(recipe.tags).toEqual(['dinner', 'quick']);
     });
 
-    it('merges manual and AI tags, deduping case-insensitively', async () => {
-        mockTagger.tags = ['Pasta', 'egg', 'pork'];
+    it('does not wait for the tagger before returning the created recipe', async () => {
+        let release: (tags: string[]) => void = () => {};
+        const slowTagger = {
+            generateTags: () =>
+                new Promise<string[]>((resolve) => {
+                    release = resolve;
+                }),
+        };
         const svc = new RecipeService(
             repo as any,
             ids,
@@ -300,37 +316,9 @@ describe('RecipeService.createRecipe tags', () => {
             undefined,
             undefined,
             undefined,
-            mockTagger as any
+            slowTagger as any
         );
-        const recipe = await svc.createRecipe(
-            'Carbonara',
-            [{ id: '1', name: 'egg' }],
-            owner.id,
-            owner,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            ['PASTA', 'creamy']
-        );
-        expect(recipe.tags).toEqual(['pasta', 'creamy', 'egg', 'pork']);
-        expect(mockTagger.calls).toEqual([
-            { title: 'Carbonara', ingredients: [{ id: '1', name: 'egg' }], instructions: undefined },
-        ]);
-    });
 
-    it('falls back to manual tags only when the tagger throws', async () => {
-        mockTagger.shouldReject = true;
-        const svc = new RecipeService(
-            repo as any,
-            ids,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            mockTagger as any
-        );
         const recipe = await svc.createRecipe(
             'Pasta',
             [],
@@ -342,7 +330,72 @@ describe('RecipeService.createRecipe tags', () => {
             undefined,
             ['dinner']
         );
+
         expect(recipe.tags).toEqual(['dinner']);
+        release(['pasta']);
+    });
+
+    it('adds AI tags in the background, deduping case-insensitively against manual tags', async () => {
+        mockTagger.tags = ['Pasta', 'egg', 'pork'];
+        const svc = new RecipeService(
+            repo as any,
+            ids,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            mockTagger as any
+        );
+
+        const recipe = await svc.createRecipe(
+            'Carbonara',
+            [{ id: '1', name: 'egg' }],
+            owner.id,
+            owner,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            ['PASTA', 'creamy']
+        );
+        expect(recipe.tags).toEqual(['pasta', 'creamy']);
+
+        await flushBackground();
+
+        expect((await repo.getById(recipe.id))?.tags).toEqual(['pasta', 'creamy', 'egg', 'pork']);
+        expect(mockTagger.calls).toEqual([
+            { title: 'Carbonara', ingredients: [expect.objectContaining({ name: 'egg' })], instructions: undefined },
+        ]);
+    });
+
+    it('still creates the recipe with manual tags when the tagger throws', async () => {
+        mockTagger.shouldReject = true;
+        const svc = new RecipeService(
+            repo as any,
+            ids,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            mockTagger as any
+        );
+
+        const recipe = await svc.createRecipe(
+            'Pasta',
+            [],
+            owner.id,
+            owner,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            ['dinner']
+        );
+        await flushBackground();
+
+        expect((await repo.getById(recipe.id))?.tags).toEqual(['dinner']);
     });
 
     it('creates a recipe with no tags when none are manual and the tagger returns none', async () => {
@@ -356,8 +409,11 @@ describe('RecipeService.createRecipe tags', () => {
             undefined,
             mockTagger as any
         );
+
         const recipe = await svc.createRecipe('Pasta', [], owner.id, owner);
-        expect(recipe.tags).toBeUndefined();
+        await flushBackground();
+
+        expect((await repo.getById(recipe.id))?.tags).toBeUndefined();
     });
 });
 

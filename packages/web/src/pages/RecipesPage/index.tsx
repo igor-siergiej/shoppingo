@@ -13,6 +13,7 @@ import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '..
 import { usePullToRefreshContext } from '../../contexts/PullToRefreshContext';
 import { useScrollContainer } from '../../contexts/ScrollContainerContext';
 import { useRecipeSearch } from '../../hooks/useRecipeSearch';
+import { aiTagPollInterval } from '../../utils/aiTagPoll';
 import { logger } from '../../utils/logger';
 
 // Several independent effects (logging, error logging, background AI-image backfill, shared-url
@@ -30,6 +31,7 @@ const RecipesPage = () => {
     const { data, isLoading, isError, refetch } = useQuery({
         ...getRecipesQuery(user?.id || ''),
         enabled: !!user?.id,
+        refetchInterval: aiTagPollInterval,
     });
     const { registerRefresh } = usePullToRefreshContext();
 
