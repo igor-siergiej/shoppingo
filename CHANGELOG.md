@@ -1,3 +1,10 @@
+## [1.95.1](https://github.com/igor-siergiej/shoppingo/compare/v1.95.0...v1.95.1) (2026-10-10)
+
+
+### Bug Fixes
+
+* **api:** categorise items that never got an aisle when a list is read ([#218](https://github.com/igor-siergiej/shoppingo/issues/218)) ([334cd7c](https://github.com/igor-siergiej/shoppingo/commit/334cd7c971ba6d162b71f85e40df8c5f39527a60))
+
 # [1.95.0](https://github.com/igor-siergiej/shoppingo/compare/v1.94.3...v1.95.0) (2026-10-10)
 
 

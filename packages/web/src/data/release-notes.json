@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.95.1",
+    "date": "2026-10-10",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Items on your list now get sorted into their aisles automatically, including ones added earlier, so grouping by aisle no longer dumps everything under Other."
+      }
+    ]
+  },
+  {
     "version": "1.95.0",
     "date": "2026-10-10",
     "notes": [
