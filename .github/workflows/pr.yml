@@ -19,7 +19,7 @@ jobs:
       - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version-file: package.json
       - run: bun install
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -53,25 +53,18 @@ jobs:
       - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version-file: package.json
       - run: bun install
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GH_TOKEN }}
       - run: bun run tsc --noEmit
-      - run: bun run --filter @shoppingo/api test --coverage
+      - run: bun run --filter @shoppingo/api test --coverage --coverage-reporter=text --coverage-reporter=lcov
         env:
           OPENSEARCH_TEST_URL: http://localhost:9200
       - run: bun run --filter @shoppingo/web test
       - run: bun run test:scripts
-      - name: Check coverage threshold (90%)
-        run: |
-          COVERAGE=$(cat packages/api/coverage/coverage-summary.json | grep -o '"lines"[^}]*}' | grep -o '[0-9.]*' | head -1)
-          echo "Code coverage: ${COVERAGE}%"
-          if (( $(echo "$COVERAGE < 90" | bc -l) )); then
-            echo "❌ Coverage ${COVERAGE}% is below 90% threshold"
-            exit 1
-          fi
-          echo "✅ Coverage ${COVERAGE}% meets 90% threshold"
+      - name: Check coverage threshold (90% lines and functions)
+        run: bun scripts/check-coverage.js packages/api/coverage/lcov.info 90
 
   e2e:
     runs-on: ubuntu-latest
@@ -106,7 +99,7 @@ jobs:
       - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version-file: package.json
       - run: bun install
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -173,7 +166,7 @@ jobs:
           fetch-depth: 0
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version-file: package.json
       - uses: actions/cache@v4
         with:
           path: ~/.bun/install/cache
