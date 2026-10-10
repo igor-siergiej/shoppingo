@@ -47,6 +47,7 @@ import type { WikibooksIngestService } from '../domain/WikibooksIngest';
 import type { RecipeEstimator, WikibooksSource } from '../domain/WikibooksIngest/types';
 import type { WsTicketStore } from '../domain/WsTicketStore';
 import type { CachedIngredientSubstituter } from '../infrastructure/CachedIngredientSubstituter';
+import type { FalItemTextParser } from '../infrastructure/FalItemTextParser';
 import type { FalLlmClient } from '../infrastructure/FalLlmClient';
 import type { FalRecipeTagger } from '../infrastructure/FalRecipeTagger';
 import type { ItemCategoryDoc } from '../infrastructure/MongoItemCategoryRepository';
@@ -92,6 +93,7 @@ export enum DependencyToken {
     RecipeTextExtractor = 'RecipeTextExtractor',
     RecipeParser = 'RecipeParser',
     IngredientSubstituter = 'IngredientSubstituter',
+    ItemTextParser = 'ItemTextParser',
     ItemCategoryRepository = 'ItemCategoryRepository',
     ItemCategoryService = 'ItemCategoryService',
     RecipeImportService = 'RecipeImportService',
@@ -146,6 +148,7 @@ export type Dependencies = {
     [DependencyToken.RecipeTextExtractor]: RecipeTextExtractor;
     [DependencyToken.RecipeParser]: RecipeParser;
     [DependencyToken.IngredientSubstituter]: CachedIngredientSubstituter;
+    [DependencyToken.ItemTextParser]: FalItemTextParser;
     [DependencyToken.ItemCategoryRepository]: ItemCategoryRepository;
     [DependencyToken.ItemCategoryService]: ItemCategoryService;
     [DependencyToken.RecipeImportService]: RecipeImportService;

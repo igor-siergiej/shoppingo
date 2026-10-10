@@ -6,6 +6,7 @@ import { DependencyToken } from '../dependencies/types';
 import { createDiscoveryHandlers } from '../interfaces/DiscoveryHandlers';
 import { generateFriendCode, getFriends, redeemFriendCode, removeFriend } from '../interfaces/FriendHandlers';
 import { getImage } from '../interfaces/ImageHandlers';
+import { parseSpokenItems } from '../interfaces/ItemParseHandlers';
 import { createLabel, deleteLabel, getLabels, updateLabel } from '../interfaces/LabelHandlers';
 import {
     addItem,
@@ -114,6 +115,8 @@ export const createRoutes = (): Hono<Vars> => {
         maxSize: MAX_UPLOAD_BYTES,
         onError: (c) => c.json({ error: 'Image exceeds the 10 MB upload limit' }, 413),
     });
+
+    router.post('/api/items/parse', authenticate, aiRateLimit, parseSpokenItems);
 
     router.get('/api/recipes', authenticate, getRecipes);
     router.post('/api/recipes/import', authenticate, aiRateLimit, importRecipe);

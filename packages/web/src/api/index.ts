@@ -125,6 +125,22 @@ export const addItem = async (
     return result;
 };
 
+export interface SpokenItem {
+    name: string;
+    quantity?: number;
+    unit?: string;
+}
+
+export const parseSpokenItems = async (transcript: string): Promise<Array<SpokenItem>> => {
+    const result = await makeRequest({
+        pathname: '/api/items/parse',
+        method: MethodType.POST,
+        operationString: 'parse spoken items',
+        body: JSON.stringify({ transcript }),
+    });
+    return (result as { items: Array<SpokenItem> }).items;
+};
+
 export const addItemsBulk = async (
     listTitle: string,
     items: Array<{ itemName: string; quantity?: number; unit?: string }>

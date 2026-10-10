@@ -3,17 +3,19 @@
 import { useAuth, useUser } from '@imapps/web-utils';
 import type { Item } from '@shoppingo/types';
 import { ListType } from '@shoppingo/types';
-import { CheckCheck, ChefHat, Compass, Plus, Recycle, ShoppingCart, Tag, Trash2, Users } from 'lucide-react';
+import { CheckCheck, ChefHat, Compass, Mic, Plus, Recycle, ShoppingCart, Tag, Trash2, Users } from 'lucide-react';
 import { AnimatePresence, MotionConfig, motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { useLocation, useNavigate } from 'react-router-dom';
 import useMeasure from 'react-use-measure';
 
+import type { SpokenItem } from '../../api';
 import { Card } from '../../components/ui/card';
 import { useManageUsers } from '../../hooks/useManageUsers';
 import { useToolBarState } from '../../hooks/useToolBarState';
 import { clearUserData } from '../../offline/clearUserData';
+import { getSpeechRecognition } from '../../utils/speechRecognition';
 import { ManageLabelsDrawer } from '../ManageLabelsDrawer';
 import { ManageUsersDrawer } from '../ManageUsersDrawer';
 import { RippleButton } from '../ui/ripple';
@@ -26,10 +28,12 @@ import { AddListDrawer } from './AddListDrawer';
 import { AddTodoDrawer } from './AddTodoDrawer';
 import { HamburgerMenu } from './HamburgerMenu';
 import { ToolBarAppBar } from './ToolBarAppBar';
+import { VoiceAddDrawer } from './VoiceAddDrawer';
 
 interface ToolBarProps {
     onAddList?: (name: string, listType: ListType, users: string[]) => Promise<void>;
     onAddItem?: (name: string, quantity?: number, unit?: string) => Promise<void>;
+    onAddItems?: (items: Array<SpokenItem>) => Promise<void>;
     onAddIngredient?: (name: string, quantity?: number, unit?: string) => Promise<void>;
     onAddTodo?: (body: import('../../api').CreateTodoBody) => Promise<void>;
     labels?: import('@shoppingo/types').Label[];
@@ -57,6 +61,7 @@ interface ToolBarProps {
 const ToolBar = ({
     onAddList,
     onAddItem,
+    onAddItems,
     onAddIngredient,
     handleGoBack,
     onManageRecipeUsers,
@@ -96,6 +101,7 @@ const ToolBar = ({
     } = useToolBarState();
 
     const [isAddIngredientDrawerOpen, setIsAddIngredientDrawerOpen] = useState(false);
+    const [isVoiceDrawerOpen, setIsVoiceDrawerOpen] = useState(false);
     const [isAddFromRecipeDrawerOpen, setIsAddFromRecipeDrawerOpen] = useState(false);
     const [isAddTodoDrawerOpen, setIsAddTodoDrawerOpen] = useState(false);
     const [isManageLabelsOpen, setIsManageLabelsOpen] = useState(false);
@@ -120,6 +126,13 @@ const ToolBar = ({
             label: 'Add from Recipe',
             icon: ChefHat,
             onClick: () => setIsAddFromRecipeDrawerOpen(true),
+        },
+        {
+            show:
+                isItemsPage && !!onAddItems && currentListType === ListType.SHOPPING && getSpeechRecognition() !== null,
+            label: 'Add by voice',
+            icon: Mic,
+            onClick: () => setIsVoiceDrawerOpen(true),
         },
         {
             show: isItemsPage && !!handleClearSelected,
@@ -350,6 +363,10 @@ const ToolBar = ({
                     listItems={listItems}
                     hideTrigger
                 />
+            )}
+
+            {isItemsPage && onAddItems && (
+                <VoiceAddDrawer open={isVoiceDrawerOpen} onOpenChange={setIsVoiceDrawerOpen} onAddMany={onAddItems} />
             )}
 
             {/* ManageLabelsDrawer */}
