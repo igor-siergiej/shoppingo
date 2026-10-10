@@ -1,3 +1,10 @@
+## [1.89.3](https://github.com/igor-siergiej/shoppingo/compare/v1.89.2...v1.89.3) (2026-10-10)
+
+
+### Bug Fixes
+
+* **api:** reject duplicate list titles on create ([#198](https://github.com/igor-siergiej/shoppingo/issues/198)) ([1e9ecc0](https://github.com/igor-siergiej/shoppingo/commit/1e9ecc0625257ddb5876e99c3c373a21082e44fa))
+
 ## [1.89.2](https://github.com/igor-siergiej/shoppingo/compare/v1.89.1...v1.89.2) (2026-10-10)
 
 

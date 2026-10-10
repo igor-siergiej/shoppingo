@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.89.3",
+    "date": "2026-10-10",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Creating a list with a name you already use now tells you instead of silently making a clashing list."
+      }
+    ]
+  },
+  {
     "version": "1.89.2",
     "date": "2026-10-10",
     "notes": [
