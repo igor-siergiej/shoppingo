@@ -59,6 +59,7 @@ export const useSpeechRecognition = ({
             setTranscript(next);
         };
         recognition.onerror = (event) => {
+            stoppedByUserRef.current = true;
             setError(ERROR_MESSAGES[event.error] ?? 'Voice input failed. Try again.');
             setListening(false);
         };

@@ -99,6 +99,17 @@ describe('useSpeechRecognition', () => {
             expect(result.current.transcript).toBe('two loaves of bread');
         });
 
+        it('does not restart after an error', () => {
+            const { result } = renderHook(() => useSpeechRecognition({ keepListening: true }));
+            act(() => result.current.start());
+
+            act(() => instance.onerror?.({ error: 'not-allowed' }));
+            act(() => instance.onend?.());
+
+            expect(result.current.listening).toBe(false);
+            expect(instance.startCount).toBe(1);
+        });
+
         it('does not restart after an explicit stop', () => {
             const { result } = renderHook(() => useSpeechRecognition({ keepListening: true }));
             act(() => result.current.start());
