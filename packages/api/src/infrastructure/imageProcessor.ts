@@ -24,3 +24,31 @@ export async function processImage(inputBuffer: Buffer, sharpFactory?: typeof sh
         .withMetadata({})
         .toBuffer();
 }
+
+const UPLOAD_FORMATS = new Set(['jpeg', 'png', 'webp', 'gif', 'avif', 'heif', 'tiff']);
+const UPLOAD_MAX_PIXELS = 40_000_000;
+const UPLOAD_MAX_EDGE = 2048;
+
+/**
+ * Decode a user upload and re-encode it as WebP. The client's MIME type is never trusted: only raster formats sharp
+ * detects from the bytes are accepted (SVG and garbage are rejected), and re-encoding strips metadata and any payload
+ * that is not pixels. Throws a 400 for anything that is not a usable image.
+ */
+export async function normaliseUpload(inputBuffer: Buffer): Promise<Buffer> {
+    try {
+        const image = sharp(inputBuffer, { limitInputPixels: UPLOAD_MAX_PIXELS });
+        const { format } = await image.metadata();
+        if (!format || !UPLOAD_FORMATS.has(format)) {
+            throw new Error(`unsupported format: ${format}`);
+        }
+        return await image
+            .rotate()
+            .resize(UPLOAD_MAX_EDGE, UPLOAD_MAX_EDGE, { fit: 'inside', withoutEnlargement: true })
+            .webp({ quality: 85 })
+            .toBuffer();
+    } catch {
+        throw Object.assign(new Error('File must be a valid image (JPEG, PNG, WebP, GIF, AVIF or HEIF)'), {
+            status: 400,
+        });
+    }
+}

@@ -5,6 +5,7 @@ import { dependencyContainer } from '../../dependencies/container';
 import { DependencyToken } from '../../dependencies/types';
 import type { RecipeImportService } from '../../domain/RecipeImportService';
 import type { RecipeService } from '../../domain/RecipeService';
+import { normaliseUpload } from '../../infrastructure/imageProcessor';
 import { withImageExtension } from '../../infrastructure/objectKey';
 import type { HonoVars } from '../handlerUtils';
 
@@ -416,6 +417,15 @@ export const setCoverImageKey = async (c: Context<HonoVars>): Promise<Response> 
         return c.json({ error: 'imageKey is required and must be a non-empty string' }, 400);
     }
 
+    // Only an image this caller uploaded can become a cover; arbitrary keys would expose other users' objects.
+    if (!imageKey.startsWith(`recipe-upload/${authenticatedUser.id}/`)) {
+        return forbidden(c, 'Cover image key not owned by caller', {
+            authenticatedUserId: authenticatedUser.id,
+            recipeId,
+            imageKey,
+        });
+    }
+
     try {
         const hasAccess = await verifyRecipeAccess(recipeId, authenticatedUser);
         if (!hasAccess) {
@@ -465,21 +475,16 @@ export const uploadRecipeImage = async (c: Context<HonoVars>): Promise<Response>
             return c.json({ error: 'No image file provided' }, 400);
         }
 
-        const mimeType = imageFile.type;
-        if (!mimeType?.startsWith('image/')) {
-            return c.json({ error: 'File must be an image' }, 400);
-        }
-
-        const fileBuffer = Buffer.from(await imageFile.arrayBuffer());
+        // The declared MIME type is ignored: the bytes are decoded and re-encoded, so what is stored is always WebP.
+        const fileBuffer = await normaliseUpload(Buffer.from(await imageFile.arrayBuffer()));
         // Versioned key so each upload is a distinct, immutable URL (avoids stale browser cache).
-        // Extension derived from the uploaded file's type so the stored object is correctly identified.
         const imageKey = withImageExtension(
             `recipe-upload/${authenticatedUser.id}/${recipeId}/${Date.now()}`,
-            mimeType
+            'image/webp'
         );
 
         const bucketStore = getBucketStore();
-        await bucketStore.putObject(imageKey, fileBuffer, { contentType: mimeType });
+        await bucketStore.putObject(imageKey, fileBuffer, { contentType: 'image/webp' });
 
         const recipe = await getRecipeService().setCoverImageKey(recipeId, imageKey, authenticatedUser.id);
 

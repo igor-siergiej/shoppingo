@@ -1,5 +1,6 @@
 import type { Context, Next } from 'hono';
 import { Hono } from 'hono';
+import { bodyLimit } from 'hono/body-limit';
 import { dependencyContainer } from '../dependencies';
 import { DependencyToken } from '../dependencies/types';
 import { createDiscoveryHandlers } from '../interfaces/DiscoveryHandlers';
@@ -45,6 +46,8 @@ import { authenticate } from '../middleware/auth';
 import { notifyListChanged } from '../middleware/notifyListChanged';
 
 type Vars = { Variables: { user: { id: string; username: string } } };
+
+const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 
 export const createRoutes = (): Hono<Vars> => {
     const router = new Hono<Vars>();
@@ -104,6 +107,11 @@ export const createRoutes = (): Hono<Vars> => {
 
     router.get('/api/image/:name', conditionalImageAuth, getImage);
 
+    const uploadBodyLimit = bodyLimit({
+        maxSize: MAX_UPLOAD_BYTES,
+        onError: (c) => c.json({ error: 'Image exceeds the 10 MB upload limit' }, 413),
+    });
+
     router.get('/api/recipes', authenticate, getRecipes);
     router.post('/api/recipes/import', authenticate, importRecipe);
     router.post('/api/recipes/substitutes', authenticate, suggestIngredientSubstitutes);
@@ -115,7 +123,7 @@ export const createRoutes = (): Hono<Vars> => {
     router.post('/api/recipes/:recipeId/users', authenticate, addUserToRecipe);
     router.delete('/api/recipes/:recipeId/users/:targetUserId', authenticate, removeUserFromRecipe);
     router.put('/api/recipes/:recipeId/image', authenticate, setCoverImageKey);
-    router.post('/api/recipes/:recipeId/image/upload', authenticate, uploadRecipeImage);
+    router.post('/api/recipes/:recipeId/image/upload', authenticate, uploadBodyLimit, uploadRecipeImage);
     router.post('/api/recipes/:recipeId/image/generate', authenticate, generateRecipeImage);
     router.post('/api/recipes/:recipeId/image/revert', authenticate, revertRecipeImage);
 

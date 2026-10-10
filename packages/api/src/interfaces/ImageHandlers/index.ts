@@ -8,8 +8,23 @@ import type { HonoVars } from '../handlerUtils';
 
 const getImageService = (): ImageService => dependencyContainer.resolve(DependencyToken.ImageService);
 const getBucketStore = () => dependencyContainer.resolve(DependencyToken.ImageStore);
+const getRecipeService = () => dependencyContainer.resolve(DependencyToken.RecipeService);
 const getDiscoveryService = () => dependencyContainer.resolve(DependencyToken.DiscoveryService);
 const getLogger = () => dependencyContainer.resolve(DependencyToken.Logger);
+
+// Upload keys are recipe-upload/<ownerId>/<recipeId>/<timestamp>.<ext>. Readable only while a recipe the caller
+// belongs to still uses that exact key as its cover. Exercised by the recipe-upload cases in index.test.ts.
+// fallow-ignore-next-line complexity
+const canReadUpload = async (key: string, userId: string): Promise<boolean> => {
+    const recipeId = key.split('/')[2];
+    if (!recipeId) return false;
+    try {
+        const recipe = await getRecipeService().getRecipe(recipeId);
+        return recipe.coverImageKey === key && (recipe.users ?? []).some((u: { id: string }) => u.id === userId);
+    } catch {
+        return false;
+    }
+};
 
 // One branch per object-key family (uploads, published covers, AI recipe images, item images), each with its own access rule.
 // fallow-ignore-next-line complexity
@@ -22,6 +37,9 @@ export const getImage = async (c: Context<HonoVars>) => {
             const user = c.get('user');
             if (!user?.id) {
                 return c.json({ error: 'Unauthorized' }, 401);
+            }
+            if (!(await canReadUpload(name, user.id))) {
+                return c.json({ error: 'Image not found' }, 404);
             }
 
             const bucketStore = getBucketStore();

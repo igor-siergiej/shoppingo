@@ -23,6 +23,10 @@ const mockLogger = {
     debug: vi.fn(),
 };
 
+const mockRecipeService = {
+    getRecipe: vi.fn(),
+};
+
 const mockBucketStore = {
     getHeadObject: vi.fn(),
     getObjectStream: vi.fn(),
@@ -63,6 +67,7 @@ describe('ImageHandlers', () => {
             if (token === 'ImageService') return mockImageService;
             if (token === 'Logger') return mockLogger;
             if (token === 'ImageStore') return mockBucketStore;
+            if (token === 'RecipeService') return mockRecipeService;
             return null;
         });
     });
@@ -171,28 +176,66 @@ describe('ImageHandlers', () => {
                 expect(response.status).toBe(401);
             });
 
-            it('returns image from bucket for authenticated user', async () => {
+            const KEY = 'recipe-upload/user1/recipe1/1.webp';
+
+            it('returns image from bucket for a member of the recipe that uses it as cover', async () => {
+                mockRecipeService.getRecipe.mockResolvedValue({
+                    coverImageKey: KEY,
+                    users: [{ id: 'user1', username: 'alice' }],
+                });
                 const mockNodeStream = { pipe: vi.fn(), on: vi.fn() };
                 mockBucketStore.getHeadObject.mockResolvedValue({ metaData: { 'content-type': 'image/webp' } });
                 mockBucketStore.getObjectStream.mockResolvedValue(mockNodeStream);
 
-                const ctx = createMockContext(
-                    { name: 'recipe-upload/user1/recipe1' },
-                    { id: 'user1', username: 'alice' }
-                );
+                const ctx = createMockContext({ name: KEY }, { id: 'user1', username: 'alice' });
                 const response = await imageHandlers.getImage(ctx);
 
                 expect(ctx.header).toHaveBeenCalledWith('Content-Type', 'image/webp');
                 expect(response).toBeDefined();
             });
 
+            it('returns 404 for a logged-in user who is not a member of the recipe', async () => {
+                mockRecipeService.getRecipe.mockResolvedValue({
+                    coverImageKey: KEY,
+                    users: [{ id: 'someone-else', username: 'bob' }],
+                });
+
+                const ctx = createMockContext({ name: KEY }, { id: 'user1', username: 'alice' });
+                const response = await imageHandlers.getImage(ctx);
+
+                expect(response.status).toBe(404);
+                expect(mockBucketStore.getObjectStream).not.toHaveBeenCalled();
+            });
+
+            it('returns 404 once the recipe no longer uses that key', async () => {
+                mockRecipeService.getRecipe.mockResolvedValue({
+                    coverImageKey: 'recipe-upload/user1/recipe1/2.webp',
+                    users: [{ id: 'user1', username: 'alice' }],
+                });
+
+                const ctx = createMockContext({ name: KEY }, { id: 'user1', username: 'alice' });
+                const response = await imageHandlers.getImage(ctx);
+
+                expect(response.status).toBe(404);
+            });
+
+            it('returns 404 when the recipe cannot be loaded', async () => {
+                mockRecipeService.getRecipe.mockRejectedValue(new Error('not found'));
+
+                const ctx = createMockContext({ name: KEY }, { id: 'user1', username: 'alice' });
+                const response = await imageHandlers.getImage(ctx);
+
+                expect(response.status).toBe(404);
+            });
+
             it('returns 404 when stored image not found', async () => {
+                mockRecipeService.getRecipe.mockResolvedValue({
+                    coverImageKey: KEY,
+                    users: [{ id: 'user1', username: 'alice' }],
+                });
                 mockBucketStore.getHeadObject.mockResolvedValue(null);
 
-                const ctx = createMockContext(
-                    { name: 'recipe-upload/user1/recipe1' },
-                    { id: 'user1', username: 'alice' }
-                );
+                const ctx = createMockContext({ name: KEY }, { id: 'user1', username: 'alice' });
                 const response = await imageHandlers.getImage(ctx);
 
                 expect(response.status).toBe(404);

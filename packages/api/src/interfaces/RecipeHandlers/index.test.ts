@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'bun:test';
 import type { Recipe } from '@shoppingo/types';
 
+import sharp from 'sharp';
 import * as recipeHandlers from './index';
 
 const mockDependencyContainer = {
@@ -609,7 +610,26 @@ describe('RecipeHandlers', () => {
             });
             const ctx = createMockContext({
                 params: { recipeId: 'recipe-1' },
-                body: { imageKey: 'some-key' },
+                body: { imageKey: 'recipe-upload/user-1/recipe-1/1.webp' },
+            });
+            const response = await recipeHandlers.setCoverImageKey(ctx);
+            expect(response.status).toBe(403);
+        });
+
+        it("returns 403 for a key under another user's upload prefix", async () => {
+            const ctx = createMockContext({
+                params: { recipeId: 'recipe-1' },
+                body: { imageKey: 'recipe-upload/someone-else/recipe-9/1.webp' },
+            });
+            const response = await recipeHandlers.setCoverImageKey(ctx);
+            expect(response.status).toBe(403);
+            expect(mockRecipeService.setCoverImageKey).not.toHaveBeenCalled();
+        });
+
+        it('returns 403 for a key outside the uploads namespace', async () => {
+            const ctx = createMockContext({
+                params: { recipeId: 'recipe-1' },
+                body: { imageKey: 'discovery-image/abc.webp' },
             });
             const response = await recipeHandlers.setCoverImageKey(ctx);
             expect(response.status).toBe(403);
@@ -619,7 +639,7 @@ describe('RecipeHandlers', () => {
             mockRecipeService.setCoverImageKey.mockResolvedValue({ ...baseRecipe, coverImageKey: 'some-key' });
             const ctx = createMockContext({
                 params: { recipeId: 'recipe-1' },
-                body: { imageKey: 'some-key' },
+                body: { imageKey: 'recipe-upload/user-1/recipe-1/1.webp' },
             });
             const response = await recipeHandlers.setCoverImageKey(ctx);
             expect(response.status).toBe(200);
@@ -629,7 +649,7 @@ describe('RecipeHandlers', () => {
             mockRecipeService.setCoverImageKey.mockRejectedValue(Object.assign(new Error('fail'), { status: 403 }));
             const ctx = createMockContext({
                 params: { recipeId: 'recipe-1' },
-                body: { imageKey: 'some-key' },
+                body: { imageKey: 'recipe-upload/user-1/recipe-1/1.webp' },
             });
             await expect(recipeHandlers.setCoverImageKey(ctx)).rejects.toThrow('fail');
         });
@@ -701,8 +721,8 @@ describe('RecipeHandlers', () => {
             expect(response.status).toBe(400);
         });
 
-        it('returns 400 when file is not an image', async () => {
-            const mockFile = new File([new Uint8Array([1, 2, 3])], 'test.pdf', { type: 'application/pdf' });
+        it('rejects bytes that are not a raster image even when the client claims image/png', async () => {
+            const mockFile = new File([new Uint8Array([1, 2, 3])], 'test.png', { type: 'image/png' });
             const ctx = createMockContext({
                 params: { recipeId: 'recipe-1' },
                 files: {
@@ -713,12 +733,32 @@ describe('RecipeHandlers', () => {
                     },
                 },
             });
-            const response = await recipeHandlers.uploadRecipeImage(ctx);
-            expect(response.status).toBe(400);
+            await expect(recipeHandlers.uploadRecipeImage(ctx)).rejects.toMatchObject({ status: 400 });
+            expect(mockBucketStore.putObject).not.toHaveBeenCalled();
+        });
+
+        it('rejects an SVG upload', async () => {
+            const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="4" height="4"><script>alert(1)</script></svg>';
+            const mockFile = new File([svg], 'x.svg', { type: 'image/svg+xml' });
+            const ctx = createMockContext({
+                params: { recipeId: 'recipe-1' },
+                files: {
+                    image: mockFile as unknown as {
+                        name: string;
+                        type: string;
+                        arrayBuffer: () => Promise<ArrayBuffer>;
+                    },
+                },
+            });
+            await expect(recipeHandlers.uploadRecipeImage(ctx)).rejects.toMatchObject({ status: 400 });
+            expect(mockBucketStore.putObject).not.toHaveBeenCalled();
         });
 
         it('uploads image successfully', async () => {
-            const mockFile = new File([new Uint8Array([1, 2, 3])], 'img.jpg', { type: 'image/jpeg' });
+            const png = await sharp({ create: { width: 8, height: 8, channels: 3, background: '#ff0000' } })
+                .png()
+                .toBuffer();
+            const mockFile = new File([png], 'img.png', { type: 'image/png' });
             mockBucketStore.putObject.mockResolvedValue(undefined);
             mockRecipeService.setCoverImageKey.mockResolvedValue({
                 ...baseRecipe,
@@ -737,12 +777,17 @@ describe('RecipeHandlers', () => {
             const response = await recipeHandlers.uploadRecipeImage(ctx);
             expect(response.status).toBe(200);
             const storedKey = mockBucketStore.putObject.mock.calls[0][0] as string;
-            expect(storedKey.endsWith('.jpg')).toBe(true);
+            expect(storedKey.endsWith('.webp')).toBe(true);
+            expect(mockBucketStore.putObject.mock.calls[0][2]).toEqual({ contentType: 'image/webp' });
+            expect((await sharp(mockBucketStore.putObject.mock.calls[0][1] as Buffer).metadata()).format).toBe('webp');
             expect(mockRecipeService.setCoverImageKey.mock.calls[0][1]).toBe(storedKey);
         });
 
         it('returns error on bucket failure', async () => {
-            const mockFile = new File([new Uint8Array([1, 2, 3])], 'img.jpg', { type: 'image/jpeg' });
+            const png = await sharp({ create: { width: 8, height: 8, channels: 3, background: '#ff0000' } })
+                .png()
+                .toBuffer();
+            const mockFile = new File([png], 'img.png', { type: 'image/png' });
             mockBucketStore.putObject.mockRejectedValue(Object.assign(new Error('bucket fail'), { status: 500 }));
             const ctx = createMockContext({
                 params: { recipeId: 'recipe-1' },
