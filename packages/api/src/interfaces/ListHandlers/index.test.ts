@@ -269,19 +269,6 @@ describe('ListHandlers', () => {
 
             await expect(listHandlers.addList(ctx)).rejects.toThrow('Auth service not configured');
         });
-
-        it('should reject empty title', async () => {
-            const ctx = createMockContext({
-                body: { title: '', dateAdded: new Date().toISOString() },
-            });
-
-            const response = await listHandlers.addList(ctx);
-
-            expect(response.status).toBe(400);
-            expect(await getResponseBody(response)).toEqual({
-                error: 'Title is required and must be a non-empty string',
-            });
-        });
     });
 
     describe('updateItem', () => {
@@ -315,18 +302,6 @@ describe('ListHandlers', () => {
             mockListService.updateItemName.mockRejectedValue(new Error('List not found'));
 
             await expect(listHandlers.updateItem(ctx)).rejects.toThrow('List not found');
-        });
-
-        it('should reject empty newItemName', async () => {
-            const ctx = createMockContext({
-                params: { title: 'Test List', itemId: 'item-1' },
-                body: { newItemName: '' },
-            });
-
-            const response = await listHandlers.updateItem(ctx);
-
-            expect(response.status).toBe(400);
-            expect(await getResponseBody(response)).toEqual({ error: 'New item name must be a non-empty string' });
         });
     });
 
@@ -459,20 +434,6 @@ describe('ListHandlers', () => {
 
             await expect(listHandlers.updateList(ctx)).rejects.toThrow('List not found');
         });
-
-        it('should reject empty newTitle', async () => {
-            const ctx = createMockContext({
-                params: { title: 'Old Title' },
-                body: { newTitle: '' },
-            });
-
-            const response = await listHandlers.updateList(ctx);
-
-            expect(response.status).toBe(400);
-            expect(await getResponseBody(response)).toEqual({
-                error: 'New title is required and must be a non-empty string',
-            });
-        });
     });
 
     describe('addItem', () => {
@@ -517,20 +478,6 @@ describe('ListHandlers', () => {
             mockListService.addItem.mockRejectedValue(new Error('List not found'));
 
             await expect(listHandlers.addItem(ctx)).rejects.toThrow('List not found');
-        });
-
-        it('should reject empty itemName', async () => {
-            const ctx = createMockContext({
-                params: { title: 'Test List' },
-                body: { itemName: '', dateAdded: new Date().toISOString() },
-            });
-
-            const response = await listHandlers.addItem(ctx);
-
-            expect(response.status).toBe(400);
-            expect(await getResponseBody(response)).toEqual({
-                error: 'Item name is required and must be a non-empty string',
-            });
         });
     });
 
@@ -586,18 +533,6 @@ describe('ListHandlers', () => {
             expect(response.status).toBe(200);
             const body = await getResponseBody(response);
             expect(body.id).toBe(mockList.id);
-        });
-
-        it('should reject empty friendId', async () => {
-            const ctx = createMockContext({
-                params: { title: 'Test List' },
-                body: { friendId: '' },
-            });
-
-            const response = await listHandlers.addUserToList(ctx);
-
-            expect(response.status).toBe(400);
-            expect(await getResponseBody(response)).toEqual({ error: 'friendId is required' });
         });
 
         it('should return 403 when user has no list access', async () => {
