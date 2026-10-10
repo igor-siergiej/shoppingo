@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.94.2",
+    "date": "2026-10-10",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Under-the-hood upgrade of the app's data-loading library; nothing should look different."
+      }
+    ]
+  },
+  {
     "version": "1.94.1",
     "date": "2026-10-10",
     "notes": [

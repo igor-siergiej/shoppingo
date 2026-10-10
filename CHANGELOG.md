@@ -1,3 +1,10 @@
+## [1.94.2](https://github.com/igor-siergiej/shoppingo/compare/v1.94.1...v1.94.2) (2026-10-10)
+
+
+### Bug Fixes
+
+* **web:** point the query vendor chunk at @tanstack/react-query ([#212](https://github.com/igor-siergiej/shoppingo/issues/212)) ([1ac2431](https://github.com/igor-siergiej/shoppingo/commit/1ac2431ead3668793b48d1d776d92609b8e89bdf))
+
 ## [1.94.1](https://github.com/igor-siergiej/shoppingo/compare/v1.94.0...v1.94.1) (2026-10-10)
 
 
