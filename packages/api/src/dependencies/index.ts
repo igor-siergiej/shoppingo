@@ -26,6 +26,7 @@ import { WikibooksCoverService } from '../domain/WikibooksIngest/cover';
 import { WsTicketStore } from '../domain/WsTicketStore';
 import { HttpAuthClient } from '../infrastructure/AuthClient';
 import { BucketStore } from '../infrastructure/BucketStore';
+import { CachedIngredientSubstituter } from '../infrastructure/CachedIngredientSubstituter';
 import { FalImageGenerator } from '../infrastructure/FalImageGenerator';
 import { FalIngredientSubstituter } from '../infrastructure/FalIngredientSubstituter';
 import { FalLlmClient } from '../infrastructure/FalLlmClient';
@@ -412,7 +413,9 @@ export const registerDepdendencies = () => {
         // @ts-expect-error - Dependency injection requires constructor return override
         class {
             constructor() {
-                return new FalIngredientSubstituter(dependencyContainer.resolve(DependencyToken.FalLlmClient));
+                return new CachedIngredientSubstituter(
+                    new FalIngredientSubstituter(dependencyContainer.resolve(DependencyToken.FalLlmClient))
+                );
             }
         }
     );

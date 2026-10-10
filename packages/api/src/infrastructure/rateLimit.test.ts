@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
-import { IpRateLimiter } from './rateLimit';
+import { IpRateLimiter, SlidingWindowLimiter } from './rateLimit';
 
 describe('IpRateLimiter', () => {
     let limiter: IpRateLimiter;
@@ -73,5 +73,50 @@ describe('IpRateLimiter', () => {
             expect(limiter.isAllowed('a')).toBe(true);
             expect(limiter.isAllowed('b')).toBe(true);
         });
+    });
+});
+
+describe('SlidingWindowLimiter', () => {
+    it('allows up to the limit then blocks with a retry hint', () => {
+        const limiter = new SlidingWindowLimiter(2, 60_000);
+
+        expect(limiter.check('u1', 0).allowed).toBe(true);
+        expect(limiter.check('u1', 1_000).allowed).toBe(true);
+
+        const blocked = limiter.check('u1', 10_000);
+        expect(blocked.allowed).toBe(false);
+        expect(blocked.retryAfterSeconds).toBe(50);
+    });
+
+    it('frees a slot once the oldest hit leaves the window', () => {
+        const limiter = new SlidingWindowLimiter(1, 60_000);
+        limiter.check('u1', 0);
+
+        expect(limiter.check('u1', 59_999).allowed).toBe(false);
+        expect(limiter.check('u1', 60_000).allowed).toBe(true);
+    });
+
+    it('keeps users independent', () => {
+        const limiter = new SlidingWindowLimiter(1, 60_000);
+        limiter.check('u1', 0);
+
+        expect(limiter.check('u2', 0).allowed).toBe(true);
+    });
+
+    it('does not count blocked attempts against the user', () => {
+        const limiter = new SlidingWindowLimiter(1, 60_000);
+        limiter.check('u1', 0);
+        limiter.check('u1', 30_000);
+        limiter.check('u1', 40_000);
+
+        expect(limiter.check('u1', 60_000).allowed).toBe(true);
+    });
+
+    it('sweep drops idle users', () => {
+        const limiter = new SlidingWindowLimiter(1, 60_000);
+        limiter.check('u1', 0);
+        limiter.sweep(120_000);
+
+        expect(limiter.check('u1', 120_001).allowed).toBe(true);
     });
 });

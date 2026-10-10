@@ -19,7 +19,7 @@ const mockLogger = {
     debug: vi.fn(),
 };
 
-import { receiveLogs } from './index';
+import { clientIpFrom, receiveLogs } from './index';
 
 const createMockContext = (overrides: { ip?: string; body?: unknown } = {}) => {
     const ip = overrides.ip ?? '127.0.0.1';
@@ -252,5 +252,28 @@ describe('LogHandlers', () => {
                 expect(await response.json()).toEqual({ error: 'Failed to process log' });
             });
         });
+    });
+});
+
+describe('clientIpFrom', () => {
+    it('ignores spoofed leading X-Forwarded-For entries and takes the address our proxy observed', () => {
+        expect(clientIpFrom('6.6.6.6, 203.0.113.7', null)).toBe('203.0.113.7');
+    });
+
+    it('skips trailing internal proxy addresses', () => {
+        expect(clientIpFrom('6.6.6.6, 203.0.113.7, 10.0.1.123', null)).toBe('203.0.113.7');
+    });
+
+    it('uses the only entry when there is no spoofed prefix', () => {
+        expect(clientIpFrom('203.0.113.7', null)).toBe('203.0.113.7');
+    });
+
+    it('falls back to the last entry for an all-private chain', () => {
+        expect(clientIpFrom('192.168.1.5, 10.0.0.2', null)).toBe('10.0.0.2');
+    });
+
+    it('falls back to x-real-ip, then unknown', () => {
+        expect(clientIpFrom(undefined, '198.51.100.1')).toBe('198.51.100.1');
+        expect(clientIpFrom(undefined, null)).toBe('unknown');
     });
 });
