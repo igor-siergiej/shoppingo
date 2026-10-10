@@ -86,9 +86,19 @@ describe('Appbar', () => {
         render(<Appbar />);
         await user.click(screen.getByRole('button', { name: /what's new/i }));
 
-        expect(screen.getByText('Recipes get a use-it-up page')).toBeInTheDocument();
+        expect(await screen.findByText('Recipes get a use-it-up page', {}, { timeout: 5000 })).toBeInTheDocument();
         expect(screen.getByText('New')).toBeInTheDocument();
         expect(screen.queryByTestId('whats-new-indicator')).not.toBeInTheDocument();
         expect(window.localStorage.getItem(STORAGE_KEY)).toBe('1.3.0');
+    });
+
+    it('does not load the release history until the notes are opened', async () => {
+        const user = userEvent.setup();
+
+        render(<Appbar />);
+
+        expect(screen.queryByText("What's new")).not.toBeInTheDocument();
+        await user.click(screen.getByRole('button', { name: /what's new/i }));
+        expect(await screen.findByText("What's new", {}, { timeout: 5000 })).toBeInTheDocument();
     });
 });

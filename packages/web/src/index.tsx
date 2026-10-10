@@ -25,19 +25,14 @@ installWebMcpOriginTrialToken(import.meta.env.VITE_WEBMCP_OT_TOKEN, __IS_PROD__)
 
 const lazyLoadPage = (importFn: () => Promise<unknown>, fallbackName: string) =>
     React.lazy(() =>
-        Promise.all([
-            importFn(),
-            new Promise((resolve) => setTimeout(resolve, 100)), // Small delay to ensure React context is ready
-        ])
-            .then(([module]) => module)
-            .catch(() => ({
-                default: () => (
-                    <div>
-                        Failed to load
-                        {fallbackName}
-                    </div>
-                ),
-            }))
+        importFn().catch(() => ({
+            default: () => (
+                <div>
+                    Failed to load
+                    {fallbackName}
+                </div>
+            ),
+        }))
     );
 
 const ItemsPage = lazyLoadPage(() => import('./pages/ItemsPage'), 'items page');

@@ -12,6 +12,8 @@ export default defineConfig({
     },
     define: {
         __APP_VERSION__: JSON.stringify('test'),
+        // Matches the newest release in the Appbar test's mocked release notes.
+        __LATEST_RELEASE__: JSON.stringify('1.3.0'),
     },
     test: {
         globals: true,

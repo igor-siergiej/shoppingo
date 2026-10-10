@@ -30,9 +30,7 @@ const NOTE_STYLES: Record<ReleaseNoteType, string> = {
 
 const releases = releaseNotes as Array<Release>;
 
-export const latestReleaseVersion = releases[0]?.version ?? '';
-
-export interface WhatsNewDrawerProps {
+interface WhatsNewDrawerProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     /**
@@ -42,7 +40,7 @@ export interface WhatsNewDrawerProps {
     highlightSince: string | null;
 }
 
-export const WhatsNewDrawer = ({ open, onOpenChange, highlightSince }: WhatsNewDrawerProps) => (
+const WhatsNewDrawer = ({ open, onOpenChange, highlightSince }: WhatsNewDrawerProps) => (
     <Drawer open={open} onOpenChange={onOpenChange}>
         <DrawerContent>
             <div className="mx-auto flex w-full max-w-sm flex-col h-[70vh] max-h-[70vh]">
@@ -91,3 +89,5 @@ export const WhatsNewDrawer = ({ open, onOpenChange, highlightSince }: WhatsNewD
         </DrawerContent>
     </Drawer>
 );
+
+export default WhatsNewDrawer;
