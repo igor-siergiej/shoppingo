@@ -61,19 +61,23 @@ export class RecipeService {
         }
     }
 
-    private async resolveTags(title: string, ingredients: Ingredient[], instructions?: string[], manual?: string[]) {
-        let aiTags: string[] = [];
-        if (this.tagger) {
-            try {
-                aiTags = await this.tagger.generateTags(title, ingredients, instructions);
-            } catch (error) {
-                this.logger?.warn('Recipe tag generation failed, continuing without AI tags', {
-                    recipeTitle: title,
-                    error,
-                });
+    // Runs after the create response is sent: the tagger can take ~30 s (timeout x retries) and a failure must never
+    // fail or delay the create. Tags are added atomically so a concurrent edit is not overwritten.
+    private async tagInBackground(recipe: Recipe, instructions?: string[]): Promise<void> {
+        if (!this.tagger) return;
+        try {
+            const generated = await this.tagger.generateTags(recipe.title, recipe.ingredients, instructions);
+            const fresh = mergeTags(recipe.tags ?? [], generated).slice((recipe.tags ?? []).length);
+            if (fresh.length > 0) {
+                await this.recipeRepository.addTags(recipe.id, fresh);
             }
+        } catch (error) {
+            this.logger?.warn('Recipe tag generation failed, continuing without AI tags', {
+                recipeId: recipe.id,
+                recipeTitle: recipe.title,
+                error,
+            });
         }
-        return mergeTags(manual ?? [], aiTags);
     }
 
     /** Seeds shared members: owner plus all current friends by default, or an explicit friend subset (403 on non-friends). */
@@ -141,7 +145,7 @@ export class RecipeService {
                 }
             }
             const users = await this.resolveSharedUsers(title, owner, selectedUsers);
-            const mergedTags = await this.resolveTags(title, ingredients, instructions, tags);
+            const mergedTags = mergeTags(tags ?? [], []);
             const recipe: Recipe = {
                 id: id ?? this.idGenerator.generate(),
                 title,
@@ -162,6 +166,7 @@ export class RecipeService {
                 ...(attribution !== undefined && { attribution }),
             };
             const created = await this.recipeRepository.insert(recipe);
+            void this.tagInBackground(created, instructions);
             this.logger?.info('Recipe created', {
                 recipeId: created.id,
                 recipeTitle: title,

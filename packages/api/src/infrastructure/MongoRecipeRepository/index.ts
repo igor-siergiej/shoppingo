@@ -67,6 +67,10 @@ export class MongoRecipeRepository implements RecipeRepository {
         return updated;
     }
 
+    async addTags(recipeId: string, tags: string[]): Promise<void> {
+        await this.collection().findOneAndUpdate({ id: recipeId }, { $addToSet: { tags: { $each: tags } } });
+    }
+
     async setCoverImageKey(recipeId: string, key: string): Promise<void> {
         await this.collection().findOneAndUpdate({ id: recipeId }, { $set: { coverImageKey: key } });
     }
