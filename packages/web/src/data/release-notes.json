@@ -1,5 +1,19 @@
 [
   {
+    "version": "1.95.0",
+    "date": "2026-10-10",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Voice input can now keep listening through pauses until you tap stop; turn it on in Settings."
+      },
+      {
+        "type": "improvement",
+        "text": "Internal documentation and tooling clean-up; nothing visible in the app."
+      }
+    ]
+  },
+  {
     "version": "1.94.3",
     "date": "2026-10-10",
     "notes": [

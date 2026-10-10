@@ -1,3 +1,10 @@
+# [1.95.0](https://github.com/igor-siergiej/shoppingo/compare/v1.94.3...v1.95.0) (2026-10-10)
+
+
+### Features
+
+* **web:** optional keep-listening mode for voice input ([#217](https://github.com/igor-siergiej/shoppingo/issues/217)) ([a74f74d](https://github.com/igor-siergiej/shoppingo/commit/a74f74ddb93a78b0d6f7181c58fe1d3276c91713))
+
 ## [1.94.3](https://github.com/igor-siergiej/shoppingo/compare/v1.94.2...v1.94.3) (2026-10-10)
 
 
