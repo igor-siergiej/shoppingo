@@ -25,4 +25,11 @@ describe('dependency registration', () => {
             dependencyContainer.resolve(DependencyToken.ListService)
         );
     });
+
+    it('gives ListService the item categoriser and realtime notifier', () => {
+        const service = dependencyContainer.resolve(DependencyToken.ListService) as unknown as Record<string, unknown>;
+
+        expect(service.itemCategoryService).toBe(dependencyContainer.resolve(DependencyToken.ItemCategoryService));
+        expect(service.onListChanged).toBeFunction();
+    });
 });
