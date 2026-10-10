@@ -4,32 +4,28 @@ import { useEffect, useState } from 'react';
 import { useQuery } from 'react-query';
 import { useParams } from 'react-router-dom';
 import { getListQuery } from '../../api';
+import { ConfirmationDialog } from '../../components/ConfirmationDialog';
+import { GroupByAisleToggle } from '../../components/GroupByAisleToggle';
 import ItemCheckBoxList from '../../components/ItemCheckBoxList';
 import { ListViewers } from '../../components/ListViewers';
 import { ItemsSkeleton } from '../../components/LoadingSkeleton';
 import ToolBar from '../../components/ToolBar';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from '../../components/ui/alert-dialog';
 import { usePullToRefreshContext } from '../../contexts/PullToRefreshContext';
 import { useConfirmation } from '../../hooks/useConfirmation';
 import { useGoBack } from '../../hooks/useGoBack';
+import { useGroupByAisle } from '../../hooks/useGroupByAisle';
 import { useItemPageMutations } from '../../hooks/useItemPageMutations';
 import { logger } from '../../utils/logger';
 import { EmptyState } from './EmptyState';
 import { ErrorState } from './ErrorState';
 
+// Page-level wiring of query, mutations, confirmations and layout in one component.
+// fallow-ignore-next-line complexity
 const ItemsPage = () => {
     const { listTitle } = useParams();
     const handleGoBack = useGoBack('/');
     const [currentListType, setCurrentListType] = useState<ListType>(ListTypeEnum.SHOPPING);
+    const [groupByAisle, toggleGroupByAisle] = useGroupByAisle();
     const { confirm, isOpen, config: confirmConfig, handleConfirm, handleCancel } = useConfirmation();
 
     const { data, isLoading, isError, refetch } = useQuery({
@@ -115,7 +111,17 @@ const ItemsPage = () => {
                     {isEmpty ? (
                         <EmptyState listType={currentListType} />
                     ) : (
-                        <ItemCheckBoxList items={items} listTitle={listTitle} listType={listType} />
+                        <>
+                            {listType === ListTypeEnum.SHOPPING && (
+                                <GroupByAisleToggle grouped={groupByAisle} onToggle={toggleGroupByAisle} />
+                            )}
+                            <ItemCheckBoxList
+                                items={items}
+                                listTitle={listTitle}
+                                listType={listType}
+                                groupByAisle={groupByAisle && listType === ListTypeEnum.SHOPPING}
+                            />
+                        </>
                     )}
                 </div>
             )}
@@ -142,22 +148,15 @@ const ItemsPage = () => {
                 disableClearAll={items.length === 0}
             />
 
-            <AlertDialog open={isOpen} onOpenChange={(open) => !open && handleCancel()}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>{confirmConfig?.title}</AlertDialogTitle>
-                        <AlertDialogDescription>{confirmConfig?.description}</AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel onClick={handleCancel}>
-                            {confirmConfig?.cancelLabel || 'Cancel'}
-                        </AlertDialogCancel>
-                        <AlertDialogAction onClick={handleConfirm}>
-                            {confirmConfig?.actionLabel || 'Confirm'}
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+            <ConfirmationDialog
+                open={isOpen}
+                title={confirmConfig?.title}
+                description={confirmConfig?.description}
+                cancelLabel={confirmConfig?.cancelLabel}
+                actionLabel={confirmConfig?.actionLabel}
+                onCancel={handleCancel}
+                onConfirm={handleConfirm}
+            />
         </>
     );
 };

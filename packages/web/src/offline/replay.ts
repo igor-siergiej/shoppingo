@@ -1,3 +1,4 @@
+import type { ItemCategory } from '@shoppingo/types';
 import {
     addItem,
     addList,
@@ -10,6 +11,7 @@ import {
     deleteRecipe,
     deleteTodo,
     updateItem,
+    updateItemCategory,
     updateItemName,
     updateItemQuantity,
     updateLabel,
@@ -47,6 +49,9 @@ export const replayIntent = async (intent: OutboxIntent): Promise<void> => {
                 p.quantity as number | undefined,
                 p.unit as string | undefined
             );
+            return;
+        case 'item.category':
+            await updateItemCategory(intent.scope, intent.targetId, p.category as ItemCategory);
             return;
         case 'list.create':
             await addList(

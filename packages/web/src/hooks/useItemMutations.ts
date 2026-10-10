@@ -1,4 +1,4 @@
-import type { Item, ListType } from '@shoppingo/types';
+import type { Item, ItemCategory, ListType } from '@shoppingo/types';
 import type { UseMutationOptions } from 'react-query';
 import { useMutation, useQueryClient } from 'react-query';
 import { drainOutbox } from '../offline/drainer';
@@ -108,10 +108,20 @@ export function useItemMutations(listTitle: string, itemId: string) {
         ) as UseMutationOptions<unknown, unknown, { quantity?: number; unit?: string }, OptimisticMutationContext>
     );
 
+    const updateCategoryMutation = useMutation(
+        createOptimisticMutation(
+            queryClient,
+            listTitle,
+            (category: ItemCategory) => enqueueItem('item.category', listTitle, itemId, { category }),
+            (items, category) => items.map((i) => (i.id === itemId ? { ...i, category } : i))
+        ) as UseMutationOptions<unknown, unknown, ItemCategory, OptimisticMutationContext>
+    );
+
     return {
         toggleMutation,
         deleteMutation,
         updateNameMutation,
         updateQuantityMutation,
+        updateCategoryMutation,
     };
 }

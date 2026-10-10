@@ -56,4 +56,35 @@ describe('ItemCheckBoxList', () => {
 
         expect(items.map((i) => i.id)).toEqual(originalOrder);
     });
+
+    describe('grouped by aisle', () => {
+        const aisleItems: Item[] = [
+            { id: '1', name: 'Milk', isSelected: false, category: 'dairy' },
+            { id: '2', name: 'Apple', isSelected: false, category: 'produce' },
+            { id: '3', name: 'Mystery', isSelected: false },
+            { id: '4', name: 'Cheese', isSelected: true, category: 'dairy' },
+        ];
+
+        it('renders a section per aisle in aisle order, putting unclassified items under Other', () => {
+            render(<ItemCheckBoxList items={aisleItems} listTitle="Shopping" listType="shopping" groupByAisle />);
+
+            const headings = screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent);
+
+            expect(headings).toEqual(['Produce', 'Dairy', 'Other']);
+        });
+
+        it('keeps selected items first inside their aisle', () => {
+            render(<ItemCheckBoxList items={aisleItems} listTitle="Shopping" listType="shopping" groupByAisle />);
+
+            const dairy = screen.getByRole('region', { name: 'Dairy' });
+
+            expect(dairy.textContent?.indexOf('Cheese')).toBeLessThan(dairy.textContent?.indexOf('Milk') ?? 0);
+        });
+
+        it('shows no headings when grouping is off', () => {
+            render(<ItemCheckBoxList items={aisleItems} listTitle="Shopping" listType="shopping" />);
+
+            expect(screen.queryAllByRole('heading')).toHaveLength(0);
+        });
+    });
 });

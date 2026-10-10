@@ -1,6 +1,6 @@
 import { type DBSchema, type IDBPDatabase, openDB } from 'idb';
 
-export type ItemOp = 'item.add' | 'item.toggle' | 'item.delete' | 'item.rename' | 'item.quantity';
+export type ItemOp = 'item.add' | 'item.toggle' | 'item.delete' | 'item.rename' | 'item.quantity' | 'item.category';
 export type ListOp = 'list.create';
 export type TodoOp = 'todo.create' | 'todo.update' | 'todo.delete' | 'todo.complete';
 export type LabelOp = 'label.create' | 'label.update' | 'label.delete';

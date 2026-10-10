@@ -1,4 +1,4 @@
-import type { Ingredient, Label, Recipe, Todo } from '@shoppingo/types';
+import type { Ingredient, ItemCategory, Label, Recipe, Todo } from '@shoppingo/types';
 import type { OutboxIntent } from './outboxStore';
 
 export interface ItemView {
@@ -7,6 +7,7 @@ export interface ItemView {
     isSelected: boolean;
     quantity?: number;
     unit?: string;
+    category?: ItemCategory;
     dateAdded?: string | Date;
 }
 
@@ -44,6 +45,8 @@ export const applyItemIntent = (items: ItemView[], intent: OutboxIntent): ItemVi
                       }
                     : i
             );
+        case 'item.category':
+            return items.map((i) => (i.id === intent.targetId ? { ...i, category: p.category as ItemCategory } : i));
         default:
             return items;
     }

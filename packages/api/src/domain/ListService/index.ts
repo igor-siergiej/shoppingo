@@ -1,16 +1,20 @@
 import type { Logger } from '@imapps/api-utils';
 
-import type { Item, List, ListType, User } from '@shoppingo/types';
-import { ListType as ListTypeEnum } from '@shoppingo/types';
+import type { Item, ItemCategory, List, ListType, User } from '@shoppingo/types';
+import { ITEM_CATEGORIES, ListType as ListTypeEnum } from '@shoppingo/types';
 import { AuthorizationService } from '../AuthorizationService';
 import type { FriendService } from '../FriendService';
 import type { IdGenerator } from '../IdGenerator';
+import type { ItemCategoryService } from '../ItemCategoryService';
 import type { ListRepository } from '../ListRepository';
 import { isMergeableIngredient, resolveMergedQuantity, resolveMergedUnit } from './ingredientMatching';
 import type { AuthClient } from './types';
 
 // How many times a contended list write is re-read and retried before giving up.
 const MAX_WRITE_ATTEMPTS = 8;
+
+// Bounds the LLM calls one add can trigger when a long-standing list has many unclassified items.
+const MAX_CATEGORISE_PER_PASS = 30;
 
 export class ListService {
     private readonly authorizationService: AuthorizationService;
@@ -22,9 +26,43 @@ export class ListService {
         private readonly logger?: Logger,
         authorizationService?: AuthorizationService,
         private readonly notificationService?: NotificationService,
-        private readonly friendService?: FriendService
+        private readonly friendService?: FriendService,
+        private readonly itemCategoryService?: ItemCategoryService,
+        private readonly onListChanged?: (listTitle: string) => void
     ) {
         this.authorizationService = authorizationService ?? new AuthorizationService();
+    }
+
+    /**
+     * Fills in aisles for items that have none, after the add response is already sent. Failures leave the item
+     * uncategorised (shown under "other") and never surface to the caller.
+     */
+    private async categoriseInBackground(title: string): Promise<void> {
+        if (!this.itemCategoryService) return;
+        try {
+            const list = await this.repo.getByTitle(title);
+            const pending = (list?.items ?? []).filter((item) => !item.category).slice(0, MAX_CATEGORISE_PER_PASS);
+            let changed = false;
+            for (const item of pending) {
+                const category = await this.itemCategoryService.categorise(item.name);
+                if (category && (await this.repo.setCategoryIfUnset(title, item.id, category))) changed = true;
+            }
+            if (changed) this.onListChanged?.(title);
+        } catch (error) {
+            this.logger?.warn('Background item categorisation failed', { listTitle: title, error });
+        }
+    }
+
+    async setItemCategory(title: string, itemId: string, category: ItemCategory) {
+        if (!ITEM_CATEGORIES.includes(category)) {
+            throw Object.assign(new Error('Unknown item category'), { status: 400 });
+        }
+        await this.modifyList(title, (list) => {
+            this.findItem(list, itemId);
+            list.items = list.items.map((item) => (item.id === itemId ? { ...item, category } : item));
+        });
+        this.logger?.info('Item category set by user', { listTitle: title, itemId, category });
+        return { message: 'Category updated successfully' };
     }
 
     private findItem(list: List, itemId: string): Item {
@@ -236,6 +274,7 @@ export class ListService {
             };
 
             await this.repo.pushItem(title, item);
+            void this.categoriseInBackground(title);
             this.logger?.info('Item added to list', {
                 listTitle: title,
                 itemName,
@@ -604,6 +643,8 @@ export class ListService {
                 current.items = items;
                 return { added: addedCount, skipped: skippedCount, addedNames: names };
             });
+
+            if (added > 0) void this.categoriseInBackground(title);
 
             this.logger?.info('Items bulk added to list', {
                 listTitle: title,

@@ -1,0 +1,33 @@
+import type { MongoDbConnection } from '@imapps/api-utils';
+import type { ItemCategory } from '@shoppingo/types';
+
+import { CollectionNames } from '../../dependencies/types';
+import type { ItemCategoryRepository } from '../../domain/ItemCategoryRepository';
+
+export interface ItemCategoryDoc {
+    name: string;
+    category: ItemCategory;
+}
+
+export class MongoItemCategoryRepository implements ItemCategoryRepository {
+    constructor(private readonly db: MongoDbConnection<{ [CollectionNames.ItemCategory]: ItemCategoryDoc }>) {}
+
+    private collection() {
+        return this.db.getCollection(CollectionNames.ItemCategory);
+    }
+
+    // Called from onStartup through the DI-resolved repository, which fallow can't trace.
+    // fallow-ignore-next-line unused-class-member
+    async ensureIndexes(): Promise<void> {
+        await this.collection().createIndex({ name: 1 }, { unique: true });
+    }
+
+    async get(name: string): Promise<ItemCategory | null> {
+        const doc = await this.collection().findOne({ name });
+        return doc?.category ?? null;
+    }
+
+    async set(name: string, category: ItemCategory): Promise<void> {
+        await this.collection().updateOne({ name }, { $setOnInsert: { name, category } }, { upsert: true });
+    }
+}
