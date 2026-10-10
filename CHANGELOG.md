@@ -1,3 +1,10 @@
+# [1.92.0](https://github.com/igor-siergiej/shoppingo/compare/v1.91.0...v1.92.0) (2026-10-10)
+
+
+### Features
+
+* add shopping items by voice ([#205](https://github.com/igor-siergiej/shoppingo/issues/205)) ([98333c8](https://github.com/igor-siergiej/shoppingo/commit/98333c8de38d93397e3cbe6954061b56353044fa))
+
 # [1.91.0](https://github.com/igor-siergiej/shoppingo/compare/v1.90.0...v1.91.0) (2026-10-10)
 
 

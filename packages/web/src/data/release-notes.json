@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.92.0",
+    "date": "2026-10-10",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "You can now add several items to a list by speaking, for example \"two loaves of bread, milk and a dozen eggs\", and check them before they are added."
+      }
+    ]
+  },
+  {
     "version": "1.91.0",
     "date": "2026-10-10",
     "notes": [
