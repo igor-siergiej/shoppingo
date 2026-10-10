@@ -1,7 +1,7 @@
 import type { ListType } from '@shoppingo/types';
 import { ListType as ListTypeEnum } from '@shoppingo/types';
+import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
-import { useQuery } from 'react-query';
 import { useParams } from 'react-router-dom';
 import { addItemsBulk, getListQuery, type SpokenItem } from '../../api';
 import { ConfirmationDialog } from '../../components/ConfirmationDialog';

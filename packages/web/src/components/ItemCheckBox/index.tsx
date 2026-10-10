@@ -67,7 +67,7 @@ const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
     };
 
     const handleToggleSelected = async () => {
-        if (toggleMutation.isLoading || swipeState !== 'closed') return;
+        if (toggleMutation.isPending || swipeState !== 'closed') return;
         const next = !item.isSelected;
         toggleMutation.mutate(next);
     };
@@ -115,14 +115,14 @@ const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
                     onCloseSwipe={closeSwipe}
                     onDelete={handleDeleteItem}
                     onEdit={handleEditStart}
-                    deleteLoading={deleteMutation.isLoading}
-                    disabled={deleteMutation.isLoading}
+                    deleteLoading={deleteMutation.isPending}
+                    disabled={deleteMutation.isPending}
                     hideActions={isDeleting}
                     deleteAriaLabel={`Delete ${item.name}`}
                     editAriaLabel={`Edit ${item.name}`}
                 >
                     <motion.div
-                        animate={{ opacity: toggleMutation.isLoading ? 0.5 : 1 }}
+                        animate={{ opacity: toggleMutation.isPending ? 0.5 : 1 }}
                         transition={{ duration: 0.2, ease: 'easeInOut' }}
                     >
                         <ItemCheckBoxCard
@@ -131,7 +131,7 @@ const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
                             imageBlobUrl={imageBlobUrl}
                             hasLoadedImage={hasLoadedImage}
                             hasImageError={hasImageError}
-                            isLoading={toggleMutation.isLoading}
+                            isLoading={toggleMutation.isPending}
                             isSelected={item.isSelected}
                             isPending={isPending}
                             onToggle={handleToggleSelected}

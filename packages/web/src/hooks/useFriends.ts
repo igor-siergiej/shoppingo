@@ -1,5 +1,5 @@
 import type { User } from '@shoppingo/types';
-import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { generateFriendCode, getFriendsQuery, redeemFriendCode, unfriend } from '../api';
 
 export const useFriends = () => {
@@ -7,26 +7,28 @@ export const useFriends = () => {
     return { friends: data ?? [], isLoading };
 };
 
-export const useGenerateFriendCode = () => useMutation(generateFriendCode);
+export const useGenerateFriendCode = () => useMutation({ mutationFn: generateFriendCode });
 
 export const useRedeemFriendCode = () => {
     const queryClient = useQueryClient();
-    return useMutation(redeemFriendCode, {
+    return useMutation({
+        mutationFn: redeemFriendCode,
         onSuccess: () => {
-            void queryClient.invalidateQueries(['friends']);
+            void queryClient.invalidateQueries({ queryKey: ['friends'] });
         },
     });
 };
 
 export const useUnfriend = () => {
     const queryClient = useQueryClient();
-    return useMutation(unfriend, {
+    return useMutation({
+        mutationFn: unfriend,
         onSuccess: () => {
-            void queryClient.invalidateQueries(['friends']);
+            void queryClient.invalidateQueries({ queryKey: ['friends'] });
             // Hard-revoke strips the ex-friend from lists, recipes and todos server-side.
-            void queryClient.invalidateQueries(['lists']);
-            void queryClient.invalidateQueries(['recipes']);
-            void queryClient.invalidateQueries(['todos']);
+            void queryClient.invalidateQueries({ queryKey: ['lists'] });
+            void queryClient.invalidateQueries({ queryKey: ['recipes'] });
+            void queryClient.invalidateQueries({ queryKey: ['todos'] });
         },
     });
 };

@@ -1,6 +1,6 @@
 import { useUser } from '@imapps/web-utils';
+import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
-import { useQuery } from 'react-query';
 import { useNavigate } from 'react-router-dom';
 import { getRecipesQuery } from '../../api';
 import { PinnedSearchField } from '../../components/PinnedSearchField';

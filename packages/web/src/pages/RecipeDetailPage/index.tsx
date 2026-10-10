@@ -2,9 +2,9 @@
 
 import { useUser } from '@imapps/web-utils';
 import type { Ingredient, Recipe } from '@shoppingo/types';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ExternalLink, Pencil, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useQuery, useQueryClient } from 'react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { addItemsBulk, getListsQuery, getRecipeQuery } from '../../api';
 import { ManageUsersDrawer } from '../../components/ManageUsersDrawer';
@@ -74,7 +74,7 @@ const RecipeDetailPage = () => {
         refetch,
     } = useQuery(
         recipeId
-            ? { ...getRecipeQuery(recipeId), refetchInterval: aiTagPollInterval }
+            ? { ...getRecipeQuery(recipeId), refetchInterval: (query) => aiTagPollInterval(query.state.data) }
             : { queryKey: [], queryFn: async () => null }
     );
 
@@ -248,7 +248,7 @@ const RecipeDetailPage = () => {
 
             notifySuccess(`${result.added} items added, ${result.skipped} skipped`);
 
-            await queryClient.invalidateQueries([listTitle]);
+            await queryClient.invalidateQueries({ queryKey: [listTitle] });
             setIsSelectMode(false);
             logger.info('Ingredients added to list', {
                 recipeId,

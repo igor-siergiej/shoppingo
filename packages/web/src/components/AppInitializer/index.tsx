@@ -1,8 +1,8 @@
 import { tryRefreshToken, useAuth } from '@imapps/web-utils';
+import { useQueryClient } from '@tanstack/react-query';
 import { AnimatePresence, motion } from 'motion/react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
-import { useQueryClient } from 'react-query';
 import { useNavigate } from 'react-router-dom';
 import { getAuthConfig } from '../../config/auth';
 import { usePWA } from '../../hooks/usePWA';

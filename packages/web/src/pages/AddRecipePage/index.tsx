@@ -1,7 +1,7 @@
 import { useUser } from '@imapps/web-utils';
 import type { Recipe, RecipeDifficulty } from '@shoppingo/types';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
-import { useQuery, useQueryClient } from 'react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
     generateRecipeAiImage,
@@ -219,7 +219,7 @@ const AddRecipePage = () => {
 
             if (imageFile) {
                 await uploadRecipeImage(recipeId, imageFile);
-                await queryClient.invalidateQueries(getRecipeQuery(recipeId).queryKey);
+                await queryClient.invalidateQueries({ queryKey: getRecipeQuery(recipeId).queryKey });
             }
 
             await refetch();
@@ -227,7 +227,7 @@ const AddRecipePage = () => {
             if (!imageFile) {
                 void generateRecipeAiImage(recipeId).then((updatedRecipe) => {
                     queryClient.setQueryData(getRecipeQuery(recipeId).queryKey, updatedRecipe);
-                    return queryClient.invalidateQueries(getRecipesQuery(user.id).queryKey);
+                    return queryClient.invalidateQueries({ queryKey: getRecipesQuery(user.id).queryKey });
                 });
             }
 

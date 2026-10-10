@@ -1,5 +1,5 @@
 import type { ListType, User } from '@shoppingo/types';
-import { useQueryClient } from 'react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { drainOutbox } from '../offline/drainer';
 import { outboxStore } from '../offline/outboxStore';
 import { logger } from '../utils/logger';

@@ -1,7 +1,7 @@
 import { useUser } from '@imapps/web-utils';
 import type { DiscoveryRecipe, DiscoveryRecipeSummary, Ingredient } from '@shoppingo/types';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AlertTriangle, ArrowLeft, Check, ExternalLink, Plus } from 'lucide-react';
-import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
     copyDiscoveryRecipe,
@@ -60,8 +60,9 @@ const AddButton = ({ recipe }: { recipe: DiscoveryRecipe }) => {
     const recipesKey = getRecipesQuery(user?.id ?? '').queryKey;
     const { data: mine = [] } = useQuery({ ...getRecipesQuery(user?.id ?? ''), enabled: !!user?.id });
 
-    const add = useMutation(() => copyDiscoveryRecipe(recipe.id), {
-        onSettled: () => queryClient.invalidateQueries(recipesKey),
+    const add = useMutation({
+        mutationFn: () => copyDiscoveryRecipe(recipe.id),
+        onSettled: () => queryClient.invalidateQueries({ queryKey: recipesKey }),
     });
 
     // The copy keeps the source page as its link, which is how an earlier copy (or a URL import of the same page) is found.
@@ -83,9 +84,9 @@ const AddButton = ({ recipe }: { recipe: DiscoveryRecipe }) => {
 
     return (
         <div className="space-y-1">
-            <Button className="w-full" disabled={add.isLoading} onClick={() => add.mutate()}>
+            <Button className="w-full" disabled={add.isPending} onClick={() => add.mutate()}>
                 <Plus className="h-4 w-4" />
-                {add.isLoading ? 'Adding...' : 'Add to my recipes'}
+                {add.isPending ? 'Adding...' : 'Add to my recipes'}
             </Button>
             {add.isError && (
                 <p role="alert" className="text-xs text-destructive">

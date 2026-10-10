@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from 'react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { addUserToRecipe, removeUserFromRecipe } from '../api';
 import { notifyError, notifySuccess } from '../utils/toast';
 
@@ -11,7 +11,7 @@ export const useManageRecipeUsers = ({ recipeId, userId }: ManageRecipeUsersHook
     const queryClient = useQueryClient();
 
     const invalidateRecipesList = () => {
-        if (userId) void queryClient.invalidateQueries(['recipes', userId]);
+        if (userId) void queryClient.invalidateQueries({ queryKey: ['recipes', userId] });
     };
 
     const addUserMutation = useMutation({

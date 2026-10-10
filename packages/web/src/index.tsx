@@ -1,9 +1,9 @@
 import './index.css';
 
 import { AuthConfigProvider, AuthProvider, ProtectedRoute, UserProvider } from '@imapps/web-utils';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React, { Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
-import { QueryClient, QueryClientProvider } from 'react-query';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
 import AppInitializer from './components/AppInitializer';
@@ -56,11 +56,17 @@ const DiscoverPage = lazyLoadPage(() => import('./pages/DiscoverPage'), 'discove
 const DiscoverRecipePage = lazyLoadPage(() => import('./pages/DiscoverRecipePage'), 'discover recipe page');
 const UseUpIngredientPage = lazyLoadPage(() => import('./pages/UseUpIngredientPage'), 'use up ingredient page');
 
+// v5 pauses queries and mutations while the browser reports offline. This app is offline-first: reads are served by
+// the service worker's cache and writes only go into the local outbox, so both must keep running (the v3 behaviour).
 const queryClient = new QueryClient({
     defaultOptions: {
         queries: {
             refetchOnWindowFocus: false,
             retry: false,
+            networkMode: 'always',
+        },
+        mutations: {
+            networkMode: 'always',
         },
     },
 });

@@ -1,7 +1,7 @@
 import type { Recipe } from '@shoppingo/types';
+import { useQuery } from '@tanstack/react-query';
 import { Globe } from 'lucide-react';
 import { useState } from 'react';
-import { useQuery } from 'react-query';
 import { getPublishedRecipesQuery } from '../../api';
 import { PublishDrawer } from '../../components/PublishControls/PublishDrawer';
 import { UnpublishButton } from '../../components/PublishControls/UnpublishButton';

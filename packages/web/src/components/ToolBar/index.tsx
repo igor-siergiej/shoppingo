@@ -3,6 +3,7 @@
 import { useAuth, useUser } from '@imapps/web-utils';
 import type { Item } from '@shoppingo/types';
 import { ListType } from '@shoppingo/types';
+import { useQueryClient } from '@tanstack/react-query';
 import {
     CheckCheck,
     ChefHat,
@@ -18,7 +19,6 @@ import {
 } from 'lucide-react';
 import { AnimatePresence, MotionConfig, motion } from 'motion/react';
 import { useEffect, useState } from 'react';
-import { useQueryClient } from 'react-query';
 import { useLocation, useNavigate } from 'react-router-dom';
 import useMeasure from 'react-use-measure';
 

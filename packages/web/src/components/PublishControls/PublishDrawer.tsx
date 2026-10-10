@@ -1,5 +1,5 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useId, useState } from 'react';
-import { useMutation, useQueryClient } from 'react-query';
 import { getPublishedRecipesQuery, publishRecipe } from '../../api';
 import { Button } from '../ui/button';
 import { Checkbox } from '../ui/checkbox';
@@ -29,9 +29,10 @@ export const PublishDrawer = ({ open, onOpenChange, recipeId, recipeTitle, isUpd
     const agreeId = useId();
     const showNameId = useId();
 
-    const publish = useMutation(() => publishRecipe(recipeId, { agreeToLicence: agreed, showName }), {
+    const publish = useMutation({
+        mutationFn: () => publishRecipe(recipeId, { agreeToLicence: agreed, showName }),
         onSuccess: async () => {
-            await queryClient.invalidateQueries(getPublishedRecipesQuery().queryKey);
+            await queryClient.invalidateQueries({ queryKey: getPublishedRecipesQuery().queryKey });
             onOpenChange(false);
         },
     });
@@ -97,8 +98,8 @@ export const PublishDrawer = ({ open, onOpenChange, recipeId, recipeTitle, isUpd
                     </div>
 
                     <DrawerFooter>
-                        <Button disabled={!agreed || publish.isLoading} onClick={() => publish.mutate()}>
-                            {publish.isLoading ? 'Publishing...' : isUpdate ? 'Update public recipe' : 'Make public'}
+                        <Button disabled={!agreed || publish.isPending} onClick={() => publish.mutate()}>
+                            {publish.isPending ? 'Publishing...' : isUpdate ? 'Update public recipe' : 'Make public'}
                         </Button>
                         <Button variant="outline" onClick={() => handleOpenChange(false)}>
                             Cancel

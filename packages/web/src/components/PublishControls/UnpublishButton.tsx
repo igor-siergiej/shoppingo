@@ -1,5 +1,5 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { useMutation, useQueryClient } from 'react-query';
 import { getPublishedRecipesQuery, unpublishRecipe } from '../../api';
 import {
     AlertDialog,
@@ -24,10 +24,11 @@ export const UnpublishButton = ({ libraryId, onUnpublished }: UnpublishButtonPro
     const queryClient = useQueryClient();
     const [confirming, setConfirming] = useState(false);
 
-    const unpublish = useMutation(() => unpublishRecipe(libraryId), {
+    const unpublish = useMutation({
+        mutationFn: () => unpublishRecipe(libraryId),
         onSuccess: async () => {
-            await queryClient.invalidateQueries(getPublishedRecipesQuery().queryKey);
-            await queryClient.invalidateQueries('discover-search');
+            await queryClient.invalidateQueries({ queryKey: getPublishedRecipesQuery().queryKey });
+            await queryClient.invalidateQueries({ queryKey: ['discover-search'] });
             setConfirming(false);
             onUnpublished?.();
         },
@@ -55,14 +56,14 @@ export const UnpublishButton = ({ libraryId, onUnpublished }: UnpublishButtonPro
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
                         <AlertDialogAction
-                            disabled={unpublish.isLoading}
+                            disabled={unpublish.isPending}
                             onClick={(event) => {
                                 // Keep the dialog open until the request settles, so a failure can be shown and retried.
                                 event.preventDefault();
                                 unpublish.mutate();
                             }}
                         >
-                            {unpublish.isLoading ? 'Unpublishing...' : 'Unpublish'}
+                            {unpublish.isPending ? 'Unpublishing...' : 'Unpublish'}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

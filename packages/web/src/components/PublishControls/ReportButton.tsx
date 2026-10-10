@@ -1,6 +1,6 @@
+import { useMutation } from '@tanstack/react-query';
 import { Flag } from 'lucide-react';
 import { useState } from 'react';
-import { useMutation } from 'react-query';
 import { reportDiscoveryRecipe } from '../../api';
 import {
     AlertDialog,
@@ -24,7 +24,8 @@ export const ReportButton = ({ recipeId }: { recipeId: string }) => {
     const [open, setOpen] = useState(false);
     const [reason, setReason] = useState('');
 
-    const report = useMutation(() => reportDiscoveryRecipe(recipeId, reason.trim() || undefined), {
+    const report = useMutation({
+        mutationFn: () => reportDiscoveryRecipe(recipeId, reason.trim() || undefined),
         onSuccess: () => setOpen(false),
     });
 
@@ -61,8 +62,8 @@ export const ReportButton = ({ recipeId }: { recipeId: string }) => {
                     )}
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <Button disabled={report.isLoading} onClick={() => report.mutate()}>
-                            {report.isLoading ? 'Sending...' : 'Send report'}
+                        <Button disabled={report.isPending} onClick={() => report.mutate()}>
+                            {report.isPending ? 'Sending...' : 'Send report'}
                         </Button>
                     </AlertDialogFooter>
                 </AlertDialogContent>
