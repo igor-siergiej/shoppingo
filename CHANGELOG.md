@@ -1,3 +1,10 @@
+## [1.89.4](https://github.com/igor-siergiej/shoppingo/compare/v1.89.3...v1.89.4) (2026-10-10)
+
+
+### Bug Fixes
+
+* **api:** block SSRF in recipe import and image proxy ([#199](https://github.com/igor-siergiej/shoppingo/issues/199)) ([923dcc1](https://github.com/igor-siergiej/shoppingo/commit/923dcc19a3b5058ce204af7d6f271a55d2672844))
+
 ## [1.89.3](https://github.com/igor-siergiej/shoppingo/compare/v1.89.2...v1.89.3) (2026-10-10)
 
 

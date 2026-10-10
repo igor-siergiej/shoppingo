@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.89.4",
+    "date": "2026-10-10",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Recipe import can no longer be pointed at internal network addresses, and oversized or slow downloads are cut off."
+      }
+    ]
+  },
+  {
     "version": "1.89.3",
     "date": "2026-10-10",
     "notes": [
