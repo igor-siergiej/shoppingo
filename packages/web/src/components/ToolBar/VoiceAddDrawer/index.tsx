@@ -1,6 +1,7 @@
 import { Mic, Square } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { parseSpokenItems, type SpokenItem } from '../../../api';
+import { useKeepListening } from '../../../hooks/useKeepListening';
 import { useSpeechRecognition } from '../../../hooks/useSpeechRecognition';
 import { Button } from '../../ui/button';
 import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from '../../ui/drawer';
@@ -16,7 +17,8 @@ const describe = (item: SpokenItem) => [item.quantity, item.unit].filter((part) 
 // One small state machine (listen -> parse -> confirm -> add); splitting it would scatter the flow.
 // fallow-ignore-next-line complexity
 export const VoiceAddDrawer = ({ open, onOpenChange, onAddMany }: VoiceAddDrawerProps) => {
-    const speech = useSpeechRecognition();
+    const [keepListening] = useKeepListening();
+    const speech = useSpeechRecognition({ keepListening });
     const [parsed, setParsed] = useState<Array<SpokenItem> | null>(null);
     const [kept, setKept] = useState<Set<number>>(new Set());
     const [busy, setBusy] = useState(false);
