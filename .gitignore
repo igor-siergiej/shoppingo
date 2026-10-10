@@ -36,3 +36,6 @@ ds-bundle/
 .design-sync/learnings/
 .design-sync/node_modules
 packages/web/.design-sync-build/
+
+# k6 load-test output
+scripts/load/results/

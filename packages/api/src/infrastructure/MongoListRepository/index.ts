@@ -11,6 +11,14 @@ export class MongoListRepository implements ListRepository {
         return this.db.getCollection(CollectionNames.List);
     }
 
+    // getByTitle/replaceIfUnchanged/pushItem filter on title and findByUserId on users.id; without these every
+    // request scans the whole collection (scripts/load/README.md: p95 225 ms -> 9 ms at 200 sessions/s).
+    // Not unique: titles are not guaranteed unique in existing data, and a failed unique build would stop startup.
+    async ensureIndexes(): Promise<void> {
+        await this.collection().createIndex({ title: 1 });
+        await this.collection().createIndex({ 'users.id': 1 });
+    }
+
     async getByTitle(title: string): Promise<List | null> {
         return this.collection().findOne({ title });
     }
@@ -31,15 +39,22 @@ export class MongoListRepository implements ListRepository {
         await this.collection().deleteOne({ title });
     }
 
-    async replaceByTitle(title: string, list: List): Promise<void> {
-        await this.collection().findOneAndReplace({ title }, list);
+    async replaceIfUnchanged(title: string, list: List): Promise<number | null> {
+        // Lists written before `revision` existed have no field; they match on its absence.
+        const revision = list.revision === undefined ? { $exists: false } : list.revision;
+        const next = (list.revision ?? 0) + 1;
+        const result = await this.collection().replaceOne({ title, revision }, { ...list, revision: next });
+
+        return result.matchedCount === 1 ? next : null;
     }
 
+    // Every writer that does not go through replaceIfUnchanged must bump `revision`, or a concurrent
+    // read-modify-write would overwrite its change without noticing.
     async pushItem(title: string, item: Item): Promise<void> {
-        await this.collection().findOneAndUpdate({ title }, { $push: { items: item } });
+        await this.collection().findOneAndUpdate({ title }, { $push: { items: item }, $inc: { revision: 1 } });
     }
 
     async removeMemberFromAll(memberId: string, ownerId: string): Promise<void> {
-        await this.collection().updateMany({ ownerId }, { $pull: { users: { id: memberId } } });
+        await this.collection().updateMany({ ownerId }, { $pull: { users: { id: memberId } }, $inc: { revision: 1 } });
     }
 }

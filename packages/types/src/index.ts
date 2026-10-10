@@ -20,6 +20,8 @@ export interface List {
     users: Array<User>;
     listType: ListType;
     ownerId?: string;
+    /** Write counter the API uses for optimistic concurrency; absent until the list is first written to. */
+    revision?: number;
 }
 
 export interface ListResponse {

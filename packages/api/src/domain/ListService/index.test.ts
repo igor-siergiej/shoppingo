@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, mock, vi } from 'bun:test';
+import { beforeEach, describe, expect, it, type Mock, mock, vi } from 'bun:test';
 import type { Item, List, User } from '@shoppingo/types';
 import { ListType } from '@shoppingo/types';
 
@@ -8,6 +8,8 @@ import { ListService } from './index';
 import type { AuthClient } from './types';
 
 class MockListRepository implements ListRepository {
+    async ensureIndexes(): Promise<void> {}
+
     private lists: Array<List> = [];
 
     async getByTitle(title: string): Promise<List | null> {
@@ -30,12 +32,16 @@ class MockListRepository implements ListRepository {
         this.lists = this.lists.filter((list) => list.title !== title);
     }
 
-    async replaceByTitle(title: string, list: List): Promise<void> {
-        const index = this.lists.findIndex((l) => l.title === title);
+    async replaceIfUnchanged(title: string, list: List): Promise<number | null> {
+        // The mock hands out the stored object itself, so a rename has already changed its title by now.
+        const index = this.lists.findIndex((l) => l.title === title || l === list);
 
-        if (index !== -1) {
-            this.lists[index] = list;
+        if (index === -1) {
+            return null;
         }
+
+        this.lists[index] = list;
+        return (list.revision ?? 0) + 1;
     }
 
     async pushItem(title: string, item: Item): Promise<void> {
@@ -1325,9 +1331,9 @@ describe('ListService', () => {
 describe('Item id-addressing', () => {
     let service: ListService;
     let repo: {
-        getByTitle: ReturnType<typeof vi.fn>;
-        replaceByTitle: ReturnType<typeof vi.fn>;
-        pushItem: ReturnType<typeof vi.fn>;
+        getByTitle: Mock<(title: string) => Promise<List | null>>;
+        replaceIfUnchanged: Mock<(title: string, list: List) => Promise<number | null>>;
+        pushItem: Mock<(title: string, item: Item) => Promise<void>>;
     };
 
     const makeList = (overrides: Partial<List> = {}): List => ({
@@ -1342,7 +1348,7 @@ describe('Item id-addressing', () => {
     beforeEach(() => {
         repo = {
             getByTitle: vi.fn(),
-            replaceByTitle: vi.fn().mockResolvedValue(undefined),
+            replaceIfUnchanged: vi.fn().mockResolvedValue(1),
             pushItem: vi.fn().mockResolvedValue(undefined),
         };
         service = new ListService(repo as never, { generate: () => 'generated-id' } as never);
@@ -1357,7 +1363,7 @@ describe('Item id-addressing', () => {
         });
         repo.getByTitle.mockResolvedValue(list);
         await service.setItemSelected('Test List', 'a2', true);
-        const saved = repo.replaceByTitle.mock.calls[0][1] as List;
+        const saved = repo.replaceIfUnchanged.mock.calls[0][1] as List;
         expect(saved.items.find((i: Item) => i.id === 'a2')?.isSelected).toBe(true);
         expect(saved.items.find((i: Item) => i.id === 'a1')?.isSelected).toBe(false);
     });
@@ -1371,7 +1377,7 @@ describe('Item id-addressing', () => {
         });
         repo.getByTitle.mockResolvedValue(list);
         await service.deleteItem('Test List', 'a1');
-        const saved = repo.replaceByTitle.mock.calls[0][1] as List;
+        const saved = repo.replaceIfUnchanged.mock.calls[0][1] as List;
         expect(saved.items.map((i: Item) => i.id)).toEqual(['a2']);
     });
 
