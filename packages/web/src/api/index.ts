@@ -119,7 +119,7 @@ export const addItem = async (
         }),
     });
 
-    void fetch(`/api/image/${encodeURIComponent(itemName)}`, { method: 'GET' }).catch(() => {});
+    void fetch(`/api/image/${encodeURIComponent(itemName)}`, { method: 'GET', headers: authHeaders() }).catch(() => {});
 
     return result;
 };

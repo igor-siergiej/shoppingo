@@ -3,6 +3,8 @@ import sharp from 'sharp';
 import type { ImageGenerator } from '../../domain/ImageService/types';
 import { processImage } from '../imageProcessor';
 
+const FETCH_TIMEOUT_MS = 30_000;
+
 export interface FalImageGeneratorOptions {
     model?: string;
     imageSize?: string;
@@ -41,6 +43,7 @@ export class FalImageGenerator implements ImageGenerator {
                 'Content-Type': 'application/json',
                 Authorization: `Key ${this.apiKey}`,
             },
+            signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
             body: JSON.stringify({
                 prompt,
                 image_size: this.imageSize,
@@ -68,7 +71,7 @@ export class FalImageGenerator implements ImageGenerator {
                 const b64 = url.slice(url.indexOf(',') + 1);
                 originalBuffer = Buffer.from(b64, 'base64');
             } else {
-                const imageResponse = await fetch(url);
+                const imageResponse = await fetch(url, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
                 if (!imageResponse.ok) {
                     throw Object.assign(new Error('Failed to download image from fal.ai'), { status: 502 });
                 }
