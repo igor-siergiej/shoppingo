@@ -1,3 +1,10 @@
+# [1.91.0](https://github.com/igor-siergiej/shoppingo/compare/v1.90.0...v1.91.0) (2026-10-10)
+
+
+### Features
+
+* group shopping list items by aisle ([#204](https://github.com/igor-siergiej/shoppingo/issues/204)) ([8a2a586](https://github.com/igor-siergiej/shoppingo/commit/8a2a5862575d3f55ff8339933fb54ab118084054))
+
 # [1.90.0](https://github.com/igor-siergiej/shoppingo/compare/v1.89.7...v1.90.0) (2026-10-10)
 
 
