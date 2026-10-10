@@ -1,3 +1,10 @@
+## [1.89.5](https://github.com/igor-siergiej/shoppingo/compare/v1.89.4...v1.89.5) (2026-10-10)
+
+
+### Bug Fixes
+
+* **web:** wipe cached API data and offline queue on logout ([#200](https://github.com/igor-siergiej/shoppingo/issues/200)) ([a495316](https://github.com/igor-siergiej/shoppingo/commit/a495316b13b7f6fad3b509b2f9ca242ccc9ff815))
+
 ## [1.89.4](https://github.com/igor-siergiej/shoppingo/compare/v1.89.3...v1.89.4) (2026-10-10)
 
 

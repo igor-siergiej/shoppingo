@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.89.5",
+    "date": "2026-10-10",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Logging out now removes your lists and any unsent changes from the device, so the next person who signs in on it can't see them."
+      }
+    ]
+  },
+  {
     "version": "1.89.4",
     "date": "2026-10-10",
     "notes": [
