@@ -1,17 +1,22 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { useLastSeenVersion } from '../../hooks/useLastSeenVersion';
 import { SyncStatusBadge } from '../SyncStatusBadge';
-import { latestReleaseVersion, WhatsNewDrawer } from '../WhatsNewDrawer';
 
+// Pulls in the full release history, so it only loads once someone opens the panel.
+const WhatsNewDrawer = lazy(() => import('../WhatsNewDrawer'));
+
+// fallow-ignore-next-line complexity
 const Appbar = () => {
     const [isWhatsNewOpen, setIsWhatsNewOpen] = useState(false);
+    const [hasOpenedWhatsNew, setHasOpenedWhatsNew] = useState(false);
     // Captured when the panel opens, before markSeen clears it, so the panel
     // can still flag which releases were unread.
     const [highlightSince, setHighlightSince] = useState<string | null>(null);
-    const { lastSeen, hasUnseenRelease, markSeen } = useLastSeenVersion(latestReleaseVersion);
+    const { lastSeen, hasUnseenRelease, markSeen } = useLastSeenVersion(__LATEST_RELEASE__);
 
     const handleOpen = () => {
         setHighlightSince(lastSeen);
+        setHasOpenedWhatsNew(true);
         setIsWhatsNewOpen(true);
         markSeen();
     };
@@ -43,7 +48,15 @@ const Appbar = () => {
                 </div>
                 <SyncStatusBadge />
             </div>
-            <WhatsNewDrawer open={isWhatsNewOpen} onOpenChange={setIsWhatsNewOpen} highlightSince={highlightSince} />
+            {hasOpenedWhatsNew && (
+                <Suspense fallback={null}>
+                    <WhatsNewDrawer
+                        open={isWhatsNewOpen}
+                        onOpenChange={setIsWhatsNewOpen}
+                        highlightSince={highlightSince}
+                    />
+                </Suspense>
+            )}
         </header>
     );
 };

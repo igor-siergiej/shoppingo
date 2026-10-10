@@ -4,6 +4,8 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
+// Build configuration reads best as one function.
+// fallow-ignore-next-line complexity
 export default defineConfig(({ mode }) => {
     const isDev = mode === 'development';
 
@@ -14,6 +16,13 @@ export default defineConfig(({ mode }) => {
     // this same dev server. APP_VERSION (set by the Docker build) still wins for
     // real builds regardless of mode.
     const appVersion = process.env.APP_VERSION || (isDev ? 'localhost' : packageJson.version) || '';
+
+    // The newest release version is all the app shell needs (for the unread dot); the notes themselves are loaded
+    // only when the panel opens.
+    const releaseNotes = JSON.parse(fs.readFileSync('./src/data/release-notes.json', 'utf8')) as Array<{
+        version: string;
+    }>;
+    const latestRelease = releaseNotes[0]?.version ?? '';
 
     return {
         plugins: [
@@ -89,6 +98,7 @@ export default defineConfig(({ mode }) => {
         },
         define: {
             __APP_VERSION__: JSON.stringify(appVersion),
+            __LATEST_RELEASE__: JSON.stringify(latestRelease),
             __IS_PROD__: JSON.stringify(!isDev),
         },
         resolve: {
