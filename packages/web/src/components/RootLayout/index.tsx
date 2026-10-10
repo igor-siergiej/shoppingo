@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { Toaster } from 'sonner';
+import { useWebMcpTools } from '../../hooks/useWebMcpTools';
 import { recordInAppNavigation } from '../../utils/navigationHistory';
 import Appbar from '../Appbar';
 import { Layout } from '../Layout';
@@ -15,6 +16,7 @@ interface RootLayoutProps {
 export const RootLayout = ({ children, showLayout = true }: RootLayoutProps) => {
     const location = useLocation();
     const content = children || <Outlet />;
+    useWebMcpTools();
 
     // biome-ignore lint/correctness/useExhaustiveDependencies: location.key drives re-firing on route change, not read in the body.
     useEffect(() => {
