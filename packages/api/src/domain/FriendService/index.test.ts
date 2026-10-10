@@ -180,4 +180,36 @@ describe('FriendService.listFriends / unfriend / areFriends / friendIdsOf', () =
         }
         expect(repo.friendships).toHaveLength(0);
     });
+
+    it('unfriend starts every cleanup write before waiting for any of them', async () => {
+        const repo = new MockRepo();
+        seedFriendship(repo);
+        const started: string[] = [];
+        let release: () => void = () => {};
+        const gate = new Promise<void>((resolve) => {
+            release = resolve;
+        });
+        const slowRepo = (name: string) => ({
+            removeMemberFromAll: async (memberId: string) => {
+                started.push(`${name}:${memberId}`);
+                await gate;
+            },
+        });
+        const svc = new FriendService(
+            repo as never,
+            new MockIds() as never,
+            undefined,
+            slowRepo('lists') as never,
+            slowRepo('recipes') as never,
+            slowRepo('todos') as never,
+            slowRepo('mealPlan') as never
+        );
+
+        const done = svc.unfriend('u1', 'u2');
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
+        expect(started).toHaveLength(8);
+        release();
+        await done;
+    });
 });

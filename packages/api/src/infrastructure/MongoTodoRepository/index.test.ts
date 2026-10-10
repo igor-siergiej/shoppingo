@@ -13,6 +13,10 @@ const makeTodo = (over: Partial<Todo> = {}): Todo => ({
 
 class FakeCollection {
     docs: Todo[] = [];
+    indexes: Array<unknown[]> = [];
+    async createIndex(...args: unknown[]) {
+        this.indexes.push(args);
+    }
     async findOne(q: { id: string }) {
         return this.docs.find((d) => d.id === q.id) ?? null;
     }
@@ -99,5 +103,11 @@ describe('MongoTodoRepository', () => {
         await testRepo.findDueCandidates('2026-06-25');
 
         expect(mockFind).toHaveBeenCalledWith({ done: false, dueDate: { $lte: '2026-06-25' } });
+    });
+
+    it('indexes the lookups it filters on: id, owner, member, and the reminder scan', async () => {
+        await repo.ensureIndexes();
+
+        expect(col.indexes).toEqual([[{ id: 1 }], [{ ownerId: 1 }], [{ 'users.id': 1 }], [{ done: 1, dueDate: 1 }]]);
     });
 });

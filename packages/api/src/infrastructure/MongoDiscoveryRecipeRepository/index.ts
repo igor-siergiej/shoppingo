@@ -23,6 +23,13 @@ export class MongoDiscoveryRecipeRepository implements DiscoveryRecipeRepository
         return this.collection().findOne({ id }, NO_OBJECT_ID);
     }
 
+    async getByIds(ids: string[]): Promise<DiscoveryRecipe[]> {
+        if (ids.length === 0) return [];
+        return this.collection()
+            .find({ id: { $in: ids } }, NO_OBJECT_ID)
+            .toArray();
+    }
+
     async upsert(recipe: DiscoveryRecipe): Promise<void> {
         await this.collection().replaceOne({ id: recipe.id }, recipe, { upsert: true });
     }

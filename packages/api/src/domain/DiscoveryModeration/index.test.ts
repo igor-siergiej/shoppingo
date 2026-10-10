@@ -30,7 +30,12 @@ const setup = (admins: string[] = [admin.id]) => {
         ['wikibooks-1', recipe('wikibooks-1', 'wikibooks', 'Wiki Cake')],
     ]);
     const indexed = new Set(library.keys());
+    const getRecipesCalls: string[][] = [];
     const discovery = {
+        getRecipes: async (ids: string[]) => {
+            getRecipesCalls.push(ids);
+            return ids.flatMap((id) => library.get(id) ?? []);
+        },
         getRecipe: async (id: string) => {
             const found = library.get(id);
             if (!found) throw Object.assign(new Error('Library recipe not found'), { status: 404 });
@@ -78,7 +83,7 @@ const setup = (admins: string[] = [admin.id]) => {
         { generate: () => `rep-${++n}` },
         new Set(admins)
     );
-    return { service, library, indexed, reportRows, rows };
+    return { service, library, indexed, reportRows, rows, getRecipesCalls };
 };
 
 describe('DiscoveryModerationService.report', () => {
@@ -131,6 +136,18 @@ describe('DiscoveryModerationService.listReports', () => {
         expect(summaries[1]?.reasons.sort()).toEqual(['rude', 'spam']);
         expect(JSON.stringify(summaries)).not.toContain('u-bob');
         expect(JSON.stringify(summaries)).not.toContain('u-alice');
+    });
+
+    it('loads every reported recipe in one query rather than one per report', async () => {
+        const { service, getRecipesCalls } = setup();
+        await service.report('user-1', alice, 'spam');
+        await service.report('user-2', bob, 'rude');
+        await service.report('wikibooks-1', alice, 'odd');
+
+        await service.listReports(admin);
+
+        expect(getRecipesCalls).toHaveLength(1);
+        expect(getRecipesCalls[0].sort()).toEqual(['user-1', 'user-2', 'wikibooks-1']);
     });
 
     it('skips reports for recipes that have since gone', async () => {

@@ -74,6 +74,12 @@ export class DiscoveryService {
         return recipe;
     }
 
+    /** Several recipes in one query; ids that no longer exist are left out rather than failing the lot. */
+    // fallow-ignore-next-line unused-class-member
+    async getRecipes(ids: string[]): Promise<DiscoveryRecipe[]> {
+        return this.repository.getByIds(ids);
+    }
+
     async getSimilar(id: string, limit = DEFAULT_SIMILAR_LIMIT): Promise<DiscoveryRecipeSummary[]> {
         await this.getRecipe(id);
         return this.index.similar(id, clamp(Math.trunc(limit), 1, MAX_SIMILAR_LIMIT));

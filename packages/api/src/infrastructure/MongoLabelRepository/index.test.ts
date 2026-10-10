@@ -12,6 +12,10 @@ const makeLabel = (over: Partial<Label> = {}): Label => ({
 
 class FakeCollection {
     docs: Label[] = [];
+    indexes: Array<unknown[]> = [];
+    async createIndex(...args: unknown[]) {
+        this.indexes.push(args);
+    }
     async findOne(q: { id: string }) {
         return this.docs.find((d) => d.id === q.id) ?? null;
     }
@@ -59,5 +63,11 @@ describe('MongoLabelRepository', () => {
         expect((await repo.getById('L1'))?.name).toBe('Home');
         await repo.deleteById('L1');
         expect(await repo.getById('L1')).toBeNull();
+    });
+
+    it('indexes id and owner', async () => {
+        await repo.ensureIndexes();
+
+        expect(col.indexes).toEqual([[{ id: 1 }], [{ ownerId: 1 }]]);
     });
 });

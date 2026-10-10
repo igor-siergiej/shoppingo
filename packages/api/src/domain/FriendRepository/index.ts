@@ -1,6 +1,7 @@
 import type { Friendship, PairingCode } from '@shoppingo/types';
 
 export interface FriendRepository {
+    ensureIndexes(): Promise<void>;
     // pairing codes
     insertCode(code: PairingCode): Promise<void>;
     getCode(code: string): Promise<PairingCode | null>;

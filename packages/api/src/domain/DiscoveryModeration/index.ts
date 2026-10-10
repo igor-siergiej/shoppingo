@@ -16,7 +16,7 @@ const fail = (message: string, status: number) => Object.assign(new Error(messag
  */
 export class DiscoveryModerationService {
     constructor(
-        private readonly discovery: Pick<DiscoveryService, 'getRecipe' | 'remove'>,
+        private readonly discovery: Pick<DiscoveryService, 'getRecipe' | 'getRecipes' | 'remove'>,
         private readonly reports: DiscoveryReportRepository,
         private readonly publications: DiscoveryPublicationRepository,
         private readonly idGenerator: IdGenerator,
@@ -55,10 +55,12 @@ export class DiscoveryModerationService {
             byRecipe.set(report.recipeId, entry);
         }
 
+        // One query for every reported recipe; a report for a recipe that has since gone is stale, not an error.
+        const recipes = new Map((await this.discovery.getRecipes([...byRecipe.keys()])).map((r) => [r.id, r]));
+
         const summaries: DiscoveryReportSummary[] = [];
         for (const [recipeId, entry] of byRecipe) {
-            // A report for a recipe that has since gone is stale, not an error.
-            const recipe = await this.discovery.getRecipe(recipeId).catch((): null => null);
+            const recipe = recipes.get(recipeId);
             if (!recipe) continue;
             summaries.push({
                 recipeId,

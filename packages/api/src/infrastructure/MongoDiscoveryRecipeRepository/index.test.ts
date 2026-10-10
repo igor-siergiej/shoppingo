@@ -55,6 +55,17 @@ describe('MongoDiscoveryRecipeRepository', () => {
         expect(collection.findOne).toHaveBeenCalledWith({ id: 'a' }, { projection: { _id: 0 } });
     });
 
+    it('fetches several recipes in one $in query, and skips the query for no ids', async () => {
+        const { repo, collection } = setup([recipe('a'), recipe('b')]);
+
+        expect((await repo.getByIds(['a', 'b'])).map((r) => r.id)).toEqual(['a', 'b']);
+        expect(collection.find).toHaveBeenCalledWith({ id: { $in: ['a', 'b'] } }, { projection: { _id: 0 } });
+
+        collection.find.mockClear();
+        expect(await repo.getByIds([])).toEqual([]);
+        expect(collection.find).not.toHaveBeenCalled();
+    });
+
     it('upserts by library id', async () => {
         const { repo, collection } = setup();
         await repo.upsert(recipe('a'));
