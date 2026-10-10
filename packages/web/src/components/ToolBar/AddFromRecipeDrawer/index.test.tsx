@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AddFromRecipeDrawer } from './index';
 
 let mockRecipes: unknown[] = [];
-vi.mock('react-query', () => ({
+vi.mock('@tanstack/react-query', () => ({
     useQuery: () => ({ data: mockRecipes }),
     useQueryClient: () => ({ invalidateQueries: vi.fn() }),
 }));

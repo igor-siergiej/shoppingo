@@ -186,13 +186,13 @@ export const AddFriendDrawer = ({ open, onOpenChange }: AddFriendDrawerProps) =>
     const {
         mutate: generateCode,
         data: generated,
-        isLoading: isGenerating,
+        isPending: isGenerating,
         reset: resetGenerate,
     } = useGenerateFriendCode();
 
     const {
         mutate: redeemCode,
-        isLoading: isRedeeming,
+        isPending: isRedeeming,
         error: redeemError,
         isError: isRedeemError,
         reset: resetRedeem,

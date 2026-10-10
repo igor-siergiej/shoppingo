@@ -14,7 +14,7 @@ vi.mock('@imapps/web-utils', () => ({
 }));
 
 let mockRecipes: unknown[] = [];
-vi.mock('react-query', () => ({
+vi.mock('@tanstack/react-query', () => ({
     useQuery: () => ({ data: mockRecipes }),
 }));
 

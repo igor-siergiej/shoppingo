@@ -1,9 +1,9 @@
 import { useUser } from '@imapps/web-utils';
 import type { MealPlanEntry, Recipe } from '@shoppingo/types';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { addDays, format } from 'date-fns';
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from 'react-query';
 import {
     addItemsBulk,
     createMealPlanEntry,
@@ -44,15 +44,16 @@ const MealPlanPage = () => {
         user?.id ? getListsQuery(user.id) : { queryKey: [], queryFn: async () => [] }
     );
 
-    const refresh = () => queryClient.invalidateQueries(planKey);
+    const refresh = () => queryClient.invalidateQueries({ queryKey: planKey });
     const onError = (error: unknown) => notifyError(error instanceof Error ? error.message : 'Something went wrong');
 
-    const addMutation = useMutation(createMealPlanEntry, { onSuccess: refresh, onError });
-    const servingsMutation = useMutation(
-        ({ id, servings }: { id: string; servings: number }) => updateMealPlanEntry(id, { servings }),
-        { onSuccess: refresh, onError }
-    );
-    const removeMutation = useMutation(deleteMealPlanEntry, { onSuccess: refresh, onError });
+    const addMutation = useMutation({ mutationFn: createMealPlanEntry, onSuccess: refresh, onError });
+    const servingsMutation = useMutation({
+        mutationFn: ({ id, servings }: { id: string; servings: number }) => updateMealPlanEntry(id, { servings }),
+        onSuccess: refresh,
+        onError,
+    });
+    const removeMutation = useMutation({ mutationFn: deleteMealPlanEntry, onSuccess: refresh, onError });
 
     const recipeById = new Map(recipes.map((recipe) => [recipe.id, recipe]));
     const entriesOn = (day: Date): Array<MealPlanEntry> => entries.filter((entry) => entry.date === dayKey(day));
@@ -69,7 +70,7 @@ const MealPlanPage = () => {
             listTitle,
             rows.map((row) => ({ itemName: row.name, quantity: row.quantity, unit: row.unit }))
         );
-        await queryClient.invalidateQueries([listTitle]);
+        await queryClient.invalidateQueries({ queryKey: [listTitle] });
         notifySuccess(`${result.added} items added, ${result.skipped} merged`);
     };
 

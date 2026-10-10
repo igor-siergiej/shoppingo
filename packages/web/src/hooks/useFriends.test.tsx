@@ -1,6 +1,6 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { QueryClient, QueryClientProvider } from 'react-query';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import * as api from '../api';
 import { useFriends, useRedeemFriendCode } from './useFriends';
@@ -49,6 +49,6 @@ describe('useRedeemFriendCode', () => {
             await result.current.mutateAsync('ABC123');
         });
 
-        await waitFor(() => expect(invalidateSpy).toHaveBeenCalledWith(['friends']));
+        await waitFor(() => expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['friends'] }));
     });
 });

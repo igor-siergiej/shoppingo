@@ -1,8 +1,8 @@
 import { useUser } from '@imapps/web-utils';
 import type { ListType } from '@shoppingo/types';
+import { useQuery } from '@tanstack/react-query';
 import { AlertTriangle, ListPlus } from 'lucide-react';
 import { useEffect } from 'react';
-import { useQuery } from 'react-query';
 import { getListsQuery } from '../../api';
 import ListsList from '../../components/ListsList';
 import { ListsSkeleton } from '../../components/LoadingSkeleton';

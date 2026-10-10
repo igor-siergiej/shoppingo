@@ -1,6 +1,6 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { QueryClient, QueryClientProvider } from 'react-query';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const { mockAddUserToRecipe, mockRemoveUserFromRecipe } = vi.hoisted(() => ({
@@ -35,7 +35,7 @@ describe('useManageRecipeUsers', () => {
         result.current.addUserMutation.mutate('friend-1');
 
         await waitFor(() => expect(mockAddUserToRecipe).toHaveBeenCalledWith('R1', 'friend-1'));
-        await waitFor(() => expect(invalidateSpy).toHaveBeenCalledWith(['recipes', 'user-1']));
+        await waitFor(() => expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['recipes', 'user-1'] }));
     });
 
     it('invalidates the recipes list cache after a user is removed', async () => {
@@ -49,6 +49,6 @@ describe('useManageRecipeUsers', () => {
         result.current.removeUserMutation.mutate('friend-1');
 
         await waitFor(() => expect(mockRemoveUserFromRecipe).toHaveBeenCalledWith('R1', 'friend-1'));
-        await waitFor(() => expect(invalidateSpy).toHaveBeenCalledWith(['recipes', 'user-1']));
+        await waitFor(() => expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['recipes', 'user-1'] }));
     });
 });

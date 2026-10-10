@@ -1,7 +1,7 @@
 import type { Recipe } from '@shoppingo/types';
+import { useQuery } from '@tanstack/react-query';
 import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { useQuery } from 'react-query';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useRecipeSearch } from '../../hooks/useRecipeSearch';
@@ -31,7 +31,7 @@ vi.mock('@imapps/web-utils', () => ({
     useAuth: () => ({ logout: vi.fn() }),
 }));
 
-vi.mock('react-query', () => ({
+vi.mock('@tanstack/react-query', () => ({
     useQuery: vi.fn(() => ({
         data: [] as Recipe[],
         isLoading: false,

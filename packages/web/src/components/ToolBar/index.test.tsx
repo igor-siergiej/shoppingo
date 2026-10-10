@@ -20,7 +20,7 @@ vi.mock('@imapps/web-utils', () => ({
     }),
 }));
 
-vi.mock('react-query', () => ({
+vi.mock('@tanstack/react-query', () => ({
     useQueryClient: () => ({}),
 }));
 

@@ -1,7 +1,7 @@
 import { useUser } from '@imapps/web-utils';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { AlertTriangle, ChefHat, Search } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { useQuery, useQueryClient } from 'react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { generateRecipeAiImage, getRecipesQuery } from '../../api';
 import { ListsSkeleton } from '../../components/LoadingSkeleton';
@@ -31,7 +31,7 @@ const RecipesPage = () => {
     const { data, isLoading, isError, refetch } = useQuery({
         ...getRecipesQuery(user?.id || ''),
         enabled: !!user?.id,
-        refetchInterval: aiTagPollInterval,
+        refetchInterval: (query) => aiTagPollInterval(query.state.data),
     });
     const { registerRefresh } = usePullToRefreshContext();
 
@@ -66,7 +66,7 @@ const RecipesPage = () => {
             if (generatingRef.current.has(recipe.id)) continue;
             generatingRef.current.add(recipe.id);
             void generateRecipeAiImage(recipe.id).then(() =>
-                queryClient.invalidateQueries(getRecipesQuery(user.id).queryKey)
+                queryClient.invalidateQueries({ queryKey: getRecipesQuery(user.id).queryKey })
             );
         }
     }, [data, user?.id, queryClient]);

@@ -1,6 +1,6 @@
 import type { DiscoveryFacets, DiscoveryRecipeSummary, DiscoverySearchQuery, RecipeDifficulty } from '@shoppingo/types';
+import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query';
 import { useCallback, useMemo, useState } from 'react';
-import { useInfiniteQuery } from 'react-query';
 import { searchDiscoveryRecipes } from '../api';
 import { useDebouncedValue } from './useDebouncedValue';
 
@@ -74,15 +74,14 @@ export const useDiscoverySearch = (): DiscoverySearch => {
     const text = useDebouncedValue(filters.text, SEARCH_DEBOUNCE_MS);
     const query = useMemo(() => toQuery(filters, text), [filters, text]);
 
-    const result = useInfiniteQuery(
-        ['discover-search', query],
-        ({ pageParam = 1 }) => searchDiscoveryRecipes({ ...query, page: pageParam }),
-        {
-            getNextPageParam: (last) => (last.page * last.pageSize < last.total ? last.page + 1 : undefined),
-            // Keep the old facets and hits on screen while a refined search loads, rather than flashing empty.
-            keepPreviousData: true,
-        }
-    );
+    const result = useInfiniteQuery({
+        queryKey: ['discover-search', query],
+        queryFn: ({ pageParam }) => searchDiscoveryRecipes({ ...query, page: pageParam }),
+        initialPageParam: 1,
+        getNextPageParam: (last) => (last.page * last.pageSize < last.total ? last.page + 1 : undefined),
+        // Keep the old facets and hits on screen while a refined search loads, rather than flashing empty.
+        placeholderData: keepPreviousData,
+    });
 
     const update = useCallback(
         (patch: Partial<DiscoveryFilterState>) => setFilters((old) => ({ ...old, ...patch })),

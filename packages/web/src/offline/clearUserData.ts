@@ -1,4 +1,4 @@
-import type { QueryClient } from 'react-query';
+import type { QueryClient } from '@tanstack/react-query';
 import { outboxStore } from './outboxStore';
 
 const API_CACHE_NAME = 'api-cache';

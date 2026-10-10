@@ -1,6 +1,6 @@
 import type { Item, ItemCategory, ListType } from '@shoppingo/types';
-import type { UseMutationOptions } from 'react-query';
-import { useMutation, useQueryClient } from 'react-query';
+import type { QueryClient, UseMutationOptions } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { drainOutbox } from '../offline/drainer';
 import type { ItemOp } from '../offline/outboxStore';
 import { outboxStore } from '../offline/outboxStore';
@@ -23,7 +23,7 @@ const enqueueItem = async (op: ItemOp, listTitle: string, targetId: string, payl
 };
 
 function createOptimisticMutation<TVariables>(
-    queryClient: React.QueryClient,
+    queryClient: QueryClient,
     listTitle: string,
     mutationFn: (vars: TVariables) => Promise<unknown>,
     applyOptimisticUpdate: (items: Item[], vars: TVariables) => Item[]
@@ -31,7 +31,7 @@ function createOptimisticMutation<TVariables>(
     return {
         mutationFn,
         onMutate: async (variables: TVariables) => {
-            await queryClient.cancelQueries([listTitle]);
+            await queryClient.cancelQueries({ queryKey: [listTitle] });
             const previousData = queryClient.getQueryData<{ listType: ListType; items: Item[] }>([listTitle]);
 
             queryClient.setQueryData<{ listType: ListType; items: Item[] }>([listTitle], (old) =>
@@ -51,7 +51,7 @@ function createOptimisticMutation<TVariables>(
             }
         },
         onSettled: () => {
-            void queryClient.invalidateQueries([listTitle]);
+            void queryClient.invalidateQueries({ queryKey: [listTitle] });
         },
     };
 }

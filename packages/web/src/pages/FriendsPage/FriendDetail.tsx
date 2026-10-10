@@ -21,7 +21,7 @@ interface FriendDetailProps {
 
 export const FriendDetail = ({ friend, onBack }: FriendDetailProps) => {
     const { confirm, isOpen, config: confirmConfig, handleConfirm, handleCancel } = useConfirmation();
-    const { mutate: unfriend, isLoading: isRemoving } = useUnfriend();
+    const { mutate: unfriend, isPending: isRemoving } = useUnfriend();
 
     const handleRemoveFriend = () => {
         confirm({
