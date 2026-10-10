@@ -94,6 +94,11 @@ export const createRoutes = (): Hono<Vars> => {
         if (name.startsWith('recipe-upload/') || name.startsWith('discovery-image/')) {
             return authenticate(c, next);
         }
+        // Cached item images stay public; a token, when sent, only identifies who is paying for a generation.
+        if (!c.req.header('authorization')) {
+            return next();
+        }
+        await authenticate(c, async () => {});
         return next();
     };
 

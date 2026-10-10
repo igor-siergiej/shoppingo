@@ -4,14 +4,29 @@ import { imageGenerationFailuresTotal, imagesGeneratedTotal, imagesServedTotal }
 import { withImageExtension } from '../../infrastructure/objectKey';
 import type { ImageGenerator, ImageStore } from './types';
 
+const DAILY_GENERATION_CAP = 50;
+
+const isNotFound = (err: unknown): boolean => {
+    const e = err as { code?: string; statusCode?: number } | null;
+    return e?.code === 'NotFound' || e?.code === 'NoSuchKey' || e?.statusCode === 404;
+};
+
+const httpError = (message: string, status: number) => Object.assign(new Error(message), { status });
+
 export class ImageService {
+    private readonly inFlight = new Map<string, Promise<{ buffer: Buffer; contentType: string }>>();
+    private readonly usage = new Map<string, { day: string; count: number }>();
+
     constructor(
         private readonly store: ImageStore,
         private readonly generator: ImageGenerator,
         private readonly logger?: Logger
     ) {}
 
-    async getImage(name: string): Promise<{
+    async getImage(
+        name: string,
+        userId?: string
+    ): Promise<{
         stream: NodeJS.ReadableStream;
         contentType: string;
         cacheControl: string;
@@ -44,22 +59,20 @@ export class ImageService {
                     contentType,
                     cacheControl: 'public, max-age=31536000, immutable',
                 };
-            } catch {
+            } catch (storeErr) {
+                if (!isNotFound(storeErr)) {
+                    throw httpError('Image storage unavailable', 503);
+                }
                 this.logger?.warn('Image not found in store, falling back to generator', {
                     itemName: normalisedName,
                 });
             }
 
-            // Generate new image
-            const prompt = this.generatePrompt(normalisedName);
-            let buffer: Buffer;
-            let contentType: string;
-            try {
-                ({ buffer, contentType } = await this.generator.generateImage(prompt));
-            } catch (genErr) {
-                imageGenerationFailuresTotal.inc({ provider: 'fal' });
-                throw genErr;
+            if (!userId) {
+                throw httpError('Authentication required to generate images', 401);
             }
+
+            const { buffer, contentType } = await this.generateOnce(storageKey, normalisedName, userId);
 
             this.logger?.info('Image generated using AI', {
                 itemName: normalisedName,
@@ -67,18 +80,7 @@ export class ImageService {
                 source: 'fal',
             });
 
-            imagesGeneratedTotal.inc({ provider: 'fal' });
             imagesServedTotal.inc({ source: 'fresh' });
-
-            // Store the generated image (fire and forget)
-            try {
-                await this.store.putObject(storageKey, buffer, { contentType });
-            } catch (uploadErr) {
-                this.logger?.error('Failed to store generated image', {
-                    itemName: normalisedName,
-                    error: uploadErr,
-                });
-            }
 
             return {
                 stream: this.bufferToStream(buffer),
@@ -92,6 +94,46 @@ export class ImageService {
             });
             throw error;
         }
+    }
+
+    private generateOnce(storageKey: string, name: string, userId: string) {
+        const existing = this.inFlight.get(storageKey);
+        if (existing) {
+            return existing;
+        }
+
+        this.consumeQuota(userId);
+
+        const run = (async () => {
+            let result: { buffer: Buffer; contentType: string };
+            try {
+                result = await this.generator.generateImage(this.generatePrompt(name));
+            } catch (genErr) {
+                imageGenerationFailuresTotal.inc({ provider: 'fal' });
+                throw genErr;
+            }
+            imagesGeneratedTotal.inc({ provider: 'fal' });
+
+            try {
+                await this.store.putObject(storageKey, result.buffer, { contentType: result.contentType });
+            } catch (uploadErr) {
+                this.logger?.error('Failed to store generated image', { itemName: name, error: uploadErr });
+            }
+            return result;
+        })().finally(() => this.inFlight.delete(storageKey));
+
+        this.inFlight.set(storageKey, run);
+        return run;
+    }
+
+    private consumeQuota(userId: string) {
+        const day = new Date().toISOString().slice(0, 10);
+        const entry = this.usage.get(userId);
+        const count = entry?.day === day ? entry.count : 0;
+        if (count >= DAILY_GENERATION_CAP) {
+            throw httpError('Daily image generation limit reached', 429);
+        }
+        this.usage.set(userId, { day, count: count + 1 });
     }
 
     private generatePrompt(name: string): string {

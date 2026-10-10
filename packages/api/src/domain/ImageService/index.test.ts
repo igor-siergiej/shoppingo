@@ -66,6 +66,8 @@ class MockImageStore {
 }
 
 class MockImageGenerator {
+    generateImage: (prompt: string) => Promise<unknown> = async (prompt) => this.defaultGenerate(prompt);
+
     calls: Record<string, Array<Array<unknown>>> = {
         generateImage: [],
     };
@@ -74,7 +76,7 @@ class MockImageGenerator {
         generateImage: null,
     };
 
-    async generateImage(prompt: string) {
+    private async defaultGenerate(prompt: string) {
         this.calls.generateImage.push([prompt]);
         return this.resolvedValues.generateImage;
     }
@@ -82,6 +84,7 @@ class MockImageGenerator {
     reset() {
         this.calls = { generateImage: [] };
         this.resolvedValues = { generateImage: null };
+        this.generateImage = async (prompt) => this.defaultGenerate(prompt);
     }
 }
 
@@ -118,6 +121,8 @@ class MockLogger implements Logger {
         };
     }
 }
+
+const notFound = () => Object.assign(new Error('Not found'), { code: 'NotFound' });
 
 const mockImageStore = new MockImageStore();
 const mockImageGenerator = new MockImageGenerator();
@@ -174,14 +179,14 @@ describe('ImageService', () => {
             it('should generate new image and store it', async () => {
                 const mockBuffer = Buffer.from('generated-image-data');
 
-                mockImageStore.rejectedErrors.getHeadObject = new Error('Not found');
+                mockImageStore.rejectedErrors.getHeadObject = notFound();
                 mockImageGenerator.resolvedValues.generateImage = {
                     buffer: mockBuffer,
                     contentType: 'image/webp',
                 };
                 mockImageStore.resolvedValues.putObject = undefined;
 
-                const result = await imageService.getImage('shopping-cart');
+                const result = await imageService.getImage('shopping-cart', 'u1');
 
                 expect(mockImageGenerator.calls.generateImage[0]).toEqual([
                     'Minimalistic flat icon of a shopping-cart drawn in a simple, clean style, this is going to be a icon for my shopping list item. Bright solid colors, soft rounded edges, modern vector look, no text.',
@@ -198,14 +203,14 @@ describe('ImageService', () => {
             it('should handle store upload failure gracefully', async () => {
                 const mockBuffer = Buffer.from('generated-image-data');
 
-                mockImageStore.rejectedErrors.getHeadObject = new Error('Not found');
+                mockImageStore.rejectedErrors.getHeadObject = notFound();
                 mockImageGenerator.resolvedValues.generateImage = {
                     buffer: mockBuffer,
                     contentType: 'image/webp',
                 };
                 mockImageStore.rejectedErrors.putObject = new Error('Upload failed');
 
-                const result = await imageService.getImage('test-item');
+                const result = await imageService.getImage('test-item', 'u1');
 
                 expect(mockLogger.calls.error.length).toBeGreaterThan(0);
                 expect(mockLogger.calls.error[0][0]).toBe('Failed to store generated image');
@@ -218,14 +223,14 @@ describe('ImageService', () => {
                 const serviceWithoutLogger = new ImageService(mockImageStore, mockImageGenerator);
                 const mockBuffer = Buffer.from('generated-image-data');
 
-                mockImageStore.rejectedErrors.getHeadObject = new Error('Not found');
+                mockImageStore.rejectedErrors.getHeadObject = notFound();
                 mockImageGenerator.resolvedValues.generateImage = {
                     buffer: mockBuffer,
                     contentType: 'image/webp',
                 };
                 mockImageStore.rejectedErrors.putObject = new Error('Upload failed');
 
-                const result = await serviceWithoutLogger.getImage('test-item');
+                const result = await serviceWithoutLogger.getImage('test-item', 'u1');
 
                 expect(result.contentType).toBe('image/webp');
             });
@@ -249,13 +254,13 @@ describe('ImageService', () => {
             it('should normalize name to lowercase and trim whitespace', async () => {
                 const mockBuffer = Buffer.from('generated-image-data');
 
-                mockImageStore.rejectedErrors.getHeadObject = new Error('Not found');
+                mockImageStore.rejectedErrors.getHeadObject = notFound();
                 mockImageGenerator.resolvedValues.generateImage = {
                     buffer: mockBuffer,
                     contentType: 'image/webp',
                 };
 
-                await imageService.getImage('  SHOPPING CART  ');
+                await imageService.getImage('  SHOPPING CART  ', 'u1');
 
                 expect(mockImageGenerator.calls.generateImage[0]).toEqual([
                     'Minimalistic flat icon of a shopping cart drawn in a simple, clean style, this is going to be a icon for my shopping list item. Bright solid colors, soft rounded edges, modern vector look, no text.',
@@ -267,13 +272,13 @@ describe('ImageService', () => {
             it('should return readable stream that contains the buffer data', async () => {
                 const mockBuffer = Buffer.from('test-image-data-content');
 
-                mockImageStore.rejectedErrors.getHeadObject = new Error('Not found');
+                mockImageStore.rejectedErrors.getHeadObject = notFound();
                 mockImageGenerator.resolvedValues.generateImage = {
                     buffer: mockBuffer,
                     contentType: 'image/webp',
                 };
 
-                const result = await imageService.getImage('test-image');
+                const result = await imageService.getImage('test-image', 'u1');
                 const stream = result.stream;
 
                 // Consume the stream and collect chunks
@@ -330,6 +335,60 @@ describe('ImageService', () => {
                 expect(stream).toBe(mockStream);
                 expect(result.contentType).toBe('image/png');
             });
+        });
+    });
+    describe('generation guards', () => {
+        const generated = { buffer: Buffer.from('img'), contentType: 'image/webp' };
+
+        it('rejects a cache miss from an anonymous caller without generating', async () => {
+            mockImageStore.rejectedErrors.getHeadObject = notFound();
+
+            await expect(imageService.getImage('apple')).rejects.toMatchObject({ status: 401 });
+            expect(mockImageGenerator.calls.generateImage).toHaveLength(0);
+        });
+
+        it('returns 503 instead of generating when the store fails for a reason other than not-found', async () => {
+            mockImageStore.rejectedErrors.getHeadObject = new Error('connect ECONNREFUSED');
+
+            await expect(imageService.getImage('apple', 'u1')).rejects.toMatchObject({ status: 503 });
+            expect(mockImageGenerator.calls.generateImage).toHaveLength(0);
+        });
+
+        it('generates once for concurrent misses of the same name', async () => {
+            mockImageStore.rejectedErrors.getHeadObject = notFound();
+            let release: () => void = () => {};
+            const gate = new Promise<void>((resolve) => {
+                release = resolve;
+            });
+            mockImageGenerator.generateImage = async (prompt: string) => {
+                mockImageGenerator.calls.generateImage.push([prompt]);
+                await gate;
+                return generated;
+            };
+
+            const pending = Promise.all([
+                imageService.getImage('pear', 'u1'),
+                imageService.getImage('pear', 'u2'),
+                imageService.getImage('Pear ', 'u3'),
+            ]);
+            await new Promise((resolve) => setTimeout(resolve, 0));
+            release();
+            await pending;
+
+            expect(mockImageGenerator.calls.generateImage).toHaveLength(1);
+            expect(mockImageStore.calls.putObject).toHaveLength(1);
+        });
+
+        it('caps generations per user per day', async () => {
+            mockImageStore.rejectedErrors.getHeadObject = notFound();
+            mockImageGenerator.resolvedValues.generateImage = generated;
+
+            for (let i = 0; i < 50; i++) {
+                await imageService.getImage(`item-${i}`, 'u1');
+            }
+
+            await expect(imageService.getImage('one-too-many', 'u1')).rejects.toMatchObject({ status: 429 });
+            await expect(imageService.getImage('other-user-item', 'u2')).resolves.toBeDefined();
         });
     });
 });

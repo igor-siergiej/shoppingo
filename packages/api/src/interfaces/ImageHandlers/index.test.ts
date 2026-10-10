@@ -86,10 +86,23 @@ describe('ImageHandlers', () => {
 
             const response = await imageHandlers.getImage(ctx);
 
-            expect(mockImageService.getImage).toHaveBeenCalledWith('test-image');
+            expect(mockImageService.getImage).toHaveBeenCalledWith('test-image', undefined);
             expect(ctx.header).toHaveBeenCalledWith('Content-Type', 'image/webp');
             expect(ctx.header).toHaveBeenCalledWith('Cache-Control', 'public, max-age=31536000, immutable');
             expect(response).toBeDefined();
+        });
+
+        it('passes the authenticated user id so a cache miss can be generated', async () => {
+            const ctx = createMockContext({ name: 'test-image' }, { id: 'user-1', username: 'u' });
+            mockImageService.getImage.mockResolvedValue({
+                stream: { pipe: vi.fn(), on: vi.fn(), read: vi.fn(), [Symbol.asyncIterator]: vi.fn() },
+                contentType: 'image/webp',
+                cacheControl: 'public, max-age=31536000, immutable',
+            });
+
+            await imageHandlers.getImage(ctx);
+
+            expect(mockImageService.getImage).toHaveBeenCalledWith('test-image', 'user-1');
         });
 
         it('should handle service errors with status code', async () => {

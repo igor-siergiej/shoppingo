@@ -82,7 +82,7 @@ export const getImage = async (c: Context<HonoVars>) => {
             }
         }
 
-        const { stream, contentType, cacheControl } = await getImageService().getImage(name);
+        const { stream, contentType, cacheControl } = await getImageService().getImage(name, c.get('user')?.id);
 
         logger.info('API: AI image retrieved', { itemName: name, contentType });
 
