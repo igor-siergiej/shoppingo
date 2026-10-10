@@ -10,6 +10,10 @@ the shop, works offline, and stays in sync with whoever you share it with.
 
 <!-- TODO: add a screenshot or short GIF of the lists + recipe flow here -->
 
+## Goal
+
+Give a household one shared place to do the shopping together, so everyone stays organised. For home cooks, make it easy to discover new recipes and to keep their own recipes in one place where they are simple to maintain and keep track of.
+
 ## What it does
 
 - **Two ways in.** Build a shopping list directly (list-first), or start from a
