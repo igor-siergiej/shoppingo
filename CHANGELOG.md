@@ -1,3 +1,10 @@
+## [1.89.1](https://github.com/igor-siergiej/shoppingo/compare/v1.89.0...v1.89.1) (2026-10-10)
+
+
+### Bug Fixes
+
+* **api:** index list/recipe lookups, stop lost list updates, add k6 capacity test ([#196](https://github.com/igor-siergiej/shoppingo/issues/196)) ([281714f](https://github.com/igor-siergiej/shoppingo/commit/281714f23dcf024587cb7f4ace4bcb53ee432755))
+
 # [1.89.0](https://github.com/igor-siergiej/shoppingo/compare/v1.88.0...v1.89.0) (2026-10-08)
 
 

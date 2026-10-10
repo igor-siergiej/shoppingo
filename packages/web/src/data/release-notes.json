@@ -1,5 +1,19 @@
 [
   {
+    "version": "1.89.1",
+    "date": "2026-10-10",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Lists load faster, especially as the number of lists grows."
+      },
+      {
+        "type": "fix",
+        "text": "Two people editing the same shared list at the same moment no longer overwrite each other's changes."
+      }
+    ]
+  },
+  {
     "version": "1.89.0",
     "date": "2026-10-08",
     "notes": [
