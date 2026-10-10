@@ -126,7 +126,9 @@ export const registerDepdendencies = () => {
                 dependencyContainer.resolve(DependencyToken.Logger),
                 dependencyContainer.resolve(DependencyToken.AuthorizationService),
                 dependencyContainer.resolve(DependencyToken.NotificationService),
-                dependencyContainer.resolve(DependencyToken.FriendService)
+                dependencyContainer.resolve(DependencyToken.FriendService),
+                dependencyContainer.resolve(DependencyToken.ItemCategoryService),
+                (listId) => dependencyContainer.resolve(DependencyToken.ListRealtimeHub).notifyChanged(listId)
             )
     );
 
