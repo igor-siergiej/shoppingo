@@ -7,6 +7,8 @@ import type { FriendService } from '../FriendService';
 import type { IdGenerator } from '../IdGenerator';
 import type { ItemCategoryService } from '../ItemCategoryService';
 import type { ListRepository } from '../ListRepository';
+import type { NotificationService } from '../NotificationService';
+import { resolveFriendMembers } from '../SharedMembers';
 import { isMergeableIngredient, resolveMergedQuantity, resolveMergedUnit } from './ingredientMatching';
 import type { AuthClient } from './types';
 
@@ -50,7 +52,7 @@ export class ListService {
             }
             if (changed) this.onListChanged?.(list.id);
         } catch (error) {
-            this.logger?.warn('Background item categorisation failed', { listTitle: title, error });
+            this.logger?.warn('Background item categorisation failed', { listRef: ref, error });
         }
     }
 
@@ -105,45 +107,24 @@ export class ListService {
         throw Object.assign(new Error('List is being edited too quickly, please try again'), { status: 503 });
     }
 
-    /** Seeds shared members: owner plus all current friends by default, or an explicit friend subset (403 on non-friends). */
+    /** Owner first, then the friends the list is shared with (all by default, or the chosen subset). */
     private async resolveSharedUsers(
         title: string,
         owner: User,
         selectedFriendIds?: Array<string>
     ): Promise<Array<User>> {
-        if (!this.friendService) {
-            return [owner];
-        }
+        const members = await resolveFriendMembers(this.friendService, owner.id, selectedFriendIds);
 
-        const friends = await this.friendService.listFriends(owner.id);
-
-        if (selectedFriendIds === undefined) {
-            this.logger?.info('List auto-shared with friends', {
+        this.logger?.info(
+            selectedFriendIds === undefined ? 'List auto-shared with friends' : 'List shared with selected friends',
+            {
                 listTitle: title,
                 owner: owner.username,
-                sharedWithCount: friends.length,
-            });
-
-            return [owner, ...friends];
-        }
-
-        const allowedFriendIds = new Set(friends.map((f) => f.id));
-
-        for (const friendId of selectedFriendIds) {
-            if (!allowedFriendIds.has(friendId)) {
-                throw Object.assign(new Error('Can only share with friends'), { status: 403 });
+                sharedWithCount: members.length,
             }
-        }
+        );
 
-        const sharedWith = friends.filter((f) => selectedFriendIds.includes(f.id));
-
-        this.logger?.info('List shared with selected friends', {
-            listTitle: title,
-            owner: owner.username,
-            sharedWithCount: sharedWith.length,
-        });
-
-        return [owner, ...sharedWith];
+        return [owner, ...members];
     }
 
     async getList(title: string): Promise<List> {

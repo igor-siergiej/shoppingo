@@ -12,7 +12,7 @@ const MAX_ITEMS = 30;
 // fallow-ignore-next-line complexity
 export const parseSpokenItems = async (c: Context<HonoVars>) => {
     const user = c.get('user');
-    const { transcript } = await c.req.json<{ transcript?: unknown }>();
+    const { transcript } = await c.req.json<{ transcript: string }>();
     const logger = dependencyContainer.resolve(DependencyToken.Logger);
 
     try {

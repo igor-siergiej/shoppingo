@@ -1,11 +1,11 @@
 import type { MongoDbConnection } from '@imapps/api-utils';
 import type { Label } from '@shoppingo/types';
 
-import { CollectionNames } from '../../dependencies/types';
+import { CollectionNames, type Collections } from '../../dependencies/types';
 import type { LabelRepository } from '../../domain/LabelRepository';
 
 export class MongoLabelRepository implements LabelRepository {
-    constructor(private readonly db: MongoDbConnection<{ [CollectionNames.Label]: Label }>) {}
+    constructor(private readonly db: MongoDbConnection<Collections>) {}
 
     private collection() {
         return this.db.getCollection(CollectionNames.Label);

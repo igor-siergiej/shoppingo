@@ -1,7 +1,7 @@
-import type { IdGenerator, Logger } from '@imapps/api-utils';
+import type { Logger } from '@imapps/api-utils';
 import type { Friendship, PairingCode, User } from '@shoppingo/types';
-
 import type { FriendRepository } from '../FriendRepository';
+import type { IdGenerator } from '../IdGenerator';
 
 const CODE_TTL_MS = 15 * 60 * 1000;
 const CODE_LEN = 6;

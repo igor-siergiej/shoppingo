@@ -1,11 +1,11 @@
 import type { MongoDbConnection } from '@imapps/api-utils';
 import type { PushSubscription } from '@shoppingo/types';
 
-import { CollectionNames } from '../../dependencies/types';
+import { CollectionNames, type Collections } from '../../dependencies/types';
 import type { PushSubscriptionRepository } from '../../domain/PushSubscriptionRepository';
 
 export class MongoPushSubscriptionRepository implements PushSubscriptionRepository {
-    constructor(private readonly db: MongoDbConnection<{ [CollectionNames.PushSubscription]: PushSubscription }>) {}
+    constructor(private readonly db: MongoDbConnection<Collections>) {}
 
     private collection() {
         return this.db.getCollection(CollectionNames.PushSubscription);

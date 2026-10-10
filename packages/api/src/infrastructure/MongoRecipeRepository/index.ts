@@ -1,11 +1,11 @@
 import type { MongoDbConnection } from '@imapps/api-utils';
 import type { Recipe, User } from '@shoppingo/types';
 
-import { CollectionNames } from '../../dependencies/types';
+import { CollectionNames, type Collections } from '../../dependencies/types';
 import type { RecipeRepository } from '../../domain/RecipeRepository';
 
 export class MongoRecipeRepository implements RecipeRepository {
-    constructor(private readonly db: MongoDbConnection<{ [CollectionNames.Recipe]: Recipe }>) {}
+    constructor(private readonly db: MongoDbConnection<Collections>) {}
 
     private collection() {
         return this.db.getCollection(CollectionNames.Recipe);

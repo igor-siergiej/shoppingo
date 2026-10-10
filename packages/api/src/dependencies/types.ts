@@ -55,7 +55,6 @@ import type { FalLlmClient } from '../infrastructure/FalLlmClient';
 import type { FalRecipeTagger } from '../infrastructure/FalRecipeTagger';
 import type { ItemCategoryDoc } from '../infrastructure/MongoItemCategoryRepository';
 import type { WebPushSender } from '../infrastructure/WebPushSender';
-import type { RecipeHandlers } from '../interfaces/RecipeHandlers';
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 export type Collections = {
@@ -144,7 +143,7 @@ export type Dependencies = {
     [DependencyToken.ImageGenerator]: ImageGenerator;
     [DependencyToken.ImageService]: ImageService;
     [DependencyToken.RecipeRepository]: RecipeRepository;
-    [DependencyToken.RecipeHandlers]: RecipeHandlers;
+    [DependencyToken.RecipeHandlers]: typeof import('../interfaces/RecipeHandlers');
     [DependencyToken.RecipeImageGenerator]: ImageGenerator;
     [DependencyToken.RecipeImageService]: RecipeImageService;
     [DependencyToken.PageFetcher]: PageFetcher;
