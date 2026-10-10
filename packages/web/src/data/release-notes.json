@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.94.0",
+    "date": "2026-10-10",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Browsers with Chrome's WebMCP trial, such as Gemini in Chrome, can now be asked to show your lists and add items or recipe ingredients to them."
+      }
+    ]
+  },
+  {
     "version": "1.93.0",
     "date": "2026-10-10",
     "notes": [

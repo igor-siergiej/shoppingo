@@ -1,3 +1,10 @@
+# [1.94.0](https://github.com/igor-siergiej/shoppingo/compare/v1.93.0...v1.94.0) (2026-10-10)
+
+
+### Features
+
+* **web:** expose list actions to browser agents via WebMCP ([#207](https://github.com/igor-siergiej/shoppingo/issues/207)) ([f56c103](https://github.com/igor-siergiej/shoppingo/commit/f56c1031452e433890903a9e738c8936759175b9))
+
 # [1.93.0](https://github.com/igor-siergiej/shoppingo/compare/v1.92.0...v1.93.0) (2026-10-10)
 
 
