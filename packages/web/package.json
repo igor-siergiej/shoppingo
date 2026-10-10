@@ -1,7 +1,7 @@
 {
   "name": "@shoppingo/web",
   "private": true,
-  "version": "1.89.1",
+  "version": "1.89.2",
   "scripts": {
     "start": "vite --port 4000",
     "build": "tsc && vite build --emptyOutDir",

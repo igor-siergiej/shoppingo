@@ -1,3 +1,10 @@
+## [1.89.2](https://github.com/igor-siergiej/shoppingo/compare/v1.89.1...v1.89.2) (2026-10-10)
+
+
+### Bug Fixes
+
+* **api:** require auth and cap cost for item image generation ([#197](https://github.com/igor-siergiej/shoppingo/issues/197)) ([cb15b57](https://github.com/igor-siergiej/shoppingo/commit/cb15b57eeebee887a5defcd5be905054ed83cad9))
+
 ## [1.89.1](https://github.com/igor-siergiej/shoppingo/compare/v1.89.0...v1.89.1) (2026-10-10)
 
 
