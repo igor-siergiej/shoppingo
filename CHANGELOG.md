@@ -1,3 +1,10 @@
+# [1.93.0](https://github.com/igor-siergiej/shoppingo/compare/v1.92.0...v1.93.0) (2026-10-10)
+
+
+### Features
+
+* meal plan that builds the shopping list ([#206](https://github.com/igor-siergiej/shoppingo/issues/206)) ([eca857d](https://github.com/igor-siergiej/shoppingo/commit/eca857de2eae6e66988e3fc764fd03b21da6e9b9))
+
 # [1.92.0](https://github.com/igor-siergiej/shoppingo/compare/v1.91.0...v1.92.0) (2026-10-10)
 
 

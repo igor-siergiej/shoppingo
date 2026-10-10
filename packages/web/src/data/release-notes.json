@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.93.0",
+    "date": "2026-10-10",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "You can now plan recipes for each day of the week from the Calendar's menu, and add everything you need for the week to a shopping list in one go."
+      }
+    ]
+  },
+  {
     "version": "1.92.0",
     "date": "2026-10-10",
     "notes": [
