@@ -18,7 +18,7 @@ export class ListService {
     constructor(
         private readonly repo: ListRepository,
         private readonly idGenerator: IdGenerator,
-        private readonly _auth?: AuthClient,
+        readonly _auth?: AuthClient,
         private readonly logger?: Logger,
         authorizationService?: AuthorizationService,
         private readonly notificationService?: NotificationService,
@@ -158,11 +158,12 @@ export class ListService {
         id?: string
     ) {
         try {
-            if (id) {
-                const existing = await this.repo.getByTitle(title);
-                if (existing && existing.id === id) {
+            const existing = await this.repo.getByTitle(title);
+            if (existing) {
+                if (id && existing.id === id) {
                     return existing; // idempotent replay
                 }
+                throw Object.assign(new Error('A list with that name already exists'), { status: 409 });
             }
 
             const users = await this.resolveSharedUsers(title, owner, selectedFriendIds);

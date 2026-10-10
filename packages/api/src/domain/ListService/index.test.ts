@@ -198,6 +198,36 @@ describe('ListService', () => {
             });
         });
 
+        describe('When the title is already taken', () => {
+            const taken = (): List => ({
+                id: 'other-id',
+                title: 'Groceries',
+                dateAdded: new Date('2023-01-01'),
+                items: [],
+                users: [mockUser],
+                listType: ListType.SHOPPING,
+                ownerId: mockUser.id,
+            });
+
+            it('should reject a new list with 409 and not insert', async () => {
+                await mockRepository.insert(taken());
+                const insertSpy = vi.spyOn(mockRepository, 'insert');
+
+                await expect(listService.addList('Groceries', new Date(), mockUser)).rejects.toMatchObject({
+                    status: 409,
+                });
+                expect(insertSpy).not.toHaveBeenCalled();
+            });
+
+            it('should reject a different client id for the same title', async () => {
+                await mockRepository.insert(taken());
+
+                await expect(
+                    listService.addList('Groceries', new Date(), mockUser, [], undefined, 'new-client-id')
+                ).rejects.toMatchObject({ status: 409 });
+            });
+        });
+
         describe('When a caller-provided id is given', () => {
             it('should use the caller-provided id as the new list id', async () => {
                 const result = await listService.addList(
