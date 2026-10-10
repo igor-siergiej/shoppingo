@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.89.6",
+    "date": "2026-10-10",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Recipe photo uploads are now limited to 10 MB, converted to a lightweight format, and only visible to people who can see the recipe."
+      }
+    ]
+  },
+  {
     "version": "1.89.5",
     "date": "2026-10-10",
     "notes": [

@@ -1,3 +1,10 @@
+## [1.89.6](https://github.com/igor-siergiej/shoppingo/compare/v1.89.5...v1.89.6) (2026-10-10)
+
+
+### Bug Fixes
+
+* **api:** harden recipe image uploads ([#201](https://github.com/igor-siergiej/shoppingo/issues/201)) ([b7f97ca](https://github.com/igor-siergiej/shoppingo/commit/b7f97cac550e7729eab9e29cb2d5bbcf88874be1))
+
 ## [1.89.5](https://github.com/igor-siergiej/shoppingo/compare/v1.89.4...v1.89.5) (2026-10-10)
 
 
