@@ -1,3 +1,10 @@
+# [1.90.0](https://github.com/igor-siergiej/shoppingo/compare/v1.89.7...v1.90.0) (2026-10-10)
+
+
+### Features
+
+* **api:** per-user AI rate limit, substitute cache, trusted log client IP ([#203](https://github.com/igor-siergiej/shoppingo/issues/203)) ([387825b](https://github.com/igor-siergiej/shoppingo/commit/387825b45d16e6826dd1fc9f0a8da19430ab5550))
+
 ## [1.89.7](https://github.com/igor-siergiej/shoppingo/compare/v1.89.6...v1.89.7) (2026-10-10)
 
 

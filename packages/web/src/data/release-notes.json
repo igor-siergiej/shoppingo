@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.90.0",
+    "date": "2026-10-10",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Heavy use of the AI recipe features is now rate-limited per person with a clear \"try again in a few minutes\" message, and repeated ingredient-substitute lookups are instant."
+      }
+    ]
+  },
+  {
     "version": "1.89.7",
     "date": "2026-10-10",
     "notes": [
