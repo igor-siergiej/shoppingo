@@ -16,8 +16,6 @@ export class MongoItemCategoryRepository implements ItemCategoryRepository {
         return this.db.getCollection(CollectionNames.ItemCategory);
     }
 
-    // Called from onStartup through the DI-resolved repository, which fallow can't trace.
-    // fallow-ignore-next-line unused-class-member
     async ensureIndexes(): Promise<void> {
         await this.collection().createIndex({ name: 1 }, { unique: true });
     }

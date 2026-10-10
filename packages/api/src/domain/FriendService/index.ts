@@ -21,7 +21,8 @@ export class FriendService {
         private readonly logger?: Logger,
         private readonly listRepo?: ItemRepo,
         private readonly recipeRepo?: ItemRepo,
-        private readonly todoRepo?: ItemRepo
+        private readonly todoRepo?: ItemRepo,
+        private readonly mealPlanRepo?: ItemRepo
     ) {}
 
     private randomCode(): string {
@@ -78,7 +79,7 @@ export class FriendService {
 
     async unfriend(userId: string, friendId: string): Promise<void> {
         await this.repo.deletePair(userId, friendId);
-        const repos = [this.listRepo, this.recipeRepo, this.todoRepo].filter(Boolean) as ItemRepo[];
+        const repos = [this.listRepo, this.recipeRepo, this.todoRepo, this.mealPlanRepo].filter(Boolean) as ItemRepo[];
         for (const r of repos) {
             await r.removeMemberFromAll(friendId, userId); // strip friend from userId's items
             await r.removeMemberFromAll(userId, friendId); // strip userId from friend's items

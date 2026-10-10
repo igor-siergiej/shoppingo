@@ -25,6 +25,12 @@ import {
 } from '../interfaces/ListHandlers';
 import { setItemCategory } from '../interfaces/ListHandlers/category';
 import { receiveLogs } from '../interfaces/LogHandlers';
+import {
+    createMealPlanEntry,
+    deleteMealPlanEntry,
+    getMealPlan,
+    updateMealPlanEntry,
+} from '../interfaces/MealPlanHandlers';
 import { getVapidPublicKey, subscribe, unsubscribe } from '../interfaces/PushHandlers';
 import { createRealtimeHandlers } from '../interfaces/RealtimeHandlers';
 import {
@@ -153,6 +159,11 @@ export const createRoutes = (): Hono<Vars> => {
     router.get('/api/discover/published', authenticate, discovery.listPublished);
     router.delete('/api/discover/published/:id', authenticate, discovery.unpublishRecipe);
     router.post('/api/recipes/:recipeId/publish', authenticate, discovery.publishRecipe);
+
+    router.get('/api/meal-plan', authenticate, getMealPlan);
+    router.put('/api/meal-plan', authenticate, createMealPlanEntry);
+    router.post('/api/meal-plan/:id', authenticate, updateMealPlanEntry);
+    router.delete('/api/meal-plan/:id', authenticate, deleteMealPlanEntry);
 
     router.get('/api/todos', authenticate, getTodos);
     router.put('/api/todos', authenticate, createTodo);
