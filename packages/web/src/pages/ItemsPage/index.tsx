@@ -3,7 +3,7 @@ import { ListType as ListTypeEnum } from '@shoppingo/types';
 import { useEffect, useState } from 'react';
 import { useQuery } from 'react-query';
 import { useParams } from 'react-router-dom';
-import { getListQuery } from '../../api';
+import { addItemsBulk, getListQuery, type SpokenItem } from '../../api';
 import { ConfirmationDialog } from '../../components/ConfirmationDialog';
 import { GroupByAisleToggle } from '../../components/GroupByAisleToggle';
 import ItemCheckBoxList from '../../components/ItemCheckBoxList';
@@ -101,6 +101,14 @@ const ItemsPage = () => {
         });
     };
 
+    const handleAddItems = async (spoken: Array<SpokenItem>) => {
+        await addItemsBulk(
+            listTitle,
+            spoken.map(({ name, quantity, unit }) => ({ itemName: name, quantity, unit }))
+        );
+        await refetch();
+    };
+
     return (
         <>
             {isLoading && <ItemsSkeleton />}
@@ -128,6 +136,7 @@ const ItemsPage = () => {
 
             <ToolBar
                 onAddItem={handleAddItem}
+                onAddItems={handleAddItems}
                 handleGoBack={handleGoBack}
                 handleClearSelected={handleClearSelected}
                 handleRemoveAll={handleClearList}

@@ -31,6 +31,7 @@ import { CachedIngredientSubstituter } from '../infrastructure/CachedIngredientS
 import { FalImageGenerator } from '../infrastructure/FalImageGenerator';
 import { FalIngredientSubstituter } from '../infrastructure/FalIngredientSubstituter';
 import { FalItemCategoriser } from '../infrastructure/FalItemCategoriser';
+import { FalItemTextParser } from '../infrastructure/FalItemTextParser';
 import { FalLlmClient } from '../infrastructure/FalLlmClient';
 import { FalRecipeEstimator } from '../infrastructure/FalRecipeEstimator';
 import { FalRecipeExtractor } from '../infrastructure/FalRecipeExtractor';
@@ -133,6 +134,16 @@ export const registerDepdendencies = () => {
                     dependencyContainer.resolve(DependencyToken.NotificationService),
                     dependencyContainer.resolve(DependencyToken.FriendService)
                 );
+            }
+        }
+    );
+
+    dependencyContainer.registerSingleton(
+        DependencyToken.ItemTextParser,
+        // @ts-expect-error - Dependency injection requires constructor return override
+        class {
+            constructor() {
+                return new FalItemTextParser(dependencyContainer.resolve(DependencyToken.FalLlmClient));
             }
         }
     );
