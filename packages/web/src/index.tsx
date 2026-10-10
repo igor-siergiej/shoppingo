@@ -47,6 +47,7 @@ const AddRecipePage = lazyLoadPage(() => import('./pages/AddRecipePage'), 'add r
 const RecipeDetailPage = lazyLoadPage(() => import('./pages/RecipeDetailPage'), 'recipe detail page');
 const ShareTargetPage = lazyLoadPage(() => import('./pages/ShareTargetPage'), 'share target page');
 const CalendarPage = lazyLoadPage(() => import('./pages/CalendarPage'), 'calendar page');
+const MealPlanPage = lazyLoadPage(() => import('./pages/MealPlanPage'), 'meal plan page');
 const FriendsPage = lazyLoadPage(() => import('./pages/FriendsPage'), 'friends page');
 const SettingsPage = lazyLoadPage(() => import('./pages/SettingsPage'), 'settings page');
 const DiscoverPage = lazyLoadPage(() => import('./pages/DiscoverPage'), 'discover page');
@@ -173,6 +174,14 @@ const router = createBrowserRouter([
                 element: (
                     <Suspense fallback={<LoadingPage />}>
                         <CalendarPage />
+                    </Suspense>
+                ),
+            },
+            {
+                path: 'meal-plan',
+                element: (
+                    <Suspense fallback={<LoadingPage />}>
+                        <MealPlanPage />
                     </Suspense>
                 ),
             },

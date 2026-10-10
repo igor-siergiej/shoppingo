@@ -4,6 +4,7 @@ import type {
     Friendship,
     Label,
     List,
+    MealPlanEntry,
     PairingCode,
     PushSubscription,
     Recipe,
@@ -33,6 +34,8 @@ import type { ListRealtimeHub } from '../domain/ListRealtimeHub';
 import type { ListRepository } from '../domain/ListRepository';
 import type { ListService } from '../domain/ListService';
 import type { AuthClient } from '../domain/ListService/types';
+import type { MealPlanRepository } from '../domain/MealPlanRepository';
+import type { MealPlanService } from '../domain/MealPlanService';
 import type { NotificationService } from '../domain/NotificationService';
 import type { PushSubscriptionRepository } from '../domain/PushSubscriptionRepository';
 import type { RecipeImageService } from '../domain/RecipeImageService';
@@ -67,6 +70,7 @@ export type Collections = {
     [CollectionNames.DiscoveryPublication]: DiscoveryPublication;
     [CollectionNames.DiscoveryReport]: DiscoveryReport;
     [CollectionNames.ItemCategory]: ItemCategoryDoc;
+    [CollectionNames.MealPlan]: MealPlanEntry;
 };
 
 export enum DependencyToken {
@@ -93,6 +97,8 @@ export enum DependencyToken {
     RecipeTextExtractor = 'RecipeTextExtractor',
     RecipeParser = 'RecipeParser',
     IngredientSubstituter = 'IngredientSubstituter',
+    MealPlanRepository = 'MealPlanRepository',
+    MealPlanService = 'MealPlanService',
     ItemTextParser = 'ItemTextParser',
     ItemCategoryRepository = 'ItemCategoryRepository',
     ItemCategoryService = 'ItemCategoryService',
@@ -148,6 +154,8 @@ export type Dependencies = {
     [DependencyToken.RecipeTextExtractor]: RecipeTextExtractor;
     [DependencyToken.RecipeParser]: RecipeParser;
     [DependencyToken.IngredientSubstituter]: CachedIngredientSubstituter;
+    [DependencyToken.MealPlanRepository]: MealPlanRepository;
+    [DependencyToken.MealPlanService]: MealPlanService;
     [DependencyToken.ItemTextParser]: FalItemTextParser;
     [DependencyToken.ItemCategoryRepository]: ItemCategoryRepository;
     [DependencyToken.ItemCategoryService]: ItemCategoryService;
@@ -190,4 +198,5 @@ export enum CollectionNames {
     DiscoveryPublication = 'discoveryPublications',
     DiscoveryReport = 'discoveryReports',
     ItemCategory = 'itemCategories',
+    MealPlan = 'mealPlan',
 }

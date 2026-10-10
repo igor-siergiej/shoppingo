@@ -15,6 +15,7 @@ import { ItemCategoryService } from '../domain/ItemCategoryService';
 import { LabelService } from '../domain/LabelService';
 import { ListRealtimeHub } from '../domain/ListRealtimeHub';
 import { ListService } from '../domain/ListService';
+import { MealPlanService } from '../domain/MealPlanService';
 import { NotificationService } from '../domain/NotificationService';
 import { RecipeImageService } from '../domain/RecipeImageService';
 import { RecipeImportService } from '../domain/RecipeImportService';
@@ -47,6 +48,7 @@ import { MongoFriendRepository } from '../infrastructure/MongoFriendRepository';
 import { MongoItemCategoryRepository } from '../infrastructure/MongoItemCategoryRepository';
 import { MongoLabelRepository } from '../infrastructure/MongoLabelRepository';
 import { MongoListRepository } from '../infrastructure/MongoListRepository';
+import { MongoMealPlanRepository } from '../infrastructure/MongoMealPlanRepository';
 import { MongoPushSubscriptionRepository } from '../infrastructure/MongoPushSubscriptionRepository';
 import { MongoRecipeRepository } from '../infrastructure/MongoRecipeRepository';
 import { MongoTodoRepository } from '../infrastructure/MongoTodoRepository';
@@ -215,6 +217,32 @@ export const registerDepdendencies = () => {
     );
 
     dependencyContainer.registerSingleton(
+        DependencyToken.MealPlanRepository,
+        // @ts-expect-error - Dependency injection requires constructor return override
+        class {
+            constructor() {
+                return new MongoMealPlanRepository(dependencyContainer.resolve(DependencyToken.Database));
+            }
+        }
+    );
+
+    dependencyContainer.registerSingleton(
+        DependencyToken.MealPlanService,
+        // @ts-expect-error - Dependency injection requires constructor return override
+        class {
+            constructor() {
+                return new MealPlanService(
+                    dependencyContainer.resolve(DependencyToken.MealPlanRepository),
+                    dependencyContainer.resolve(DependencyToken.IdGenerator),
+                    dependencyContainer.resolve(DependencyToken.RecipeService),
+                    dependencyContainer.resolve(DependencyToken.Logger),
+                    dependencyContainer.resolve(DependencyToken.FriendService)
+                );
+            }
+        }
+    );
+
+    dependencyContainer.registerSingleton(
         DependencyToken.TodoService,
         // @ts-expect-error - Dependency injection requires constructor return override
         class {
@@ -279,7 +307,8 @@ export const registerDepdendencies = () => {
                     dependencyContainer.resolve(DependencyToken.Logger),
                     dependencyContainer.resolve(DependencyToken.ListRepository),
                     dependencyContainer.resolve(DependencyToken.RecipeRepository),
-                    dependencyContainer.resolve(DependencyToken.TodoRepository)
+                    dependencyContainer.resolve(DependencyToken.TodoRepository),
+                    dependencyContainer.resolve(DependencyToken.MealPlanRepository)
                 );
             }
         }

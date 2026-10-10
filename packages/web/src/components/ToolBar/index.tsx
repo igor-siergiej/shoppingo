@@ -3,7 +3,19 @@
 import { useAuth, useUser } from '@imapps/web-utils';
 import type { Item } from '@shoppingo/types';
 import { ListType } from '@shoppingo/types';
-import { CheckCheck, ChefHat, Compass, Mic, Plus, Recycle, ShoppingCart, Tag, Trash2, Users } from 'lucide-react';
+import {
+    CheckCheck,
+    ChefHat,
+    Compass,
+    Mic,
+    Plus,
+    Recycle,
+    ShoppingCart,
+    Tag,
+    Trash2,
+    Users,
+    UtensilsCrossed,
+} from 'lucide-react';
 import { AnimatePresence, MotionConfig, motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import { useQueryClient } from 'react-query';
@@ -166,6 +178,12 @@ const ToolBar = ({
             label: 'Manage Sharing',
             icon: Users,
             onClick: () => onManageRecipeUsers?.(),
+        },
+        {
+            show: isCalendarPage,
+            label: 'Meal plan',
+            icon: UtensilsCrossed,
+            onClick: () => navigate('/meal-plan'),
         },
         {
             show: isCalendarPage,

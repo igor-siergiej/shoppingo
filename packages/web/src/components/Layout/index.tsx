@@ -19,6 +19,7 @@ const NORMAL_SCROLL_ROUTES: Record<string, true> = {
     '/recipes': true,
     '/recipes/use-up': true,
     '/discover': true,
+    '/meal-plan': true,
     '/settings': true,
 };
 

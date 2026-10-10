@@ -10,6 +10,7 @@ import type {
     Label,
     ListResponse,
     ListType,
+    MealPlanEntry,
     PublishedRecipeRef,
     Recipe,
     RecipeImportResult,
@@ -731,3 +732,40 @@ export const reportDiscoveryRecipe = async (recipeId: string, reason?: string): 
         body: JSON.stringify({ reason }),
     });
 };
+
+export const getMealPlanQuery = (from: string, to: string) => ({
+    queryKey: ['meal-plan', from, to],
+    queryFn: async (): Promise<Array<MealPlanEntry>> =>
+        makeRequest({
+            pathname: `/api/meal-plan?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
+            method: MethodType.GET,
+            operationString: 'get meal plan',
+        }),
+});
+
+export const createMealPlanEntry = async (body: {
+    date: string;
+    recipeId: string;
+    servings: number;
+}): Promise<MealPlanEntry> =>
+    makeRequest({
+        pathname: '/api/meal-plan',
+        method: MethodType.PUT,
+        operationString: 'plan recipe',
+        body: JSON.stringify(body),
+    });
+
+export const updateMealPlanEntry = async (id: string, body: { date?: string; servings?: number }) =>
+    makeRequest({
+        pathname: `/api/meal-plan/${encodeURIComponent(id)}`,
+        method: MethodType.POST,
+        operationString: 'update planned recipe',
+        body: JSON.stringify(body),
+    });
+
+export const deleteMealPlanEntry = async (id: string): Promise<void> =>
+    makeRequest({
+        pathname: `/api/meal-plan/${encodeURIComponent(id)}`,
+        method: MethodType.DELETE,
+        operationString: 'remove planned recipe',
+    });

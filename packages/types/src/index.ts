@@ -287,6 +287,19 @@ export interface Todo {
 
 export interface TodoResponse extends Todo {}
 
+/** A recipe planned for a day, with the number of portions to cook. */
+export interface MealPlanEntry {
+    id: string;
+    ownerId: string;
+    /** Planned day, as a timezone-agnostic YYYY-MM-DD string. */
+    date: string;
+    recipeId: string;
+    servings: number;
+    dateAdded: Date;
+    /** Friends this plan entry is shared with (excludes the owner, who is implicit via ownerId). */
+    users?: Array<User>;
+}
+
 export interface Label {
     id: string;
     ownerId: string;
