@@ -1,12 +1,12 @@
 import type { MongoDbConnection } from '@imapps/api-utils';
 
-import { CollectionNames } from '../../dependencies/types';
+import { CollectionNames, type Collections } from '../../dependencies/types';
 import type { DiscoveryReport, DiscoveryReportRepository } from '../../domain/DiscoveryReportRepository';
 
 const NO_OBJECT_ID = { projection: { _id: 0 } } as const;
 
 export class MongoDiscoveryReportRepository implements DiscoveryReportRepository {
-    constructor(private readonly db: MongoDbConnection<{ [CollectionNames.DiscoveryReport]: DiscoveryReport }>) {}
+    constructor(private readonly db: MongoDbConnection<Collections>) {}
 
     private collection() {
         return this.db.getCollection(CollectionNames.DiscoveryReport);

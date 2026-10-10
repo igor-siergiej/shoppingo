@@ -241,4 +241,22 @@ describe('AuthorizationService', () => {
             expect(authService.canManageUsers(list, 'owner-1')).toBe(true);
         });
     });
+
+    describe('isOwner', () => {
+        it('works for anything with an owner and members, such as a recipe', () => {
+            const recipe = { ownerId: 'u1', users: [{ id: 'u2', username: 'two' }] };
+
+            expect(authService.isOwner(recipe, 'u1')).toBe(true);
+            expect(authService.isOwner(recipe, 'u2')).toBe(false);
+        });
+
+        it('falls back to the first member when there is no ownerId, and to nobody when there are no members', () => {
+            expect(authService.isOwner({ users: [{ id: 'u2', username: 'two' }] }, 'u2')).toBe(true);
+            expect(authService.isOwner({}, 'u2')).toBe(false);
+        });
+
+        it('is what isListOwner delegates to', () => {
+            expect(authService.isListOwner({ ownerId: 'u1', users: [] }, 'u1')).toBe(true);
+        });
+    });
 });

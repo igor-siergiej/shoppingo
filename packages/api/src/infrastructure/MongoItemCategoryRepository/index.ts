@@ -1,7 +1,7 @@
 import type { MongoDbConnection } from '@imapps/api-utils';
 import type { ItemCategory } from '@shoppingo/types';
 
-import { CollectionNames } from '../../dependencies/types';
+import { CollectionNames, type Collections } from '../../dependencies/types';
 import type { ItemCategoryRepository } from '../../domain/ItemCategoryRepository';
 
 export interface ItemCategoryDoc {
@@ -10,7 +10,7 @@ export interface ItemCategoryDoc {
 }
 
 export class MongoItemCategoryRepository implements ItemCategoryRepository {
-    constructor(private readonly db: MongoDbConnection<{ [CollectionNames.ItemCategory]: ItemCategoryDoc }>) {}
+    constructor(private readonly db: MongoDbConnection<Collections>) {}
 
     private collection() {
         return this.db.getCollection(CollectionNames.ItemCategory);

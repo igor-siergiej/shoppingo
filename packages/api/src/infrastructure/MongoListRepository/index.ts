@@ -1,11 +1,11 @@
 import type { MongoDbConnection } from '@imapps/api-utils';
 import type { Item, ItemCategory, List } from '@shoppingo/types';
 
-import { CollectionNames } from '../../dependencies/types';
+import { CollectionNames, type Collections } from '../../dependencies/types';
 import type { ListRepository } from '../../domain/ListRepository';
 
 export class MongoListRepository implements ListRepository {
-    constructor(private readonly db: MongoDbConnection<{ [CollectionNames.List]: List }>) {}
+    constructor(private readonly db: MongoDbConnection<Collections>) {}
 
     private collection() {
         return this.db.getCollection(CollectionNames.List);

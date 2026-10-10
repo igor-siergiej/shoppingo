@@ -1,5 +1,6 @@
-import type { IdGenerator, Logger } from '@imapps/api-utils';
+import type { Logger } from '@imapps/api-utils';
 import type { Label } from '@shoppingo/types';
+import type { IdGenerator } from '../IdGenerator';
 
 import type { LabelRepository } from '../LabelRepository';
 import type { TodoRepository } from '../TodoRepository';

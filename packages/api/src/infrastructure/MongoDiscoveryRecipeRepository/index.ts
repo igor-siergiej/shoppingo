@@ -1,14 +1,14 @@
 import type { MongoDbConnection } from '@imapps/api-utils';
 import type { DiscoveryRecipe, DiscoverySource } from '@shoppingo/types';
 
-import { CollectionNames } from '../../dependencies/types';
+import { CollectionNames, type Collections } from '../../dependencies/types';
 import type { DiscoveryRecipeRepository } from '../../domain/DiscoveryRecipeRepository';
 
 // `_id` is Mongo bookkeeping, not part of the library contract.
 const NO_OBJECT_ID = { projection: { _id: 0 } } as const;
 
 export class MongoDiscoveryRecipeRepository implements DiscoveryRecipeRepository {
-    constructor(private readonly db: MongoDbConnection<{ [CollectionNames.DiscoveryRecipe]: DiscoveryRecipe }>) {}
+    constructor(private readonly db: MongoDbConnection<Collections>) {}
 
     private collection() {
         return this.db.getCollection(CollectionNames.DiscoveryRecipe);

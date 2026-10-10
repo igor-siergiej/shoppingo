@@ -1,11 +1,11 @@
 import type { MongoDbConnection } from '@imapps/api-utils';
 import type { Todo } from '@shoppingo/types';
 
-import { CollectionNames } from '../../dependencies/types';
+import { CollectionNames, type Collections } from '../../dependencies/types';
 import type { TodoRepository } from '../../domain/TodoRepository';
 
 export class MongoTodoRepository implements TodoRepository {
-    constructor(private readonly db: MongoDbConnection<{ [CollectionNames.Todo]: Todo }>) {}
+    constructor(private readonly db: MongoDbConnection<Collections>) {}
 
     private collection() {
         return this.db.getCollection(CollectionNames.Todo);

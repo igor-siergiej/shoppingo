@@ -1,8 +1,10 @@
-import type { IdGenerator, Logger } from '@imapps/api-utils';
+import type { Logger } from '@imapps/api-utils';
 import type { Recurrence, Todo, User } from '@shoppingo/types';
 
 import type { FriendService } from '../FriendService';
+import type { IdGenerator } from '../IdGenerator';
 import type { NotificationService } from '../NotificationService';
+import { resolveFriendMembers } from '../SharedMembers';
 import type { TodoRepository } from '../TodoRepository';
 
 export interface CreateTodoInput {
@@ -59,18 +61,6 @@ export class TodoService {
         return todo;
     }
 
-    /** Seeds shared members: all current friends by default, or an explicit friend subset (403 on non-friends). */
-    private async seedMembers(ownerId: string, explicit?: string[]): Promise<User[]> {
-        if (!this.friendService) return [];
-        const friends = await this.friendService.listFriends(ownerId);
-        if (explicit === undefined) return friends;
-        const allowed = new Set(friends.map((f) => f.id));
-        for (const id of explicit) {
-            if (!allowed.has(id)) throw forbidden();
-        }
-        return friends.filter((f) => explicit.includes(f.id));
-    }
-
     async createTodo(ownerId: string, rawInput: CreateTodoInput, actor?: User): Promise<Todo> {
         const input = normalizeDays(rawInput);
         if (input.id) {
@@ -79,7 +69,7 @@ export class TodoService {
                 return existing;
             }
         }
-        const users = await this.seedMembers(ownerId, input.userIds);
+        const users = await resolveFriendMembers(this.friendService, ownerId, input.userIds);
         const todo: Todo = {
             id: input.id ?? this.idGenerator.generate(),
             ownerId,

@@ -1,8 +1,9 @@
-import type { IdGenerator, Logger } from '@imapps/api-utils';
-import type { MealPlanEntry, Recipe, User } from '@shoppingo/types';
-
+import type { Logger } from '@imapps/api-utils';
+import type { MealPlanEntry, Recipe } from '@shoppingo/types';
 import type { FriendService } from '../FriendService';
+import type { IdGenerator } from '../IdGenerator';
 import type { MealPlanRepository } from '../MealPlanRepository';
+import { resolveFriendMembers } from '../SharedMembers';
 
 export interface CreateMealPlanInput {
     date: string;
@@ -57,15 +58,6 @@ export class MealPlanService {
         return entry;
     }
 
-    private async seedMembers(ownerId: string, explicit?: string[]): Promise<User[]> {
-        if (!this.friendService) return [];
-        const friends = await this.friendService.listFriends(ownerId);
-        if (explicit === undefined) return friends;
-        const allowed = new Set(friends.map((f) => f.id));
-        if (explicit.some((id) => !allowed.has(id))) throw fail('Can only share with friends', 403);
-        return friends.filter((f) => explicit.includes(f.id));
-    }
-
     // Validation, access check, sharing and insert read best as one linear flow.
     // fallow-ignore-next-line complexity
     async create(ownerId: string, input: CreateMealPlanInput): Promise<MealPlanEntry> {
@@ -80,7 +72,7 @@ export class MealPlanService {
         const recipe = await this.recipes.getRecipe(input.recipeId);
         if (!recipe.users?.some((u) => u.id === ownerId)) throw fail('Forbidden', 403);
 
-        const users = await this.seedMembers(ownerId, input.userIds);
+        const users = await resolveFriendMembers(this.friendService, ownerId, input.userIds);
         const entry: MealPlanEntry = {
             id: input.id ?? this.idGenerator.generate(),
             ownerId,

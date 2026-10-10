@@ -1,7 +1,7 @@
 import type { User } from '@shoppingo/types';
 
 import { config } from '../../config';
-import type { AuthClient } from '../../domain/ListService';
+import type { AuthClient } from '../../domain/ListService/types';
 
 interface ConfigLike {
     get(key: string): unknown;
