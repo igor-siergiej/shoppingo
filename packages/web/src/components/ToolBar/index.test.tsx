@@ -20,6 +20,14 @@ vi.mock('@imapps/web-utils', () => ({
     }),
 }));
 
+vi.mock('react-query', () => ({
+    useQueryClient: () => ({}),
+}));
+
+vi.mock('../../offline/clearUserData', () => ({
+    clearUserData: vi.fn().mockResolvedValue(undefined),
+}));
+
 vi.mock('react-router-dom', () => ({
     useLocation: mockUseLocation,
     useNavigate: () => mockNavigate,

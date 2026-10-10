@@ -74,6 +74,12 @@ export const outboxStore = {
         listeners.add(cb);
         return () => listeners.delete(cb);
     },
+    async clear() {
+        const db = await getDB();
+        await db.clear(STORE);
+        mirror = [];
+        notify();
+    },
     async _resetForTests() {
         const db = await getDB();
         await db.clear(STORE);
