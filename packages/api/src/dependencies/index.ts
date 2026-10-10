@@ -60,12 +60,18 @@ import { type Dependencies, DependencyToken } from './types';
 
 export { dependencyContainer };
 
-// The container instantiates `new ctor()`. A plain function that returns an object is a valid constructor for that
-// (the returned object wins), so factories can be written as functions without a class that returns from its constructor.
-const register = <K extends keyof Dependencies & string>(token: K, make: () => Dependencies[K]) =>
-    dependencyContainer.registerSingleton(token, (() => make()) as unknown as Parameters<
-        typeof dependencyContainer.registerSingleton<K>
-    >[1]);
+// The container instantiates `new ctor()`. A function declaration that returns an object is a valid constructor for
+// that (the returned object wins), so factories need no class that returns from its constructor. It must stay a
+// declaration: an arrow function cannot be constructed.
+const register = <K extends keyof Dependencies & string>(token: K, make: () => Dependencies[K]) => {
+    function Factory() {
+        return make();
+    }
+    dependencyContainer.registerSingleton(
+        token,
+        Factory as unknown as Parameters<typeof dependencyContainer.registerSingleton<K>>[1]
+    );
+};
 
 export const registerDepdendencies = () => {
     // Core infrastructure services
