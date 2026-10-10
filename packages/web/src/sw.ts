@@ -9,7 +9,8 @@ declare const self: ServiceWorkerGlobalScope & { __WB_MANIFEST: Array<{ url: str
 precacheAndRoute(self.__WB_MANIFEST);
 clientsClaim();
 
-// Mirror the previous generateSW runtimeCaching config.
+// Offline reads depend on this cache (react-query is not persisted). It holds per-user data, so the app deletes
+// it on logout (offline/clearUserData.ts); keep the name in sync with API_CACHE_NAME there. Workbox only caches GETs.
 registerRoute(
     ({ url }) => url.pathname.startsWith('/api/'),
     new NetworkFirst({ cacheName: 'api-cache', networkTimeoutSeconds: 2 })

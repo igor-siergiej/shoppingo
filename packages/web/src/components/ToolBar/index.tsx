@@ -6,12 +6,14 @@ import { ListType } from '@shoppingo/types';
 import { CheckCheck, ChefHat, Compass, Plus, Recycle, ShoppingCart, Tag, Trash2, Users } from 'lucide-react';
 import { AnimatePresence, MotionConfig, motion } from 'motion/react';
 import { useEffect, useState } from 'react';
+import { useQueryClient } from 'react-query';
 import { useLocation, useNavigate } from 'react-router-dom';
 import useMeasure from 'react-use-measure';
 
 import { Card } from '../../components/ui/card';
 import { useManageUsers } from '../../hooks/useManageUsers';
 import { useToolBarState } from '../../hooks/useToolBarState';
+import { clearUserData } from '../../offline/clearUserData';
 import { ManageLabelsDrawer } from '../ManageLabelsDrawer';
 import { ManageUsersDrawer } from '../ManageUsersDrawer';
 import { RippleButton } from '../ui/ripple';
@@ -75,6 +77,7 @@ const ToolBar = ({
     const location = useLocation();
     const navigate = useNavigate();
     const { logout } = useAuth();
+    const queryClient = useQueryClient();
     const { user } = useUser();
     const userId = user?.id;
 
@@ -182,6 +185,7 @@ const ToolBar = ({
 
     const handleLogout = async () => {
         await logout();
+        await clearUserData(queryClient);
         navigate('/login');
     };
 
