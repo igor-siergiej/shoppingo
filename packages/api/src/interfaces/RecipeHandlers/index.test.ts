@@ -128,18 +128,6 @@ describe('RecipeHandlers', () => {
             expect(response.status).toBe(401);
         });
 
-        it('returns 400 when url is missing', async () => {
-            const ctx = createMockContext({ body: {} });
-            const response = await recipeHandlers.importRecipe(ctx);
-            expect(response.status).toBe(400);
-        });
-
-        it('returns 400 when url is blank', async () => {
-            const ctx = createMockContext({ body: { url: '   ' } });
-            const response = await recipeHandlers.importRecipe(ctx);
-            expect(response.status).toBe(400);
-        });
-
         it('returns the draft on success', async () => {
             mockRecipeImportService.importFromUrl.mockResolvedValue(draft);
             const ctx = createMockContext({ body: { url: 'https://example.com/r' } });
@@ -194,18 +182,6 @@ describe('RecipeHandlers', () => {
             const ctx = createMockContext({ user: undefined, body: { ingredientName: 'butter' } });
             const response = await recipeHandlers.suggestIngredientSubstitutes(ctx);
             expect(response.status).toBe(401);
-        });
-
-        it('returns 400 when ingredientName is missing', async () => {
-            const ctx = createMockContext({ body: {} });
-            const response = await recipeHandlers.suggestIngredientSubstitutes(ctx);
-            expect(response.status).toBe(400);
-        });
-
-        it('returns 400 when ingredientName is blank', async () => {
-            const ctx = createMockContext({ body: { ingredientName: '   ' } });
-            const response = await recipeHandlers.suggestIngredientSubstitutes(ctx);
-            expect(response.status).toBe(400);
         });
 
         it('returns substitutes on success', async () => {
@@ -302,22 +278,6 @@ describe('RecipeHandlers', () => {
             expect(response.status).toBe(401);
         });
 
-        it('returns 400 when title missing', async () => {
-            const ctx = createMockContext({
-                body: { title: '', ingredients: [] },
-            });
-            const response = await recipeHandlers.createRecipe(ctx);
-            expect(response.status).toBe(400);
-        });
-
-        it('returns 400 when ingredients missing', async () => {
-            const ctx = createMockContext({
-                body: { title: 'Test' },
-            });
-            const response = await recipeHandlers.createRecipe(ctx);
-            expect(response.status).toBe(400);
-        });
-
         it('creates recipe successfully', async () => {
             mockRecipeService.createRecipe.mockResolvedValue(baseRecipe);
             const ctx = createMockContext({
@@ -335,14 +295,6 @@ describe('RecipeHandlers', () => {
                 body: { title: 'Test', ingredients: [] },
             });
             await expect(recipeHandlers.createRecipe(ctx)).rejects.toThrow('fail');
-        });
-
-        it('returns 400 when difficulty is not one of easy/medium/hard', async () => {
-            const ctx = createMockContext({
-                body: { title: 'Test', ingredients: [], difficulty: 'extreme' },
-            });
-            const response = await recipeHandlers.createRecipe(ctx);
-            expect(response.status).toBe(400);
         });
 
         it('passes prepTime, cookTime, servings and difficulty through to the service', async () => {
@@ -411,15 +363,6 @@ describe('RecipeHandlers', () => {
                 body: { title: 'Updated', ingredients: [] },
             });
             await expect(recipeHandlers.updateRecipe(ctx)).rejects.toThrow('fail');
-        });
-
-        it('returns 400 when difficulty is not one of easy/medium/hard', async () => {
-            const ctx = createMockContext({
-                params: { recipeId: 'recipe-1' },
-                body: { title: 'Updated', ingredients: [], difficulty: 'extreme' },
-            });
-            const response = await recipeHandlers.updateRecipe(ctx);
-            expect(response.status).toBe(400);
         });
 
         it('passes prepTime, cookTime, servings and difficulty through to the service', async () => {
@@ -592,15 +535,6 @@ describe('RecipeHandlers', () => {
             });
             const response = await recipeHandlers.setCoverImageKey(ctx);
             expect(response.status).toBe(401);
-        });
-
-        it('returns 400 when imageKey missing', async () => {
-            const ctx = createMockContext({
-                params: { recipeId: 'recipe-1' },
-                body: { imageKey: '' },
-            });
-            const response = await recipeHandlers.setCoverImageKey(ctx);
-            expect(response.status).toBe(400);
         });
 
         it('returns 403 when user not in recipe', async () => {

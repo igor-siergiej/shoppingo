@@ -15,10 +15,6 @@ export const parseSpokenItems = async (c: Context<HonoVars>) => {
     const { transcript } = await c.req.json<{ transcript?: unknown }>();
     const logger = dependencyContainer.resolve(DependencyToken.Logger);
 
-    if (typeof transcript !== 'string' || transcript.trim() === '') {
-        return c.json({ error: 'transcript is required and must be a non-empty string' }, 400);
-    }
-
     try {
         const items = await dependencyContainer
             .resolve(DependencyToken.ItemTextParser)

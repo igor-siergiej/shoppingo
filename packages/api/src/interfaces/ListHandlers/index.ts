@@ -1,4 +1,5 @@
 import { APIError } from '@imapps/api-utils/hono';
+import type { ListType } from '@shoppingo/types';
 import type { Context } from 'hono';
 import { dependencyContainer } from '../../dependencies';
 import { DependencyToken } from '../../dependencies/types';
@@ -149,26 +150,14 @@ export const addList = async (c: Context<HonoVars>) => {
         title: string;
         dateAdded: Date;
         selectedUsers?: Array<string>;
-        listType?: string;
+        listType?: ListType;
         id?: string;
     }>();
     const logger = getLogger();
     const authenticatedUser = c.get('user');
 
-    if (!title || typeof title !== 'string' || title.trim() === '') {
-        return c.json({ error: 'Title is required and must be a non-empty string' }, 400);
-    }
-
     try {
-        const list = await getListService().addList(
-            title,
-            dateAdded,
-            authenticatedUser,
-            selectedUsers,
-            // @ts-expect-error - listType can be undefined from request body
-            listType,
-            id
-        );
+        const list = await getListService().addList(title, dateAdded, authenticatedUser, selectedUsers, listType, id);
 
         logger.info('API: List created', {
             userId: authenticatedUser.id,
@@ -199,10 +188,6 @@ export const addItem = async (c: Context<HonoVars>) => {
     }>();
     const logger = getLogger();
     const authenticatedUser = c.get('user');
-
-    if (!itemName || typeof itemName !== 'string' || itemName.trim() === '') {
-        return c.json({ error: 'Item name is required and must be a non-empty string' }, 400);
-    }
 
     try {
         const denied = await ensureListAccess(c, title, authenticatedUser, logger);
@@ -239,12 +224,6 @@ export const updateItem = async (c: Context<HonoVars>) => {
     try {
         const denied = await ensureListAccess(c, title, authenticatedUser, logger);
         if (denied) return denied;
-
-        if (requestBody.newItemName !== undefined) {
-            if (typeof requestBody.newItemName !== 'string' || requestBody.newItemName.trim() === '') {
-                return c.json({ error: 'New item name must be a non-empty string' }, 400);
-            }
-        }
 
         const operation = resolveItemOperation(requestBody);
         if (!operation) {
@@ -334,10 +313,6 @@ export const updateList = async (c: Context<HonoVars>) => {
         const denied = await ensureListAccess(c, title, authenticatedUser, logger);
         if (denied) return denied;
 
-        if (!newTitle || typeof newTitle !== 'string' || newTitle.trim() === '') {
-            return c.json({ error: 'New title is required and must be a non-empty string' }, 400);
-        }
-
         const result = await getListService().updateListTitle(title, newTitle);
 
         logger.info('API: List title updated', { oldTitle: title, newTitle });
@@ -397,10 +372,6 @@ export const addUserToList = async (c: Context<HonoVars>) => {
     const { friendId } = await c.req.json<{ friendId: string }>();
     const authenticatedUser = c.get('user');
     const logger = getLogger();
-
-    if (!friendId || typeof friendId !== 'string' || friendId.trim() === '') {
-        return c.json({ error: 'friendId is required' }, 400);
-    }
 
     const denied = await ensureListAccess(c, title, authenticatedUser, logger);
     if (denied) return denied;
@@ -479,10 +450,6 @@ export const addItems = async (c: Context<HonoVars>) => {
     }>();
     const logger = getLogger();
     const authenticatedUser = c.get('user');
-
-    if (!items || !Array.isArray(items) || items.length === 0) {
-        return c.json({ error: 'Items array is required and must not be empty' }, 400);
-    }
 
     const denied = await ensureListAccess(c, title, authenticatedUser, logger);
     if (denied) return denied;

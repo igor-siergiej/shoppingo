@@ -38,11 +38,6 @@ describe('setItemCategory', () => {
         expect(mockListService.setItemCategory).not.toHaveBeenCalled();
     });
 
-    it.each([{ category: 'snacks' }, {}])('rejects an invalid category %o', async (body) => {
-        expect((await setItemCategory(ctx(body))).status).toBe(400);
-        expect(mockListService.setItemCategory).not.toHaveBeenCalled();
-    });
-
     it('surfaces service errors with their status', async () => {
         mockListService.setItemCategory.mockRejectedValue(Object.assign(new Error('Item not found'), { status: 404 }));
 

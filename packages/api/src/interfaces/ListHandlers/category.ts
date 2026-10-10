@@ -1,5 +1,5 @@
 import { APIError } from '@imapps/api-utils/hono';
-import { ITEM_CATEGORIES, type ItemCategory } from '@shoppingo/types';
+import type { ItemCategory } from '@shoppingo/types';
 import type { Context } from 'hono';
 
 import { dependencyContainer } from '../../dependencies';
@@ -22,10 +22,6 @@ export const setItemCategory = async (c: Context<HonoVars>) => {
         if (!list.users?.some((member: { id: string }) => member.id === user?.id)) {
             logger.warn('Unauthorized item category change', { authenticatedUserId: user?.id, listTitle: title });
             return c.json({ error: 'Forbidden' }, 403);
-        }
-
-        if (!category || !ITEM_CATEGORIES.includes(category)) {
-            return c.json({ error: `category must be one of: ${ITEM_CATEGORIES.join(', ')}` }, 400);
         }
 
         return c.json(await listService.setItemCategory(title, itemId, category), 200);

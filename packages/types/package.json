@@ -3,11 +3,13 @@
   "version": "1.94.0",
   "main": "src/index.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./schemas": "./src/schemas.ts"
   },
   "private": true,
   "types": "src/index.ts",
   "dependencies": {
-    "date-fns": "^4.1.0"
+    "date-fns": "^4.1.0",
+    "zod": "^4.1.11"
   }
 }

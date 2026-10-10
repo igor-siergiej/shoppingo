@@ -1,3 +1,30 @@
+import {
+    addItemBody,
+    addItemsBody,
+    completeTodoBody,
+    coverImageBody,
+    createLabelBody,
+    createListBody,
+    createMealPlanBody,
+    createRecipeBody,
+    createTodoBody,
+    friendIdBody,
+    importRecipeBody,
+    parseSpokenItemsBody,
+    publishRecipeBody,
+    pushSubscribeBody,
+    pushUnsubscribeBody,
+    redeemFriendCodeBody,
+    reportRecipeBody,
+    setCategoryBody,
+    substitutesBody,
+    updateItemBody,
+    updateLabelBody,
+    updateListBody,
+    updateMealPlanBody,
+    updateRecipeBody,
+    updateTodoBody,
+} from '@shoppingo/types/schemas';
 import type { Context, Next } from 'hono';
 import { Hono } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
@@ -53,6 +80,7 @@ import { completeTodo, createTodo, deleteTodo, getTodos, updateTodo } from '../i
 import { aiRateLimit } from '../middleware/aiRateLimit';
 import { authenticate } from '../middleware/auth';
 import { notifyListChanged } from '../middleware/notifyListChanged';
+import { validateJson } from '../middleware/validate';
 
 type Vars = { Variables: { user: { id: string; username: string } } };
 
@@ -96,16 +124,22 @@ export const createRoutes = (): Hono<Vars> => {
     );
 
     router.delete('/api/lists/:title', authenticate, changed, deleteList);
-    router.post('/api/lists/:title', authenticate, changed, updateList);
-    router.put('/api/lists', authenticate, addList);
-    router.put('/api/lists/:title/items/bulk', authenticate, changed, addItems);
-    router.put('/api/lists/:title/items', authenticate, changed, addItem);
-    router.post('/api/lists/:title/items/:itemId', authenticate, changed, updateItem);
-    router.put('/api/lists/:title/items/:itemId/category', authenticate, changed, setItemCategory);
+    router.post('/api/lists/:title', authenticate, validateJson(updateListBody), changed, updateList);
+    router.put('/api/lists', authenticate, validateJson(createListBody), addList);
+    router.put('/api/lists/:title/items/bulk', authenticate, validateJson(addItemsBody), changed, addItems);
+    router.put('/api/lists/:title/items', authenticate, validateJson(addItemBody), changed, addItem);
+    router.post('/api/lists/:title/items/:itemId', authenticate, validateJson(updateItemBody), changed, updateItem);
+    router.put(
+        '/api/lists/:title/items/:itemId/category',
+        authenticate,
+        validateJson(setCategoryBody),
+        changed,
+        setItemCategory
+    );
     router.delete('/api/lists/:title/items/:itemId', authenticate, changed, deleteItem);
     router.delete('/api/lists/:title/clear', authenticate, changed, clearList);
     router.delete('/api/lists/:title/clearSelected', authenticate, changed, deleteSelected);
-    router.post('/api/lists/:title/users', authenticate, changed, addUserToList);
+    router.post('/api/lists/:title/users', authenticate, validateJson(friendIdBody), changed, addUserToList);
     router.delete('/api/lists/:title/users/:userId', authenticate, removedMember, removeUserFromList);
 
     router.post('/api/lists/:title/socket-ticket', authenticate, issueListSocketTicket);
@@ -131,19 +165,25 @@ export const createRoutes = (): Hono<Vars> => {
         onError: (c) => c.json({ error: 'Image exceeds the 10 MB upload limit' }, 413),
     });
 
-    router.post('/api/items/parse', authenticate, aiRateLimit, parseSpokenItems);
+    router.post('/api/items/parse', authenticate, validateJson(parseSpokenItemsBody), aiRateLimit, parseSpokenItems);
 
     router.get('/api/recipes', authenticate, getRecipes);
-    router.post('/api/recipes/import', authenticate, aiRateLimit, importRecipe);
-    router.post('/api/recipes/substitutes', authenticate, aiRateLimit, suggestIngredientSubstitutes);
+    router.post('/api/recipes/import', authenticate, validateJson(importRecipeBody), aiRateLimit, importRecipe);
+    router.post(
+        '/api/recipes/substitutes',
+        authenticate,
+        validateJson(substitutesBody),
+        aiRateLimit,
+        suggestIngredientSubstitutes
+    );
     router.get('/api/recipes/import/image', authenticate, importRecipeImage);
-    router.put('/api/recipes', authenticate, createRecipe);
+    router.put('/api/recipes', authenticate, validateJson(createRecipeBody), createRecipe);
     router.get('/api/recipes/:recipeId', authenticate, getRecipe);
-    router.put('/api/recipes/:recipeId', authenticate, updateRecipe);
+    router.put('/api/recipes/:recipeId', authenticate, validateJson(updateRecipeBody), updateRecipe);
     router.delete('/api/recipes/:recipeId', authenticate, deleteRecipe);
-    router.post('/api/recipes/:recipeId/users', authenticate, addUserToRecipe);
+    router.post('/api/recipes/:recipeId/users', authenticate, validateJson(friendIdBody), addUserToRecipe);
     router.delete('/api/recipes/:recipeId/users/:targetUserId', authenticate, removeUserFromRecipe);
-    router.put('/api/recipes/:recipeId/image', authenticate, setCoverImageKey);
+    router.put('/api/recipes/:recipeId/image', authenticate, validateJson(coverImageBody), setCoverImageKey);
     router.post('/api/recipes/:recipeId/image/upload', authenticate, uploadBodyLimit, uploadRecipeImage);
     router.post('/api/recipes/:recipeId/image/generate', authenticate, aiRateLimit, generateRecipeImage);
     router.post('/api/recipes/:recipeId/image/revert', authenticate, revertRecipeImage);
@@ -161,38 +201,53 @@ export const createRoutes = (): Hono<Vars> => {
     router.get('/api/discover/recipes/:id/similar', authenticate, discovery.getSimilarRecipes);
     router.get('/api/discover/recipes/:id', authenticate, discovery.getRecipe);
     router.post('/api/discover/recipes/:id/copy', authenticate, discovery.copyRecipe);
-    router.post('/api/discover/recipes/:id/report', authenticate, discovery.reportRecipe);
+    router.post(
+        '/api/discover/recipes/:id/report',
+        authenticate,
+        validateJson(reportRecipeBody, { optional: true }),
+        discovery.reportRecipe
+    );
     // Admin only (DISCOVERY_ADMIN_USER_IDS): removes a user-published recipe from Mongo and the index.
     router.delete('/api/discover/recipes/:id', authenticate, discovery.delistRecipe);
     router.get('/api/discover/reports', authenticate, discovery.listReports);
     router.get('/api/discover/published', authenticate, discovery.listPublished);
     router.delete('/api/discover/published/:id', authenticate, discovery.unpublishRecipe);
-    router.post('/api/recipes/:recipeId/publish', authenticate, discovery.publishRecipe);
+    router.post(
+        '/api/recipes/:recipeId/publish',
+        authenticate,
+        validateJson(publishRecipeBody),
+        discovery.publishRecipe
+    );
 
     router.get('/api/meal-plan', authenticate, getMealPlan);
-    router.put('/api/meal-plan', authenticate, createMealPlanEntry);
-    router.post('/api/meal-plan/:id', authenticate, updateMealPlanEntry);
+    router.put('/api/meal-plan', authenticate, validateJson(createMealPlanBody), createMealPlanEntry);
+    router.post('/api/meal-plan/:id', authenticate, validateJson(updateMealPlanBody), updateMealPlanEntry);
     router.delete('/api/meal-plan/:id', authenticate, deleteMealPlanEntry);
 
     router.get('/api/todos', authenticate, getTodos);
-    router.put('/api/todos', authenticate, createTodo);
-    router.post('/api/todos/:id', authenticate, updateTodo);
+    router.put('/api/todos', authenticate, validateJson(createTodoBody), createTodo);
+    router.post('/api/todos/:id', authenticate, validateJson(updateTodoBody), updateTodo);
     router.delete('/api/todos/:id', authenticate, deleteTodo);
-    router.post('/api/todos/:id/complete', authenticate, completeTodo);
+    router.post(
+        '/api/todos/:id/complete',
+        authenticate,
+        validateJson(completeTodoBody, { optional: true }),
+        completeTodo
+    );
 
     router.get('/api/labels', authenticate, getLabels);
-    router.put('/api/labels', authenticate, createLabel);
-    router.post('/api/labels/:id', authenticate, updateLabel);
+    router.put('/api/labels', authenticate, validateJson(createLabelBody), createLabel);
+    router.post('/api/labels/:id', authenticate, validateJson(updateLabelBody), updateLabel);
     router.delete('/api/labels/:id', authenticate, deleteLabel);
 
     router.post('/api/friends/code', authenticate, generateFriendCode);
-    router.post('/api/friends/redeem', authenticate, redeemFriendCode);
+    router.post('/api/friends/redeem', authenticate, validateJson(redeemFriendCodeBody), redeemFriendCode);
     router.get('/api/friends', authenticate, getFriends);
     router.delete('/api/friends/:friendId', authenticate, removeFriend);
 
     router.get('/api/push/vapid-public-key', getVapidPublicKey);
-    router.post('/api/push/subscribe', authenticate, subscribe);
-    router.delete('/api/push/subscribe', authenticate, unsubscribe);
+    router.post('/api/push/subscribe', authenticate, validateJson(pushSubscribeBody), subscribe);
+    router.delete('/api/push/subscribe', authenticate, validateJson(pushUnsubscribeBody), unsubscribe);
 
     return router;
 };

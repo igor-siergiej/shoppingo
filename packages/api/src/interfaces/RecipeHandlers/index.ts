@@ -9,8 +9,6 @@ import { normaliseUpload } from '../../infrastructure/imageProcessor';
 import { withImageExtension } from '../../infrastructure/objectKey';
 import type { HonoVars } from '../handlerUtils';
 
-const DIFFICULTY_VALUES: Record<RecipeDifficulty, true> = { easy: true, medium: true, hard: true };
-
 const getRecipeService = (): RecipeService => dependencyContainer.resolve(DependencyToken.RecipeService);
 const getRecipeImportService = (): RecipeImportService =>
     dependencyContainer.resolve(DependencyToken.RecipeImportService);
@@ -121,18 +119,6 @@ export const createRecipe = async (c: Context<HonoVars>): Promise<Response> => {
     const authenticatedUser = getAuthenticatedUser(c);
     if (!authenticatedUser) return unauthorized(c, 'Unauthorized recipe creation attempt');
 
-    if (!title || typeof title !== 'string' || title.trim() === '') {
-        return c.json({ error: 'Title is required and must be a non-empty string' }, 400);
-    }
-
-    if (!ingredients || !Array.isArray(ingredients)) {
-        return c.json({ error: 'Ingredients is required and must be an array' }, 400);
-    }
-
-    if (difficulty !== undefined && !DIFFICULTY_VALUES[difficulty]) {
-        return c.json({ error: 'Difficulty must be one of easy, medium, hard' }, 400);
-    }
-
     try {
         const recipe = await getRecipeService().createRecipe(
             title,
@@ -172,10 +158,6 @@ export const importRecipe = async (c: Context<HonoVars>): Promise<Response> => {
     const { url } = await c.req.json<{ url?: string }>();
     const authenticatedUser = getAuthenticatedUser(c);
     if (!authenticatedUser) return unauthorized(c, 'Unauthorized recipe import attempt');
-
-    if (!url || typeof url !== 'string' || url.trim() === '') {
-        return c.json({ error: 'url is required and must be a non-empty string' }, 400);
-    }
 
     try {
         const draft = await getRecipeImportService().importFromUrl(url.trim());
@@ -233,10 +215,6 @@ export const suggestIngredientSubstitutes = async (c: Context<HonoVars>): Promis
     const authenticatedUser = getAuthenticatedUser(c);
     if (!authenticatedUser) return unauthorized(c, 'Unauthorized ingredient substitute request');
 
-    if (!ingredientName || typeof ingredientName !== 'string' || ingredientName.trim() === '') {
-        return c.json({ error: 'ingredientName is required and must be a non-empty string' }, 400);
-    }
-
     try {
         const substitutes = await getRecipeService().suggestSubstitutes(ingredientName.trim(), recipeTitle?.trim());
 
@@ -272,10 +250,6 @@ export const updateRecipe = async (c: Context<HonoVars>): Promise<Response> => {
         }>();
     const authenticatedUser = getAuthenticatedUser(c);
     if (!authenticatedUser) return unauthorized(c, 'Unauthorized recipe update attempt', { recipeId });
-
-    if (difficulty !== undefined && !DIFFICULTY_VALUES[difficulty]) {
-        return c.json({ error: 'Difficulty must be one of easy, medium, hard' }, 400);
-    }
 
     try {
         const hasAccess = await verifyRecipeAccess(recipeId, authenticatedUser);
@@ -412,10 +386,6 @@ export const setCoverImageKey = async (c: Context<HonoVars>): Promise<Response> 
     const { imageKey } = await c.req.json<{ imageKey: string }>();
     const authenticatedUser = getAuthenticatedUser(c);
     if (!authenticatedUser) return unauthorized(c, 'Unauthorized cover image update attempt', { recipeId });
-
-    if (!imageKey || typeof imageKey !== 'string' || imageKey.trim() === '') {
-        return c.json({ error: 'imageKey is required and must be a non-empty string' }, 400);
-    }
 
     // Only an image this caller uploaded can become a cover; arbitrary keys would expose other users' objects.
     if (!imageKey.startsWith(`recipe-upload/${authenticatedUser.id}/`)) {

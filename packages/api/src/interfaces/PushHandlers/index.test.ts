@@ -73,14 +73,6 @@ describe('PushHandlers', () => {
         expect(saved.userId).toBe('u1');
     });
 
-    it('rejects a subscribe with a missing endpoint', async () => {
-        const ctx = createMockContext({ body: { keys: { p256dh: 'p', auth: 'a' } } });
-        const response = await pushHandlers.subscribe(ctx);
-        expect(mockRepo.upsert).not.toHaveBeenCalled();
-        const body = await response.json();
-        expect(body.error).toBeDefined();
-    });
-
     it('deletes a subscription by endpoint', async () => {
         mockRepo.deleteByEndpoint.mockResolvedValue(undefined);
         const ctx = createMockContext({ body: { endpoint: 'e1' } });

@@ -11,9 +11,6 @@ const getRepo = (): PushSubscriptionRepository =>
     dependencyContainer.resolve(DependencyToken.PushSubscriptionRepository);
 const getLogger = () => dependencyContainer.resolve(DependencyToken.Logger);
 
-const hasValidKeys = (keys?: { p256dh?: string; auth?: string }): keys is { p256dh: string; auth: string } =>
-    Boolean(keys?.p256dh && keys?.auth);
-
 const throwApiError = (error: unknown): never => {
     const err = error as { status?: number; message?: string };
     throw new APIError(err.message ?? 'Internal Server Error', err.status ?? 500);
@@ -28,10 +25,6 @@ export const subscribe = async (c: Context<HonoVars>) => {
     const user = c.get('user');
     const logger = getLogger();
     const body = await c.req.json<{ endpoint?: string; keys?: { p256dh: string; auth: string } }>();
-
-    if (!body?.endpoint || !hasValidKeys(body.keys)) {
-        return c.json({ error: 'endpoint and keys (p256dh, auth) are required' }, 400);
-    }
 
     const sub: PushSubscription = {
         endpoint: body.endpoint,
@@ -54,10 +47,6 @@ export const unsubscribe = async (c: Context<HonoVars>) => {
     const user = c.get('user');
     const logger = getLogger();
     const body = await c.req.json<{ endpoint?: string }>();
-
-    if (!body?.endpoint) {
-        return c.json({ error: 'endpoint is required' }, 400);
-    }
 
     try {
         await getRepo().deleteByEndpoint(body.endpoint);

@@ -30,11 +30,6 @@ describe('parseSpokenItems', () => {
         expect(await res.json()).toEqual({ items: [{ name: 'bread', quantity: 2, unit: 'loaf' }, { name: 'milk' }] });
     });
 
-    it.each([{}, { transcript: '   ' }, { transcript: 42 }])('rejects a missing transcript %o', async (body) => {
-        expect((await parseSpokenItems(ctx(body))).status).toBe(400);
-        expect(mockParser.parse).not.toHaveBeenCalled();
-    });
-
     it('truncates an over-long transcript before it reaches the LLM', async () => {
         await parseSpokenItems(ctx({ transcript: 'a'.repeat(5000) }));
 
