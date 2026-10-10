@@ -1,5 +1,23 @@
 [
   {
+    "version": "1.94.3",
+    "date": "2026-10-10",
+    "notes": [
+      {
+        "type": "improvement",
+        "text": "The app opens faster, and moving between pages no longer pauses for a moment."
+      },
+      {
+        "type": "improvement",
+        "text": "Internal build-pipeline change; nothing visible in the app."
+      },
+      {
+        "type": "improvement",
+        "text": "Internal clean-up of how lists, recipes and todos are shared; nothing should look different."
+      }
+    ]
+  },
+  {
     "version": "1.94.2",
     "date": "2026-10-10",
     "notes": [

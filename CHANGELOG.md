@@ -1,3 +1,10 @@
+## [1.94.3](https://github.com/igor-siergiej/shoppingo/compare/v1.94.2...v1.94.3) (2026-10-10)
+
+
+### Performance Improvements
+
+* **web:** load release notes on demand and drop the artificial route delay ([#215](https://github.com/igor-siergiej/shoppingo/issues/215)) ([ee63567](https://github.com/igor-siergiej/shoppingo/commit/ee635671e18f1e9af306fe51210f7d2114cc42a1))
+
 ## [1.94.2](https://github.com/igor-siergiej/shoppingo/compare/v1.94.1...v1.94.2) (2026-10-10)
 
 
