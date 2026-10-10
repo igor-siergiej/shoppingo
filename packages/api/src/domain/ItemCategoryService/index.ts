@@ -9,6 +9,8 @@ export interface ItemClassifier {
 
 const normaliseItemName = (name: string): string => name.trim().toLowerCase().replace(/\s+/g, ' ');
 
+const errorMessage = (error: unknown): string => (error instanceof Error ? error.message : String(error));
+
 /** Classifies a shopping item name into an aisle, remembering the answer so each name is classified once ever. */
 export class ItemCategoryService {
     constructor(
@@ -32,7 +34,10 @@ export class ItemCategoryService {
             await this.repo.set(key, category);
             return category;
         } catch (error) {
-            this.logger?.warn('Item categorisation failed, leaving uncategorised', { itemName: key, error });
+            this.logger?.warn('Item categorisation failed, leaving uncategorised', {
+                itemName: key,
+                error: errorMessage(error),
+            });
             return null;
         }
     }
