@@ -32,4 +32,16 @@ describe('SettingsPage', () => {
         expect(screen.getByRole('radio', { name: /Imperial/ })).toBeChecked();
         expect(localStorage.getItem('unitSystem')).toBe('imperial');
     });
+
+    it('keep-listening is off by default and persists when switched on', async () => {
+        const user = userEvent.setup();
+        renderPage();
+        const toggle = screen.getByRole('checkbox', { name: /Keep listening until I tap stop/ });
+        expect(toggle).not.toBeChecked();
+
+        await user.click(toggle);
+
+        expect(toggle).toBeChecked();
+        expect(localStorage.getItem('shoppingo.voiceKeepListening')).toBe('true');
+    });
 });

@@ -1,6 +1,7 @@
 import { ArrowLeft } from 'lucide-react';
 import { useUnitSystem } from '../../contexts/UnitSystemContext';
 import { useGoBack } from '../../hooks/useGoBack';
+import { useKeepListening } from '../../hooks/useKeepListening';
 import type { UnitSystem } from '../../utils/convertUnits';
 
 const UNIT_OPTIONS: Array<{ value: UnitSystem; label: string; hint: string }> = [
@@ -11,6 +12,7 @@ const UNIT_OPTIONS: Array<{ value: UnitSystem; label: string; hint: string }> = 
 
 const SettingsPage = () => {
     const { unitSystem, setUnitSystem } = useUnitSystem();
+    const [keepListening, setKeepListening] = useKeepListening();
     const handleGoBack = useGoBack('/');
 
     return (
@@ -62,6 +64,24 @@ const SettingsPage = () => {
                     })}
                 </div>
             </fieldset>
+
+            <section className="space-y-3">
+                <h2 className="text-sm font-semibold text-foreground">Voice</h2>
+                <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border px-4 py-3 transition-colors hover:bg-accent">
+                    <input
+                        type="checkbox"
+                        checked={keepListening}
+                        onChange={(event) => setKeepListening(event.target.checked)}
+                        className="mt-0.5 accent-primary"
+                    />
+                    <span className="flex flex-col">
+                        <span className="text-sm font-medium text-foreground">Keep listening until I tap stop</span>
+                        <span className="text-xs text-muted-foreground">
+                            Voice input carries on through pauses instead of stopping when you go quiet.
+                        </span>
+                    </span>
+                </label>
+            </section>
         </div>
     );
 };

@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { SpeechRecognitionLike } from '../utils/speechRecognition';
 import { useSpeechRecognition } from './useSpeechRecognition';
 
-let instance: SpeechRecognitionLike & { started: boolean; aborted: boolean };
+let instance: SpeechRecognitionLike & { started: boolean; startCount: number; aborted: boolean };
 
 class FakeRecognition {
     lang = '';
@@ -13,12 +13,14 @@ class FakeRecognition {
     onerror: SpeechRecognitionLike['onerror'] = null;
     onend: SpeechRecognitionLike['onend'] = null;
     started = false;
+    startCount = 0;
     aborted = false;
     constructor() {
         instance = this as never;
     }
     start() {
         this.started = true;
+        this.startCount += 1;
     }
     stop() {
         this.onend?.();
@@ -46,7 +48,7 @@ describe('useSpeechRecognition', () => {
     });
 
     it('listens, exposes the live transcript and stops', () => {
-        const { result } = renderHook(() => useSpeechRecognition('en-GB'));
+        const { result } = renderHook(() => useSpeechRecognition({ lang: 'en-GB' }));
 
         act(() => result.current.start());
         expect(instance.started).toBe(true);
@@ -68,6 +70,44 @@ describe('useSpeechRecognition', () => {
 
         expect(result.current.error).toMatch(/Microphone access was blocked/);
         expect(result.current.listening).toBe(false);
+    });
+
+    it('ends at the first pause by default', () => {
+        const { result } = renderHook(() => useSpeechRecognition());
+
+        act(() => result.current.start());
+        expect(instance.continuous).toBe(false);
+
+        act(() => instance.onend?.());
+        expect(result.current.listening).toBe(false);
+        expect(instance.startCount).toBe(1);
+    });
+
+    describe('keepListening', () => {
+        it('restarts when the browser ends the session and keeps the earlier text', () => {
+            const { result } = renderHook(() => useSpeechRecognition({ keepListening: true }));
+
+            act(() => result.current.start());
+            expect(instance.continuous).toBe(true);
+            act(() => instance.onresult?.({ resultIndex: 0, results: [phrase('two loaves')] }));
+
+            act(() => instance.onend?.());
+            expect(result.current.listening).toBe(true);
+            expect(instance.startCount).toBe(2);
+
+            act(() => instance.onresult?.({ resultIndex: 0, results: [phrase('of bread')] }));
+            expect(result.current.transcript).toBe('two loaves of bread');
+        });
+
+        it('does not restart after an explicit stop', () => {
+            const { result } = renderHook(() => useSpeechRecognition({ keepListening: true }));
+            act(() => result.current.start());
+
+            act(() => result.current.stop());
+
+            expect(result.current.listening).toBe(false);
+            expect(instance.startCount).toBe(1);
+        });
     });
 
     it('aborts recognition on unmount', () => {

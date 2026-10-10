@@ -19,11 +19,24 @@ export interface UseSpeechRecognition {
     reset: () => void;
 }
 
-export const useSpeechRecognition = (lang = navigator.language || 'en-US'): UseSpeechRecognition => {
+export interface UseSpeechRecognitionOptions {
+    lang?: string;
+    /** Keep dictating through pauses until stop() is called, instead of ending at the first silence. */
+    keepListening?: boolean;
+}
+
+export const useSpeechRecognition = ({
+    lang = navigator.language || 'en-US',
+    keepListening = false,
+}: UseSpeechRecognitionOptions = {}): UseSpeechRecognition => {
     const [listening, setListening] = useState(false);
     const [transcript, setTranscript] = useState('');
     const [error, setError] = useState<string | null>(null);
     const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
+    const stoppedByUserRef = useRef(false);
+    const transcriptRef = useRef('');
+    // Text from sessions the browser ended on its own; a restarted session reports results from index 0 again.
+    const committedRef = useRef('');
     const supported = getSpeechRecognition() !== null;
 
     useEffect(() => () => recognitionRef.current?.abort(), []);
@@ -34,32 +47,51 @@ export const useSpeechRecognition = (lang = navigator.language || 'en-US'): UseS
 
         const recognition = new Ctor();
         recognition.lang = lang;
-        recognition.continuous = false;
+        recognition.continuous = keepListening;
         recognition.interimResults = true;
         recognition.onresult = (event) => {
-            setTranscript(
-                Array.from(event.results)
-                    .map((result) => result[0].transcript)
-                    .join(' ')
-                    .trim()
-            );
+            const heard = Array.from(event.results)
+                .map((result) => result[0].transcript)
+                .join(' ')
+                .trim();
+            const next = [committedRef.current, heard].filter(Boolean).join(' ');
+            transcriptRef.current = next;
+            setTranscript(next);
         };
         recognition.onerror = (event) => {
             setError(ERROR_MESSAGES[event.error] ?? 'Voice input failed. Try again.');
             setListening(false);
         };
-        recognition.onend = () => setListening(false);
+        recognition.onend = () => {
+            if (keepListening && !stoppedByUserRef.current) {
+                committedRef.current = transcriptRef.current;
+                try {
+                    recognition.start();
+                    return;
+                } catch {
+                    // Could not restart; fall through and end the session.
+                }
+            }
+            setListening(false);
+        };
 
         recognitionRef.current = recognition;
+        stoppedByUserRef.current = false;
+        committedRef.current = '';
+        transcriptRef.current = '';
         setTranscript('');
         setError(null);
         setListening(true);
         recognition.start();
-    }, [lang]);
+    }, [lang, keepListening]);
 
-    const stop = useCallback(() => recognitionRef.current?.stop(), []);
+    const stop = useCallback(() => {
+        stoppedByUserRef.current = true;
+        recognitionRef.current?.stop();
+    }, []);
 
     const reset = useCallback(() => {
+        stoppedByUserRef.current = true;
         recognitionRef.current?.abort();
         setListening(false);
         setTranscript('');
