@@ -1,6 +1,7 @@
 import type { Label } from '@shoppingo/types';
 
 export interface LabelRepository {
+    ensureIndexes(): Promise<void>;
     getById(labelId: string): Promise<Label | null>;
     findByOwnerId(ownerId: string): Promise<Label[]>;
     insert(label: Label): Promise<Label>;

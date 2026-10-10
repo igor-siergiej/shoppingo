@@ -80,10 +80,13 @@ export class FriendService {
     async unfriend(userId: string, friendId: string): Promise<void> {
         await this.repo.deletePair(userId, friendId);
         const repos = [this.listRepo, this.recipeRepo, this.todoRepo, this.mealPlanRepo].filter(Boolean) as ItemRepo[];
-        for (const r of repos) {
-            await r.removeMemberFromAll(friendId, userId); // strip friend from userId's items
-            await r.removeMemberFromAll(userId, friendId); // strip userId from friend's items
-        }
+        // Independent writes on different collections/owners, so they run together rather than one after another.
+        await Promise.all(
+            repos.flatMap((r) => [
+                r.removeMemberFromAll(friendId, userId), // strip friend from userId's items
+                r.removeMemberFromAll(userId, friendId), // strip userId from friend's items
+            ])
+        );
         this.logger?.info('Unfriended (hard revoke)', { userId, friendId });
     }
 }

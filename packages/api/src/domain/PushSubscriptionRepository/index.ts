@@ -1,6 +1,7 @@
 import type { PushSubscription } from '@shoppingo/types';
 
 export interface PushSubscriptionRepository {
+    ensureIndexes(): Promise<void>;
     /** Insert or replace a subscription, keyed by its endpoint. */
     upsert(sub: PushSubscription): Promise<void>;
     deleteByEndpoint(endpoint: string): Promise<void>;

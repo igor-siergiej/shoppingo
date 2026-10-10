@@ -11,6 +11,11 @@ export class MongoPushSubscriptionRepository implements PushSubscriptionReposito
         return this.db.getCollection(CollectionNames.PushSubscription);
     }
 
+    async ensureIndexes(): Promise<void> {
+        await this.collection().createIndex({ endpoint: 1 });
+        await this.collection().createIndex({ userId: 1 });
+    }
+
     async upsert(sub: PushSubscription): Promise<void> {
         await this.collection().replaceOne({ endpoint: sub.endpoint }, sub, { upsert: true });
     }

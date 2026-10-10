@@ -4,6 +4,10 @@ import { MongoPushSubscriptionRepository } from './index';
 
 class FakeCollection {
     docs: PushSubscription[] = [];
+    indexes: Array<unknown[]> = [];
+    async createIndex(...args: unknown[]) {
+        this.indexes.push(args);
+    }
 
     async replaceOne(filter: { endpoint: string }, doc: PushSubscription, opts: { upsert: boolean }) {
         const idx = this.docs.findIndex((d) => d.endpoint === filter.endpoint);
@@ -43,6 +47,12 @@ describe('MongoPushSubscriptionRepository', () => {
         collection = new FakeCollection();
         const db = { getCollection: () => collection } as never;
         repo = new MongoPushSubscriptionRepository(db);
+    });
+
+    it('indexes endpoint and user id', async () => {
+        await repo.ensureIndexes();
+
+        expect(collection.indexes).toEqual([[{ endpoint: 1 }], [{ userId: 1 }]]);
     });
 
     it('upserts by endpoint (no duplicates)', async () => {

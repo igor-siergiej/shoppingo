@@ -11,6 +11,15 @@ export class MongoTodoRepository implements TodoRepository {
         return this.db.getCollection(CollectionNames.Todo);
     }
 
+    // id for single lookups, ownerId/users.id for the per-user list, done+dueDate for the reminder scan.
+    // Not unique: the create path does not rule out a repeated id in existing data.
+    async ensureIndexes(): Promise<void> {
+        await this.collection().createIndex({ id: 1 });
+        await this.collection().createIndex({ ownerId: 1 });
+        await this.collection().createIndex({ 'users.id': 1 });
+        await this.collection().createIndex({ done: 1, dueDate: 1 });
+    }
+
     async getById(todoId: string): Promise<Todo | null> {
         return this.collection().findOne({ id: todoId });
     }

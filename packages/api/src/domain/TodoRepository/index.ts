@@ -1,6 +1,7 @@
 import type { Todo } from '@shoppingo/types';
 
 export interface TodoRepository {
+    ensureIndexes(): Promise<void>;
     getById(todoId: string): Promise<Todo | null>;
     findByOwnerId(ownerId: string): Promise<Todo[]>;
     /** Incomplete todos whose dueDate day is on or before `today` (YYYY-MM-DD) — recurring anchors included. */

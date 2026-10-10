@@ -4,6 +4,8 @@ import type { DiscoveryRecipe, DiscoverySource } from '@shoppingo/types';
 export interface DiscoveryRecipeRepository {
     ensureIndexes(): Promise<void>;
     getById(id: string): Promise<DiscoveryRecipe | null>;
+    /** The library recipes with these ids in one query; ids that no longer exist are simply absent. */
+    getByIds(ids: string[]): Promise<DiscoveryRecipe[]>;
     upsert(recipe: DiscoveryRecipe): Promise<void>;
     deleteById(id: string): Promise<void>;
     /** Library recipes whose title equals `title`, ignoring case: candidates when checking a new recipe for a duplicate. */

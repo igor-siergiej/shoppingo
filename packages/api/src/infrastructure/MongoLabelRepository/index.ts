@@ -11,6 +11,11 @@ export class MongoLabelRepository implements LabelRepository {
         return this.db.getCollection(CollectionNames.Label);
     }
 
+    async ensureIndexes(): Promise<void> {
+        await this.collection().createIndex({ id: 1 });
+        await this.collection().createIndex({ ownerId: 1 });
+    }
+
     async getById(labelId: string): Promise<Label | null> {
         return this.collection().findOne({ id: labelId });
     }

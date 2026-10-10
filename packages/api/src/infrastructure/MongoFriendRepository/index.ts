@@ -20,6 +20,13 @@ export class MongoFriendRepository implements FriendRepository {
         return this.db.getCollection(CollectionNames.PairingCode);
     }
 
+    // friendships are looked up by member (userIds) and pairing codes by their code; the TTL index on codes is
+    // created in the constructor.
+    async ensureIndexes(): Promise<void> {
+        await this.friendships().createIndex({ userIds: 1 });
+        await this.codes().createIndex({ code: 1 });
+    }
+
     async insertCode(code: PairingCode): Promise<void> {
         await this.codes().insertOne(code);
     }
