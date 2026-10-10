@@ -42,8 +42,8 @@ Run these from the root directory:
 - `bun run tsc --noEmit` - Type-check without emitting (run from root or per package)
 
 ### Testing
-- `bun run --filter @shoppingo/api test` - Run API tests (Bun native test runner, 90% coverage threshold)
-- `bun run --filter @shoppingo/web test` - Run web component tests (Bun native test runner)
+- `bun run --filter @shoppingo/api test` - Run API tests (Bun native test runner). CI also enforces 90% line and function coverage via `scripts/check-coverage.js` on the lcov report (bun's own `coverageThreshold` is per file, so it can't express a global gate)
+- `bun run --filter @shoppingo/web test` - Run web component tests (Vitest). No coverage gate: the web package has no coverage provider installed and the e2e suite is the main safety net for UI; add `@vitest/coverage-v8` and a threshold if that changes
 - `bun run load:local` - On-demand k6 API capacity test against a throwaway local API/DB with a mock auth verifier (not in CI; see `scripts/load/README.md`)
 - **IMPORTANT**: All tests use Bun's native test runner (`bun:test`). Import from `bun:test` only.
 

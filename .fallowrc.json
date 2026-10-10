@@ -1,6 +1,7 @@
 {
   "ignorePatterns": [
     "**/*.test.ts",
+    "packages/api/src/test-setup.ts",
     "**/*.test.tsx",
     "packages/web/src/components/ui/**",
     "packages/web/src/lib/utils.ts",
