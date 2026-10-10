@@ -30,7 +30,7 @@ const isPrivateIpv4 = (ip: string): boolean => {
 };
 
 // IPv4, IPv4-mapped IPv6 and the two blocked IPv6 prefixes in one check.
-// fallow-ignore-next-line complexity, unused-export
+// fallow-ignore-next-line complexity
 export const isPrivateIp = (ip: string): boolean => {
     if (isIP(ip) === 4) return isPrivateIpv4(ip);
 

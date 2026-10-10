@@ -42,6 +42,7 @@ import {
     uploadRecipeImage,
 } from '../interfaces/RecipeHandlers';
 import { completeTodo, createTodo, deleteTodo, getTodos, updateTodo } from '../interfaces/TodoHandlers';
+import { aiRateLimit } from '../middleware/aiRateLimit';
 import { authenticate } from '../middleware/auth';
 import { notifyListChanged } from '../middleware/notifyListChanged';
 
@@ -113,8 +114,8 @@ export const createRoutes = (): Hono<Vars> => {
     });
 
     router.get('/api/recipes', authenticate, getRecipes);
-    router.post('/api/recipes/import', authenticate, importRecipe);
-    router.post('/api/recipes/substitutes', authenticate, suggestIngredientSubstitutes);
+    router.post('/api/recipes/import', authenticate, aiRateLimit, importRecipe);
+    router.post('/api/recipes/substitutes', authenticate, aiRateLimit, suggestIngredientSubstitutes);
     router.get('/api/recipes/import/image', authenticate, importRecipeImage);
     router.put('/api/recipes', authenticate, createRecipe);
     router.get('/api/recipes/:recipeId', authenticate, getRecipe);
@@ -124,7 +125,7 @@ export const createRoutes = (): Hono<Vars> => {
     router.delete('/api/recipes/:recipeId/users/:targetUserId', authenticate, removeUserFromRecipe);
     router.put('/api/recipes/:recipeId/image', authenticate, setCoverImageKey);
     router.post('/api/recipes/:recipeId/image/upload', authenticate, uploadBodyLimit, uploadRecipeImage);
-    router.post('/api/recipes/:recipeId/image/generate', authenticate, generateRecipeImage);
+    router.post('/api/recipes/:recipeId/image/generate', authenticate, aiRateLimit, generateRecipeImage);
     router.post('/api/recipes/:recipeId/image/revert', authenticate, revertRecipeImage);
 
     const discovery = createDiscoveryHandlers(

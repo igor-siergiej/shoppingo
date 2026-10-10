@@ -44,7 +44,7 @@ import type { TodoService } from '../domain/TodoService';
 import type { WikibooksIngestService } from '../domain/WikibooksIngest';
 import type { RecipeEstimator, WikibooksSource } from '../domain/WikibooksIngest/types';
 import type { WsTicketStore } from '../domain/WsTicketStore';
-import type { FalIngredientSubstituter } from '../infrastructure/FalIngredientSubstituter';
+import type { CachedIngredientSubstituter } from '../infrastructure/CachedIngredientSubstituter';
 import type { FalLlmClient } from '../infrastructure/FalLlmClient';
 import type { FalRecipeTagger } from '../infrastructure/FalRecipeTagger';
 import type { WebPushSender } from '../infrastructure/WebPushSender';
@@ -139,7 +139,7 @@ export type Dependencies = {
     [DependencyToken.RecipeTagger]: FalRecipeTagger;
     [DependencyToken.RecipeTextExtractor]: RecipeTextExtractor;
     [DependencyToken.RecipeParser]: RecipeParser;
-    [DependencyToken.IngredientSubstituter]: FalIngredientSubstituter;
+    [DependencyToken.IngredientSubstituter]: CachedIngredientSubstituter;
     [DependencyToken.RecipeImportService]: RecipeImportService;
     [DependencyToken.TodoRepository]: TodoRepository;
     [DependencyToken.TodoService]: TodoService;
