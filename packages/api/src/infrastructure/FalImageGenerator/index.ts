@@ -11,6 +11,8 @@ export interface FalImageGeneratorOptions {
     numInferenceSteps?: number;
     outputFormat?: 'jpeg' | 'png';
     outputSize?: number;
+    processor?: typeof processImage;
+    sharpFactory?: typeof sharp;
 }
 
 export class FalImageGenerator implements ImageGenerator {
@@ -19,6 +21,8 @@ export class FalImageGenerator implements ImageGenerator {
     private readonly numInferenceSteps: number;
     private readonly outputFormat: 'jpeg' | 'png';
     private readonly outputSize: number;
+    private readonly processor: typeof processImage;
+    private readonly sharpFactory: typeof sharp;
 
     constructor(
         private readonly apiKey: string,
@@ -29,6 +33,8 @@ export class FalImageGenerator implements ImageGenerator {
         this.numInferenceSteps = options.numInferenceSteps ?? 4;
         this.outputFormat = options.outputFormat ?? 'png';
         this.outputSize = options.outputSize ?? 256;
+        this.processor = options.processor ?? processImage;
+        this.sharpFactory = options.sharpFactory ?? sharp;
     }
 
     async generateImage(prompt: string): Promise<{ buffer: Buffer; contentType: string }> {
@@ -88,11 +94,14 @@ export class FalImageGenerator implements ImageGenerator {
         let finalContentType = 'image/webp';
 
         try {
-            processedBuffer = await processImage(originalBuffer, undefined, this.outputSize);
+            processedBuffer = await this.processor(originalBuffer, undefined, this.outputSize);
         } catch {
             // Fallback: try to at least convert to WebP without resizing
             try {
-                processedBuffer = await sharp(originalBuffer).webp({ quality: 85 }).withMetadata({}).toBuffer();
+                processedBuffer = await this.sharpFactory(originalBuffer)
+                    .webp({ quality: 85 })
+                    .withMetadata({})
+                    .toBuffer();
                 finalContentType = 'image/webp';
             } catch {
                 processedBuffer = originalBuffer;

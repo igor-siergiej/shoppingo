@@ -13,18 +13,11 @@ mockSharpInstance.resize.mockReturnValue(mockSharpInstance);
 mockSharpInstance.webp.mockReturnValue(mockSharpInstance);
 mockSharpInstance.withMetadata.mockReturnValue(mockSharpInstance);
 
-vi.mock('sharp', () => ({
-    default: vi.fn().mockImplementation(() => mockSharpInstance),
-}));
+const mockProcessImage = vi.fn();
+const mockSharp = vi.fn().mockImplementation(() => mockSharpInstance);
 
-// We also need to mock imageProcessor to control processImage
-vi.mock('../imageProcessor', () => ({
-    processImage: vi.fn(),
-}));
-
-import { processImage } from '../imageProcessor';
-
-const mockProcessImage = processImage as unknown as ReturnType<typeof vi.fn>;
+// Injected rather than vi.mock'd: bun keeps module mocks alive for every other test file in the run.
+const options = { processor: mockProcessImage, sharpFactory: mockSharp as never };
 
 const dataUri = (buffer: Buffer) => `data:image/png;base64,${buffer.toString('base64')}`;
 
@@ -33,7 +26,7 @@ describe('FalImageGenerator', () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
-        generator = new FalImageGenerator('test-api-key');
+        generator = new FalImageGenerator('test-api-key', options);
         mockSharpInstance.resize.mockReturnValue(mockSharpInstance);
         mockSharpInstance.webp.mockReturnValue(mockSharpInstance);
         mockSharpInstance.withMetadata.mockReturnValue(mockSharpInstance);
@@ -41,7 +34,7 @@ describe('FalImageGenerator', () => {
 
     describe('When apiKey is empty', () => {
         it('should throw an error', async () => {
-            const generatorNoKey = new FalImageGenerator('');
+            const generatorNoKey = new FalImageGenerator('', options);
 
             await expect(generatorNoKey.generateImage('test prompt')).rejects.toMatchObject({
                 message: 'Image generation service not configured',
@@ -67,6 +60,7 @@ describe('FalImageGenerator', () => {
                 outputFormat: 'jpeg',
                 numInferenceSteps: 4,
                 outputSize: 512,
+                ...options,
             });
 
             await recipeGenerator.generateImage('a nice recipe');
