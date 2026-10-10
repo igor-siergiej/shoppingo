@@ -1,3 +1,10 @@
+## [1.95.2](https://github.com/igor-siergiej/shoppingo/compare/v1.95.1...v1.95.2) (2026-10-10)
+
+
+### Bug Fixes
+
+* **api:** wire the item categoriser into ListService ([#219](https://github.com/igor-siergiej/shoppingo/issues/219)) ([198cf82](https://github.com/igor-siergiej/shoppingo/commit/198cf825fd288d682be6f6b007b3de7432932ec6))
+
 ## [1.95.1](https://github.com/igor-siergiej/shoppingo/compare/v1.95.0...v1.95.1) (2026-10-10)
 
 

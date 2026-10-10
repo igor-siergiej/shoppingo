@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.95.2",
+    "date": "2026-10-10",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Group by aisle now actually sorts items into aisles (produce, dairy, meat and so on) instead of leaving everything under Other."
+      }
+    ]
+  },
+  {
     "version": "1.95.1",
     "date": "2026-10-10",
     "notes": [
