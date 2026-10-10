@@ -45,7 +45,6 @@
     "husky": "^9.1.7",
     "mongodb": "^7.2.0",
     "semantic-release": "^24.2.0",
-    "tsup": "^8.5.0",
     "typescript": "^5.9.2"
   },
   "packageManager": "bun@1.4.2",

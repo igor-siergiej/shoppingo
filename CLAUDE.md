@@ -1,12 +1,12 @@
 # Shoppingo - Claude Code Context
 
 ## Project Overview
-Shoppingo is a full-stack e-commerce application with a React frontend and Node.js API backend. The project uses a monorepo structure managed with Bun workspaces.
+Shoppingo is a collaborative shopping-list, recipe and calendar app (PWA) with a React frontend and a Hono API running on Bun. The project uses a monorepo structure managed with Bun workspaces.
 
 ## Architecture
 - **Frontend**: React 19 + TypeScript + Vite + Tailwind CSS + shadcn/ui + PWA (vite-plugin-pwa)
-- **Backend**: Node.js + Koa + TypeScript + MongoDB
-- **Additional Services**: MinIO (object storage), AI image generation (fal.ai FLUX.1 [schnell], via `FAL_KEY` env var)
+- **Backend**: Bun + Hono + TypeScript + MongoDB (entry `packages/api/src/index.ts`, served with `Bun.serve`; no build step, the Docker image copies `src`)
+- **Additional Services**: MinIO (object storage), OpenSearch (recipe Discover search, optional), fal.ai (FLUX.1 [schnell] images and `any-llm` for recipe import, tagging, substitutes, item aisles and voice parsing, via `FAL_KEY`)
 
 ## Requirements
 - **Bun**: v1.x
@@ -16,7 +16,7 @@ Shoppingo is a full-stack e-commerce application with a React frontend and Node.
 ```
 shoppingo/
 ├── packages/
-│   ├── api/          # Backend API (Koa + MongoDB)
+│   ├── api/          # Backend API (Hono + MongoDB)
 │   ├── web/          # Frontend React app
 │   └── types/        # Shared TypeScript types
 ├── .env              # Environment variables
@@ -25,7 +25,7 @@ shoppingo/
 ├── commitlint.config.js  # Conventional commit rules
 ├── .releaserc.json   # Semantic-release config (auto changelog & versioning)
 ├── package.json      # Root workspace configuration
-└── bun.lockb         # Dependencies lockfile
+└── bun.lock          # Dependencies lockfile
 ```
 
 ## Key Scripts
@@ -45,7 +45,8 @@ Run these from the root directory:
 - `bun run --filter @shoppingo/api test` - Run API tests (Bun native test runner). CI also enforces 90% line and function coverage via `scripts/check-coverage.js` on the lcov report (bun's own `coverageThreshold` is per file, so it can't express a global gate)
 - `bun run --filter @shoppingo/web test` - Run web component tests (Vitest). No coverage gate: the web package has no coverage provider installed and the e2e suite is the main safety net for UI; add `@vitest/coverage-v8` and a threshold if that changes
 - `bun run load:local` - On-demand k6 API capacity test against a throwaway local API/DB with a mock auth verifier (not in CI; see `scripts/load/README.md`)
-- **IMPORTANT**: All tests use Bun's native test runner (`bun:test`). Import from `bun:test` only.
+- API and script tests use Bun's native runner: import from `bun:test` (module mocks leak across files in one run, so prefer injecting dependencies). Web tests use Vitest (`vitest`).
+- `bun run tsc --noEmit` does not actually type-check (the tsconfigs only hold project references), so rely on the editor or run `tsc -p` against a concrete tsconfig when touching types
 
 ## Environment Setup
 The project requires:
@@ -57,19 +58,19 @@ Environment variables are in `.env` file (development values).
 
 ## API Structure (`packages/api/`)
 Clean architecture with:
-- `domain/` - Business logic and entities (ListService, ImageService, AuthorizationService, IdGenerator)
-- `infrastructure/` - External integrations (MongoListRepository, HttpAuthClient, BucketStore, GeminiImageGenerator, OpenAIImageGenerator, UuidGenerator, imageProcessor)
-- `interfaces/` - Controllers (ListHandlers, ImageHandlers, LogHandlers)
-- `routes/` - API route definitions
-- `middleware/` - Koa middleware (auth)
+- `domain/` - Business logic and repository interfaces (ListService, RecipeService, TodoService, MealPlanService, FriendService, ImageService, DiscoveryService, NotificationService, AuthorizationService, ItemCategoryService, SharedMembers, ...)
+- `infrastructure/` - External integrations: `Mongo*Repository` classes, `HttpAuthClient`, `BucketStore` (MinIO), `Fal*` clients (FalLlmClient plus the image/tag/substitute/category/parser wrappers), `OpenSearchDiscoveryIndex`, `WebPushSender`, `HttpPageFetcher`/`HttpImageFetcher` (SSRF-guarded via `safeFetch`), `imageProcessor`
+- `interfaces/` - Hono handlers (ListHandlers, RecipeHandlers, TodoHandlers, MealPlanHandlers, ImageHandlers, DiscoveryHandlers, ...)
+- `routes/` - API route definitions (every mutating route with a JSON body is wired to a Zod schema from `@shoppingo/types/schemas`; `routes/validation.test.ts` enforces it)
+- `middleware/` - Hono middleware (auth, validateJson, aiRateLimit, notifyListChanged)
 - `dependencies/` - DI container setup
 - `config/` - Configuration management
 
 Key dependencies:
-- Koa + Koa Router for HTTP server
+- Hono for the HTTP server
 - MongoDB native driver
 - MinIO for file storage
-- fal.ai (FLUX.1 [schnell]) for AI image generation
+- fal.ai for AI image and text generation
 - Sharp for image processing
 - `@imapps/api-utils` - Shared utilities for configuration, database connections, and logging
 
@@ -85,7 +86,7 @@ Modern React app with:
 Key dependencies:
 - React 19 + React Router
 - Radix UI + Tailwind CSS + shadcn/ui
-- React Query for data fetching
+- TanStack Query v5 (`@tanstack/react-query`) for data fetching
 - Framer Motion for animations
 - react-hook-form + Zod for form validation
 - `@imapps/web-utils` - Shared utilities for auth, config
@@ -96,7 +97,7 @@ Common TypeScript interfaces and types shared between frontend and backend.
 ## Development Workflow
 1. **Starting development**: Run `bun run start` to start both services
 2. **Code style**: The project uses **Biome** for linting and formatting (not ESLint)
-3. **Testing**: Uses Vitest for API tests with coverage reporting
+3. **Testing**: API tests run on Bun's test runner, web tests on Vitest, browser tests on Playwright (`e2e/`)
 4. **Linting before commits**: **IMPORTANT** - Run `bun run lint:fix` to fix all linting issues before committing
 5. **Building**: Use `bun run --filter @shoppingo/web build` for production build
 6. **Commit messages**: Must follow Conventional Commits (enforced by commitlint + Husky)
