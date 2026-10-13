@@ -297,7 +297,8 @@ export const addRecipe = async (
     prepTime?: number,
     cookTime?: number,
     servings?: number,
-    difficulty?: Recipe['difficulty']
+    difficulty?: Recipe['difficulty'],
+    tags?: string[]
 ): Promise<Recipe> => {
     const dateAdded = generateTimestamp(new Date());
     const requestBody = {
@@ -313,6 +314,7 @@ export const addRecipe = async (
         ...(cookTime !== undefined && { cookTime }),
         ...(servings !== undefined && { servings }),
         ...(difficulty !== undefined && { difficulty }),
+        ...(tags !== undefined && { tags }),
     };
 
     const result = await makeRequest({
@@ -388,7 +390,8 @@ export const updateRecipe = async (
     prepTime?: number,
     cookTime?: number,
     servings?: number,
-    difficulty?: Recipe['difficulty']
+    difficulty?: Recipe['difficulty'],
+    tags?: string[]
 ): Promise<Recipe> => {
     return await makeRequest({
         pathname: `/api/recipes/${encodeURIComponent(recipeId)}`,
@@ -400,6 +403,7 @@ export const updateRecipe = async (
             ...(coverImageKey !== undefined && { coverImageKey }),
             ...(link !== undefined && { link }),
             ...(instructions !== undefined && { instructions }),
+            ...(tags !== undefined && { tags }),
             ...(prepTime !== undefined && { prepTime }),
             ...(cookTime !== undefined && { cookTime }),
             ...(servings !== undefined && { servings }),

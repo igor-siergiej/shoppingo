@@ -75,3 +75,17 @@ export async function seedDiscoveryLibrary(recipes: DiscoveryRecipe[]): Promise<
     }
     await reindexDiscovery();
 }
+
+/** Sets image keys on a recipe directly; the API only writes these after a real MinIO upload or AI generation. */
+export async function seedRecipeImageKeys(
+    recipeId: string,
+    keys: { coverImageKey?: string; aiImageKey?: string }
+): Promise<void> {
+    const client = new MongoClient(resolveMongoUri());
+    await client.connect();
+    try {
+        await client.db(DB_NAME).collection('recipe').updateOne({ id: recipeId }, { $set: keys });
+    } finally {
+        await client.close();
+    }
+}
