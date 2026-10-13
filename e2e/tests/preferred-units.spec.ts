@@ -1,4 +1,5 @@
 import { expect, test } from '../fixtures';
+import { mockRecipeImport } from '../mocks/ai';
 
 test.describe('Preferred units', () => {
     test('settings page persists the unit-system choice across reloads', async ({ authenticatedPage }) => {
@@ -13,19 +14,17 @@ test.describe('Preferred units', () => {
     });
 
     test('imported ingredient amounts are converted to the chosen system', async ({ authenticatedPage }) => {
-        await authenticatedPage.route('**/api/recipes/import**', (route) =>
-            route.fulfill({
-                json: {
-                    title: 'Imported Cake',
-                    link: 'https://example.com/cake',
-                    instructions: ['Mix everything', 'Bake for 30 minutes'],
-                    ingredients: [
-                        { id: 'i1', name: 'Butter', quantity: 4, unit: 'oz' },
-                        { id: 'i2', name: 'Garlic', quantity: 2, unit: 'cloves' },
-                    ],
-                },
-            })
-        );
+        await mockRecipeImport(authenticatedPage, {
+            ok: {
+                title: 'Imported Cake',
+                link: 'https://example.com/cake',
+                instructions: ['Mix everything', 'Bake for 30 minutes'],
+                ingredients: [
+                    { id: 'i1', name: 'Butter', quantity: 4, unit: 'oz' },
+                    { id: 'i2', name: 'Garlic', quantity: 2, unit: 'cloves' },
+                ],
+            },
+        });
 
         await authenticatedPage.goto('/settings');
         await authenticatedPage.getByRole('radio', { name: /Metric/ }).check();
