@@ -1,3 +1,10 @@
+## [1.95.3](https://github.com/igor-siergiej/shoppingo/compare/v1.95.2...v1.95.3) (2026-10-13)
+
+
+### Bug Fixes
+
+* **web:** stop voice add re-sending a failed parse in a loop ([#221](https://github.com/igor-siergiej/shoppingo/issues/221)) ([4c31cf8](https://github.com/igor-siergiej/shoppingo/commit/4c31cf80b4150e2294214aab1cee0a752e4dce19))
+
 ## [1.95.2](https://github.com/igor-siergiej/shoppingo/compare/v1.95.1...v1.95.2) (2026-10-10)
 
 

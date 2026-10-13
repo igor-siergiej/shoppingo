@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.95.3",
+    "date": "2026-10-13",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Voice add now shows a clear error when it can't understand you, instead of retrying endlessly in the background."
+      }
+    ]
+  },
+  {
     "version": "1.95.2",
     "date": "2026-10-10",
     "notes": [
