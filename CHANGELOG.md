@@ -1,3 +1,10 @@
+## [1.95.4](https://github.com/igor-siergiej/shoppingo/compare/v1.95.3...v1.95.4) (2026-10-13)
+
+
+### Bug Fixes
+
+* **web:** keep tags entered when creating or editing a recipe ([#222](https://github.com/igor-siergiej/shoppingo/issues/222)) ([6cb6966](https://github.com/igor-siergiej/shoppingo/commit/6cb696661f5ebd8dfff4609dc9a8de88777d505b))
+
 ## [1.95.3](https://github.com/igor-siergiej/shoppingo/compare/v1.95.2...v1.95.3) (2026-10-13)
 
 

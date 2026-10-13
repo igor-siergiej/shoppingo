@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.95.4",
+    "date": "2026-10-13",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Tags you add to a recipe are now saved instead of being silently dropped."
+      }
+    ]
+  },
+  {
     "version": "1.95.3",
     "date": "2026-10-13",
     "notes": [
