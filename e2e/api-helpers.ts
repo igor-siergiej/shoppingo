@@ -206,3 +206,30 @@ export async function apiCreateTodoAsOtherUser(body: { title: string; dueDate: s
     if (!res.ok) throw new Error(`apiCreateTodoAsOtherUser failed: ${await res.text()}`);
     return res.json() as Promise<{ id: string; title: string }>;
 }
+
+const otherUserHeaders = { 'Content-Type': 'application/json', Authorization: `Bearer ${MOCK_TOKEN_2}` };
+
+/** Creates a shopping list owned by the second mock user, shared with the given user ids (they must be friends). */
+export async function apiCreateListAsOtherUser(title: string, sharedWith: Array<string>) {
+    const res = await fetch(`${API_BASE}/api/lists`, {
+        method: 'PUT',
+        headers: otherUserHeaders,
+        body: JSON.stringify({
+            title,
+            listType: 'shopping',
+            selectedUsers: sharedWith,
+            dateAdded: new Date().toISOString(),
+        }),
+    });
+    if (!res.ok) throw new Error(`apiCreateListAsOtherUser failed: ${await res.text()}`);
+    return res.json() as Promise<{ id: string; title: string }>;
+}
+
+/** Owner (second mock user) removes a member from their list. */
+export async function apiRemoveListMemberAsOtherUser(listTitle: string, memberId: string) {
+    const res = await fetch(
+        `${API_BASE}/api/lists/${encodeURIComponent(listTitle)}/users/${encodeURIComponent(memberId)}`,
+        { method: 'DELETE', headers: otherUserHeaders }
+    );
+    if (!res.ok) throw new Error(`apiRemoveListMemberAsOtherUser failed: ${await res.text()}`);
+}

@@ -89,3 +89,17 @@ export async function seedRecipeImageKeys(
         await client.close();
     }
 }
+
+/** Makes every outstanding friend invite code already expired. */
+export async function expireFriendCodes(): Promise<void> {
+    const client = new MongoClient(resolveMongoUri());
+    await client.connect();
+    try {
+        await client
+            .db(DB_NAME)
+            .collection('pairingCodes')
+            .updateMany({}, { $set: { expiresAt: new Date(Date.now() - 60_000) } });
+    } finally {
+        await client.close();
+    }
+}
