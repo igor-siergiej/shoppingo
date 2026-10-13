@@ -1,3 +1,10 @@
+## [1.95.5](https://github.com/igor-siergiej/shoppingo/compare/v1.95.4...v1.95.5) (2026-10-13)
+
+
+### Bug Fixes
+
+* **web:** restore the time picker when adding a todo ([#223](https://github.com/igor-siergiej/shoppingo/issues/223)) ([b7f8a91](https://github.com/igor-siergiej/shoppingo/commit/b7f8a915e8a43de8cb1426a1968f88a9f12183ab)), closes [#173](https://github.com/igor-siergiej/shoppingo/issues/173)
+
 ## [1.95.4](https://github.com/igor-siergiej/shoppingo/compare/v1.95.3...v1.95.4) (2026-10-13)
 
 

@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.95.5",
+    "date": "2026-10-13",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Adding a todo with a time works again: pick the time with a proper time field."
+      }
+    ]
+  },
+  {
     "version": "1.95.4",
     "date": "2026-10-13",
     "notes": [
