@@ -1,13 +1,12 @@
 import { apiCreateRecipe } from '../api-helpers';
 import { expect, test } from '../fixtures';
+import { mockSubstitutes } from '../mocks/ai';
 
 // Coverage for shoppingo-ingredient-substitution-hints: a small per-ingredient action reveals
 // AI-generated substitute suggestions inline, with no dedicated substitutes view.
 test.describe('Ingredient substitute suggestions', () => {
     test('reveals substitutes for one ingredient without opening a dedicated view', async ({ authenticatedPage }) => {
-        await authenticatedPage.route('**/api/recipes/substitutes', (route) =>
-            route.fulfill({ json: { substitutes: ['margarine', 'coconut oil'] } })
-        );
+        await mockSubstitutes(authenticatedPage, { ok: { substitutes: ['margarine', 'coconut oil'] } });
 
         const recipe = await apiCreateRecipe('Carbonara', [{ name: 'Butter' }, { name: 'Egg' }]);
         await authenticatedPage.goto(`/recipes/${recipe.id}`);
@@ -23,9 +22,7 @@ test.describe('Ingredient substitute suggestions', () => {
     });
 
     test('shows an inline error when substitute suggestion fails', async ({ authenticatedPage }) => {
-        await authenticatedPage.route('**/api/recipes/substitutes', (route) =>
-            route.fulfill({ status: 502, json: { error: 'Failed to generate ingredient substitutes' } })
-        );
+        await mockSubstitutes(authenticatedPage, { status: 502, error: 'Failed to generate ingredient substitutes' });
 
         const recipe = await apiCreateRecipe('Soup', [{ name: 'Stock' }]);
         await authenticatedPage.goto(`/recipes/${recipe.id}`);

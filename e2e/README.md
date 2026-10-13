@@ -39,6 +39,15 @@ data-integrity-critical paths:
 API-side authorization and validation are unit-tested under
 `packages/api/src/**/*.test.ts` (Bun runner, 90% coverage threshold).
 
+## Shared mocks (`e2e/mocks`)
+
+Reuse these instead of hand-rolling `page.route`/`addInitScript` stubs in a spec. `mock-harness.spec.ts` exercises them.
+
+- `ai.ts` — `mockRecipeImport`, `mockSubstitutes`, `mockSpokenItemsParse`, `mockRecipeCoverGeneration`, `mockRateLimited`. Each takes `{ ok: body }` or `{ status, error }`, plus optional `delayMs` to hold a loading state.
+- `speech.ts` — `installFakeSpeech(page, script)` where script is a transcript, an error (`not-allowed`, `no-speech`, ...) or `unsupported`. Call before `goto`.
+- `push.ts` — `installFakePush(page, { permission, requestResult, subscribed, vapidPublicKey })` fakes `Notification`, `PushManager`, the service-worker `ready` registration and the push API endpoints.
+- `auth.ts` — token and Kivo auth routes (used by the `authenticatedPage` fixture).
+
 ## Discover specs and OpenSearch
 
 `discover.spec.ts` and `discover.visual.spec.ts` search a small fixed recipe library (`e2e/discovery-fixtures.ts`) that

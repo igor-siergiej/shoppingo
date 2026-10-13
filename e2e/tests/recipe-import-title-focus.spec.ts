@@ -1,4 +1,5 @@
 import { expect, test } from '../fixtures';
+import { mockRecipeImport } from '../mocks/ai';
 
 // Regression coverage for shoppingo-recipe-import-title-autofocus: the Recipe Title
 // field's autoFocus used to fire unconditionally, popping the mobile keyboard and
@@ -25,16 +26,14 @@ test.describe('Recipe Title autofocus', () => {
     test('does not steal focus from the imported content after a URL import completes', async ({
         authenticatedPage,
     }) => {
-        await authenticatedPage.route('**/api/recipes/import**', (route) =>
-            route.fulfill({
-                json: {
-                    title: 'Imported Cake',
-                    link: 'https://example.com/cake',
-                    instructions: ['Mix everything', 'Bake for 30 minutes'],
-                    ingredients: [{ id: 'i1', name: 'Flour', quantity: 200, unit: 'g' }],
-                },
-            })
-        );
+        await mockRecipeImport(authenticatedPage, {
+            ok: {
+                title: 'Imported Cake',
+                link: 'https://example.com/cake',
+                instructions: ['Mix everything', 'Bake for 30 minutes'],
+                ingredients: [{ id: 'i1', name: 'Flour', quantity: 200, unit: 'g' }],
+            },
+        });
 
         await authenticatedPage.goto('/recipes/new');
         await authenticatedPage.getByRole('button', { name: 'Import from a link' }).click();

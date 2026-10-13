@@ -1,5 +1,6 @@
 import { apiCreateRecipe } from '../api-helpers';
 import { expect, test } from '../fixtures';
+import { mockRecipeImport } from '../mocks/ai';
 
 // Coverage for shoppingo-recipe-difficulty-time: prep time, cook time, servings and difficulty
 // are editable on manual creation and on Recipe Detail, and prefilled (parsed) from an import.
@@ -44,19 +45,17 @@ test.describe('Recipe prep time, cook time, servings and difficulty', () => {
     });
 
     test('prefills prep time, cook time and servings from an imported recipe', async ({ authenticatedPage }) => {
-        await authenticatedPage.route('**/api/recipes/import**', (route) =>
-            route.fulfill({
-                json: {
-                    title: 'Imported Stew',
-                    link: 'https://example.com/stew',
-                    prepTime: 'PT15M',
-                    cookTime: 'PT1H30M',
-                    recipeYield: '6 servings',
-                    instructions: ['Chop everything', 'Simmer for a long time'],
-                    ingredients: [{ id: 'i1', name: 'Beef', quantity: 500, unit: 'g' }],
-                },
-            })
-        );
+        await mockRecipeImport(authenticatedPage, {
+            ok: {
+                title: 'Imported Stew',
+                link: 'https://example.com/stew',
+                prepTime: 'PT15M',
+                cookTime: 'PT1H30M',
+                recipeYield: '6 servings',
+                instructions: ['Chop everything', 'Simmer for a long time'],
+                ingredients: [{ id: 'i1', name: 'Beef', quantity: 500, unit: 'g' }],
+            },
+        });
 
         await authenticatedPage.goto('/recipes/new');
         await authenticatedPage.getByRole('button', { name: 'Import from a link' }).click();
