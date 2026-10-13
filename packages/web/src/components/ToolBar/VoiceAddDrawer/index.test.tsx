@@ -102,4 +102,15 @@ describe('VoiceAddDrawer', () => {
         expect(await screen.findByRole('alert')).toHaveTextContent('List not found');
         expect(onOpenChange).not.toHaveBeenCalledWith(false);
     });
+
+    it('parses a transcript once when the parser fails, and shows the error', async () => {
+        parse.mockRejectedValue(new Error('Too many AI requests'));
+        speech.transcript = 'bread';
+        renderDrawer();
+
+        expect(await screen.findByRole('alert')).toHaveTextContent('Too many AI requests');
+        await new Promise((resolve) => setTimeout(resolve, 50));
+
+        expect(parse).toHaveBeenCalledTimes(1);
+    });
 });

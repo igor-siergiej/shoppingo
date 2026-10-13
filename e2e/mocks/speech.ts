@@ -2,6 +2,7 @@ import type { Page } from '@playwright/test';
 
 export type FakeSpeechScript =
     | { kind: 'transcript'; transcript: string; delayMs?: number }
+    | { kind: 'sessions'; transcripts: Array<string> }
     | { kind: 'error'; error: 'not-allowed' | 'no-speech' | 'audio-capture' | 'network' }
     | { kind: 'unsupported' };
 
@@ -22,6 +23,19 @@ export const installFakeSpeech = (page: Page, script: FakeSpeechScript) =>
             onerror: ((event: { error: string }) => void) | null = null;
             onend: (() => void) | null = null;
             start() {
+                if (s.kind === 'sessions') {
+                    // Each start() is one browser session: it hears the next phrase, and the browser ends it on a
+                    // pause unless this is the last scripted phrase and recognition is continuous.
+                    const w2 = window as unknown as { __speechStarts?: number };
+                    const n = w2.__speechStarts ?? 0;
+                    w2.__speechStarts = n + 1;
+                    const phrase = s.transcripts[Math.min(n, s.transcripts.length - 1)];
+                    setTimeout(() => {
+                        this.onresult?.({ resultIndex: 0, results: [{ isFinal: true, 0: { transcript: phrase } }] });
+                        if (!this.continuous || n < s.transcripts.length - 1) this.onend?.();
+                    }, 50);
+                    return;
+                }
                 const delay = s.kind === 'transcript' ? (s.delayMs ?? 50) : 50;
                 setTimeout(() => {
                     if (s.kind === 'error') {

@@ -124,3 +124,22 @@ export const apiCreateTodo = (body: {
 
 export const apiCreateLabel = (body: { name: string; color: string }) =>
     apiPut<{ id: string; name: string; color: string }>('/api/labels', body);
+
+export async function apiGetList(listTitle: string) {
+    const res = await fetch(`${API_BASE}/api/lists/title/${encodeURIComponent(listTitle)}`, { headers: authHeaders });
+    if (!res.ok) throw new Error(`apiGetList failed: ${await res.text()}`);
+    return res.json() as Promise<{
+        id: string;
+        title: string;
+        items: Array<{ id: string; name: string; isSelected: boolean; category?: string; quantity?: number }>;
+    }>;
+}
+
+export async function apiSetItemCategory(listTitle: string, itemName: string, category: string) {
+    const itemId = await resolveItemId(listTitle, itemName);
+    const res = await fetch(
+        `${API_BASE}/api/lists/${encodeURIComponent(listTitle)}/items/${encodeURIComponent(itemId)}/category`,
+        { method: 'PUT', headers: authHeaders, body: JSON.stringify({ category }) }
+    );
+    if (!res.ok) throw new Error(`apiSetItemCategory failed: ${await res.text()}`);
+}

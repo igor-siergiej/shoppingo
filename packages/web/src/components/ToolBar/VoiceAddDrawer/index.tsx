@@ -1,5 +1,5 @@
 import { Mic, Square } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { parseSpokenItems, type SpokenItem } from '../../../api';
 import { useKeepListening } from '../../../hooks/useKeepListening';
 import { useSpeechRecognition } from '../../../hooks/useSpeechRecognition';
@@ -23,11 +23,14 @@ export const VoiceAddDrawer = ({ open, onOpenChange, onAddMany }: VoiceAddDrawer
     const [kept, setKept] = useState<Set<number>>(new Set());
     const [busy, setBusy] = useState(false);
     const [failure, setFailure] = useState<string | null>(null);
+    // The transcript already sent to the parser; without it a failed parse clears `busy`, re-runs the effect and loops.
+    const parsedTranscript = useRef('');
 
     // Reset whenever the drawer is dismissed so the next open starts clean.
     useEffect(() => {
         if (open) return;
         speech.reset();
+        parsedTranscript.current = '';
         setParsed(null);
         setKept(new Set());
         setFailure(null);
@@ -38,6 +41,8 @@ export const VoiceAddDrawer = ({ open, onOpenChange, onAddMany }: VoiceAddDrawer
     // fallow-ignore-next-line complexity
     useEffect(() => {
         if (speech.listening || !speech.transcript || parsed || busy) return;
+        if (parsedTranscript.current === speech.transcript) return;
+        parsedTranscript.current = speech.transcript;
         setBusy(true);
         setFailure(null);
         parseSpokenItems(speech.transcript)
@@ -60,6 +65,7 @@ export const VoiceAddDrawer = ({ open, onOpenChange, onAddMany }: VoiceAddDrawer
         });
 
     const retry = () => {
+        parsedTranscript.current = '';
         setParsed(null);
         setFailure(null);
         speech.start();
