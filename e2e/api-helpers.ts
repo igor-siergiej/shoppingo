@@ -1,4 +1,5 @@
-import { MOCK_TOKEN } from './mocks/auth';
+import { MOCK_TOKEN, MOCK_TOKEN_2 } from './mocks/auth';
+import { MOCK_USER_2 } from './mocks/data/users';
 
 const API_BASE = 'http://localhost:4001';
 
@@ -142,4 +143,40 @@ export async function apiSetItemCategory(listTitle: string, itemName: string, ca
         { method: 'PUT', headers: authHeaders, body: JSON.stringify({ category }) }
     );
     if (!res.ok) throw new Error(`apiSetItemCategory failed: ${await res.text()}`);
+}
+
+export async function apiGetRecipes() {
+    const res = await fetch(`${API_BASE}/api/recipes`, { headers: authHeaders });
+    if (!res.ok) throw new Error(`apiGetRecipes failed: ${await res.text()}`);
+    return res.json() as Promise<
+        Array<{
+            id: string;
+            title: string;
+            link?: string;
+            tags?: Array<string>;
+            instructions?: Array<string>;
+            ingredients: Array<{ id: string; name: string; quantity?: number; unit?: string }>;
+            prepTime?: number;
+            cookTime?: number;
+            servings?: number;
+        }>
+    >;
+}
+
+/** Creates a recipe owned by the second mock user, shared with the given user ids (they must be friends). */
+export async function apiCreateRecipeAsOtherUser(title: string, sharedWith: Array<string>) {
+    const res = await fetch(`${API_BASE}/api/recipes`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${MOCK_TOKEN_2}` },
+        body: JSON.stringify({
+            title,
+            dateAdded: new Date().toISOString(),
+            user: MOCK_USER_2,
+            selectedUsers: sharedWith,
+            ingredients: [{ name: 'Shared flour' }],
+            instructions: ['Shared step'],
+        }),
+    });
+    if (!res.ok) throw new Error(`apiCreateRecipeAsOtherUser failed: ${await res.text()}`);
+    return res.json() as Promise<{ id: string; title: string }>;
 }

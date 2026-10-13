@@ -95,7 +95,8 @@ export const replayIntent = async (intent: OutboxIntent): Promise<void> => {
                 p.prepTime as number | undefined,
                 p.cookTime as number | undefined,
                 p.servings as number | undefined,
-                p.difficulty as Parameters<typeof addRecipe>[10] | undefined
+                p.difficulty as Parameters<typeof addRecipe>[10] | undefined,
+                p.tags as string[] | undefined
             );
             return;
         }
@@ -110,7 +111,8 @@ export const replayIntent = async (intent: OutboxIntent): Promise<void> => {
                 p.prepTime as number | undefined,
                 p.cookTime as number | undefined,
                 p.servings as number | undefined,
-                p.difficulty as Parameters<typeof updateRecipe>[9] | undefined
+                p.difficulty as Parameters<typeof updateRecipe>[9] | undefined,
+                p.tags as string[] | undefined
             );
             return;
         }
