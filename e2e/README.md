@@ -2,6 +2,8 @@
 
 Playwright suite in this directory. Run via `bun run test:e2e` (all projects) from the repo root.
 
+See [COVERAGE.md](COVERAGE.md) for which feature is covered by which spec, and the known gaps.
+
 ## Projects
 
 - `chromium` — desktop functional tests (`e2e/tests/*.spec.ts`, excluding `*.visual.spec.ts`).
