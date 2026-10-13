@@ -33,6 +33,7 @@ export const test = base.extend<Fixtures>({
         await db.collection('recipe').deleteMany({});
         await db.collection('todo').deleteMany({});
         await db.collection('label').deleteMany({});
+        await db.collection('mealPlan').deleteMany({});
         await db.collection('friendships').deleteMany({});
         // Publications and reports belong to the tests that make them; the library itself is seeded once (see global-setup).
         await db.collection('discoveryPublications').deleteMany({});

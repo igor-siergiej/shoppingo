@@ -180,3 +180,29 @@ export async function apiCreateRecipeAsOtherUser(title: string, sharedWith: Arra
     if (!res.ok) throw new Error(`apiCreateRecipeAsOtherUser failed: ${await res.text()}`);
     return res.json() as Promise<{ id: string; title: string }>;
 }
+
+export async function apiGetTodos() {
+    const res = await fetch(`${API_BASE}/api/todos`, { headers: authHeaders });
+    if (!res.ok) throw new Error(`apiGetTodos failed: ${await res.text()}`);
+    return res.json() as Promise<
+        Array<{
+            id: string;
+            title: string;
+            dueDate?: string;
+            time?: string;
+            completedAt?: string;
+            recurrence?: { freq: string; interval: number; until?: string };
+        }>
+    >;
+}
+
+/** Creates a todo owned by the second mock user and shared with the given user ids (they must be friends). */
+export async function apiCreateTodoAsOtherUser(body: { title: string; dueDate: string }, sharedWith: Array<string>) {
+    const res = await fetch(`${API_BASE}/api/todos`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${MOCK_TOKEN_2}` },
+        body: JSON.stringify({ ...body, userIds: sharedWith }),
+    });
+    if (!res.ok) throw new Error(`apiCreateTodoAsOtherUser failed: ${await res.text()}`);
+    return res.json() as Promise<{ id: string; title: string }>;
+}

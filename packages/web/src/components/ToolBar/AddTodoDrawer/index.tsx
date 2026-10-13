@@ -6,7 +6,7 @@ import { DueDateField } from '../../../components/DueDateField';
 import { FriendPicker } from '../../../components/FriendPicker';
 import { LabelSelect } from '../../../components/LabelSelect';
 import { RecurrenceField } from '../../../components/RecurrenceField';
-import { TimeField } from '../../../components/TimeField';
+import { TodoTimeField } from '../../../components/TodoTimeField';
 import { Button } from '../../../components/ui/button';
 import {
     Drawer,
@@ -133,7 +133,7 @@ export const AddTodoDrawer = ({ open, onOpenChange, onAdd, labels, prefillDate }
                             {error && <p className="text-sm text-destructive">{error}</p>}
                         </div>
                         <DueDateField value={dueDate} onChange={setDueDate} captionLayout="dropdown" />
-                        <TimeField value={time} onChange={setTime} />
+                        <TodoTimeField value={time} onChange={setTime} />
                         <LabelSelect labels={labels} value={labelId} onChange={setLabelId} />
                         <RecurrenceField value={recurrence} onChange={setRecurrence} />
                         <div className="space-y-2">
