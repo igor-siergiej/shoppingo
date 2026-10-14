@@ -1,3 +1,10 @@
+# [1.97.0](https://github.com/igor-siergiej/shoppingo/compare/v1.96.0...v1.97.0) (2026-10-14)
+
+
+### Features
+
+* **api:** generate item icons on a plain white background ([#228](https://github.com/igor-siergiej/shoppingo/issues/228)) ([25dbbde](https://github.com/igor-siergiej/shoppingo/commit/25dbbded3bf1c9eaa6704dab674507aa351198d3))
+
 # [1.96.0](https://github.com/igor-siergiej/shoppingo/compare/v1.95.5...v1.96.0) (2026-10-14)
 
 

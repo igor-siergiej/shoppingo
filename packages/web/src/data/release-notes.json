@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.97.0",
+    "date": "2026-10-14",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "New item pictures now sit on a clean white background, so your lists look tidier and more consistent."
+      }
+    ]
+  },
+  {
     "version": "1.96.0",
     "date": "2026-10-14",
     "notes": [
