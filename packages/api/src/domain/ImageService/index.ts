@@ -137,7 +137,7 @@ export class ImageService {
     }
 
     private generatePrompt(name: string): string {
-        return `Minimalistic flat icon of a ${name} drawn in a simple, clean style, this is going to be a icon for my shopping list item. Bright solid colors, soft rounded edges, modern vector look, no text.`;
+        return `Minimalistic flat icon of a ${name}, centered and isolated on a plain pure white background. Simple, clean style for a shopping list item icon. Bright solid colors on the object only, soft rounded edges, modern vector look. No background shapes, no shadow, no text.`;
     }
 
     private bufferToStream(buffer: Buffer): NodeJS.ReadableStream {

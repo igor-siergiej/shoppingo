@@ -189,7 +189,7 @@ describe('ImageService', () => {
                 const result = await imageService.getImage('shopping-cart', 'u1');
 
                 expect(mockImageGenerator.calls.generateImage[0]).toEqual([
-                    'Minimalistic flat icon of a shopping-cart drawn in a simple, clean style, this is going to be a icon for my shopping list item. Bright solid colors, soft rounded edges, modern vector look, no text.',
+                    'Minimalistic flat icon of a shopping-cart, centered and isolated on a plain pure white background. Simple, clean style for a shopping list item icon. Bright solid colors on the object only, soft rounded edges, modern vector look. No background shapes, no shadow, no text.',
                 ]);
                 expect(mockImageStore.calls.putObject[0]).toEqual([
                     'shopping-cart.webp',
@@ -263,7 +263,7 @@ describe('ImageService', () => {
                 await imageService.getImage('  SHOPPING CART  ', 'u1');
 
                 expect(mockImageGenerator.calls.generateImage[0]).toEqual([
-                    'Minimalistic flat icon of a shopping cart drawn in a simple, clean style, this is going to be a icon for my shopping list item. Bright solid colors, soft rounded edges, modern vector look, no text.',
+                    'Minimalistic flat icon of a shopping cart, centered and isolated on a plain pure white background. Simple, clean style for a shopping list item icon. Bright solid colors on the object only, soft rounded edges, modern vector look. No background shapes, no shadow, no text.',
                 ]);
             });
         });
