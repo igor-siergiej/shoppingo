@@ -71,4 +71,20 @@ describe('DayTodoList', () => {
         expect(onManageSharing).toHaveBeenCalledWith(item());
         expect(onToggle).not.toHaveBeenCalled();
     });
+
+    it('marks overdue todos', () => {
+        render(<DayTodoList items={[item({ overdue: true })]} labels={[]} onToggle={vi.fn()} onDelete={vi.fn()} />);
+
+        expect(screen.getByText('Overdue')).toBeInTheDocument();
+    });
+
+    it('calls onEdit with the todo id when the title is tapped', async () => {
+        const user = userEvent.setup();
+        const onEdit = vi.fn();
+        render(<DayTodoList items={[item()]} labels={[]} onToggle={vi.fn()} onDelete={vi.fn()} onEdit={onEdit} />);
+
+        await user.click(screen.getByRole('button', { name: 'Edit Pay rent' }));
+
+        expect(onEdit).toHaveBeenCalledWith('t1');
+    });
 });

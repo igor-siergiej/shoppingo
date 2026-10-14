@@ -93,6 +93,16 @@ describe('TodoService', () => {
         expect(updated.title).toBe('A2');
     });
 
+    it('removes the fields named in clear and keeps the rest', async () => {
+        const t = await svc.createTodo('u1', { title: 'A', dueDate: '2026-06-29', time: '09:30', labelId: 'L1' });
+        const updated = await svc.updateTodo(t.id, 'u1', { title: 'B', clear: ['time', 'labelId'] });
+        expect(updated.title).toBe('B');
+        expect(updated.dueDate).toBe('2026-06-29');
+        expect(updated.time).toBeUndefined();
+        expect(updated.labelId).toBeUndefined();
+        expect('clear' in updated).toBe(false);
+    });
+
     it('rejects update by a non-owner with 403', async () => {
         const t = await svc.createTodo('u1', { title: 'A' });
         expect(svc.updateTodo(t.id, 'intruder', { title: 'x' })).rejects.toMatchObject({ status: 403 });

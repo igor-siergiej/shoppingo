@@ -47,6 +47,13 @@ const collectTodo = (todo: Todo, ctx: CollectCtx): void => {
     }
 };
 
+const ALL_DAY = 'all day';
+
+const timeKey = (item: DayTodoItem): string => (item.time === ALL_DAY ? '' : (item.time ?? ''));
+
+/** All-day todos lead each day; timed ones follow in clock order. */
+const compareByTime = (a: DayTodoItem, b: DayTodoItem): number => timeKey(a).localeCompare(timeKey(b));
+
 const toSelectedItem = (
     todo: Todo,
     color: string | undefined,
@@ -56,8 +63,9 @@ const toSelectedItem = (
 ): DayTodoItem => ({
     todoId: todo.id,
     title: todo.title,
-    time: todo.time ?? 'all day',
+    time: todo.time ?? ALL_DAY,
     done,
+    overdue: !done && isoDay(occDate) < isoDay(new Date()),
     labelColor: color ?? 'transparent',
     dimmed,
     occurrenceDay: isoDay(occDate),
@@ -89,7 +97,7 @@ export const buildCalendarDayData = (
         collectTodo(todo, ctx);
     }
 
-    return { dotsByDay: dots, selectedItems: items };
+    return { dotsByDay: dots, selectedItems: items.sort(compareByTime) };
 };
 
 export interface AgendaDay {
@@ -120,5 +128,5 @@ export const buildWeekAgenda = (todos: Todo[], start: Date, ctx: LabelContext): 
         collectWeekTodo(todo, days[0], days[6], byDay, ctx);
     }
 
-    return days.map((day) => ({ day, items: byDay.get(dayKey(day)) ?? [] }));
+    return days.map((day) => ({ day, items: (byDay.get(dayKey(day)) ?? []).sort(compareByTime) }));
 };

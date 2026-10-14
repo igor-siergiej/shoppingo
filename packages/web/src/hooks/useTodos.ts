@@ -1,7 +1,7 @@
 import { useUser } from '@imapps/web-utils';
 import type { Todo } from '@shoppingo/types';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { type CreateTodoBody, getTodosQuery } from '../api';
+import { type CreateTodoBody, getTodosQuery, type UpdateTodoBody } from '../api';
 import { drainOutbox } from '../offline/drainer';
 import { applyTodoIntent } from '../offline/intents';
 import { type OutboxIntent, outboxStore } from '../offline/outboxStore';
@@ -35,7 +35,7 @@ export const useTodos = () => {
         refetch,
         createTodo: (body: CreateTodoBody) =>
             enqueueTodo('todo.create', crypto.randomUUID(), { ...body, ownerId: userId }),
-        updateTodo: (id: string, body: Partial<Todo>) =>
+        updateTodo: (id: string, body: UpdateTodoBody) =>
             enqueueTodo('todo.update', id, body as Record<string, unknown>),
         deleteTodo: (id: string) => enqueueTodo('todo.delete', id, {}),
         completeTodo: (id: string, date?: string) =>

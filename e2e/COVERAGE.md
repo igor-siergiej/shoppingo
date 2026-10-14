@@ -10,7 +10,7 @@ Mocks for AI, speech and push live in `e2e/mocks` (see `e2e/README.md`).
 | --- | --- | --- |
 | Login, register, validation, logout | `auth.spec.ts`, `login.spec.ts` | `auth.visual.spec.ts` |
 | Wrong password, unknown user, taken username, password rules | `account-resilience.spec.ts` | |
-| Reload keeps session, signed-out deep link, refresh failure, switching users | `account-resilience.spec.ts`, `token-refresh.spec.ts` | |
+| Reload keeps session, signed-out deep link returns to the page after login, refresh failure, switching users | `account-resilience.spec.ts`, `token-refresh.spec.ts` | |
 | Menu: settings, theme, install prompt, update check | `account-resilience.spec.ts` | |
 | Push notifications toggle | `account-resilience.spec.ts`, `mock-harness.spec.ts` | |
 | Settings: unit system | `preferred-units.spec.ts` | `more-screens.visual.spec.ts` |
@@ -22,7 +22,7 @@ Mocks for AI, speech and push live in `e2e/mocks` (see `e2e/README.md`).
 | Feature | Functional | Visual |
 | --- | --- | --- |
 | Lists: add, rename, delete, open | `lists.spec.ts` | `lists.visual.spec.ts` |
-| List title validation, duplicate handling | `lists-validation.spec.ts` | |
+| List title validation, duplicate name message | `lists-validation.spec.ts` | |
 | Items: add, edit, select, clear, swipe delete | `items.spec.ts`, `swipe-actions*.spec.ts` | `items.visual.spec.ts` |
 | Items: validation, aisles, images, server errors | `items-edge-cases.spec.ts` | |
 | Add by voice (happy path, mic errors, confirm, keep-listening, parse failures) | `voice-add.spec.ts`, `voice-add-edge-cases.spec.ts` | |
@@ -50,6 +50,7 @@ Mocks for AI, speech and push live in `e2e/mocks` (see `e2e/README.md`).
 | Feature | Functional | Visual |
 | --- | --- | --- |
 | Calendar: todos, inbox, recurrence, labels, sharing | `calendar.spec.ts`, `calendar-more.spec.ts`, `labels.spec.ts` | `calendar.visual.spec.ts` |
+| Calendar: edit a todo, time ordering, overdue marking | `todo-edit.spec.ts` | `dark.visual.spec.ts` |
 | Meal plan: weeks, portions, shopping preview | `meal-plan.spec.ts`, `meal-plan-more.spec.ts` | `more-screens.visual.spec.ts` |
 | Drawers: add todo, manage labels, shopping preview | covered functionally above | `more-screens.visual.spec.ts` |
 
@@ -69,8 +70,10 @@ Mocks for AI, speech and push live in `e2e/mocks` (see `e2e/README.md`).
 | Unknown address page | `account-resilience.spec.ts` | `more-screens.visual.spec.ts` |
 | Smoke against a deployed build | `smoke.spec.ts` | |
 
+## Dark theme
+
+`dark.visual.spec.ts` captures login, lists, items, calendar and recipes with the theme forced to dark through `localStorage`.
+
 ## Known gaps
 
-- Dark theme screenshots: the theme switch is tested functionally, but every baseline is light.
 - Render `ErrorBoundary` and the service-worker "update available" toast: service workers are blocked in e2e and there is no safe way to force a render error.
-- Features that do not exist yet and so have no test: editing an existing todo, sorting todos by time, overdue marking, returning to a deep link after sign-in.

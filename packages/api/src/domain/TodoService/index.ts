@@ -17,7 +17,9 @@ export interface CreateTodoInput {
     userIds?: string[];
 }
 
-export type UpdateTodoInput = Partial<Omit<Todo, 'id' | 'ownerId' | 'dateAdded'>>;
+export type ClearableTodoField = 'dueDate' | 'time' | 'labelId' | 'recurrence';
+
+export type UpdateTodoInput = Partial<Omit<Todo, 'id' | 'ownerId' | 'dateAdded'>> & { clear?: ClearableTodoField[] };
 
 const forbidden = () => Object.assign(new Error('Forbidden'), { status: 403 });
 const notFound = () => Object.assign(new Error('Todo not found'), { status: 404 });
@@ -104,10 +106,11 @@ export class TodoService {
 
     async updateTodo(todoId: string, actorId: string, rawInput: UpdateTodoInput, actor?: User): Promise<Todo> {
         const existing = await this.getOwnedOrMember(todoId, actorId);
-        const input = normalizeDays(rawInput);
+        const { clear, ...input } = normalizeDays(rawInput);
         // Membership (sharing) is owner-only; a member editing content must not re-scope who it's shared with.
         if (existing.ownerId !== actorId) delete input.users;
         const merged: Todo = { ...existing, ...input };
+        for (const field of clear ?? []) delete merged[field];
         const updated = await this.repo.update(todoId, merged);
 
         if (actor && input.users) {

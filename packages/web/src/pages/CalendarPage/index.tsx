@@ -2,6 +2,7 @@ import { useUser } from '@imapps/web-utils';
 import { addMonths, endOfMonth, startOfMonth } from 'date-fns';
 import { useEffect, useMemo, useState } from 'react';
 import type { CreateTodoBody } from '../../api';
+import { EditTodoDrawer } from '../../components/Calendar/EditTodoDrawer';
 import { InboxDrawer } from '../../components/Calendar/InboxDrawer';
 import { ManageTodoSharingDrawer } from '../../components/Calendar/ManageTodoSharingDrawer';
 import ToolBar from '../../components/ToolBar';
@@ -28,6 +29,7 @@ const CalendarPage = () => {
     const [view, setView] = useState<CalendarView>('month');
     const [month, setMonth] = useState<Date>(startOfMonth(new Date()));
     const [selectedDay, setSelectedDay] = useState<Date>(new Date());
+    const [editingTodoId, setEditingTodoId] = useState<string | null>(null);
 
     useEffect(
         () =>
@@ -73,6 +75,7 @@ const CalendarPage = () => {
         void completeTodo(todoId, todo?.recurrence ? occurrenceDay : undefined);
     };
     const handleDelete = (todoId: string) => void deleteTodo(todoId);
+    const editingTodo = todos.find((t) => t.id === editingTodoId) ?? null;
 
     return (
         <>
@@ -111,6 +114,7 @@ const CalendarPage = () => {
                     currentUserId={user?.id}
                     onToggle={handleToggle}
                     onDelete={handleDelete}
+                    onEdit={setEditingTodoId}
                     onManageSharing={sharing.openSharing}
                     schedulingTodoId={scheduling.schedulingTodoId}
                     onScheduleDay={scheduling.selectDay}
@@ -122,6 +126,13 @@ const CalendarPage = () => {
                 onDelete={handleDelete}
                 schedulingTodoId={scheduling.schedulingTodoId}
                 onToggleScheduling={scheduling.toggle}
+            />
+
+            <EditTodoDrawer
+                todo={editingTodo}
+                labels={labels}
+                onOpenChange={(open) => !open && setEditingTodoId(null)}
+                onSave={updateTodo}
             />
 
             {sharing.sharingItem && (

@@ -2,7 +2,7 @@ import type { Todo } from '@shoppingo/types';
 import { endOfMonth, startOfMonth } from 'date-fns';
 import { describe, expect, it } from 'vitest';
 import { dayKey } from '../components/Calendar/MonthGrid';
-import { buildCalendarDayData } from './calendar';
+import { buildCalendarDayData, buildWeekAgenda } from './calendar';
 import { isoDay } from './recurrence';
 
 const today = new Date();
@@ -41,5 +41,53 @@ describe('buildCalendarDayData dimming', () => {
         expect(dots).toHaveLength(2);
         expect(dots.some((d) => d.dimmed === false)).toBe(true);
         expect(dots.some((d) => d.dimmed === true)).toBe(true);
+    });
+});
+
+describe('time ordering', () => {
+    const timed = (id: string, time?: string): Todo => ({ ...todo(id), time });
+
+    it('puts all-day todos first, then timed ones in clock order', () => {
+        const { selectedItems } = build([timed('late', '18:00'), timed('early', '07:15'), timed('any')], []);
+        expect(selectedItems.map((i) => i.todoId)).toEqual(['any', 'early', 'late']);
+    });
+
+    it('orders each week-agenda day the same way', () => {
+        const days = buildWeekAgenda([timed('late', '18:00'), timed('early', '07:15')], today, ctx());
+        expect(days[0].items.map((i) => i.todoId)).toEqual(['early', 'late']);
+    });
+});
+
+describe('overdue marking', () => {
+    const on = (id: string, dueDate: string, done = false): Todo => ({ ...todo(id), dueDate, done });
+    const yesterday = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1);
+
+    it('flags an unfinished todo from a past day', () => {
+        const { selectedItems } = buildCalendarDayData(
+            [on('old', isoDay(yesterday))],
+            today,
+            yesterday,
+            startOfMonth(yesterday),
+            endOfMonth(yesterday),
+            ctx()
+        );
+        expect(selectedItems[0].overdue).toBe(true);
+    });
+
+    it('does not flag a finished past todo', () => {
+        const { selectedItems } = buildCalendarDayData(
+            [on('old', isoDay(yesterday), true)],
+            today,
+            yesterday,
+            startOfMonth(yesterday),
+            endOfMonth(yesterday),
+            ctx()
+        );
+        expect(selectedItems[0].overdue).toBe(false);
+    });
+
+    it('does not flag a todo due today', () => {
+        const { selectedItems } = build([todo('now')], []);
+        expect(selectedItems[0].overdue).toBe(false);
     });
 });
