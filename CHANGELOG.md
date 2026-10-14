@@ -1,3 +1,10 @@
+# [1.96.0](https://github.com/igor-siergiej/shoppingo/compare/v1.95.5...v1.96.0) (2026-10-14)
+
+
+### Features
+
+* **web:** edit todos, order by time, mark overdue, warn on duplicate lists ([#227](https://github.com/igor-siergiej/shoppingo/issues/227)) ([ac9ecd4](https://github.com/igor-siergiej/shoppingo/commit/ac9ecd4f8d560e17d152dff1c82b0dfd7c614adf))
+
 ## [1.95.5](https://github.com/igor-siergiej/shoppingo/compare/v1.95.4...v1.95.5) (2026-10-13)
 
 

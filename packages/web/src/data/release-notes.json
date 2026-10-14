@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.96.0",
+    "date": "2026-10-14",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Calendar todos can now be edited, are sorted by time, and show Overdue when missed; creating a list with a name that already exists now tells you."
+      }
+    ]
+  },
+  {
     "version": "1.95.5",
     "date": "2026-10-13",
     "notes": [
