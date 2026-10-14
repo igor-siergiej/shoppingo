@@ -49,13 +49,10 @@ const collectTodo = (todo: Todo, ctx: CollectCtx): void => {
 
 const ALL_DAY = 'all day';
 
+const timeKey = (item: DayTodoItem): string => (item.time === ALL_DAY ? '' : (item.time ?? ''));
+
 /** All-day todos lead each day; timed ones follow in clock order. */
-const compareByTime = (a: DayTodoItem, b: DayTodoItem): number => {
-    if (a.time === b.time) return 0;
-    if (a.time === ALL_DAY) return -1;
-    if (b.time === ALL_DAY) return 1;
-    return (a.time ?? '') < (b.time ?? '') ? -1 : 1;
-};
+const compareByTime = (a: DayTodoItem, b: DayTodoItem): number => timeKey(a).localeCompare(timeKey(b));
 
 const toSelectedItem = (
     todo: Todo,

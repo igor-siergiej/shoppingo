@@ -59,6 +59,27 @@ const titleClassFor = (done: boolean): string => `flex-1 text-left ${done ? 'lin
 const canManageSharing = (item: DayTodoItem, currentUserId: string | undefined, hasHandler: boolean): boolean =>
     hasHandler && item.ownerId === currentUserId;
 
+const TodoTitle = ({ item, onEdit }: { item: DayTodoItem; onEdit?: (todoId: string) => void }) => (
+    <>
+        <span className={`text-xs w-12 ${item.overdue ? 'text-destructive font-medium' : 'text-muted-foreground'}`}>
+            {item.time}
+        </span>
+        <button
+            type="button"
+            aria-label={`Edit ${item.title}`}
+            className={titleClassFor(item.done)}
+            onClick={() => onEdit?.(item.todoId)}
+        >
+            {item.title}
+        </button>
+        {item.overdue && (
+            <span className="shrink-0 rounded-full bg-destructive/10 px-2 py-0.5 text-xs font-medium text-destructive">
+                Overdue
+            </span>
+        )}
+    </>
+);
+
 interface DayTodoRowProps extends TodoRowHandlers {
     item: DayTodoItem;
 }
@@ -69,24 +90,7 @@ const DayTodoRow = ({ item, currentUserId, onToggle, onDelete, onEdit, onManageS
             <div className={rowClassFor(item.dimmed)}>
                 <span className="w-1 self-stretch rounded" style={{ backgroundColor: item.labelColor }} />
                 <Checkbox checked={item.done} onCheckedChange={() => onToggle(item.todoId, item.occurrenceDay)} />
-                <span
-                    className={`text-xs w-12 ${item.overdue ? 'text-destructive font-medium' : 'text-muted-foreground'}`}
-                >
-                    {item.time}
-                </span>
-                <button
-                    type="button"
-                    aria-label={`Edit ${item.title}`}
-                    className={titleClassFor(item.done)}
-                    onClick={() => onEdit?.(item.todoId)}
-                >
-                    {item.title}
-                </button>
-                {item.overdue && (
-                    <span className="shrink-0 rounded-full bg-destructive/10 px-2 py-0.5 text-xs font-medium text-destructive">
-                        Overdue
-                    </span>
-                )}
+                <TodoTitle item={item} onEdit={onEdit} />
                 {canManageSharing(item, currentUserId, Boolean(onManageSharing)) && (
                     <ShareButton
                         title={item.title}

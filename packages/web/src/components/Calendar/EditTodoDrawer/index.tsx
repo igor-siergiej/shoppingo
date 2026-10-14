@@ -1,14 +1,12 @@
-import { isoDay, type Label as LabelType, type Recurrence, type Todo } from '@shoppingo/types';
+import type { Label as LabelType, Recurrence, Todo } from '@shoppingo/types';
 import { useId, useState } from 'react';
 import type { UpdateTodoBody } from '../../../api';
-import { DueDateField } from '../../DueDateField';
-import { LabelSelect } from '../../LabelSelect';
-import { RecurrenceField } from '../../RecurrenceField';
-import { TodoTimeField } from '../../TodoTimeField';
+import { TodoFields } from '../../TodoFields';
 import { Button } from '../../ui/button';
 import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from '../../ui/drawer';
 import { Input } from '../../ui/input';
 import { Label } from '../../ui/label';
+import { buildUpdateBody } from './buildUpdateBody';
 
 export interface EditTodoDrawerProps {
     todo: Todo | null;
@@ -20,37 +18,6 @@ export interface EditTodoDrawerProps {
 const parseDay = (day: string): Date => {
     const [year, month, date] = day.split('-').map(Number);
     return new Date(year, month - 1, date);
-};
-
-interface EditValues {
-    title: string;
-    dueDate?: Date;
-    time?: string;
-    labelId?: string;
-    recurrence?: Recurrence;
-}
-
-export const buildUpdateBody = (
-    todo: Todo,
-    { title, dueDate, time, labelId, recurrence }: EditValues
-): UpdateTodoBody => {
-    const body: UpdateTodoBody = { title };
-    const clear: NonNullable<UpdateTodoBody['clear']> = [];
-
-    if (dueDate) body.dueDate = isoDay(dueDate);
-    else if (todo.dueDate) clear.push('dueDate');
-
-    if (time) body.time = time;
-    else if (todo.time) clear.push('time');
-
-    if (labelId) body.labelId = labelId;
-    else if (todo.labelId) clear.push('labelId');
-
-    if (recurrence) body.recurrence = recurrence;
-    else if (todo.recurrence) clear.push('recurrence');
-
-    if (clear.length > 0) body.clear = clear;
-    return body;
 };
 
 interface EditTodoFormProps extends Omit<EditTodoDrawerProps, 'todo' | 'onOpenChange'> {
@@ -100,10 +67,17 @@ const EditTodoForm = ({ todo, labels, onSave, onDone }: EditTodoFormProps) => {
                     />
                     {error && <p className="text-sm text-destructive">{error}</p>}
                 </div>
-                <DueDateField value={dueDate} onChange={setDueDate} captionLayout="dropdown" />
-                <TodoTimeField value={time} onChange={setTime} />
-                <LabelSelect labels={labels} value={labelId} onChange={setLabelId} />
-                <RecurrenceField value={recurrence} onChange={setRecurrence} />
+                <TodoFields
+                    labels={labels}
+                    dueDate={dueDate}
+                    onDueDateChange={setDueDate}
+                    time={time}
+                    onTimeChange={setTime}
+                    labelId={labelId}
+                    onLabelIdChange={setLabelId}
+                    recurrence={recurrence}
+                    onRecurrenceChange={setRecurrence}
+                />
             </div>
             <DrawerFooter className="flex-none">
                 <Button onClick={handleSave}>Save</Button>

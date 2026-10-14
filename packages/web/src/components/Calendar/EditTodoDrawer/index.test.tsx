@@ -1,6 +1,6 @@
 import type { Todo } from '@shoppingo/types';
 import { describe, expect, it } from 'vitest';
-import { buildUpdateBody } from './index';
+import { buildUpdateBody } from './buildUpdateBody';
 
 const todo: Todo = {
     id: 't1',

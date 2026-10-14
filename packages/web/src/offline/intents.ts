@@ -91,29 +91,26 @@ const applyTodoUpdate = (todo: Todo, payload: Record<string, unknown>): Todo => 
     return next;
 };
 
+// fallow-ignore-next-line complexity
+const newTodo = (id: string, p: Record<string, unknown>): Todo =>
+    ({
+        id,
+        ownerId: String(p.ownerId ?? ''),
+        title: String(p.title ?? ''),
+        done: false,
+        dateAdded: new Date(),
+        ...(p.dueDate !== undefined && { dueDate: p.dueDate as Todo['dueDate'] }),
+        ...(p.time !== undefined && { time: String(p.time) }),
+        ...(p.labelId !== undefined && { labelId: String(p.labelId) }),
+        ...(p.recurrence !== undefined && { recurrence: p.recurrence as Todo['recurrence'], completedDates: [] }),
+    }) as Todo;
+
+// fallow-ignore-next-line complexity
 export const applyTodoIntent = (todos: Todo[], intent: OutboxIntent): Todo[] => {
     const p = intent.payload;
     switch (intent.op) {
-        case 'todo.create': {
-            if (todos.some((t) => t.id === intent.targetId)) return todos;
-            return [
-                ...todos,
-                {
-                    id: intent.targetId,
-                    ownerId: String(p.ownerId ?? ''),
-                    title: String(p.title ?? ''),
-                    done: false,
-                    dateAdded: new Date(),
-                    ...(p.dueDate !== undefined && { dueDate: p.dueDate as Todo['dueDate'] }),
-                    ...(p.time !== undefined && { time: String(p.time) }),
-                    ...(p.labelId !== undefined && { labelId: String(p.labelId) }),
-                    ...(p.recurrence !== undefined && {
-                        recurrence: p.recurrence as Todo['recurrence'],
-                        completedDates: [],
-                    }),
-                } as Todo,
-            ];
-        }
+        case 'todo.create':
+            return todos.some((t) => t.id === intent.targetId) ? todos : [...todos, newTodo(intent.targetId, p)];
         case 'todo.update':
             return todos.map((t) => (t.id === intent.targetId ? applyTodoUpdate(t, p) : t));
         case 'todo.delete':

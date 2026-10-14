@@ -2,11 +2,8 @@ import { isoDay, type Label as LabelType, type Recurrence } from '@shoppingo/typ
 import { Plus } from 'lucide-react';
 import { useEffect, useId, useState } from 'react';
 import type { CreateTodoBody } from '../../../api';
-import { DueDateField } from '../../../components/DueDateField';
 import { FriendPicker } from '../../../components/FriendPicker';
-import { LabelSelect } from '../../../components/LabelSelect';
-import { RecurrenceField } from '../../../components/RecurrenceField';
-import { TodoTimeField } from '../../../components/TodoTimeField';
+import { TodoFields } from '../../../components/TodoFields';
 import { Button } from '../../../components/ui/button';
 import {
     Drawer,
@@ -132,10 +129,17 @@ export const AddTodoDrawer = ({ open, onOpenChange, onAdd, labels, prefillDate }
                             />
                             {error && <p className="text-sm text-destructive">{error}</p>}
                         </div>
-                        <DueDateField value={dueDate} onChange={setDueDate} captionLayout="dropdown" />
-                        <TodoTimeField value={time} onChange={setTime} />
-                        <LabelSelect labels={labels} value={labelId} onChange={setLabelId} />
-                        <RecurrenceField value={recurrence} onChange={setRecurrence} />
+                        <TodoFields
+                            labels={labels}
+                            dueDate={dueDate}
+                            onDueDateChange={setDueDate}
+                            time={time}
+                            onTimeChange={setTime}
+                            labelId={labelId}
+                            onLabelIdChange={setLabelId}
+                            recurrence={recurrence}
+                            onRecurrenceChange={setRecurrence}
+                        />
                         <div className="space-y-2">
                             <Label>Share with friends</Label>
                             <FriendPicker value={shareWith} onChange={setShareWith} seedAllByDefault />
