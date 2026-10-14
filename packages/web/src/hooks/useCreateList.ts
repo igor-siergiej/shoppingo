@@ -11,6 +11,10 @@ export const useCreateList = (user: User | undefined) => {
             logger.warn('Attempted to add list without user');
             return;
         }
+        const existing = queryClient.getQueryData<Array<{ title: string }>>(['lists', user.id]) ?? [];
+        if (existing.some((list) => list.title.trim().toLowerCase() === title.toLowerCase())) {
+            throw new Error('A list with that name already exists');
+        }
         const id = crypto.randomUUID();
         queryClient.setQueryData(['lists', user.id], (old: unknown) => {
             const lists = (old as unknown[]) ?? [];

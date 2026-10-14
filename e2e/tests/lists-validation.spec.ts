@@ -43,7 +43,8 @@ test.describe('List title validation', () => {
         await expect(listsPage.listCard('Groceries')).toBeVisible();
 
         await listsPage.addList('Groceries');
-        await expect(listsPage.drawerTitle).toBeHidden();
+        await expect(authenticatedPage.getByText('A list with that name already exists')).toBeVisible();
+        await expect(listsPage.drawerTitle).toBeVisible();
 
         await authenticatedPage.reload();
         await expect(listsPage.listCard('Groceries')).toHaveCount(1);

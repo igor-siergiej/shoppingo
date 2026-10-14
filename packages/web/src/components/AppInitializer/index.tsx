@@ -61,7 +61,8 @@ const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
     useEffect(() => {
         const handleSessionExpired = () => {
             logout();
-            navigate('/login');
+            const { pathname, search, hash } = window.location;
+            navigate('/login', { state: { from: { pathname, search, hash } } });
         };
 
         window.addEventListener('auth:session-expired', handleSessionExpired);

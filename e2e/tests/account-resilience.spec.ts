@@ -85,7 +85,7 @@ test.describe('Session', () => {
 
         await loginPage.login('testuser', 'password123');
 
-        await page.waitForURL((url) => !url.pathname.endsWith('/login'));
+        await page.waitForURL((url) => url.pathname === '/recipes');
         await expect(page.getByRole('button', { name: 'Menu' })).toBeVisible();
     });
 

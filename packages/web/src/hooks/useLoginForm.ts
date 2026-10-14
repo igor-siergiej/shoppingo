@@ -59,8 +59,9 @@ export const useLoginForm = () => {
             login(responseData.token || responseData.accessToken);
             logger.info('Login successful', { username: data.username });
 
-            const from = location.state?.from?.pathname || '/';
-            navigate(from, { replace: true });
+            const from = location.state?.from;
+            const target = from?.pathname ? `${from.pathname}${from.search ?? ''}${from.hash ?? ''}` : '/';
+            navigate(target, { replace: true });
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Login failed';
             logger.warn('Login failed', { username: data.username, error: errorMessage });

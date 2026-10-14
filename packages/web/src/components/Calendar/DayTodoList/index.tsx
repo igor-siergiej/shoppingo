@@ -8,6 +8,7 @@ export interface DayTodoItem {
     title: string;
     time?: string;
     done: boolean;
+    overdue?: boolean;
     labelColor?: string;
     dimmed?: boolean;
     occurrenceDay: string; // dayKey of the occurrence
@@ -21,6 +22,7 @@ export interface TodoRowHandlers {
     currentUserId?: string;
     onToggle: (todoId: string, occurrenceDay: string) => void;
     onDelete: (todoId: string) => void;
+    onEdit?: (todoId: string) => void;
     onManageSharing?: (item: DayTodoItem) => void;
 }
 
@@ -52,7 +54,7 @@ const ShareButton = ({ title, isShared, onClick }: ShareButtonProps) => (
 const rowClassFor = (dimmed?: boolean): string =>
     `flex items-center gap-3 rounded-lg bg-muted/40 px-3 py-2 transition-opacity ${dimmed ? 'opacity-40' : ''}`;
 
-const titleClassFor = (done: boolean): string => (done ? 'flex-1 line-through text-muted-foreground' : 'flex-1');
+const titleClassFor = (done: boolean): string => `flex-1 text-left ${done ? 'line-through text-muted-foreground' : ''}`;
 
 const canManageSharing = (item: DayTodoItem, currentUserId: string | undefined, hasHandler: boolean): boolean =>
     hasHandler && item.ownerId === currentUserId;
@@ -61,14 +63,30 @@ interface DayTodoRowProps extends TodoRowHandlers {
     item: DayTodoItem;
 }
 
-const DayTodoRow = ({ item, currentUserId, onToggle, onDelete, onManageSharing }: DayTodoRowProps) => (
+const DayTodoRow = ({ item, currentUserId, onToggle, onDelete, onEdit, onManageSharing }: DayTodoRowProps) => (
     <li data-todo-title={item.title}>
         <SwipeableRow onDelete={() => onDelete(item.todoId)}>
             <div className={rowClassFor(item.dimmed)}>
                 <span className="w-1 self-stretch rounded" style={{ backgroundColor: item.labelColor }} />
                 <Checkbox checked={item.done} onCheckedChange={() => onToggle(item.todoId, item.occurrenceDay)} />
-                <span className="text-xs text-muted-foreground w-12">{item.time}</span>
-                <span className={titleClassFor(item.done)}>{item.title}</span>
+                <span
+                    className={`text-xs w-12 ${item.overdue ? 'text-destructive font-medium' : 'text-muted-foreground'}`}
+                >
+                    {item.time}
+                </span>
+                <button
+                    type="button"
+                    aria-label={`Edit ${item.title}`}
+                    className={titleClassFor(item.done)}
+                    onClick={() => onEdit?.(item.todoId)}
+                >
+                    {item.title}
+                </button>
+                {item.overdue && (
+                    <span className="shrink-0 rounded-full bg-destructive/10 px-2 py-0.5 text-xs font-medium text-destructive">
+                        Overdue
+                    </span>
+                )}
                 {canManageSharing(item, currentUserId, Boolean(onManageSharing)) && (
                     <ShareButton
                         title={item.title}

@@ -132,6 +132,8 @@ export const updateTodoBody = z.object({
     recurrence: recurrence.optional(),
     completedDates: z.array(day).optional(),
     users: z.array(member).optional(),
+    /** Optional fields to remove from the todo; a missing field can't be expressed by omitting it. */
+    clear: z.array(z.enum(['dueDate', 'time', 'labelId', 'recurrence'])).optional(),
 });
 
 export const completeTodoBody = z.object({ date: day.optional() });

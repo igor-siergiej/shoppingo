@@ -506,7 +506,9 @@ export const createTodo = async (body: CreateTodoBody, id?: string): Promise<Tod
     });
 };
 
-export const updateTodo = async (id: string, body: Partial<Todo>): Promise<Todo> => {
+export type UpdateTodoBody = Partial<Todo> & { clear?: Array<'dueDate' | 'time' | 'labelId' | 'recurrence'> };
+
+export const updateTodo = async (id: string, body: UpdateTodoBody): Promise<Todo> => {
     return await makeRequest({
         pathname: `/api/todos/${encodeURIComponent(id)}`,
         method: MethodType.POST,

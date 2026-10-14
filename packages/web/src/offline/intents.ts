@@ -84,6 +84,13 @@ export const applyListIntent = (lists: ListView[], intent: OutboxIntent): ListVi
 };
 
 // fallow-ignore-next-line complexity
+const applyTodoUpdate = (todo: Todo, payload: Record<string, unknown>): Todo => {
+    const { clear, ...changes } = payload;
+    const next: Todo = { ...todo, ...(changes as Partial<Todo>) };
+    for (const field of (clear as Array<keyof Todo> | undefined) ?? []) delete next[field];
+    return next;
+};
+
 export const applyTodoIntent = (todos: Todo[], intent: OutboxIntent): Todo[] => {
     const p = intent.payload;
     switch (intent.op) {
@@ -108,7 +115,7 @@ export const applyTodoIntent = (todos: Todo[], intent: OutboxIntent): Todo[] => 
             ];
         }
         case 'todo.update':
-            return todos.map((t) => (t.id === intent.targetId ? { ...t, ...(p as Partial<Todo>) } : t));
+            return todos.map((t) => (t.id === intent.targetId ? applyTodoUpdate(t, p) : t));
         case 'todo.delete':
             return todos.filter((t) => t.id !== intent.targetId);
         case 'todo.complete':
