@@ -50,6 +50,41 @@ test.describe('Meal plan: weeks', () => {
         await authenticatedPage.reload();
         await expect(day(authenticatedPage, 'Wednesday').getByText('Soup')).toBeVisible();
     });
+
+    test("today's section is marked as today and the Today jump button round-trips", async ({ authenticatedPage }) => {
+        await authenticatedPage.goto('/meal-plan');
+        await expect(authenticatedPage.getByTestId('meal-plan-today-button')).toHaveCount(0);
+
+        const todayName = now.toLocaleDateString('en-GB', { weekday: 'long' });
+        const todaySection = authenticatedPage.getByRole('region', { name: new RegExp(todayName) });
+        await expect(todaySection).toHaveAttribute('data-today', 'true');
+        await expect(todaySection.getByTestId('meal-plan-today-badge')).toBeVisible();
+
+        await authenticatedPage.getByRole('button', { name: 'Next week' }).click();
+        const todayButton = authenticatedPage.getByTestId('meal-plan-today-button');
+        await expect(todayButton).toBeVisible();
+        await expect(todayButton).toHaveAttribute('aria-label', 'Jump to current week');
+
+        await todayButton.click();
+        await expect(authenticatedPage.getByRole('heading', { name: rangeFor(monday), level: 2 })).toBeVisible();
+        await expect(authenticatedPage.getByTestId('meal-plan-today-button')).toHaveCount(0);
+    });
+});
+
+test.describe('Meal plan: empty day card', () => {
+    test('each day card shows the "Nothing planned" empty state until a recipe is added', async ({
+        authenticatedPage,
+    }) => {
+        await authenticatedPage.goto('/meal-plan');
+
+        await expect(authenticatedPage.getByTestId('meal-plan-day-empty').first()).toBeVisible();
+        await expect(authenticatedPage.getByText('Nothing planned').first()).toBeVisible();
+
+        await apiCreateRecipe('Soup', [{ name: 'leek' }], [], { servings: 2 });
+        await authenticatedPage.reload();
+        await planFor(authenticatedPage, 'Monday', 'Soup');
+        await expect(authenticatedPage.getByTestId('meal-plan-day-empty')).toHaveCount(6);
+    });
 });
 
 test.describe('Meal plan: planning', () => {

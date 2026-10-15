@@ -2,8 +2,7 @@ import { useUser } from '@imapps/web-utils';
 import type { MealPlanEntry, Recipe } from '@shoppingo/types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { addDays, format } from 'date-fns';
-import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
     addItemsBulk,
     createMealPlanEntry,
@@ -17,9 +16,10 @@ import ToolBar from '../../components/ToolBar';
 import { Button } from '../../components/ui/button';
 import { buildShoppingRows, dayKey, type ShoppingRow, weekDays, weekStart } from '../../utils/mealPlan';
 import { notifyError, notifySuccess } from '../../utils/toast';
-import { PlannedRecipeRow } from './PlannedRecipeRow';
+import { MealPlanDayCard } from './MealPlanDayCard';
 import { RecipePickerDrawer } from './RecipePickerDrawer';
 import { ShoppingPreviewDrawer } from './ShoppingPreviewDrawer';
+import { WeekNavigation } from './WeekNavigation';
 
 // Page-level wiring of queries, mutations and drawers in one component.
 // fallow-ignore-next-line complexity
@@ -34,7 +34,6 @@ const MealPlanPage = () => {
     const from = dayKey(days[0]);
     const to = dayKey(days[6]);
     const planKey = getMealPlanQuery(from, to).queryKey;
-    const rangeLabel = `${format(days[0], 'd MMM')} – ${format(days[6], 'd MMM')}`;
 
     const { data: entries = [] } = useQuery(getMealPlanQuery(from, to));
     const { data: recipes = [] } = useQuery(
@@ -55,8 +54,18 @@ const MealPlanPage = () => {
     });
     const removeMutation = useMutation({ mutationFn: deleteMealPlanEntry, onSuccess: refresh, onError });
 
-    const recipeById = new Map(recipes.map((recipe) => [recipe.id, recipe]));
-    const entriesOn = (day: Date): Array<MealPlanEntry> => entries.filter((entry) => entry.date === dayKey(day));
+    const recipeById = useMemo(() => new Map(recipes.map((recipe) => [recipe.id, recipe])), [recipes]);
+    const entriesByDay = useMemo(() => {
+        const map = new Map<string, Array<MealPlanEntry>>();
+        for (const entry of entries) {
+            const list = map.get(entry.date) ?? [];
+            list.push(entry);
+            map.set(entry.date, list);
+        }
+        return map;
+    }, [entries]);
+    const todayKey = dayKey(new Date());
+    const isOnCurrentWeek = dayKey(start) === dayKey(weekStart(new Date()));
     const shoppingRows = buildShoppingRows(entries, recipes);
 
     const handlePick = (recipe: Recipe) => {
@@ -76,56 +85,31 @@ const MealPlanPage = () => {
 
     return (
         <>
-            <div className="flex flex-col gap-3">
-                <div className="flex items-center justify-between">
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        aria-label="Previous week"
-                        onClick={() => setStart(addDays(start, -7))}
-                    >
-                        <ChevronLeft className="size-5" />
-                    </Button>
-                    <h2 className="text-lg font-semibold text-foreground">{rangeLabel}</h2>
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        aria-label="Next week"
-                        onClick={() => setStart(addDays(start, 7))}
-                    >
-                        <ChevronRight className="size-5" />
-                    </Button>
-                </div>
+            <div className="flex flex-col gap-4">
+                <WeekNavigation
+                    start={start}
+                    isOnCurrentWeek={isOnCurrentWeek}
+                    onPrev={() => setStart(addDays(start, -7))}
+                    onNext={() => setStart(addDays(start, 7))}
+                    onToday={() => setStart(weekStart(new Date()))}
+                />
 
-                {days.map((day) => (
-                    <section
-                        key={dayKey(day)}
-                        aria-label={format(day, 'EEEE d MMMM')}
-                        className="rounded-lg border p-3"
-                    >
-                        <div className="flex items-center justify-between">
-                            <h3 className="font-medium text-foreground">{format(day, 'EEEE d MMM')}</h3>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                aria-label={`Plan a recipe for ${format(day, 'EEEE')}`}
-                                onClick={() => setPickerDay(day)}
-                            >
-                                <Plus className="size-4" />
-                            </Button>
-                        </div>
-                        {entriesOn(day).map((entry) => (
-                            <PlannedRecipeRow
-                                key={entry.id}
-                                entry={entry}
-                                title={recipeById.get(entry.recipeId)?.title}
-                                canRemove={entry.ownerId === user?.id}
-                                onServingsChange={(servings) => servingsMutation.mutate({ id: entry.id, servings })}
-                                onRemove={() => removeMutation.mutate(entry.id)}
-                            />
-                        ))}
-                    </section>
-                ))}
+                {days.map((day) => {
+                    const key = dayKey(day);
+                    return (
+                        <MealPlanDayCard
+                            key={key}
+                            day={day}
+                            isToday={key === todayKey}
+                            entries={entriesByDay.get(key) ?? []}
+                            recipeById={recipeById}
+                            canRemove={(entry) => entry.ownerId === user?.id}
+                            onPick={setPickerDay}
+                            onServingsChange={(entry, servings) => servingsMutation.mutate({ id: entry.id, servings })}
+                            onRemove={(entry) => removeMutation.mutate(entry.id)}
+                        />
+                    );
+                })}
 
                 <Button onClick={() => setIsShopOpen(true)} disabled={shoppingRows.length === 0}>
                     Shop for this week
@@ -141,7 +125,7 @@ const MealPlanPage = () => {
             />
             <ShoppingPreviewDrawer
                 open={isShopOpen}
-                rangeLabel={rangeLabel}
+                rangeLabel={`${format(days[0], 'd MMM')} – ${format(days[6], 'd MMM')}`}
                 rows={shoppingRows}
                 lists={lists}
                 onConfirm={handleShop}
