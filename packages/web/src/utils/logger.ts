@@ -3,7 +3,7 @@
  * Logs are then collected by Promtail and sent to Loki
  */
 
-import { getStorageItem } from '@imapps/web-utils';
+import { getAccessToken } from '@imapps/web-utils';
 
 interface LogEntry {
     level: 'debug' | 'info' | 'warn' | 'error';
@@ -26,8 +26,7 @@ class FrontendLogger {
             'Content-Type': 'application/json',
         };
 
-        // Get access token from localStorage if available
-        const accessToken = getStorageItem('accessToken', 'localStorage');
+        const accessToken = getAccessToken();
         if (accessToken) {
             headers.Authorization = `Bearer ${accessToken}`;
         }

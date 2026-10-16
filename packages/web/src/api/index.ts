@@ -1,4 +1,4 @@
-import { getStorageItem } from '@imapps/web-utils';
+import { getAccessToken } from '@imapps/web-utils';
 import type {
     DiscoveryPublishRequest,
     DiscoveryRecipe,
@@ -17,8 +17,6 @@ import type {
     Todo,
     User,
 } from '@shoppingo/types';
-
-import { getAuthConfig } from '../config/auth';
 import {
     foldPendingItems,
     foldPendingLabels,
@@ -354,12 +352,8 @@ export const suggestIngredientSubstitutes = async (
 // Raw-fetch endpoints (blob download, multipart upload) bypass makeRequest, so they have
 // to attach the bearer token themselves.
 const authHeaders = (): Record<string, string> => {
-    const authConfig = getAuthConfig();
-    const accessToken = getStorageItem(
-        authConfig.accessTokenKey || 'accessToken',
-        authConfig.storageType || 'localStorage'
-    );
-
+    // The token lives in the web-utils in-memory store; not in DOM storage.
+    const accessToken = getAccessToken();
     return accessToken ? { Authorization: `Bearer ${accessToken}` } : {};
 };
 
