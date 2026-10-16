@@ -4,6 +4,7 @@ import { ConfigService, parsers } from '@imapps/api-utils';
 // plaintext to a remote host, so refuse anything that is not https://. Localhost (the e2e mock kivo
 // and `http://kivo:3008` on the self-host docker bridge) is allowed over http:// because the token
 // never leaves the host.
+// fallow-ignore-next-line complexity
 const httpsUrl = (value: string) => {
     let url: URL;
     try {

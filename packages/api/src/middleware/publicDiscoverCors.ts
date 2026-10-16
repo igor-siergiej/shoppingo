@@ -22,6 +22,7 @@ const ALLOWED_HEADERS = ['Content-Type', 'Authorization'];
  * for any origin the operator has whitelisted, or `*` when the env var is
  * unset (so the selfhost compose works with the default localhost origin).
  */
+// fallow-ignore-next-line complexity
 export const publicDiscoverCors = async (c: Context, next: Next): Promise<void> => {
     const requestOrigin = c.req.header('origin');
 

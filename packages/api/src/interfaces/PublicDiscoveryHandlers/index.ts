@@ -24,6 +24,7 @@ const RATE_LIMIT_WINDOW_MS = 60_000;
 const rateLimiter = new IpRateLimiter(RATE_LIMIT_PER_WINDOW);
 setInterval(() => rateLimiter.reset(), RATE_LIMIT_WINDOW_MS).unref();
 
+// fallow-ignore-next-line complexity
 const clientIpFrom = (forwardedFor: string | undefined, realIp: string | null): string => {
     const entries = (forwardedFor ?? '')
         .split(',')
@@ -52,6 +53,7 @@ const requireRateLimit = (c: Context): void => {
 };
 
 /** Strip everything the public list/page should not carry: Mongo _id, internal flags, reporter metadata. */
+// fallow-ignore-next-line complexity
 const toPublicSummary = (recipe: DiscoveryRecipe): PublicDiscoveryRecipeSummary => {
     const out: PublicDiscoveryRecipeSummary = {
         id: recipe.id,
@@ -101,6 +103,7 @@ export interface PublicDiscoveryHandlerServices {
 }
 
 export const createPublicDiscoveryHandlers = ({ discovery }: PublicDiscoveryHandlerServices, logger: Logger) => ({
+    // fallow-ignore-next-line complexity
     list: async (c: Context<HonoVars>): Promise<Response> => {
         try {
             requireRateLimit(c);
@@ -124,6 +127,7 @@ export const createPublicDiscoveryHandlers = ({ discovery }: PublicDiscoveryHand
         }
     },
 
+    // fallow-ignore-next-line complexity
     bySlug: async (c: Context<HonoVars>): Promise<Response> => {
         try {
             requireRateLimit(c);

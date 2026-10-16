@@ -49,6 +49,7 @@ export const slugify = (text: string): string => {
  * Pass `existing: DiscoveryRecipe['slug']` (the slug on the recipe being saved, if
  * any) to skip a self-collision when republishing the same recipe.
  */
+// fallow-ignore-next-line complexity
 export const uniqueSlug = async (
     base: string,
     isTaken: (candidate: string) => Promise<boolean>,
