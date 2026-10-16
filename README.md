@@ -90,6 +90,40 @@ bun run test:e2e                          # Playwright, incl. visual regression
 - **Shared `@imapps/*` packages** for config, logging, DB and auth-client code
   that would otherwise be copy-pasted between apps.
 
+## Self-hosting
+
+Everything published to Docker Hub. `selfhost/docker-compose.yml` brings up
+web, api, mongo, minio and kivo with one command:
+
+```bash
+cp selfhost/.env.example selfhost/.env
+$EDITOR selfhost/.env          # at minimum set MINIO_ROOT_USER + MINIO_ROOT_PASSWORD
+cd selfhost
+docker compose up -d           # web on http://localhost:4000
+./smoke.sh                     # waits for /api/health, then exits 0
+```
+
+The web container proxies `/api/*` to the api container via nginx
+(`packages/web/nginx.conf`), so a single host port forwards both the SPA and
+the API. Mongo and MinIO persist into named volumes (`mongo-data`, `minio-data`).
+A one-shot `minio-init` container creates the configured bucket on first run.
+
+`FAL_KEY` is optional. Without it, recipe-import (URL → recipe), AI image
+generation and substitute suggestions call Fal.ai with no key and fail
+upstream; the rest of the app — lists, recipes, calendar, sharing,
+PWA/offline — works exactly as it does in production.
+
+Backups: `docker compose exec -T mongo mongodump --archive` (or
+`mongodump` to a mounted dir) for MongoDB, and a `mc mirror` of the configured
+bucket for MinIO. Restore with the matching `mongorestore` and `mc mirror`
+pair. Both volumes live in the `docker-compose.yml` named volumes; keep their
+host paths in the same backup.
+
+Upgrades: `docker compose pull && docker compose up -d` rolls the `web`,
+`api`, and `kivo` images to their `:latest` tag while reusing the data
+volumes. Mongo and MinIO stay on the image tags pinned in the compose file
+until you change them — pin those versions deliberately.
+
 ## Licence
 
 AGPL-3.0-or-later. See [LICENSE](LICENSE).
