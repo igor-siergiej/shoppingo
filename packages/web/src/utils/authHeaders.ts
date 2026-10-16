@@ -1,10 +1,9 @@
-import { getAccessToken } from '@imapps/web-utils';
+import { getAccessToken } from '../auth/accessTokenStore';
 import { getAuthConfig } from '../config/auth';
 
 /** Bearer auth header for the current access token, or empty when not signed in. */
 export const getAuthHeaders = (): Record<string, string> => {
-    // Suppress the unused-config warning: getAuthConfig is retained for callers that need
-    // to know whether the auth service is configured at all.
+    // The token lives in an in-memory store (auth/accessTokenStore); not in DOM storage.
     void getAuthConfig();
     const token = getAccessToken();
     return token ? { Authorization: `Bearer ${token}` } : {};

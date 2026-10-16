@@ -3,7 +3,7 @@
  * Logs are then collected by Promtail and sent to Loki
  */
 
-import { getAccessToken } from '@imapps/web-utils';
+import { getAccessToken } from '../auth/accessTokenStore';
 
 interface LogEntry {
     level: 'debug' | 'info' | 'warn' | 'error';

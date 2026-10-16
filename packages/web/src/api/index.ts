@@ -1,4 +1,4 @@
-import { getAccessToken } from '@imapps/web-utils';
+import { getAccessToken } from '../auth/accessTokenStore';
 import type {
     DiscoveryPublishRequest,
     DiscoveryRecipe,
