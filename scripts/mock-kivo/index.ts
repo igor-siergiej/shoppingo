@@ -33,7 +33,7 @@ export interface MockKivoOptions {
 
 export interface MockKivoServer {
     /** The underlying Bun HTTP server; stop it via `.stop()`. */
-    server: Bun.Server;
+    server: Bun.Server<undefined>;
     /** Human-friendly origin string such as `http://127.0.0.1:3199`. */
     url: string;
     /** Port the server is bound to (echoes `options.port` or the picked default). */
@@ -194,12 +194,13 @@ export const startMockKivo = (options: MockKivoOptions = {}): MockKivoServer => 
     });
 
     const url = `http://${host === '0.0.0.0' ? 'localhost' : host}:${server.port}`;
+    const resolvedPort = server.port ?? port;
     // eslint-disable-next-line no-console
     console.log(`mock kivo listening on ${url} (localhost only)`);
     return {
         server,
         url,
-        port: server.port,
+        port: resolvedPort,
         close: () => server.stop(true),
     };
 };
