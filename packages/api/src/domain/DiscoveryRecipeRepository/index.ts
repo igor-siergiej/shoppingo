@@ -4,6 +4,8 @@ import type { DiscoveryRecipe, DiscoverySource } from '@shoppingo/types';
 export interface DiscoveryRecipeRepository {
     ensureIndexes(): Promise<void>;
     getById(id: string): Promise<DiscoveryRecipe | null>;
+    /** Library recipe that has the given URL slug, or null. Slugs are sparse: most legacy recipes have none. */
+    getBySlug(slug: string): Promise<DiscoveryRecipe | null>;
     /** The library recipes with these ids in one query; ids that no longer exist are simply absent. */
     getByIds(ids: string[]): Promise<DiscoveryRecipe[]>;
     upsert(recipe: DiscoveryRecipe): Promise<void>;
@@ -16,6 +18,13 @@ export interface DiscoveryRecipeRepository {
     listRevisions(
         source: DiscoverySource
     ): Promise<Array<Pick<DiscoveryRecipe, 'id' | 'sourceRevision' | 'imageRevision' | 'createdAt'>>>;
+    /**
+     * Public-facing list: recipes that have a `slug`, ordered by `createdAt DESC, _id DESC` for stable
+     * cursor pagination. Pass `after` to fetch the page starting after that id; null on the last page.
+     */
+    listPublic(pageSize: number, after: string | null): Promise<DiscoveryRecipe[]>;
+    /** Whether `slug` is already used by a different library recipe. Used to settle collisions on publish. */
+    hasSlug(slug: string): Promise<boolean>;
     /** Every library recipe, in stable order, in batches — feeds a full reindex without loading the library at once. */
     batches(size: number): AsyncGenerator<DiscoveryRecipe[]>;
 }

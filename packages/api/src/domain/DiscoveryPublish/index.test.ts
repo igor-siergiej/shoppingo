@@ -61,6 +61,7 @@ const setup = (initial: Recipe[] = [personal()], seedLibrary: DiscoveryRecipe[] 
         findByTitle: async (title) =>
             [...library.values()].filter((recipe) => recipe.title.toLowerCase() === title.toLowerCase()),
         hasCoverImageKey: async (key) => [...library.values()].some((recipe) => recipe.coverImageKey === key),
+        hasSlug: async (slug) => [...library.values()].some((recipe) => recipe.slug === slug),
         listRevisions: async () => [],
         batches: async function* () {},
     };
@@ -145,10 +146,31 @@ describe('DiscoveryPublishService.publish', () => {
             servings: 4,
             difficulty: 'easy',
             sourceUrl: `/discover/${ref.libraryId}`,
+            slug: 'grandma-soup',
         });
         expect(doc?.ingredients.map((i) => i.name)).toEqual(['Carrot', 'onion']);
         expect(indexed.get(ref.libraryId)).toEqual(doc as DiscoveryRecipe);
         expect(ref.libraryId).toMatch(/^user-/);
+    });
+
+    it('appends a numeric suffix to the slug when a same-titled recipe already exists', async () => {
+        const { publish, library } = setup();
+        library.set('user-existing', {
+            id: 'user-existing',
+            title: 'Grandma Soup',
+            ingredients: [{ id: 'x', name: 'pasta' }],
+            instructions: ['different'],
+            tags: [],
+            source: 'user',
+            sourceUrl: 'https://example.test/discover/user-existing',
+            licence: 'CC-BY-SA-4.0',
+            attribution: 'someone else',
+            createdAt: new Date(0),
+            updatedAt: new Date(0),
+            slug: 'grandma-soup',
+        });
+        const ref = await publish.publish(RECIPE_ID, owner, agree);
+        expect(library.get(ref.libraryId)?.slug).toBe('grandma-soup-2');
     });
 
     it("exposes nothing of the private recipe: not its users, owner, ids or the author's name", async () => {

@@ -88,6 +88,9 @@ export default defineConfig({
                 BUCKET_SECRET_KEY: 'minioadmin',
                 // Only the dedicated e2e search engine, never a developer's OPENSEARCH_URL from .env. Empty = discovery off.
                 OPENSEARCH_URL: process.env.E2E_OPENSEARCH_URL ?? '',
+                // The public read endpoint echoes the allow-listed origin in Access-Control-Allow-Origin.
+                // Without an allow-list the middleware falls back to "*"; the test asserts the echo path.
+                PUBLIC_DISCOVER_ORIGINS: 'https://shoppingo.imapps.uk',
             },
         },
     ],
