@@ -12,9 +12,18 @@ export class HttpAuthClient implements AuthClient {
 
     async getUsersByUsernames(usernames: Array<string>): Promise<Array<User>> {
         const authUrl = this.configService.get('authUrl');
+        const serviceToken = this.configService.get('serviceToken');
 
         if (!authUrl) {
             throw Object.assign(new Error('Auth service not configured'), {
+                status: 502,
+            });
+        }
+
+        // Kivo's /users requires a credential once LOOKUP_AUTH_ENABLED is on. The shared SERVICE_TOKEN
+        // is the right shape for a server-to-server call: no user JWT is in scope here.
+        if (!serviceToken) {
+            throw Object.assign(new Error('SERVICE_TOKEN is not configured'), {
                 status: 502,
             });
         }
@@ -23,6 +32,7 @@ export class HttpAuthClient implements AuthClient {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'X-Service-Token': String(serviceToken),
             },
             body: JSON.stringify({ usernames }),
         });

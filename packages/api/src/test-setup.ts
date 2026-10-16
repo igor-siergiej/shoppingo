@@ -5,5 +5,5 @@ process.env.BUCKET_NAME = 'test';
 process.env.BUCKET_ACCESS_KEY = 'test';
 process.env.BUCKET_SECRET_KEY = 'test';
 process.env.BUCKET_ENDPOINT = 'localhost:9000';
-process.env.AUTH_URL = 'http://localhost:3001';
+process.env.AUTH_URL = 'https://auth.test.local';
 process.env.FAL_KEY = 'test-key';

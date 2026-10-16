@@ -19,7 +19,8 @@ class MockConfig {
 
     reset() {
         this.configValues = {
-            authUrl: 'http://auth-service.com',
+            authUrl: 'https://auth-service.com',
+            serviceToken: 'svc-token-123',
         };
     }
 }
@@ -95,15 +96,31 @@ describe('HttpAuthClient', () => {
 
             const result = await authClient.getUsersByUsernames(['testuser1', 'testuser2']);
 
-            expect(mockFetch.calls[0][0]).toBe('http://auth-service.com/users');
+            expect(mockFetch.calls[0][0]).toBe('https://auth-service.com/users');
             expect(mockFetch.calls[0][1]).toEqual({
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'X-Service-Token': 'svc-token-123',
                 },
                 body: JSON.stringify({ usernames: ['testuser1', 'testuser2'] }),
             });
             expect(result).toEqual(mockUsers);
+        });
+
+        it('should throw when SERVICE_TOKEN is not configured', async () => {
+            const configWithoutToken = {
+                get(key: string): unknown {
+                    if (key === 'serviceToken') return undefined;
+                    return mockConfig.get(key);
+                },
+            };
+            const clientWithoutToken = new HttpAuthClient(configWithoutToken);
+
+            await expect(clientWithoutToken.getUsersByUsernames(['x'])).rejects.toMatchObject({
+                message: 'SERVICE_TOKEN is not configured',
+                status: 502,
+            });
         });
 
         it('should throw error when no users found', async () => {
@@ -120,11 +137,12 @@ describe('HttpAuthClient', () => {
                 status: 400,
             });
 
-            expect(mockFetch.calls[0][0]).toBe('http://auth-service.com/users');
+            expect(mockFetch.calls[0][0]).toBe('https://auth-service.com/users');
             expect(mockFetch.calls[0][1]).toEqual({
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'X-Service-Token': 'svc-token-123',
                 },
                 body: JSON.stringify({ usernames: [] }),
             });
