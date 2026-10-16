@@ -59,11 +59,19 @@ Bun-workspace monorepo — `packages/web`, `packages/api`, `packages/types`
 ## Running it
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for the contributor-focused setup.
-For a quick local-only spin-up:
+For a quick local-only spin-up that doesn't need a separate `kivo` checkout:
 
 ```bash
 bun install
 cp .env.example .env
+bun run dev:local                        # mongo + minio + mock-kivo + web (:4000) + api (:4001)
+```
+
+`dev:local` starts a self-hosted mock kivo (localhost only, refuses to run in
+production) and points the api at it. With a real kivo (or the docker self-host
+stack) reachable, the more explicit flow still works:
+
+```bash
 docker compose -f selfhost/docker-compose.yml up -d \
     mongo minio minio-init               # dev infra only — no published images
 bun run start                            # web on :4000, api on :4001
