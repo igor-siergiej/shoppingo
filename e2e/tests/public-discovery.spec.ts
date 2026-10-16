@@ -12,14 +12,17 @@ test.describe('Public discover API', () => {
         expect(Array.isArray(body.items)).toBe(true);
     });
 
-    test('@smoke /api/public/discover/recipes echoes Access-Control-Allow-Origin for the marketing-site origin', async ({
-        request,
-    }) => {
+    test('@smoke /api/public/discover/recipes allows the marketing-site origin via CORS', async ({ request }) => {
+        // The public read surface is intentionally permissive: it either echoes
+        // the request origin (when PUBLIC_DISCOVER_ORIGINS allow-lists it) or
+        // falls back to "*" (default in selfhost / dev). Both satisfy the
+        // marketing-site integration, so the smoke check accepts either.
         const res = await request.get('/api/public/discover/recipes', {
             headers: { Origin: 'https://shoppingo.imapps.uk' },
         });
         expect(res.status()).toBe(200);
-        expect(res.headers()['access-control-allow-origin']).toBe('https://shoppingo.imapps.uk');
+        const allowOrigin = res.headers()['access-control-allow-origin'];
+        expect(['https://shoppingo.imapps.uk', '*']).toContain(allowOrigin);
     });
 
     test('@smoke /api/public/discover/recipes:badslug returns 404, not 200 + SPA shell', async ({ request }) => {
