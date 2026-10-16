@@ -8,7 +8,9 @@ the shop, works offline, and stays in sync with whoever you share it with.
 
 **Live:** https://shoppingo.imapps.uk
 
-<!-- TODO: add a screenshot or short GIF of the lists + recipe flow here -->
+<!-- TODO: replace with a screenshot or short GIF of the lists + recipe flow.
+     The kanban card shoppingo-contributor-onboarding tracks this; designers
+     and PRs welcome. -->
 
 ## Goal
 
@@ -52,21 +54,38 @@ Bun-workspace monorepo — `packages/web`, `packages/api`, `packages/types`
 
 ## Running it
 
-Requires **Bun 1.x**, a local **MongoDB** (`localhost:27017`), **MinIO**, and a
-`FAL_KEY` for the AI features. Config lives in `.env`.
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for the contributor-focused setup.
+For a quick local-only spin-up:
 
 ```bash
 bun install
-bun run start            # web on :4000, api on :4001
+cp .env.example .env
+docker compose -f selfhost/docker-compose.yml up -d \
+    mongo minio minio-init               # dev infra only — no published images
+bun run start                            # web on :4000, api on :4001
 ```
 
+The full self-host stack (web + api + mongo + minio + kivo from published
+images) lives in `selfhost/docker-compose.yml`; see
+[Self-hosting](#self-hosting) below.
+
 ```bash
-bun run lint                              # Biome
-bun run tsc --noEmit                      # type-check
-bun run --filter @shoppingo/api test      # API tests (Bun runner, 90% threshold)
-bun run --filter @shoppingo/web test      # web component tests
-bun run test:e2e                          # Playwright, incl. visual regression
+bun run lint                                       # Biome
+bunx tsc -p packages/api/tsconfig.json --noEmit    # API types
+bunx tsc -p packages/web/tsconfig.app.json --noEmit # web types
+bun run --filter @shoppingo/api test               # Bun runner; 90 % coverage gate
+bun run --filter @shoppingo/web test               # Vitest component tests
+bun run test:e2e                                   # Playwright; needs the dev stack
+bun run load:local                                 # k6 (manual; see scripts/load)
 ```
+
+## Contributing
+
+Bug reports, feature requests and PRs welcome — start with
+[CONTRIBUTING.md](./CONTRIBUTING.md) for the dev setup, commit format and PR
+flow. The
+[`good first issue`](https://github.com/igor-siergiej/shoppingo/issues?q=is%3Aopen+label%3A%22good+first+issue%22)
+label picks out small, contained starting points.
 
 ## CI/CD
 
