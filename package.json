@@ -17,7 +17,7 @@
     "lint:fix": "biome check --fix --unsafe .",
     "format": "biome format --write .",
     "test:scripts": "bun test scripts",
-    "test:e2e": "dotenv -e .env -- bunx --bun playwright test",
+    "test:e2e": "bun --env-file=.env --bun playwright test",
     "test:e2e:ui": "dotenv -e .env -- playwright test --ui",
     "test:e2e:update-snapshots": "dotenv -e .env -- playwright test --project=mobile-visual --project=desktop-visual --update-snapshots",
     "tsc:e2e": "tsc --noEmit -p e2e/tsconfig.json",
