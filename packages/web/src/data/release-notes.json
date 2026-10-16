@@ -1,5 +1,23 @@
 [
   {
+    "version": "1.99.0",
+    "date": "2026-10-16",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Patch DOM storage so access token never lands in localStorage"
+      },
+      {
+        "type": "feature",
+        "text": "Drop DOM storage for access token in shoppingo web"
+      },
+      {
+        "type": "feature",
+        "text": "Gate kivo /users behind X-Service-Token, enforce AUTH_URL https"
+      }
+    ]
+  },
+  {
     "version": "1.98.0",
     "date": "2026-10-16",
     "notes": [

@@ -1,3 +1,12 @@
+# [1.99.0](https://github.com/igor-siergiej/shoppingo/compare/v1.98.0...v1.99.0) (2026-10-16)
+
+
+### Features
+
+* **security:** drop DOM storage for access token in shoppingo web ([95d63e0](https://github.com/igor-siergiej/shoppingo/commit/95d63e0d6b7503cb9945595a404db34ccecd25e1))
+* **security:** gate kivo /users behind X-Service-Token, enforce AUTH_URL https ([1c27ce9](https://github.com/igor-siergiej/shoppingo/commit/1c27ce988cdd94155cafd6ea1b71b18216c463b7))
+* **security:** patch DOM storage so access token never lands in localStorage ([d66d6fc](https://github.com/igor-siergiej/shoppingo/commit/d66d6fc28254d3721d02ee7ec83911a199a62498))
+
 # [1.98.0](https://github.com/igor-siergiej/shoppingo/compare/v1.97.2...v1.98.0) (2026-10-16)
 
 
