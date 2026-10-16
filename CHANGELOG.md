@@ -1,3 +1,10 @@
+# [1.98.0](https://github.com/igor-siergiej/shoppingo/compare/v1.97.2...v1.98.0) (2026-10-16)
+
+
+### Features
+
+* **selfhost:** docker-compose for web + api + mongo + minio + kivo ([#234](https://github.com/igor-siergiej/shoppingo/issues/234)) ([2450a7d](https://github.com/igor-siergiej/shoppingo/commit/2450a7d8cedcf5529af33cf4601abfd4660da49e)), closes [#232](https://github.com/igor-siergiej/shoppingo/issues/232)
+
 ## [1.97.2](https://github.com/igor-siergiej/shoppingo/compare/v1.97.1...v1.97.2) (2026-10-16)
 
 
