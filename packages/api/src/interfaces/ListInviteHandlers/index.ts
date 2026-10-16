@@ -1,8 +1,8 @@
 import type { Logger } from '@imapps/api-utils';
 import { APIError } from '@imapps/api-utils/hono';
+import type { IssuedInvite, ListInvitePublic, ListInviteService } from '../../domain/ListInviteService';
 import { clientIpFrom } from '../../infrastructure/clientIp';
 import { IpRateLimiter } from '../../infrastructure/rateLimit';
-import type { IssuedInvite, ListInvitePublic, ListInviteService } from '../../domain/ListInviteService';
 import { withAuth } from '../handlerUtils';
 
 const DEFAULT_TTL_DAYS = 7;
@@ -21,16 +21,6 @@ const clampTtl = (raw: unknown): number => {
     const days = Number(raw);
     if (!Number.isFinite(days) || days < 1) return DEFAULT_TTL_DAYS;
     return Math.min(Math.trunc(days), MAX_TTL_DAYS);
-};
-
-// fallow-ignore-next-line complexity
-const clientIpFrom = (forwardedFor: string | undefined, realIp: string | null): string => {
-    const entries = (forwardedFor ?? '')
-        .split(',')
-        .map((entry) => entry.trim())
-        .filter(Boolean);
-    if (entries.length === 0) return realIp ?? 'unknown';
-    return [...entries].reverse().find((entry) => !isPrivateIp(entry)) ?? entries[entries.length - 1];
 };
 
 export const createListInviteHandlers = (service: ListInviteService, _logger: Logger) => ({

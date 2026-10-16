@@ -52,13 +52,13 @@ test.describe('List invite API', () => {
         // MOCK_TOKEN_2 directly. The fixture `request` context shares the
         // default testuser token, so we override Authorization per request.
         const claimed = await request.post(`/api/lists/invites/${token}/redeem`, {
-            headers: { Authorization: `Bearer ${MOCK_TOKEN_2}` },
+            headers: authB,
         });
         expect(claimed.status()).toBe(200);
 
         // A second redeem by anyone is a 410.
         const second = await request.post(`/api/lists/invites/${token}/redeem`, {
-            headers: { Authorization: `Bearer ${MOCK_TOKEN_2}` },
+            headers: authB,
             failOnStatusCode: false,
         });
         expect(second.status()).toBe(410);
