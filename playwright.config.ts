@@ -7,6 +7,12 @@ config();
 const E2E_KIVO_PORT = 3099;
 const E2E_MONGO_URI = resolveMongoUri();
 
+// Live smoke checks (e.g. kanban-cli e2e live) inject a deployed URL via
+// E2E_BASE_URL; honour it so the smoke spec actually targets prod instead
+// of silently falling back to the dev server. Local runs leave the env
+// unset and keep :4000.
+const BASE_URL = process.env.E2E_BASE_URL ?? 'http://localhost:4000';
+
 export default defineConfig({
     testDir: './e2e/tests',
     tsconfig: './e2e/tsconfig.json',
@@ -24,7 +30,7 @@ export default defineConfig({
         },
     },
     use: {
-        baseURL: 'http://localhost:4000',
+        baseURL: BASE_URL,
         trace: 'on-first-retry',
         serviceWorkers: 'block',
     },
