@@ -16,13 +16,12 @@ test.describe('SEO hygiene', () => {
 
     test('@smoke /sitemap.xml returns 404, not the SPA shell', async ({ request }) => {
         const res = await request.get('/sitemap.xml', { failOnStatusCode: false });
+        // The card's real criterion: a 404 from the web container, not 200 +
+        // the SPA index.html. nginx's built-in 404 page can be text/html, so
+        // don't second-guess the content-type — the status code is what
+        // crawlers and tooling actually key off.
         expect(res.status()).toBe(404);
-        const contentType = res.headers()['content-type'] ?? '';
-        // Nginx's default 404 body for static files is text/html. Either way
-        // we must NOT be served the SPA's index.html (which is what a 200
-        // would be) — keep this guard explicit in case nginx ever changes its
-        // default error content-type.
-        expect(contentType).not.toMatch(/^text\/html/);
+        expect(res.status()).not.toBe(200);
     });
 
     test('@smoke index.html has description, noindex, canonical, and OG/Twitter share tags', async ({ page }) => {
