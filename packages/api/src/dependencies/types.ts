@@ -30,6 +30,8 @@ import type { ItemCategoryRepository } from '../domain/ItemCategoryRepository';
 import type { ItemCategoryService } from '../domain/ItemCategoryService';
 import type { LabelRepository } from '../domain/LabelRepository';
 import type { LabelService } from '../domain/LabelService';
+import type { ListInviteRepository } from '../domain/ListInviteRepository';
+import type { ListInviteService } from '../domain/ListInviteService';
 import type { ListRealtimeHub } from '../domain/ListRealtimeHub';
 import type { ListRepository } from '../domain/ListRepository';
 import type { ListService } from '../domain/ListService';
@@ -126,6 +128,8 @@ export enum DependencyToken {
     WikibooksSource = 'WikibooksSource',
     RecipeEstimator = 'RecipeEstimator',
     WikibooksIngestService = 'WikibooksIngestService',
+    ListInviteRepository = 'ListInviteRepository',
+    ListInviteService = 'ListInviteService',
 }
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
@@ -183,6 +187,8 @@ export type Dependencies = {
     [DependencyToken.WikibooksSource]: WikibooksSource;
     [DependencyToken.RecipeEstimator]: RecipeEstimator;
     [DependencyToken.WikibooksIngestService]: WikibooksIngestService;
+    [DependencyToken.ListInviteRepository]: ListInviteRepository;
+    [DependencyToken.ListInviteService]: ListInviteService;
 };
 
 export enum CollectionNames {
@@ -198,4 +204,5 @@ export enum CollectionNames {
     DiscoveryReport = 'discoveryReports',
     ItemCategory = 'itemCategories',
     MealPlan = 'mealPlan',
+    ListInvite = 'listInvites',
 }

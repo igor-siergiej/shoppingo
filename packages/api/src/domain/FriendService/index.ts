@@ -73,6 +73,23 @@ export class FriendService {
         return (await this.repo.findPair(userIdA, userIdB)) !== null;
     }
 
+    /**
+     * Insert a friendship row directly. Used by flows that already established
+     * the connection between two users (e.g. the list-invite claim), where
+     * generating a pairing code and redeeming it would just be ceremony.
+     */
+    async createFriendship(userA: User, userB: User): Promise<Friendship> {
+        if (userA.id === userB.id) throw err('Cannot friend yourself', 400);
+        const existing = await this.repo.findPair(userA.id, userB.id);
+        if (existing) return existing;
+        const userIds = sortPair(userA.id, userB.id);
+        const users: [User, User] = userIds[0] === userA.id ? [userA, userB] : [userB, userA];
+        const friendship: Friendship = { id: this.idGenerator.generate(), userIds, users, createdAt: new Date() };
+        await this.repo.insertFriendship(friendship);
+        this.logger?.info('Friendship created', { userIds });
+        return friendship;
+    }
+
     async friendIdsOf(userId: string): Promise<string[]> {
         return (await this.listFriends(userId)).map((u) => u.id);
     }

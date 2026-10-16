@@ -71,6 +71,7 @@ export const onStartup = async () => {
         await dependencyContainer.resolve(DependencyToken.DiscoveryRecipeRepository).ensureIndexes();
         await dependencyContainer.resolve(DependencyToken.DiscoveryPublicationRepository).ensureIndexes();
         await dependencyContainer.resolve(DependencyToken.DiscoveryReportRepository).ensureIndexes();
+        await dependencyContainer.resolve(DependencyToken.ListInviteRepository).ensureIndexes();
         // Discovery is optional: a search engine that is down at boot must not stop the rest of the API. The index
         // is created lazily on the first request that finds it reachable.
         dependencyContainer

@@ -1,0 +1,58 @@
+import type { MongoDbConnection } from '@imapps/api-utils';
+import type { ListInvite } from '@shoppingo/types';
+import { CollectionNames, type Collections } from '../../dependencies/types';
+import type { ListInviteRepository } from '../../domain/ListInviteRepository';
+
+const NO_OBJECT_ID = { projection: { _id: 0 } } as const;
+
+export class MongoListInviteRepository implements ListInviteRepository {
+    constructor(private readonly db: MongoDbConnection<Collections>) {}
+
+    private collection() {
+        return this.db.getCollection(CollectionNames.ListInvite);
+    }
+
+    async ensureIndexes(): Promise<void> {
+        // token is the document id (string), so it has a unique index by default.
+        // The owner index makes the "list invites I've issued" query fast and the
+        // expiresAt index is the cleanup sweep.
+        await this.collection().createIndex({ ownerId: 1, createdAt: -1 });
+        await this.collection().createIndex({ expiresAt: 1 });
+    }
+
+    async insert(invite: ListInvite): Promise<void> {
+        await this.collection().insertOne({ _id: invite.token, ...invite });
+    }
+
+    async getByToken(token: string): Promise<ListInvite | null> {
+        return this.collection().findOne({ _id: token }, NO_OBJECT_ID);
+    }
+
+    async markClaimed(token: string, userId: string, at: Date): Promise<ListInvite | null> {
+        const result = await this.collection().findOneAndUpdate(
+            { _id: token, claimedAt: { $exists: false } },
+            { $set: { claimedBy: userId, claimedAt: at } },
+            { returnDocument: 'after' }
+        );
+        return (result ?? null) as ListInvite | null;
+    }
+
+    async markRevoked(token: string, at: Date): Promise<void> {
+        await this.collection().updateOne({ _id: token, revokedAt: { $exists: false } }, { $set: { revokedAt: at } });
+    }
+
+    async listOpenByOwner(ownerId: string, now: Date): Promise<ListInvite[]> {
+        return this.collection()
+            .find(
+                {
+                    ownerId,
+                    revokedAt: { $exists: false },
+                    claimedAt: { $exists: false },
+                    expiresAt: { $gt: now },
+                },
+                NO_OBJECT_ID
+            )
+            .sort({ createdAt: -1 })
+            .toArray() as Promise<ListInvite[]>;
+    }
+}

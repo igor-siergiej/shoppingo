@@ -25,6 +25,9 @@ const NO_JSON_BODY = new Set([
     'post /api/friends/code',
     'delete /api/friends/:friendId',
     'post /api/logs',
+    'post /api/lists/:title/invites',
+    'post /api/lists/invites/:token/redeem',
+    'delete /api/lists/invites/:token',
 ]);
 
 const source = readFileSync(join(import.meta.dir, 'index.ts'), 'utf8');
