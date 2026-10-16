@@ -1,3 +1,10 @@
+# [1.100.0](https://github.com/igor-siergiej/shoppingo/compare/v1.99.0...v1.100.0) (2026-10-16)
+
+
+### Features
+
+* **api:** public read-only /api/public/discover/* with slugs ([#241](https://github.com/igor-siergiej/shoppingo/issues/241)) ([2b010b9](https://github.com/igor-siergiej/shoppingo/commit/2b010b916722cb925d477bb8d2b69d99f85fed4d))
+
 # [1.99.0](https://github.com/igor-siergiej/shoppingo/compare/v1.98.0...v1.99.0) (2026-10-16)
 
 

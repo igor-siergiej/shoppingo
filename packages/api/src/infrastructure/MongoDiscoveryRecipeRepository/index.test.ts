@@ -3,6 +3,8 @@ import type { DiscoveryRecipe } from '@shoppingo/types';
 
 import { MongoDiscoveryRecipeRepository } from './index';
 
+const NO_OBJECT_ID = { projection: { _id: 0 } } as const;
+
 const recipe = (id: string): DiscoveryRecipe => ({
     id,
     title: id,
@@ -114,5 +116,54 @@ describe('MongoDiscoveryRecipeRepository', () => {
         );
         collection.countDocuments.mockResolvedValueOnce(0);
         expect(await repo.hasCoverImageKey('gone')).toBe(false);
+    });
+
+    it('adds a unique sparse slug index so user-published slugs cannot collide', async () => {
+        const { repo, collection } = setup();
+        await repo.ensureIndexes();
+        expect(collection.createIndex).toHaveBeenCalledWith({ slug: 1 }, { unique: true, sparse: true });
+    });
+
+    it('looks up by slug case-sensitively and never returns _id', async () => {
+        const { repo, collection } = setup();
+        collection.findOne.mockResolvedValueOnce(recipe('abc'));
+        const result = await repo.getBySlug('pancakes');
+        expect(collection.findOne).toHaveBeenCalledWith({ slug: 'pancakes' }, NO_OBJECT_ID);
+        expect(result?.id).toBe('abc');
+    });
+
+    it('listPublic returns only recipes that have a slug and sorts them newest-first', async () => {
+        const { repo, collection } = setup();
+        let capturedSort: unknown;
+        collection.find = vi.fn().mockReturnValue({
+            sort: (s: unknown) => {
+                capturedSort = s;
+                return { limit: () => ({ toArray: async () => [] }) };
+            },
+        });
+        await repo.listPublic(20, null);
+        expect(collection.find).toHaveBeenCalledWith({ slug: { $exists: true } }, { projection: {} });
+        expect(capturedSort).toEqual({ createdAt: -1, _id: -1 });
+    });
+
+    it('listPublic seeks past the cursor with _id < after', async () => {
+        const { repo, collection } = setup();
+        const findCalls: unknown[][] = [];
+        collection.find = vi.fn((filter: unknown) => {
+            findCalls.push([filter]);
+            return {
+                sort: () => ({ limit: () => ({ toArray: async () => [] }) }),
+            };
+        });
+        await repo.listPublic(20, '507f1f77bcf86cd799439011');
+        const capturedFilter = findCalls[0]?.[0];
+        expect(capturedFilter).toMatchObject({ slug: { $exists: true } });
+        expect(JSON.stringify(capturedFilter)).toContain('507f1f77bcf86cd799439011');
+    });
+
+    it('hasSlug returns false when no recipe owns the slug', async () => {
+        const { repo, collection } = setup();
+        collection.countDocuments.mockResolvedValueOnce(0);
+        expect(await repo.hasSlug('pancakes')).toBe(false);
     });
 });

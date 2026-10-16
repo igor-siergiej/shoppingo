@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.100.0",
+    "date": "2026-10-16",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Public read-only /api/public/discover/* with slugs"
+      }
+    ]
+  },
+  {
     "version": "1.99.0",
     "date": "2026-10-16",
     "notes": [

@@ -103,6 +103,24 @@ export class DiscoveryService {
         return this.repository.findByTitle(title);
     }
 
+    /** The recipe that has the given public URL slug, or null. */
+    // fallow-ignore-next-line unused-class-member
+    async getBySlug(slug: string): Promise<DiscoveryRecipe | null> {
+        return this.repository.getBySlug(slug);
+    }
+
+    /** Whether a different library recipe already uses `slug`. Used to settle collisions on publish. */
+    // fallow-ignore-next-line unused-class-member
+    async hasSlug(slug: string): Promise<boolean> {
+        return this.repository.hasSlug(slug);
+    }
+
+    /** Cursor-paginated public list. Caller encodes the cursor from the previous page's last `_id`. */
+    // fallow-ignore-next-line unused-class-member
+    async listPublic(pageSize: number, after: string | null): Promise<DiscoveryRecipe[]> {
+        return this.repository.listPublic(pageSize, after);
+    }
+
     /** Whether any library recipe still uses this cover image. */
     // fallow-ignore-next-line unused-class-member
     async hasCoverImageKey(key: string): Promise<boolean> {
