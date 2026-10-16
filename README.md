@@ -6,11 +6,15 @@ A shared shopping-list PWA built around how people actually shop: plan from
 recipes, or just add things to a list — either way the list is one tap away in
 the shop, works offline, and stays in sync with whoever you share it with.
 
-**Live:** https://shoppingo.imapps.uk
+**Live app:** https://shoppingo.imapps.uk
+**Marketing site:** https://d3o01nt4oiwfr9.cloudfront.net (apex cutover pending)
 
-<!-- TODO: replace with a screenshot or short GIF of the lists + recipe flow.
-     The kanban card shoppingo-contributor-onboarding tracks this; designers
-     and PRs welcome. -->
+<p align="center">
+  <img src="docs/images/lists.png" alt="Shoppingo lists screen" width="195" />
+  <img src="docs/images/list-items.png" alt="Items inside a shopping list" width="195" />
+  <img src="docs/images/recipes.png" alt="Recipe library" width="195" />
+  <img src="docs/images/discover.png" alt="Discover public recipes" width="195" />
+</p>
 
 ## Goal
 

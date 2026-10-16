@@ -86,18 +86,33 @@ about one slice of the project.
 
 ## Public roadmap
 
-The kanban board at
-<https://github.com/igor-siergiej/shoppingo/blob/main/.fallow/> (or its
-mirrored copy under `/srv/notes/kanban/shoppingo.board.md`) is the source of
-truth for what the maintainer is working on next. The Backlog column on that
-board is roughly the next-up list; `Blocked` items name the decision they
-depend on.
+There's no published Gantt chart, but the maintainer triages publicly:
+
+- **Open issues** — what people have already asked for. Filter by the
+  [`good first issue`](https://github.com/igor-siergiej/shoppingo/issues?q=is%3Aopen+label%3A%22good+first+issue%22)
+  label for small, contained starting points, or by
+  [`enhancement`](https://github.com/igor-siergiej/shoppingo/issues?q=is%3Aopen+label%3Aenhancement)
+  to see what's planned.
+- **Milestones** — issues grouped by target release on the
+  [milestones page](https://github.com/igor-siergiej/shoppingo/milestones).
+- **Discussions** — proposals, design questions and "is anyone working on
+  this?" threads live in
+  [GitHub Discussions](https://github.com/igor-siergiej/shoppingo/discussions)
+  so the maintainer can group related ideas before promoting any to issues.
+- **Project board** — the maintainer's internal kanban board is private; if
+  something isn't on the issue or milestones view above, it's not yet been
+  prioritised. New issues are triaged weekly.
+
+If you'd like something built, the fastest way to get it on the radar is to
+open an issue (or a discussion if you're still scoping) and describe the
+problem you're trying to solve.
 
 ## Where to ask
 
 - Bug reports, feature requests: a GitHub issue, ideally with a minimal repro
   for bugs.
-- Security reports: prefer private contact (see the repo's `SECURITY.md` if
-  present, otherwise DM the maintainer on Bluesky). Don't open a public
-  issue for anything sensitive.
-- General questions: open a `question` issue.
+- Security reports: use the private channel in
+  [`SECURITY.md`](./SECURITY.md) (GitHub private vulnerability reporting is
+  enabled on this repo). Don't open a public issue for anything sensitive.
+- General questions, ideas, "before I write a PR…" — open a thread in
+  [GitHub Discussions](https://github.com/igor-siergiej/shoppingo/discussions).
