@@ -8,7 +8,9 @@ the shop, works offline, and stays in sync with whoever you share it with.
 
 **Live:** https://shoppingo.imapps.uk
 
-<!-- TODO: add a screenshot or short GIF of the lists + recipe flow here -->
+<!-- TODO: replace with a screenshot or short GIF of the lists + recipe flow.
+     The kanban card shoppingo-contributor-onboarding tracks this; designers
+     and PRs welcome. -->
 
 ## Goal
 
@@ -52,21 +54,38 @@ Bun-workspace monorepo — `packages/web`, `packages/api`, `packages/types`
 
 ## Running it
 
-Requires **Bun 1.x**, a local **MongoDB** (`localhost:27017`), **MinIO**, and a
-`FAL_KEY` for the AI features. Config lives in `.env`.
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for the contributor-focused setup.
+For a quick local-only spin-up:
 
 ```bash
 bun install
-bun run start            # web on :4000, api on :4001
+cp .env.example .env
+docker compose -f selfhost/docker-compose.yml up -d \
+    mongo minio minio-init               # dev infra only — no published images
+bun run start                            # web on :4000, api on :4001
 ```
 
+The full self-host stack (web + api + mongo + minio + kivo from published
+images) lives in `selfhost/docker-compose.yml`; see
+[Self-hosting](#self-hosting) below.
+
 ```bash
-bun run lint                              # Biome
-bun run tsc --noEmit                      # type-check
-bun run --filter @shoppingo/api test      # API tests (Bun runner, 90% threshold)
-bun run --filter @shoppingo/web test      # web component tests
-bun run test:e2e                          # Playwright, incl. visual regression
+bun run lint                                       # Biome
+bunx tsc -p packages/api/tsconfig.json --noEmit    # API types
+bunx tsc -p packages/web/tsconfig.app.json --noEmit # web types
+bun run --filter @shoppingo/api test               # Bun runner; 90 % coverage gate
+bun run --filter @shoppingo/web test               # Vitest component tests
+bun run test:e2e                                   # Playwright; needs the dev stack
+bun run load:local                                 # k6 (manual; see scripts/load)
 ```
+
+## Contributing
+
+Bug reports, feature requests and PRs welcome — start with
+[CONTRIBUTING.md](./CONTRIBUTING.md) for the dev setup, commit format and PR
+flow. The
+[`good first issue`](https://github.com/igor-siergiej/shoppingo/issues?q=is%3Aopen+label%3A%22good+first+issue%22)
+label picks out small, contained starting points.
 
 ## CI/CD
 
@@ -89,6 +108,40 @@ bun run test:e2e                          # Playwright, incl. visual regression
   model output in your data.
 - **Shared `@imapps/*` packages** for config, logging, DB and auth-client code
   that would otherwise be copy-pasted between apps.
+
+## Self-hosting
+
+Everything published to Docker Hub. `selfhost/docker-compose.yml` brings up
+web, api, mongo, minio and kivo with one command:
+
+```bash
+cp selfhost/.env.example selfhost/.env
+$EDITOR selfhost/.env          # at minimum set MINIO_ROOT_USER + MINIO_ROOT_PASSWORD
+cd selfhost
+docker compose up -d           # web on http://localhost:4000
+./smoke.sh                     # waits for /api/health, then exits 0
+```
+
+The web container proxies `/api/*` to the api container via nginx
+(`packages/web/nginx.conf`), so a single host port forwards both the SPA and
+the API. Mongo and MinIO persist into named volumes (`mongo-data`, `minio-data`).
+A one-shot `minio-init` container creates the configured bucket on first run.
+
+`FAL_KEY` is optional. Without it, recipe-import (URL → recipe), AI image
+generation and substitute suggestions call Fal.ai with no key and fail
+upstream; the rest of the app — lists, recipes, calendar, sharing,
+PWA/offline — works exactly as it does in production.
+
+Backups: `docker compose exec -T mongo mongodump --archive` (or
+`mongodump` to a mounted dir) for MongoDB, and a `mc mirror` of the configured
+bucket for MinIO. Restore with the matching `mongorestore` and `mc mirror`
+pair. Both volumes live in the `docker-compose.yml` named volumes; keep their
+host paths in the same backup.
+
+Upgrades: `docker compose pull && docker compose up -d` rolls the `web`,
+`api`, and `kivo` images to their `:latest` tag while reusing the data
+volumes. Mongo and MinIO stay on the image tags pinned in the compose file
+until you change them — pin those versions deliberately.
 
 ## Licence
 

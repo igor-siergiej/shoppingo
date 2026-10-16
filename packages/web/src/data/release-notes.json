@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.98.0",
+    "date": "2026-10-16",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Docker-compose for web + api + mongo + minio + kivo"
+      }
+    ]
+  },
+  {
     "version": "1.97.2",
     "date": "2026-10-16",
     "notes": [

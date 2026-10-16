@@ -1,0 +1,114 @@
+# Self-host everything from published Docker Hub images.
+# Run from this directory: `cp .env.example .env && docker compose up -d`
+# The web container (port 4000 on the host) serves the SPA and proxies /api/*
+# to the api container (packages/web/nginx.conf).
+name: shoppingo-selfhost
+
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand({ ping: 1 }).ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  minio:
+    image: minio/minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?MINIO_ROOT_USER must be set}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?MINIO_ROOT_PASSWORD must be set}
+    volumes:
+      - minio-data:/data
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:9000/minio/health/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # One-shot container that creates the bucket. Restarts on its own until the
+  # bucket exists; minio readiness is what gates it via the depends_on below.
+  minio-init:
+    image: minio/mc
+    depends_on:
+      minio:
+        condition: service_healthy
+    networks:
+      - internal
+    entrypoint: ["sh", "-c"]
+    command: >
+      "mc alias set local http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD}
+       && mc mb -p local/${BUCKET_NAME:-shoppingo} || true
+       && exit 0"
+    restart: "no"
+
+  kivo:
+    image: igurusama/imapps:kivo-latest
+    restart: unless-stopped
+    environment:
+      PORT: "3008"
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3008/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    image: igurusama/imapps:shoppingo-api-latest
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+      kivo:
+        condition: service_healthy
+    environment:
+      PORT: "4001"
+      AUTH_URL: "http://kivo:3008"
+      CONNECTION_URI: "mongodb://mongo:27017"
+      DATABASE_NAME: ${DATABASE_NAME:-shoppingo}
+      BUCKET_ENDPOINT: "minio:9000"
+      BUCKET_NAME: ${BUCKET_NAME:-shoppingo}
+      BUCKET_ACCESS_KEY: ${MINIO_ROOT_USER}
+      BUCKET_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
+      # AI features: leave FAL_KEY unset to disable recipe-import LLM, image
+      # generation and substitutes. With no key the routes return upstream
+      # errors; the UI flows that need them can be ignored or skipped.
+      FAL_KEY: ${FAL_KEY:-}
+      FAL_MODEL: ${FAL_MODEL:-}
+      FAL_RECIPE_MODEL: ${FAL_RECIPE_MODEL:-}
+      WIKIBOOKS_USER_AGENT: ${WIKIBOOKS_USER_AGENT:-Shoppingo/1.0 (https://github.com/igor-siergiej/shoppingo)}
+    networks:
+      - internal
+
+  web:
+    image: igurusama/imapps:shoppingo-web-latest
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_started
+    ports:
+      # Single host port forwards to the web container, which proxies /api/*
+      # to the api container. See packages/web/nginx.conf for the rule.
+      - "${WEB_PORT:-4000}:3000"
+    networks:
+      - internal
+
+volumes:
+  mongo-data:
+  minio-data:
+
+networks:
+  internal:

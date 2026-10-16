@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Project conventions
+    url: https://github.com/igor-siergiej/shoppingo/blob/main/AGENTS.md
+    about: architecture, scripts, commit / release-notes format, deployment layout
+  - name: Public roadmap
+    url: https://github.com/igor-siergiej/shoppingo/issues?q=is%3Aopen+label%3A%22good+first+issue%22
+    about: small, well-scoped first issues
