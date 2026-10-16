@@ -1,3 +1,10 @@
+## [1.97.1](https://github.com/igor-siergiej/shoppingo/compare/v1.97.0...v1.97.1) (2026-10-16)
+
+
+### Bug Fixes
+
+* **web:** use packages/web/nginx.conf in prod and honour E2E_BASE_URL ([#231](https://github.com/igor-siergiej/shoppingo/issues/231)) ([a398b37](https://github.com/igor-siergiej/shoppingo/commit/a398b376cd1cbcc812c1356287bd3683ba401db2))
+
 # [1.97.0](https://github.com/igor-siergiej/shoppingo/compare/v1.96.0...v1.97.0) (2026-10-14)
 
 

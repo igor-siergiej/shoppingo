@@ -1,5 +1,19 @@
 [
   {
+    "version": "1.97.1",
+    "date": "2026-10-16",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Use packages/web/nginx.conf in prod and honour E2E_BASE_URL"
+      },
+      {
+        "type": "improvement",
+        "text": "Shared shoppingo links now show a preview card with the app's name and tagline, and the app itself is noindexed so the marketing site owns search."
+      }
+    ]
+  },
+  {
     "version": "1.97.0",
     "date": "2026-10-14",
     "notes": [
