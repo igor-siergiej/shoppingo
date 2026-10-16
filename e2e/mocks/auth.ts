@@ -1,28 +1,27 @@
 import type { Page } from '@playwright/test';
 import type { User } from '@shoppingo/types';
-import { MOCK_USER, MOCK_USER_2 } from './data/users';
 
-const makePart = (obj: object | string) =>
-    Buffer.from(typeof obj === 'string' ? obj : JSON.stringify(obj)).toString('base64');
+import { refreshTokenFor, tokenFor } from '../../scripts/mock-kivo/tokens';
 
-export const tokenFor = (user: User) =>
-    [
-        makePart({ alg: 'HS256', typ: 'JWT' }),
-        makePart({ username: user.username, id: user.id, exp: 9999999999, iat: 1700000000 }),
-        makePart('mock-signature'),
-    ].join('.');
+const DEFAULT_USER: User = { id: 'user-testuser', username: 'testuser' };
+const DEFAULT_USER_2: User = { id: 'user-other', username: 'otheruser' };
 
-export const MOCK_TOKEN = tokenFor(MOCK_USER);
-export const MOCK_TOKEN_2 = tokenFor(MOCK_USER_2);
+// Expose the shared mock users so specs and helpers keep the same default that
+// `e2e/global-setup.ts` seeds into the runtime mock.
+export const MOCK_USER = DEFAULT_USER;
+export const MOCK_USER_2 = DEFAULT_USER_2;
+
+export const MOCK_TOKEN = tokenFor(DEFAULT_USER);
+export const MOCK_TOKEN_2 = tokenFor(DEFAULT_USER_2);
 
 export async function mockAuthRoutes(page: Page, user: User = MOCK_USER) {
-    const token = tokenFor(user);
+    const accessToken = tokenFor(user);
 
     await page.route('http://localhost:3008/login', (route) =>
         route.fulfill({
             status: 200,
             contentType: 'application/json',
-            body: JSON.stringify({ token, user }),
+            body: JSON.stringify({ token: accessToken, user }),
         })
     );
 
@@ -31,7 +30,7 @@ export async function mockAuthRoutes(page: Page, user: User = MOCK_USER) {
         route.fulfill({
             status: 200,
             contentType: 'application/json',
-            body: JSON.stringify({ accessToken: token, user }),
+            body: JSON.stringify({ accessToken: tokenFor(user), user }),
         })
     );
 
@@ -39,7 +38,7 @@ export async function mockAuthRoutes(page: Page, user: User = MOCK_USER) {
         route.fulfill({
             status: 200,
             contentType: 'application/json',
-            body: JSON.stringify({ accessToken: token }),
+            body: JSON.stringify({ accessToken: refreshTokenFor(user) }),
         })
     );
 

@@ -1,50 +1,29 @@
-import { createServer } from 'node:http';
 import { MongoClient } from 'mongodb';
+import type { MockKivoServer } from '../scripts/mock-kivo';
+import { startMockKivo } from '../scripts/mock-kivo';
 import { E2E_OPENSEARCH_URL, seedDiscoveryLibrary } from './db-helpers';
 import { DISCOVERY_FIXTURES } from './discovery-fixtures';
 import { resolveMongoUri } from './mongo-uri';
 
-const KIVO_PORT = 3099;
-
-const MOCK_USER = { id: 'user-testuser', username: 'testuser' };
-const MOCK_USER_2 = { id: 'user-other', username: 'otheruser' };
+const E2E_KIVO_PORT = 3099;
 
 export default async function globalSetup(): Promise<() => Promise<void>> {
-    const kivoServer = createServer((req, res) => {
-        res.setHeader('Content-Type', 'application/json');
-
-        if (req.method === 'GET' && req.url === '/verify') {
-            // The mock tokens carry their user in the JWT payload; fall back to the default user.
-            const payload = req.headers.authorization?.split('.')[1];
-            let user = MOCK_USER;
-            try {
-                const claims = JSON.parse(Buffer.from(payload ?? '', 'base64').toString());
-                if (claims.id === MOCK_USER_2.id) user = MOCK_USER_2;
-            } catch {
-                // not a mock JWT
-            }
-            res.writeHead(200);
-            res.end(JSON.stringify({ success: true, payload: user }));
-            return;
-        }
-
-        if (req.method === 'POST' && req.url === '/users') {
-            res.writeHead(200);
-            res.end(JSON.stringify({ success: true, users: [MOCK_USER_2] }));
-            return;
-        }
-
-        res.writeHead(200);
-        res.end(JSON.stringify({ success: true }));
+    const kivo: MockKivoServer = startMockKivo({
+        port: E2E_KIVO_PORT,
+        host: '127.0.0.1',
+        // Seed the same two users the rest of the e2e suite defaults to so
+        // existing fixtures and route stubs continue to work unchanged.
+        seedUsers: [
+            { id: 'user-testuser', username: 'testuser' },
+            { id: 'user-other', username: 'otheruser' },
+        ],
     });
-
-    await new Promise<void>((resolve) => kivoServer.listen(KIVO_PORT, resolve));
 
     // The library is read-only shared data (no test writes to it), so it is seeded once rather than per test.
     if (E2E_OPENSEARCH_URL) await seedDiscoveryLibrary(DISCOVERY_FIXTURES);
 
     return async () => {
-        await new Promise<void>((resolve) => kivoServer.close(() => resolve()));
+        kivo.close();
         // Empty the library before the database is dropped so the index is not left holding fixtures.
         if (E2E_OPENSEARCH_URL) await seedDiscoveryLibrary([]);
 

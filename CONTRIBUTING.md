@@ -13,24 +13,24 @@ git clone https://github.com/igor-siergiej/shoppingo
 cd shoppingo
 bun install
 cp .env.example .env
-$EDITOR .env                       # leave FAL_KEY blank to disable AI features
-docker compose -f selfhost/docker-compose.yml up -d --build=false \
-    mongo minio minio-init         # the dev stack ignores the api + web services
-bun run start                      # vite on :4000, api on :4001
+bun run dev:local                  # mongo + minio + mock-kivo + web (:4000) + api (:4001)
 ```
 
-The full self-host stack (web + api + mongo + minio + kivo) lives in
-`selfhost/docker-compose.yml`; a single `docker compose up -d` from there is
-also a valid way to run the app end-to-end. The two-command flow above is
-faster because it skips starting the published images and uses your live
-checkout (with HMR) instead.
+Open <http://localhost:4000> and register a new account (any username and a
+6+ character password will do; the mock-kivo keeps the user in memory).
 
-A `kivo` auth verifier must be reachable on `AUTH_URL`. Either run a real
-kivo (`https://github.com/igor-siergiej/kivo`), or use the mock verifier the
-Playwright suite starts on `:3099` for tests — for ad-hoc dev a real kivo is
-recommended so refresh tokens behave correctly.
+`dev:local` starts its own mock kivo on `127.0.0.1:3099` and points the api
+at it — no separate `igor-siergiej/kivo` checkout is needed. The script
+refuses to run with `NODE_ENV=production` and the api's `AUTH_URL` rule
+allows `http://localhost` only outside production. If you want a real kivo,
+launch it and export `AUTH_URL=https://kivo.example.com` before
+`bun run start`.
 
-Open <http://localhost:4000> and register a new account.
+The full self-host stack (web + api + mongo + minio + kivo from published
+images) lives in `selfhost/docker-compose.yml`; a single
+`docker compose up -d` from there is also a valid end-to-end run.
+`dev:local` is the developer ergonomics path — it skips the published web/api
+images, uses HMR via Vite, and skips pulling kivo.
 
 ## Verifying your change
 
