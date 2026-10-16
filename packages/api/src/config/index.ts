@@ -1,8 +1,10 @@
 import { ConfigService, parsers } from '@imapps/api-utils';
 
-// AUTH_URL is where we POST the bearer token to /users and /verify. Bearer headers must never cross plaintext,
-// so refuse anything that is not https://. Selfhost docker-network users can keep using `http://kivo:3008`
-// because the token never leaves the host bridge.
+// AUTH_URL is where we POST the bearer token to /users and /verify. Bearer headers must never cross
+// plaintext to a remote host, so refuse anything that is not https://. Localhost (the e2e mock kivo
+// and `http://kivo:3008` on the self-host docker bridge) is allowed over http:// because the token
+// never leaves the host.
+// fallow-ignore-next-line complexity
 const httpsUrl = (value: string) => {
     let url: URL;
     try {
@@ -10,8 +12,8 @@ const httpsUrl = (value: string) => {
     } catch {
         throw new Error(`AUTH_URL is not a valid URL: '${value}'`);
     }
-    if (url.protocol !== 'https:') {
-        throw new Error(`AUTH_URL must use https://, got '${url.protocol}'`);
+    if (url.protocol !== 'https:' && url.hostname !== 'localhost' && url.hostname !== 'kivo') {
+        throw new Error(`AUTH_URL must use https:// (or be on http://localhost), got '${url.protocol}//${url.host}'`);
     }
     return url.toString().replace(/\/$/, '');
 };
@@ -40,6 +42,15 @@ const schema = {
     wikibooksUserAgent: { parser: parsers.string, from: 'WIKIBOOKS_USER_AGENT', optional: true },
     discoveryAdminUserIds: { parser: parsers.string, from: 'DISCOVERY_ADMIN_USER_IDS', optional: true },
     opensearchUrl: { parser: parsers.string, from: 'OPENSEARCH_URL', optional: true },
+    // Comma-separated list of origins allowed to call the public read-only
+    // /api/public/discover/* endpoints. The marketing site is the primary
+    // consumer; localhost is included so the selfhost compose works out of
+    // the box without a custom env var.
+    publicDiscoverOrigins: {
+        parser: parsers.string,
+        from: 'PUBLIC_DISCOVER_ORIGINS',
+        optional: true,
+    },
 } as const;
 
 export const config = new ConfigService(schema);

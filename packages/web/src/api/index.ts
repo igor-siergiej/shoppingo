@@ -1,4 +1,3 @@
-import { getAccessToken } from '../auth/accessTokenStore';
 import type {
     DiscoveryPublishRequest,
     DiscoveryRecipe,
@@ -17,6 +16,7 @@ import type {
     Todo,
     User,
 } from '@shoppingo/types';
+import { getAccessToken } from '../auth/accessTokenStore';
 import {
     foldPendingItems,
     foldPendingLabels,

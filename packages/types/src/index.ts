@@ -173,6 +173,14 @@ export interface DiscoveryRecipe {
     coverImageAttribution?: string;
     /** The cover picture's own file page, for the credit to link to. */
     coverImageSourceUrl?: string;
+    /**
+     * Stable URL slug for the public, unauthenticated discover API. Set on
+     * user-published recipes; ingestion does not yet backfill the existing
+     * ~3.7k Wikibooks recipes (see shoppingo-public-discovery-api card body).
+     * Sparse: recipes without a slug are still served by id from the
+     * authenticated /api/discover routes.
+     */
+    slug?: string;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -189,6 +197,40 @@ export interface DiscoveryRecipeSummary {
     coverImageKey?: string;
     source: DiscoverySource;
     estimated?: DiscoveryEstimatedField[];
+}
+
+/** Page returned by the unauthenticated public discover list endpoint. */
+export interface PublicDiscoveryRecipePage {
+    items: PublicDiscoveryRecipeSummary[];
+    /** Opaque cursor: pass back to the next request. Absent on the last page. */
+    nextCursor?: string;
+}
+
+/** Public card shape; never carries user ids, moderation state, or unpublished-recipe fields. */
+export interface PublicDiscoveryRecipeSummary {
+    id: string;
+    slug?: string;
+    title: string;
+    tags: string[];
+    prepTime?: number;
+    cookTime?: number;
+    servings?: number;
+    difficulty?: RecipeDifficulty;
+    coverImageKey?: string;
+    source: DiscoverySource;
+    sourceUrl: string;
+    licence: string;
+    attribution: string;
+    /** Author's display name; user-published recipes only, and only when the author opted in. */
+    publishedBy?: string;
+}
+
+/** Public, read-only projection of a discovery recipe. Same as the full shape minus private fields. */
+export interface PublicDiscoveryRecipe extends PublicDiscoveryRecipeSummary {
+    ingredients: Ingredient[];
+    instructions: string[];
+    coverImageAttribution?: string;
+    coverImageSourceUrl?: string;
 }
 
 /** What a user sends to publish one of their recipes. The licence is only accepted explicitly. */

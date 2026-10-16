@@ -58,6 +58,7 @@ import {
     getMealPlan,
     updateMealPlanEntry,
 } from '../interfaces/MealPlanHandlers';
+import { createPublicDiscoveryHandlers } from '../interfaces/PublicDiscoveryHandlers';
 import { getVapidPublicKey, subscribe, unsubscribe } from '../interfaces/PushHandlers';
 import { createRealtimeHandlers } from '../interfaces/RealtimeHandlers';
 import {
@@ -80,6 +81,7 @@ import { completeTodo, createTodo, deleteTodo, getTodos, updateTodo } from '../i
 import { aiRateLimit } from '../middleware/aiRateLimit';
 import { authenticate } from '../middleware/auth';
 import { notifyListChanged } from '../middleware/notifyListChanged';
+import { publicDiscoverCors } from '../middleware/publicDiscoverCors';
 import { validateJson } from '../middleware/validate';
 
 type Vars = { Variables: { user: { id: string; username: string } } };
@@ -218,6 +220,16 @@ export const createRoutes = (): Hono<Vars> => {
         validateJson(publishRecipeBody),
         discovery.publishRecipe
     );
+
+    // Public, unauthenticated, read-only read surface for the marketing site.
+    // CORS is open by default (env var opts the operator into an allow-list)
+    // and the handlers apply a per-IP rate limit.
+    const publicDiscovery = createPublicDiscoveryHandlers(
+        { discovery: dependencyContainer.resolve(DependencyToken.DiscoveryService) },
+        dependencyContainer.resolve(DependencyToken.Logger)
+    );
+    router.get('/api/public/discover/recipes', publicDiscoverCors, publicDiscovery.list);
+    router.get('/api/public/discover/recipes/:slug', publicDiscoverCors, publicDiscovery.bySlug);
 
     router.get('/api/meal-plan', authenticate, getMealPlan);
     router.put('/api/meal-plan', authenticate, validateJson(createMealPlanBody), createMealPlanEntry);

@@ -6,6 +6,7 @@ import type { DiscoveryService } from '../DiscoveryService';
 import type { IdGenerator } from '../IdGenerator';
 import type { ImageStore } from '../ImageService/types';
 import type { RecipeService } from '../RecipeService';
+import { slugify, uniqueSlug } from '../slug';
 import { copyImage } from './copyImage';
 
 const USER_LICENCE = 'CC-BY-SA-4.0';
@@ -32,7 +33,7 @@ const attributionFor = (title: string, authorName: string | undefined): string =
  */
 export class DiscoveryPublishService {
     constructor(
-        private readonly discovery: Pick<DiscoveryService, 'save' | 'remove' | 'findByTitle'>,
+        private readonly discovery: Pick<DiscoveryService, 'save' | 'remove' | 'findByTitle' | 'hasSlug'>,
         private readonly publications: DiscoveryPublicationRepository,
         private readonly recipes: Pick<RecipeService, 'getRecipe'>,
         private readonly images: ImageStore,
@@ -124,6 +125,7 @@ export class DiscoveryPublishService {
         const title = recipe.title.trim();
         const coverImageKey = await this.coverFor(recipe, libraryId);
         const authorName = showName ? user.username : undefined;
+        const slug = await this.slugFor(title);
         return {
             id: libraryId,
             title,
@@ -143,9 +145,29 @@ export class DiscoveryPublishService {
             licence: USER_LICENCE,
             attribution: attributionFor(title, authorName),
             ...(authorName && { publishedBy: authorName }),
+            ...(slug && { slug }),
             createdAt: now,
             updatedAt: now,
         };
+    }
+
+    /**
+     * Resolve a unique slug for a freshly-published recipe. Tries the base
+     * slug first, then `${base}-2`, ... up to a sane bound. Wikibooks recipes
+     * stay slugless for now (the public-discovery-api card explicitly deferred
+     * the backfill); this only runs for user-published recipes.
+     */
+    private async slugFor(title: string): Promise<string | undefined> {
+        const base = slugify(title);
+        try {
+            return await uniqueSlug(base, (candidate) => this.discovery.hasSlug(candidate));
+        } catch (error) {
+            this.logger?.warn('Could not allocate a unique slug for published recipe; publishing without one', {
+                title,
+                error: (error as Error).message,
+            });
+            return undefined;
+        }
     }
 
     // A missing or unreadable cover must not stop the recipe being shared; it just goes out without one.
