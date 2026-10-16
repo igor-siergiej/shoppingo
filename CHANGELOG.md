@@ -1,3 +1,10 @@
+## [1.97.2](https://github.com/igor-siergiej/shoppingo/compare/v1.97.1...v1.97.2) (2026-10-16)
+
+
+### Bug Fixes
+
+* **web:** make nginx listen on 3000 to match Traefik/dokploy routing ([#232](https://github.com/igor-siergiej/shoppingo/issues/232)) ([ebcf3f8](https://github.com/igor-siergiej/shoppingo/commit/ebcf3f8e57dca227863b8e3993739c4cc07125ed))
+
 ## [1.97.1](https://github.com/igor-siergiej/shoppingo/compare/v1.97.0...v1.97.1) (2026-10-16)
 
 
