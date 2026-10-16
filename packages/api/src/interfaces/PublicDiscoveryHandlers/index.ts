@@ -9,9 +9,9 @@ import type {
 import type { Context } from 'hono';
 
 import type { DiscoveryService } from '../../domain/DiscoveryService';
+import { clientIpFrom } from '../../infrastructure/clientIp';
 import { IpRateLimiter, type RateLimitDecision } from '../../infrastructure/rateLimit';
-import { isPrivateIp } from '../../infrastructure/safeFetch';
-import type { HonoVars } from '../handlerUtils';
+import { type HonoVars } from '../handlerUtils';
 
 const DEFAULT_PAGE_SIZE = 24;
 const MAX_PAGE_SIZE = 100;

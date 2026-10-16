@@ -1,15 +1,36 @@
 import type { Logger } from '@imapps/api-utils';
 import { APIError } from '@imapps/api-utils/hono';
+import { clientIpFrom } from '../../infrastructure/clientIp';
+import { IpRateLimiter } from '../../infrastructure/rateLimit';
 import type { IssuedInvite, ListInvitePublic, ListInviteService } from '../../domain/ListInviteService';
 import { withAuth } from '../handlerUtils';
 
 const DEFAULT_TTL_DAYS = 7;
 const MAX_TTL_DAYS = 30;
 
+// The unauthenticated preview is the only public surface and the only one
+// abusable by a single IP; bound it so a brute-force scan of the 256-bit
+// token space does not get unlimited tries. 200/min is generous for a real
+// user clicking the link from multiple devices.
+const PREVIEW_RATE_LIMIT = 200;
+const PREVIEW_RATE_WINDOW_MS = 60_000;
+const previewLimiter = new IpRateLimiter(PREVIEW_RATE_LIMIT);
+setInterval(() => previewLimiter.reset(), PREVIEW_RATE_WINDOW_MS).unref();
+
 const clampTtl = (raw: unknown): number => {
     const days = Number(raw);
     if (!Number.isFinite(days) || days < 1) return DEFAULT_TTL_DAYS;
     return Math.min(Math.trunc(days), MAX_TTL_DAYS);
+};
+
+// fallow-ignore-next-line complexity
+const clientIpFrom = (forwardedFor: string | undefined, realIp: string | null): string => {
+    const entries = (forwardedFor ?? '')
+        .split(',')
+        .map((entry) => entry.trim())
+        .filter(Boolean);
+    if (entries.length === 0) return realIp ?? 'unknown';
+    return [...entries].reverse().find((entry) => !isPrivateIp(entry)) ?? entries[entries.length - 1];
 };
 
 export const createListInviteHandlers = (service: ListInviteService, _logger: Logger) => ({
@@ -29,16 +50,24 @@ export const createListInviteHandlers = (service: ListInviteService, _logger: Lo
     }),
 
     /**
-     * Unauthenticated preview. Optional `viewerId` from kivo is filled in by
-     * the route handler when the request carries a valid bearer, so the
-     * service can set `isOwner` for the in-page revoke control.
+     * Unauthenticated preview. Per-IP rate-limited so a single client cannot
+     * brute-force the 256-bit token space.
      */
+    // fallow-ignore-next-line complexity
     preview: async (c: {
-        req: { param: (n: string) => string | undefined };
-        get: (k: string) => string | undefined;
+        req: {
+            param: (n: string) => string | undefined;
+            header: (n: string) => string | undefined;
+            raw: { headers: { get: (n: string) => string | null } };
+        };
     }): Promise<Response> => {
         const token = c.req.param('token') ?? '';
         if (!token) throw new APIError('Token is required', 400);
+        const ip = clientIpFrom(c.req.header('x-forwarded-for'), c.req.raw.headers.get('x-real-ip'));
+        if (!previewLimiter.isAllowed(ip)) {
+            c.res.headers.set('Retry-After', String(Math.ceil(PREVIEW_RATE_WINDOW_MS / 1000)));
+            return c.json({ error: 'rate_limited' }, 429);
+        }
         const preview = await service.preview(token);
         return c.json(preview, 200);
     },

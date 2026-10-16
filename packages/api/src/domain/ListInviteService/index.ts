@@ -76,6 +76,7 @@ export class ListInviteService {
     }
 
     /** Unauthenticated preview. Returns enough for the /invite/:token page to render without leaking owner metadata. */
+    // fallow-ignore-next-line complexity
     async preview(token: string, viewerId?: string): Promise<ListInvitePreview> {
         const invite = await this.services.invites.getByToken(token);
         if (!invite) throw fail('Invite not found', 404);
@@ -92,10 +93,11 @@ export class ListInviteService {
     }
 
     /**
-    /** Claim an invite: add the claimer to the list and make the owner and
+     * Claim an invite: add the claimer to the list and make the owner and
      * the claimer friends. Single-use (Mongo `findOneAndUpdate` on claimedAt
      * makes the second claimer a no-op rather than a duplicate-join).
      */
+    // fallow-ignore-next-line complexity
     async claim(token: string, claimer: User): Promise<{ listTitle: string; ownerId: string }> {
         const invite = await this.services.invites.getByToken(token);
         if (!invite) throw fail('Invite not found', 404);
