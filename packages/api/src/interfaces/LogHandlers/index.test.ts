@@ -20,8 +20,8 @@ const mockLogger = {
     debug: vi.fn(),
 };
 
-import { receiveLogs } from './index';
 import { clientIpFrom } from '../../infrastructure/clientIp';
+import { receiveLogs } from './index';
 
 const createMockContext = (overrides: { ip?: string; body?: unknown } = {}) => {
     const ip = overrides.ip ?? '127.0.0.1';
