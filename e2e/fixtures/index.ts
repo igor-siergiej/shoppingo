@@ -43,6 +43,26 @@ export const test = base.extend<Fixtures>({
 
         await mockAuthRoutes(page);
 
+        // The CI api runs without FAL_KEY, so /api/features reports every AI flag
+        // as off. The web disables the corresponding controls in that case, which
+        // would make AI-touching e2e specs unable to exercise the mocked
+        // endpoints. Stub the endpoint to all-true so the controls stay enabled
+        // and per-test route mocks (e.g. mockSubstitutes) can take over.
+        await page.route('**/api/features', (route) =>
+            route.fulfill({
+                status: 200,
+                contentType: 'application/json',
+                body: JSON.stringify({
+                    imageGeneration: true,
+                    recipeImport: true,
+                    ingredientSubstitutes: true,
+                    itemCategorisation: true,
+                    itemParse: true,
+                    recipeTagger: true,
+                }),
+            })
+        );
+
         // Prevent image fetch errors — images are not under test
         await page.route(/\/api\/image\//, (route) =>
             route.fulfill({ status: 200, contentType: 'image/gif', body: Buffer.from('GIF89a', 'ascii') })
