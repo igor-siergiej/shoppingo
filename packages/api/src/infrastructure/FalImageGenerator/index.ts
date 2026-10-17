@@ -39,7 +39,10 @@ export class FalImageGenerator implements ImageGenerator {
 
     async generateImage(prompt: string): Promise<{ buffer: Buffer; contentType: string }> {
         if (!this.apiKey) {
-            throw Object.assign(new Error('Image generation service not configured'), { status: 500 });
+            throw Object.assign(new Error('AI is disabled on this server (FAL_KEY is not set)'), {
+                status: 503,
+                code: 'ai_disabled',
+            });
         }
 
         // sync_mode returns the image inline as a data URI, avoiding a second fetch.

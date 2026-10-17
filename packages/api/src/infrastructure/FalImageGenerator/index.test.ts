@@ -37,8 +37,9 @@ describe('FalImageGenerator', () => {
             const generatorNoKey = new FalImageGenerator('', options);
 
             await expect(generatorNoKey.generateImage('test prompt')).rejects.toMatchObject({
-                message: 'Image generation service not configured',
-                status: 500,
+                message: expect.stringContaining('AI is disabled'),
+                status: 503,
+                code: 'ai_disabled',
             });
         });
     });

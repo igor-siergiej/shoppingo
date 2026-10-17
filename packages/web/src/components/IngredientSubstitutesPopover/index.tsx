@@ -1,6 +1,7 @@
 import { Replace } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { suggestIngredientSubstitutes } from '../../api';
+import { useAiFeatures } from '../../utils/useAiFeatures';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 
 interface IngredientSubstitutesPopoverProps {
@@ -44,6 +45,7 @@ const SubstitutesContent = ({
 // (no dedicated page/drawer) that lazily fetches AI-generated substitutes on first open, then
 // caches the result for the component's lifetime so re-opening doesn't re-trigger the LLM call.
 export const IngredientSubstitutesPopover = ({ ingredientName, recipeTitle }: IngredientSubstitutesPopoverProps) => {
+    const { ingredientSubstitutes } = useAiFeatures();
     const [status, setStatus] = useState<Status>('idle');
     const [substitutes, setSubstitutes] = useState<string[]>([]);
     const [errorMessage, setErrorMessage] = useState('');
@@ -70,6 +72,11 @@ export const IngredientSubstitutesPopover = ({ ingredientName, recipeTitle }: In
     const handleOpenChange = async (nextOpen: boolean) => {
         setOpen(nextOpen);
         if (!nextOpen || status !== 'idle') return;
+        if (!ingredientSubstitutes) {
+            setErrorMessage('Not available on this server');
+            setStatus('error');
+            return;
+        }
         setStatus('loading');
         try {
             const result = await suggestIngredientSubstitutes(ingredientName, recipeTitle);
@@ -87,7 +94,9 @@ export const IngredientSubstitutesPopover = ({ ingredientName, recipeTitle }: In
                 <button
                     type="button"
                     aria-label={`Suggest substitutes for ${ingredientName}`}
-                    className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                    disabled={!ingredientSubstitutes}
+                    title={ingredientSubstitutes ? undefined : 'Not available on this server'}
+                    className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors disabled:cursor-not-allowed disabled:opacity-60"
                     onClick={(e) => e.stopPropagation()}
                 >
                     <Replace className="h-4 w-4" />

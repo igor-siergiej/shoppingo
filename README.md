@@ -139,10 +139,18 @@ The web container proxies `/api/*` to the api container via nginx
 the API. Mongo and MinIO persist into named volumes (`mongo-data`, `minio-data`).
 A one-shot `minio-init` container creates the configured bucket on first run.
 
-`FAL_KEY` is optional. Without it, recipe-import (URL → recipe), AI image
-generation and substitute suggestions call Fal.ai with no key and fail
-upstream; the rest of the app — lists, recipes, calendar, sharing,
-PWA/offline — works exactly as it does in production.
+`FAL_KEY` is optional. Without it, the API wires disabled AI
+implementations and every AI endpoint (recipe import, image generation,
+ingredient substitutes, voice add) responds with
+`503 { error: 'ai_disabled' }`. The web reads `GET /api/features` on boot
+and hides those entry points with a short "Not available on this server"
+note. The rest of the app — lists, recipes, calendar, sharing, PWA/offline,
+item/recipe creation with a default placeholder picture — works exactly as
+it does in production.
+
+`RECIPE_IMPORT_LLM_API_KEY` is also optional and falls back to `FAL_KEY`
+when unset. If you set only the LLM key, recipe import and substitutes
+work but image generation stays off.
 
 Backups: `docker compose exec -T mongo mongodump --archive` (or
 `mongodump` to a mounted dir) for MongoDB, and a `mc mirror` of the configured

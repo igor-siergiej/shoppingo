@@ -44,3 +44,37 @@ const schema = {
 } as const;
 
 export const config = new ConfigService(schema);
+
+/**
+ * Snapshot of which AI features the api is wired to call. Used by the
+ * `/api/features` endpoint to tell the web which controls to hide when the
+ * server is self-hosted without FAL_KEY / RECIPE_IMPORT_LLM_API_KEY.
+ */
+export interface AiFeaturesSummary {
+    imageGeneration: boolean;
+    recipeImport: boolean;
+    ingredientSubstitutes: boolean;
+    itemCategorisation: boolean;
+    itemParse: boolean;
+    recipeTagger: boolean;
+}
+
+/**
+ * Pure helper: turn the env at call time into the feature flags the web
+ * reads. Kept separate from `config` so tests can drive it without going
+ * through the full ConfigService cache.
+ */
+export const aiFeaturesFromEnv = (env: NodeJS.ProcessEnv = process.env): AiFeaturesSummary => {
+    const falKey = env.FAL_KEY ?? '';
+    const llmKey = env.RECIPE_IMPORT_LLM_API_KEY ?? '';
+    const imageGeneration = falKey.length > 0;
+    const llm = falKey.length > 0 || llmKey.length > 0;
+    return {
+        imageGeneration,
+        recipeImport: llm,
+        ingredientSubstitutes: llm,
+        itemCategorisation: llm,
+        itemParse: llm,
+        recipeTagger: llm,
+    };
+};

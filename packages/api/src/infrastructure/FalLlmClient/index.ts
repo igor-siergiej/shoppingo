@@ -63,7 +63,10 @@ export class FalLlmClient {
 
     async completeStructured<T>(opts: CompleteStructuredOptions<T>): Promise<LlmResult<T>> {
         if (!this.apiKey) {
-            throw Object.assign(new Error('Recipe import LLM not configured'), { status: 500 });
+            throw Object.assign(new Error('AI is disabled on this server (FAL_KEY is not set)'), {
+                status: 503,
+                code: 'ai_disabled',
+            });
         }
 
         const model = opts.model ?? this.defaults.model ?? DEFAULT_MODEL;
