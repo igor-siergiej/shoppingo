@@ -12,6 +12,7 @@ export class MongoListInviteRepository implements ListInviteRepository {
         return this.db.getCollection(CollectionNames.ListInvite);
     }
 
+    // fallow-ignore-next-line unused-class-member
     async ensureIndexes(): Promise<void> {
         // token is the document id (string), so it has a unique index by default.
         // The owner index makes the "list invites I've issued" query fast and the
@@ -20,14 +21,17 @@ export class MongoListInviteRepository implements ListInviteRepository {
         await this.collection().createIndex({ expiresAt: 1 });
     }
 
+    // fallow-ignore-next-line unused-class-member
     async insert(invite: ListInvite): Promise<void> {
         await this.collection().insertOne({ _id: invite.token, ...invite });
     }
 
+    // fallow-ignore-next-line unused-class-member
     async getByToken(token: string): Promise<ListInvite | null> {
         return this.collection().findOne({ _id: token }, NO_OBJECT_ID);
     }
 
+    // fallow-ignore-next-line unused-class-member
     async markClaimed(token: string, userId: string, at: Date): Promise<ListInvite | null> {
         const result = await this.collection().findOneAndUpdate(
             { _id: token, claimedAt: { $exists: false } },
@@ -37,10 +41,12 @@ export class MongoListInviteRepository implements ListInviteRepository {
         return (result ?? null) as ListInvite | null;
     }
 
+    // fallow-ignore-next-line unused-class-member
     async markRevoked(token: string, at: Date): Promise<void> {
         await this.collection().updateOne({ _id: token, revokedAt: { $exists: false } }, { $set: { revokedAt: at } });
     }
 
+    // fallow-ignore-next-line unused-class-member
     async listOpenByOwner(ownerId: string, now: Date): Promise<ListInvite[]> {
         return this.collection()
             .find(
