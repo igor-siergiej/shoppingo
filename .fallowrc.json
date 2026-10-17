@@ -48,6 +48,10 @@
   "ignoreExports": [
     { "file": "packages/api/src/dependencies/types.ts", "exports": ["CollectionNames"] },
     {
+      "file": "packages/api/src/config/index.ts",
+      "exports": ["httpsUrl"]
+    },
+    {
       "file": "packages/web/src/hooks/useRegisterForm.ts",
       "exports": ["registerSchema", "parseRegisterError"]
     }
