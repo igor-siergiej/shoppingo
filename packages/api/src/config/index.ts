@@ -1,31 +1,12 @@
 import { ConfigService, parsers } from '@imapps/api-utils';
 
-// AUTH_URL is where we POST the bearer token to /users and /verify. Bearer headers must never cross
-// plaintext to a remote host, so refuse anything that is not https://. Localhost (the e2e mock kivo
-// and `http://kivo:3008` on the self-host docker bridge) is allowed over http:// because the token
-// never leaves the host — but only outside production. Production must always reach a real kivo over
-// https:// regardless of hostname.
-// fallow-ignore-next-line complexity, unused-export
-export const httpsUrl = (value: string) => {
-    let url: URL;
-    try {
-        url = new URL(value);
-    } catch {
-        throw new Error(`AUTH_URL is not a valid URL: '${value}'`);
-    }
-    const isLoopback = url.hostname === 'localhost' || url.hostname === 'kivo' || url.hostname === '127.0.0.1';
-    if (url.protocol !== 'https:') {
-        if (process.env.NODE_ENV === 'production') {
-            throw new Error(`AUTH_URL must use https:// in production, got '${url.protocol}//${url.host}'`);
-        }
-        if (!isLoopback) {
-            throw new Error(
-                `AUTH_URL must use https:// (or be on http://localhost / http://kivo on the docker bridge outside production), got '${url.protocol}//${url.host}'`
-            );
-        }
-    }
-    return url.toString().replace(/\/$/, '');
-};
+import { httpsUrl } from './auth-url';
+
+// AUTH_URL is where we POST the bearer token to /users and /verify. See `./auth-url.ts` for the
+// full rule. The bearer token must never cross plaintext to a remote host, so the validator
+// refuses anything that is not https://, with two host-local exceptions: `http://kivo:port` (the
+// docker bridge, any environment) and `http://localhost` (the dev:local / e2e mock, gated to
+// non-production).
 
 const schema = {
     port: { parser: parsers.number, from: 'PORT' },
