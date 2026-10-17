@@ -104,7 +104,6 @@ export class DiscoveryService {
     }
 
     /** The recipe that has the given public URL slug, or null. */
-    // fallow-ignore-next-line unused-class-member
     async getBySlug(slug: string): Promise<DiscoveryRecipe | null> {
         return this.repository.getBySlug(slug);
     }
@@ -116,7 +115,6 @@ export class DiscoveryService {
     }
 
     /** Cursor-paginated public list. Caller encodes the cursor from the previous page's last `_id`. */
-    // fallow-ignore-next-line unused-class-member
     async listPublic(pageSize: number, after: string | null): Promise<DiscoveryRecipe[]> {
         return this.repository.listPublic(pageSize, after);
     }
