@@ -1,12 +1,35 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { suggestIngredientSubstitutes } from '../../api';
 import { IngredientSubstitutesPopover } from './index';
 
 vi.mock('../../api', () => ({
     suggestIngredientSubstitutes: vi.fn(),
 }));
+
+const fetchMock = vi.fn();
+
+beforeEach(() => {
+    vi.clearAllMocks();
+    fetchMock.mockReset();
+    fetchMock.mockResolvedValue({
+        ok: true,
+        json: async () => ({
+            imageGeneration: true,
+            recipeImport: true,
+            ingredientSubstitutes: true,
+            itemCategorisation: true,
+            itemParse: true,
+            recipeTagger: true,
+        }),
+    } as Response);
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
+});
+
+afterEach(() => {
+    fetchMock.mockReset();
+});
 
 const mockSuggest = vi.mocked(suggestIngredientSubstitutes);
 

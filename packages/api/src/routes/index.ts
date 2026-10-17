@@ -28,6 +28,7 @@ import {
 import type { Context, Next } from 'hono';
 import { Hono } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
+import { aiFeaturesFromEnv } from '../config';
 import { dependencyContainer } from '../dependencies';
 import { DependencyToken } from '../dependencies/types';
 import { createDiscoveryHandlers } from '../interfaces/DiscoveryHandlers';
@@ -101,6 +102,8 @@ export const createRoutes = (): Hono<Vars> => {
             200
         )
     );
+
+    router.get('/api/features', (c) => c.json(aiFeaturesFromEnv(), 200));
 
     router.post('/api/logs', receiveLogs);
 

@@ -1,10 +1,34 @@
 import '@testing-library/jest-dom';
 import { cleanup } from '@testing-library/react';
-import { afterEach, vi } from 'vitest';
+import { afterEach, beforeEach, vi } from 'vitest';
 
 // Cleanup after each test
 afterEach(() => {
     cleanup();
+});
+
+// Default /api/features response: every AI feature on, unless a test
+// overrides the response. The web's useAiFeatures hook polls this on
+// mount; without it, the hook defaults to all-false and AI controls
+// (import-from-link, ingredient substitutes) get disabled in tests.
+beforeEach(() => {
+    globalThis.fetch = vi.fn(async (input: RequestInfo | URL) => {
+        const url = typeof input === 'string' ? input : input.toString();
+        if (url.endsWith('/api/features')) {
+            return new Response(
+                JSON.stringify({
+                    imageGeneration: true,
+                    recipeImport: true,
+                    ingredientSubstitutes: true,
+                    itemCategorisation: true,
+                    itemParse: true,
+                    recipeTagger: true,
+                }),
+                { status: 200, headers: { 'Content-Type': 'application/json' } }
+            );
+        }
+        return new Response('', { status: 404 });
+    }) as unknown as typeof fetch;
 });
 
 // Mock PointerEvent - jsdom doesn't have it

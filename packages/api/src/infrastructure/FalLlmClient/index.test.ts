@@ -77,8 +77,9 @@ describe('FalLlmClient', () => {
         stubFetch(async () => okResponse('{"title":"x","count":1}'));
 
         await expect(call(new FalLlmClient(''))).rejects.toMatchObject({
-            status: 500,
-            message: 'Recipe import LLM not configured',
+            status: 503,
+            code: 'ai_disabled',
+            message: expect.stringContaining('AI is disabled'),
         });
     });
 
@@ -91,7 +92,7 @@ describe('FalLlmClient', () => {
             },
         } as unknown as Logger;
 
-        await expect(call(new FalLlmClient('', logger))).rejects.toMatchObject({ status: 500 });
+        await expect(call(new FalLlmClient('', logger))).rejects.toMatchObject({ status: 503, code: 'ai_disabled' });
         expect(logs).toHaveLength(0);
     });
 
