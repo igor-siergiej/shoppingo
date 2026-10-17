@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'bun:test';
 
+import '../../test-setup';
 import { IpRateLimiter } from '../../infrastructure/rateLimit';
 
 const mockDependencyContainer = {
@@ -19,7 +20,8 @@ const mockLogger = {
     debug: vi.fn(),
 };
 
-import { clientIpFrom, receiveLogs } from './index';
+import { clientIpFrom } from '../../infrastructure/clientIp';
+import { receiveLogs } from './index';
 
 const createMockContext = (overrides: { ip?: string; body?: unknown } = {}) => {
     const ip = overrides.ip ?? '127.0.0.1';

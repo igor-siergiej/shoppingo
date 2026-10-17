@@ -518,6 +518,34 @@ export class ListService {
     }
 
     /**
+     * Add a user to a list as the result of redeeming a list-invite token.
+     * Skips the owner-only check (the redeem path is its own authorisation) but
+     * still refuses duplicates and notifies the realtime hub so existing members
+     * see the joiner live. The caller passes the claimer's full `User` so we do
+     * not need a second round-trip to friends.
+     */
+    async addInvitedUser(title: string, claimer: User, ownerId: string): Promise<List> {
+        const { list, result: added } = await this.modifyList(title, (current) => {
+            if (current.ownerId !== ownerId) {
+                throw Object.assign(new Error('List not found'), { status: 404 });
+            }
+            if (current.users.some((u) => u.id === claimer.id)) {
+                throw Object.assign(new Error('User is already in this list'), { status: 400 });
+            }
+            current.users.push(claimer);
+            return claimer;
+        });
+
+        this.logger?.info('User joined via invite', {
+            listTitle: title,
+            joinedUser: added.username,
+            invitedBy: ownerId,
+        });
+
+        return list;
+    }
+
+    /**
      * Add a friend to an existing list
      * Only the list owner can add users, and only friends of the owner can be added
      */

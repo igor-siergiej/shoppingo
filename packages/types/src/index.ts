@@ -362,4 +362,39 @@ export interface PushSubscription {
     dateAdded: Date;
 }
 
+/**
+ * A shareable invite link for a single list. Created by the list owner,
+ * opened by anyone with the link, redeemed by an authenticated user to
+ * join the list and become friends with the owner.
+ */
+export interface ListInvite {
+    /** Random opaque token, also the unique document id. */
+    token: string;
+    /** The list being shared. */
+    listTitle: string;
+    /** User id of the list owner who created the invite. */
+    ownerId: string;
+    /** Username cached at issue time so the unauthenticated preview is one read. */
+    ownerUsername: string;
+    createdAt: Date;
+    /** When the token stops being redeemable. */
+    expiresAt: Date;
+    /** Set when the owner revokes the invite; further redemptions are refused. */
+    revokedAt?: Date;
+    /** Set when a user successfully claims the invite. */
+    claimedBy?: string;
+    claimedAt?: Date;
+}
+
+/** Minimal preview returned by the unauthenticated GET /api/lists/invites/:token. */
+export interface ListInvitePreview {
+    listTitle: string;
+    ownerUsername: string;
+    expiresAt: Date;
+    /** True if the token is revoked, expired or already claimed. UI shows a friendly message instead of join CTAs. */
+    isClosed: boolean;
+    /** True if the previewer is the owner (so the UI offers a revoke button). */
+    isOwner: boolean;
+}
+
 export { expandOccurrences, isoDay, type Occurrence, occursOn, parseDay } from './recurrence';

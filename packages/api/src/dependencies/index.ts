@@ -12,6 +12,7 @@ import { FriendService } from '../domain/FriendService';
 import { ImageService } from '../domain/ImageService';
 import { ItemCategoryService } from '../domain/ItemCategoryService';
 import { LabelService } from '../domain/LabelService';
+import { ListInviteService } from '../domain/ListInviteService';
 import { ListRealtimeHub } from '../domain/ListRealtimeHub';
 import { ListService } from '../domain/ListService';
 import { MealPlanService } from '../domain/MealPlanService';
@@ -46,6 +47,7 @@ import { MongoDiscoveryReportRepository } from '../infrastructure/MongoDiscovery
 import { MongoFriendRepository } from '../infrastructure/MongoFriendRepository';
 import { MongoItemCategoryRepository } from '../infrastructure/MongoItemCategoryRepository';
 import { MongoLabelRepository } from '../infrastructure/MongoLabelRepository';
+import { MongoListInviteRepository } from '../infrastructure/MongoListInviteRepository';
 import { MongoListRepository } from '../infrastructure/MongoListRepository';
 import { MongoMealPlanRepository } from '../infrastructure/MongoMealPlanRepository';
 import { MongoPushSubscriptionRepository } from '../infrastructure/MongoPushSubscriptionRepository';
@@ -373,6 +375,24 @@ export const registerDepdendencies = () => {
     register(
         DependencyToken.DiscoveryRecipeRepository,
         () => new MongoDiscoveryRecipeRepository(dependencyContainer.resolve(DependencyToken.Database))
+    );
+
+    // List invites: random opaque token in the document id; lifetime enforced by the service.
+    register(
+        DependencyToken.ListInviteRepository,
+        () => new MongoListInviteRepository(dependencyContainer.resolve(DependencyToken.Database))
+    );
+    register(
+        DependencyToken.ListInviteService,
+        () =>
+            new ListInviteService(
+                {
+                    invites: dependencyContainer.resolve(DependencyToken.ListInviteRepository),
+                    lists: dependencyContainer.resolve(DependencyToken.ListService),
+                    friends: dependencyContainer.resolve(DependencyToken.FriendService),
+                },
+                dependencyContainer.resolve(DependencyToken.Logger)
+            )
     );
 
     register(DependencyToken.DiscoveryIndex, () => {

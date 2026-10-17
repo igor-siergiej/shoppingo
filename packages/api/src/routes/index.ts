@@ -52,6 +52,7 @@ import {
     updateList,
 } from '../interfaces/ListHandlers';
 import { setItemCategory } from '../interfaces/ListHandlers/category';
+import { createListInviteHandlers } from '../interfaces/ListInviteHandlers';
 import { receiveLogs } from '../interfaces/LogHandlers';
 import {
     createMealPlanEntry,
@@ -233,6 +234,18 @@ export const createRoutes = (): Hono<Vars> => {
     );
     router.get('/api/public/discover/recipes', publicDiscoverCors, publicDiscovery.list);
     router.get('/api/public/discover/recipes/:slug', publicDiscoverCors, publicDiscovery.bySlug);
+
+    // List invites: the unauthenticated preview is the only public surface; the rest
+    // is owner- or claimer-only.
+    const listInvites = createListInviteHandlers(
+        dependencyContainer.resolve(DependencyToken.ListInviteService),
+        dependencyContainer.resolve(DependencyToken.Logger)
+    );
+    router.post('/api/lists/:title/invites', authenticate, listInvites.issue);
+    router.get('/api/lists/invites', authenticate, listInvites.listMine);
+    router.get('/api/lists/invites/:token', listInvites.preview);
+    router.post('/api/lists/invites/:token/redeem', authenticate, listInvites.claim);
+    router.delete('/api/lists/invites/:token', authenticate, listInvites.revoke);
 
     router.get('/api/meal-plan', authenticate, getMealPlan);
     router.put('/api/meal-plan', authenticate, validateJson(createMealPlanBody), createMealPlanEntry);

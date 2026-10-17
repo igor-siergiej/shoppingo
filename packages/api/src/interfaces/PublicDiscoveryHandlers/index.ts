@@ -9,8 +9,8 @@ import type {
 import type { Context } from 'hono';
 
 import type { DiscoveryService } from '../../domain/DiscoveryService';
+import { clientIpFrom } from '../../infrastructure/clientIp';
 import { IpRateLimiter, type RateLimitDecision } from '../../infrastructure/rateLimit';
-import { isPrivateIp } from '../../infrastructure/safeFetch';
 import type { HonoVars } from '../handlerUtils';
 
 const DEFAULT_PAGE_SIZE = 24;
@@ -23,16 +23,6 @@ const RATE_LIMIT_WINDOW_MS = 60_000;
 
 const rateLimiter = new IpRateLimiter(RATE_LIMIT_PER_WINDOW);
 setInterval(() => rateLimiter.reset(), RATE_LIMIT_WINDOW_MS).unref();
-
-// fallow-ignore-next-line complexity
-const clientIpFrom = (forwardedFor: string | undefined, realIp: string | null): string => {
-    const entries = (forwardedFor ?? '')
-        .split(',')
-        .map((entry) => entry.trim())
-        .filter(Boolean);
-    if (entries.length === 0) return realIp ?? 'unknown';
-    return [...entries].reverse().find((entry) => !isPrivateIp(entry)) ?? entries[entries.length - 1];
-};
 
 const clientIp = (c: Context): string =>
     clientIpFrom(c.req.header('x-forwarded-for'), c.req.raw.headers.get('x-real-ip'));
