@@ -1,3 +1,10 @@
+# [1.103.0](https://github.com/igor-siergiej/shoppingo/compare/v1.102.0...v1.103.0) (2026-10-17)
+
+
+### Features
+
+* **api:** AI features fail clean without FAL_KEY ([d3af21b](https://github.com/igor-siergiej/shoppingo/commit/d3af21b98ee148479d529e554dd8f20d06ac902a))
+
 # [1.102.0](https://github.com/igor-siergiej/shoppingo/compare/v1.101.0...v1.102.0) (2026-10-17)
 
 
