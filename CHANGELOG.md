@@ -1,3 +1,10 @@
+# [1.101.0](https://github.com/igor-siergiej/shoppingo/compare/v1.100.0...v1.101.0) (2026-10-17)
+
+
+### Features
+
+* **dev:** one-command dev stack with shared mock-kivo ([#246](https://github.com/igor-siergiej/shoppingo/issues/246)) ([0a5eba4](https://github.com/igor-siergiej/shoppingo/commit/0a5eba489b166f1c06d60401a3084202d242f6f6))
+
 # [1.100.0](https://github.com/igor-siergiej/shoppingo/compare/v1.99.0...v1.100.0) (2026-10-16)
 
 

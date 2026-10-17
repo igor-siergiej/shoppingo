@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.101.0",
+    "date": "2026-10-17",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "New contributors can now run the full app on a fresh clone with 'bun run dev:local' - no separate kivo checkout or docker self-host stack needed for an inner dev loop."
+      }
+    ]
+  },
+  {
     "version": "1.100.0",
     "date": "2026-10-16",
     "notes": [
