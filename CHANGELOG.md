@@ -1,3 +1,10 @@
+# [1.104.0](https://github.com/igor-siergiej/shoppingo/compare/v1.103.0...v1.104.0) (2026-10-17)
+
+
+### Features
+
+* **api:** list-invite share links for unauthenticated users ([#250](https://github.com/igor-siergiej/shoppingo/issues/250)) ([8847871](https://github.com/igor-siergiej/shoppingo/commit/88478710fdc2b80c33c1cdf42a11cb1a4972682e)), closes [#241](https://github.com/igor-siergiej/shoppingo/issues/241)
+
 # [1.103.0](https://github.com/igor-siergiej/shoppingo/compare/v1.102.0...v1.103.0) (2026-10-17)
 
 
