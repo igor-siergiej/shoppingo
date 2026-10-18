@@ -1,5 +1,4 @@
 import { extractUserFromToken } from '@imapps/web-utils';
-import type { User } from '@shoppingo/types';
 import { useCallback } from 'react';
 import { logger } from '../utils/logger';
 import { useGuest } from './GuestContext';
@@ -11,7 +10,7 @@ import { migrateGuestToAccount } from './migrateGuestToAccount';
 // It runs whether or not the guest flag is on: data only survives in the
 // store when an earlier migration had list failures, and the next sign-in is
 // the retry. The flag is dropped with `keepData` because the migration owns
-// clearing the store; on a partial failure the data must stay for that retry.
+// the store: it removes each list once uploaded and keeps the ones that failed.
 // Never throws, so a failed migration can't block sign-in.
 
 export const useMigration = () => {
@@ -26,11 +25,7 @@ export const useMigration = () => {
                     return;
                 }
 
-                const user: User = { id: userInfo.id, username: userInfo.username };
-                const result = await migrateGuestToAccount(user);
-                if (result.listsUploaded > 0 || result.listFailures > 0) {
-                    logger.info('Guest migration finished', { ...result, userId: user.id });
-                }
+                await migrateGuestToAccount({ id: userInfo.id, username: userInfo.username });
             } catch (migrationError) {
                 logger.error('Guest migration failed', { error: String(migrationError) });
             } finally {

@@ -36,7 +36,7 @@ const recordingAdapter = (
 
 describe('migrateGuestToAccount', () => {
     beforeEach(async () => {
-        await guestStore._resetForTests();
+        await guestStore.clear();
     });
 
     it('returns an empty result and never calls the adapter when there is no guest data', async () => {
@@ -101,7 +101,7 @@ describe('migrateGuestToAccount', () => {
         expect(guestStore.count()).toBe(0);
     });
 
-    it('surfaces non-409 list failures as failures, still clears nothing', async () => {
+    it('surfaces non-409 list failures and keeps the list and its items locally', async () => {
         const list = await guestStore.createList({ title: 'Groceries' });
         await guestStore.addItem({ listId: list.id, name: 'Apples' });
 
@@ -120,7 +120,7 @@ describe('migrateGuestToAccount', () => {
         expect(guestStore.itemCount()).toBe(1);
     });
 
-    it('records an item failure but still clears the store when no list failures occurred', async () => {
+    it('records an item failure but still drops the uploaded list locally', async () => {
         const list = await guestStore.createList({ title: 'Groceries' });
         await guestStore.addItem({ listId: list.id, name: 'Apples' });
 
@@ -140,14 +140,15 @@ describe('migrateGuestToAccount', () => {
         expect(guestStore.count()).toBe(0);
     });
 
-    it('keeps the store intact when any list fails, even if other lists succeed', async () => {
+    it('keeps only the failed lists, so a retry does not re-upload the good ones', async () => {
         await guestStore.createList({ title: 'Bad' });
         const good = await guestStore.createList({ title: 'Good' });
         await guestStore.addItem({ listId: good.id, name: 'Apples' });
 
+        let badFails = true;
         const adapter = recordingAdapter({
             addList: (async (title: string) => {
-                if (title === 'Bad') throw httpError(500, 'nope');
+                if (title === 'Bad' && badFails) throw httpError(500, 'nope');
             }) as MigrateAdapter['addList'],
         });
 
@@ -156,8 +157,14 @@ describe('migrateGuestToAccount', () => {
         expect(result.listsUploaded).toBe(1);
         expect(result.itemsUploaded).toBe(1);
         expect(result.failures).toEqual([{ listTitle: 'Bad', reason: 'nope' }]);
-        // The "Good" list got uploaded but the migration kept the local store
-        // because "Bad" failed; the user can retry the migration.
-        expect(guestStore.count()).toBe(2);
+        expect(guestStore.peekLists().map((list) => list.title)).toEqual(['Bad']);
+
+        badFails = false;
+        adapter.calls.length = 0;
+        const retry = await migrateGuestToAccount(user, adapter);
+
+        expect(retry.listsUploaded).toBe(1);
+        expect(adapter.calls).toEqual([{ kind: 'addList', args: { title: 'Bad', listType: ListType.SHOPPING } }]);
+        expect(guestStore.count()).toBe(0);
     });
 });

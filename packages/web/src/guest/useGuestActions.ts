@@ -4,11 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import { type GuestItem, type GuestList, guestStore } from './guestStore';
 
 // All guest-mode mutations live here so callers don't have to know about
-// the underlying IndexedDB store. They all optimistically update the in-memory
-// mirror (which the in-page subscriptions react to), then write through to IDB.
+// the underlying IndexedDB store. Each one writes through the store and then
+// invalidates the guest queries so the pages re-read.
 
-// fallow-ignore-next-line unused-type
-export interface GuestAddListInput {
+interface GuestAddListInput {
     title: string;
     listType?: GuestList['listType'];
 }
@@ -38,26 +37,9 @@ export const useGuestListActions = () => {
 
     const renameList = useCallback(
         async (listId: string, newTitle: string) => {
-            // guestStore doesn't expose renameList directly because the API uses
-            // PUT /api/lists/:title with a body. Implement here via delete+recreate
-            // so the order and ids stay stable for items.
-            const existing = guestStore.peekLists().find((l) => l.id === listId);
-            if (!existing) throw new Error('List not found');
-            if (existing.title === newTitle) return;
-            const items = guestStore.peekItems(listId);
-            await guestStore.deleteList(listId);
-            const recreated = await guestStore.createList({ title: newTitle, listType: existing.listType });
-            for (const item of items) {
-                await guestStore.addItem({
-                    listId: recreated.id,
-                    name: item.name,
-                    ...(item.quantity !== undefined && { quantity: item.quantity }),
-                    ...(item.unit !== undefined && { unit: item.unit }),
-                });
-            }
+            await guestStore.renameList(listId, newTitle);
             queryClient.invalidateQueries({ queryKey: ['lists', 'guest'] });
-            queryClient.removeQueries({ queryKey: ['list', listId, 'guest'] });
-            queryClient.invalidateQueries({ queryKey: ['list', recreated.id, 'guest'] });
+            queryClient.invalidateQueries({ queryKey: ['list', listId, 'guest'] });
         },
         [queryClient]
     );
@@ -65,8 +47,7 @@ export const useGuestListActions = () => {
     return { createList, deleteList, renameList };
 };
 
-// fallow-ignore-next-line unused-type
-export interface GuestAddItemInput {
+interface GuestAddItemInput {
     listId: string;
     name: string;
     quantity?: number;

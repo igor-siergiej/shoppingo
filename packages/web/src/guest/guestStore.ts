@@ -1,10 +1,10 @@
-import { type Item, ListType } from '@shoppingo/types';
+import { ListType } from '@shoppingo/types';
 import { type DBSchema, type IDBPDatabase, openDB } from 'idb';
 
 // Local-only store for guest sessions: lists and items are persisted in
 // IndexedDB so a guest can browse the app, create lists, and add items
 // without ever touching the API. On sign-up / log-in the contents are
-// migrated to the server (see `migrateGuestToAccount.ts`) and cleared.
+// migrated to the server (see `migrateGuestToAccount.ts`).
 
 export interface GuestList {
     id: string;
@@ -50,10 +50,6 @@ const getDB = () => {
 
 let listsMirror: GuestList[] = [];
 const itemsByListMirror = new Map<string, GuestItem[]>();
-const listeners = new Set<() => void>();
-const notify = () => {
-    for (const cb of listeners) cb();
-};
 
 const sortLists = (a: GuestList, b: GuestList) => a.createdAt - b.createdAt;
 const sortItems = (a: GuestItem, b: GuestItem) => a.seq - b.seq;
@@ -62,8 +58,50 @@ const sortItems = (a: GuestItem, b: GuestItem) => a.seq - b.seq;
 // deterministic order across an IDB read-back. Resets only at module load.
 let nextSeq = 0;
 
+// Trims `title` and rejects blanks and case-insensitive clashes with any list
+// other than `ownId`.
+const assertFreeTitle = (title: string, ownId?: string): string => {
+    const trimmed = title.trim();
+    if (!trimmed) throw new Error('List name is required');
+    const clash = listsMirror.some((l) => l.id !== ownId && l.title.toLowerCase() === trimmed.toLowerCase());
+    if (clash) throw new Error('A list with that name already exists');
+    return trimmed;
+};
+
+// Applies `patch` to one stored item, in IndexedDB and the mirror.
+const patchItem = async (itemId: string, patch: Partial<Pick<GuestItem, 'isSelected' | 'name'>>) => {
+    const db = await getDB();
+    const existing = await db.get(ITEMS_STORE, itemId);
+    if (!existing) return;
+    const next: GuestItem = { ...existing, ...patch };
+    await db.put(ITEMS_STORE, next);
+    const bucket = itemsByListMirror.get(existing.listId) ?? [];
+    itemsByListMirror.set(
+        existing.listId,
+        bucket.map((it) => (it.id === itemId ? next : it))
+    );
+};
+
+// Deletes a list's items matching `shouldDelete`, in IndexedDB and the mirror.
+const deleteListItems = async (listId: string, shouldDelete: (item: GuestItem) => boolean) => {
+    const db = await getDB();
+    const tx = db.transaction(ITEMS_STORE, 'readwrite');
+    let cursor = await tx.store.index('by-list').openCursor(listId);
+    while (cursor) {
+        if (shouldDelete(cursor.value)) await cursor.delete();
+        cursor = await cursor.continue();
+    }
+    await tx.done;
+    const bucket = itemsByListMirror.get(listId) ?? [];
+    itemsByListMirror.set(
+        listId,
+        bucket.filter((it) => !shouldDelete(it))
+    );
+};
+
 export const guestStore = {
-    /** Loads everything from IndexedDB into the in-memory mirror. Call once at startup. */
+    /** Loads everything from IndexedDB into the in-memory mirror. Guest queries call it on every fetch. */
+    // fallow-ignore-next-line complexity
     async hydrate() {
         const db = await getDB();
         listsMirror = (await db.getAll(LISTS_STORE)).sort(sortLists);
@@ -82,12 +120,6 @@ export const guestStore = {
         // Resume the in-memory counter past any persisted items so freshly-added
         // items don't tie with — and reorder — ones already in IDB.
         if (maxSeq > nextSeq) nextSeq = maxSeq;
-        notify();
-    },
-
-    subscribe(cb: () => void): () => void {
-        listeners.add(cb);
-        return () => listeners.delete(cb);
     },
 
     /** Returns a fresh array — callers may sort or filter without mutating the mirror. */
@@ -110,21 +142,26 @@ export const guestStore = {
     },
 
     async createList(input: { title: string; listType?: ListType }): Promise<GuestList> {
-        const trimmed = input.title.trim();
-        if (!trimmed) throw new Error('List name is required');
-        const exists = listsMirror.some((l) => l.title.toLowerCase() === trimmed.toLowerCase());
-        if (exists) throw new Error('A list with that name already exists');
         const list: GuestList = {
             id: crypto.randomUUID(),
-            title: trimmed,
+            title: assertFreeTitle(input.title),
             listType: input.listType ?? ListType.SHOPPING,
             createdAt: Date.now(),
         };
         const db = await getDB();
         await db.put(LISTS_STORE, list);
         listsMirror = [...listsMirror, list].sort(sortLists);
-        notify();
         return list;
+    },
+
+    /** Renames in place: the id, position and items (with their ticks) are untouched. */
+    async renameList(listId: string, title: string): Promise<void> {
+        const existing = listsMirror.find((l) => l.id === listId);
+        if (!existing) throw new Error('List not found');
+        const next: GuestList = { ...existing, title: assertFreeTitle(title, listId) };
+        const db = await getDB();
+        await db.put(LISTS_STORE, next);
+        listsMirror = listsMirror.map((l) => (l.id === listId ? next : l));
     },
 
     async deleteList(listId: string): Promise<void> {
@@ -140,9 +177,9 @@ export const guestStore = {
         await tx.done;
         listsMirror = listsMirror.filter((l) => l.id !== listId);
         itemsByListMirror.delete(listId);
-        notify();
     },
 
+    // fallow-ignore-next-line complexity
     async addItem(input: { listId: string; name: string; quantity?: number; unit?: string }): Promise<GuestItem> {
         const name = input.name.trim();
         if (!name) throw new Error('Item name is required');
@@ -161,40 +198,18 @@ export const guestStore = {
         const db = await getDB();
         await db.put(ITEMS_STORE, item);
         const bucket = itemsByListMirror.get(input.listId) ?? [];
-        const next = [...bucket, item].sort(sortItems);
-        itemsByListMirror.set(input.listId, next);
-        notify();
+        itemsByListMirror.set(input.listId, [...bucket, item].sort(sortItems));
         return item;
     },
 
     async toggleItem(itemId: string, isSelected: boolean): Promise<void> {
-        const db = await getDB();
-        const existing = await db.get(ITEMS_STORE, itemId);
-        if (!existing) return;
-        const next: GuestItem = { ...existing, isSelected };
-        await db.put(ITEMS_STORE, next);
-        const bucket = itemsByListMirror.get(existing.listId) ?? [];
-        itemsByListMirror.set(
-            existing.listId,
-            bucket.map((it) => (it.id === itemId ? next : it))
-        );
-        notify();
+        await patchItem(itemId, { isSelected });
     },
 
     async updateItemName(itemId: string, name: string): Promise<void> {
         const trimmed = name.trim();
         if (!trimmed) throw new Error('Item name is required');
-        const db = await getDB();
-        const existing = await db.get(ITEMS_STORE, itemId);
-        if (!existing) return;
-        const next: GuestItem = { ...existing, name: trimmed };
-        await db.put(ITEMS_STORE, next);
-        const bucket = itemsByListMirror.get(existing.listId) ?? [];
-        itemsByListMirror.set(
-            existing.listId,
-            bucket.map((it) => (it.id === itemId ? next : it))
-        );
-        notify();
+        await patchItem(itemId, { name: trimmed });
     },
 
     async deleteItem(itemId: string): Promise<void> {
@@ -207,42 +222,17 @@ export const guestStore = {
             existing.listId,
             bucket.filter((it) => it.id !== itemId)
         );
-        notify();
     },
 
     async clearList(listId: string): Promise<void> {
-        const db = await getDB();
-        const tx = db.transaction(ITEMS_STORE, 'readwrite');
-        const index = tx.store.index('by-list');
-        let cursor = await index.openCursor(listId);
-        while (cursor) {
-            await cursor.delete();
-            cursor = await cursor.continue();
-        }
-        await tx.done;
-        itemsByListMirror.set(listId, []);
-        notify();
+        await deleteListItems(listId, () => true);
     },
 
     async clearSelected(listId: string): Promise<void> {
-        const db = await getDB();
-        const tx = db.transaction(ITEMS_STORE, 'readwrite');
-        const index = tx.store.index('by-list');
-        let cursor = await index.openCursor(listId);
-        while (cursor) {
-            if (cursor.value.isSelected) await cursor.delete();
-            cursor = await cursor.continue();
-        }
-        await tx.done;
-        const bucket = itemsByListMirror.get(listId) ?? [];
-        itemsByListMirror.set(
-            listId,
-            bucket.filter((it) => !it.isSelected)
-        );
-        notify();
+        await deleteListItems(listId, (item) => item.isSelected);
     },
 
-    /** Drops every list and item — used after a successful migration to the account. */
+    /** Drops every list and item — used when a guest leaves guest mode. */
     async clear(): Promise<void> {
         const db = await getDB();
         const tx = db.transaction([LISTS_STORE, ITEMS_STORE], 'readwrite');
@@ -251,7 +241,6 @@ export const guestStore = {
         await tx.done;
         listsMirror = [];
         itemsByListMirror.clear();
-        notify();
     },
 
     /** Snapshots the current state so the migration can iterate without reacting to live writes. */
@@ -262,18 +251,4 @@ export const guestStore = {
         }
         return { lists: [...listsMirror], itemsByList };
     },
-
-    async _resetForTests(): Promise<void> {
-        const db = await getDB();
-        const tx = db.transaction([LISTS_STORE, ITEMS_STORE], 'readwrite');
-        await tx.objectStore(LISTS_STORE).clear();
-        await tx.objectStore(ITEMS_STORE).clear();
-        await tx.done;
-        listsMirror = [];
-        itemsByListMirror.clear();
-        notify();
-    },
 };
-
-// fallow-ignore-next-line unused-type
-export type { Item };
