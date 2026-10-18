@@ -7,6 +7,7 @@ import { recordInAppNavigation } from '../../utils/navigationHistory';
 import Appbar from '../Appbar';
 import { Layout } from '../Layout';
 import NetworkStatusAlert from '../NetworkStatusAlert';
+import SiteMoveBanner from '../SiteMoveBanner';
 
 interface RootLayoutProps {
     children?: ReactNode;
@@ -27,6 +28,7 @@ export const RootLayout = ({ children, showLayout = true }: RootLayoutProps) => 
         <div className="min-h-screen bg-background flex flex-col pt-14 md:pt-16">
             <Appbar />
             <NetworkStatusAlert />
+            <SiteMoveBanner />
             {showLayout ? (
                 <Layout>{content}</Layout>
             ) : (

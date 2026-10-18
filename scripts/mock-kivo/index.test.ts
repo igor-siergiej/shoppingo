@@ -1,4 +1,4 @@
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'bun:test';
+import { afterAll, beforeAll, describe, expect, it } from 'bun:test';
 
 import type { MockKivoServer } from './index';
 import { startMockKivo } from './index';
@@ -160,7 +160,7 @@ describe('mock-kivo routes', () => {
 });
 
 describe('mock-kivo safety guards', () => {
-    const ORIGINAL_NODE_ENV = process.env.NODE_ENV;
+    const _ORIGINAL_NODE_ENV = process.env.NODE_ENV;
 
     beforeAll(() => {
         productionEnv = process.env.NODE_ENV;

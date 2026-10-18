@@ -1,3 +1,4 @@
 {
-  "AUTH_URL": "http://localhost:3008"
+  "AUTH_URL": "http://localhost:3008",
+  "MOVE_BANNER_ENABLED": false
 }
