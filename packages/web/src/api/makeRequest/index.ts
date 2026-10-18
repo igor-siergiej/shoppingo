@@ -1,4 +1,5 @@
-import { getStorageItem, setStorageItem, tryRefreshToken } from '@imapps/web-utils';
+import { getStorageItem } from '@imapps/web-utils';
+import { refreshSession } from '../../auth/refreshSession';
 import { getAuthConfig } from '../../config/auth';
 import { logger } from '../../utils/logger';
 import type { MakeRequestProps } from '../types';
@@ -51,19 +52,16 @@ const parseErrorMessage = async (response: Response): Promise<string> => {
 
 // Handle 401 token refresh and retry
 const refreshAndRetry = async (
-    authConfig: ReturnType<typeof getAuthConfig>,
     pathname: string,
     method: string,
     body: string | undefined,
     queryParams?: Record<string, string>,
     signal?: AbortSignal
-): Promise<Response | null> => {
+): Promise<Response> => {
     logger.info('Token expired, attempting to refresh');
-    const newToken = await tryRefreshToken(authConfig);
+    const newToken = await refreshSession();
 
     if (newToken) {
-        setStorageItem(authConfig.accessTokenKey || 'accessToken', newToken, authConfig.storageType || 'localStorage');
-
         logger.info('Token refreshed successfully, retrying request');
         return await executeRequest(pathname, method, body, newToken, queryParams, signal);
     } else {
@@ -73,6 +71,8 @@ const refreshAndRetry = async (
     }
 };
 
+// One request, one refresh-and-retry on 401, then response/error mapping; splitting it would scatter the flow.
+// fallow-ignore-next-line complexity
 export const makeRequest = async ({
     pathname,
     method,
@@ -92,10 +92,7 @@ export const makeRequest = async ({
         let response = await executeRequest(pathname, method, body, accessToken, queryParams, signal);
 
         if (response.status === 401 && accessToken) {
-            const retryResponse = await refreshAndRetry(authConfig, pathname, method, body, queryParams, signal);
-            if (retryResponse) {
-                response = retryResponse;
-            }
+            response = await refreshAndRetry(pathname, method, body, queryParams, signal);
         }
 
         if (response.ok) {
