@@ -1,0 +1,71 @@
+# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+
+# Test info
+
+- Name: recipes.visual.spec.ts >> Recipes page visual regression >> empty state
+- Location: e2e/tests/recipes.visual.spec.ts:8:4
+
+# Error details
+
+```
+Error: expect(locator).toBeVisible() failed
+
+Locator: getByText('No recipes yet')
+Expected: visible
+Timeout: 5000ms
+Error: element(s) not found
+
+Call log:
+  - Expect "to.be.visible" with timeout 5000ms
+  - waiting for getByText('No recipes yet')
+
+```
+
+```yaml
+- banner:
+  - img "Shoppingo"
+  - text: Shoppingo
+  - button "What's new in Shoppingo (version localhost)": vlocalhost
+- heading "Something went wrong" [level=1]
+- paragraph: An unexpected error occurred. Please try refreshing the page or contact support if the problem persists.
+- button "Refresh Page"
+- button "Go Home"
+```
+
+# Test source
+
+```ts
+  1  | import { apiCreateRecipe } from '../api-helpers';
+  2  | import { seedFriendship } from '../db-helpers';
+  3  | import { expect, test } from '../fixtures';
+  4  | import { MOCK_USER, MOCK_USER_2 } from '../mocks/data/users';
+  5  | import { settle } from './visual-helpers';
+  6  | 
+  7  | test.describe('Recipes page visual regression', () => {
+  8  |     test('empty state', async ({ authenticatedPage }) => {
+  9  |         await authenticatedPage.goto('/recipes');
+> 10 |         await expect(authenticatedPage.getByText('No recipes yet')).toBeVisible();
+     |                                                                    ^ Error: expect(locator).toBeVisible() failed
+  11 |         await settle(authenticatedPage);
+  12 |         await expect(authenticatedPage).toHaveScreenshot('recipes-empty.png');
+  13 |     });
+  14 | 
+  15 |     // One shared and one unshared recipe, so the baseline covers both card
+  16 |     // layouts: row meta + avatar stack, and the centred stacked meta column.
+  17 |     test('populated state', async ({ authenticatedPage }) => {
+  18 |         await seedFriendship(MOCK_USER, MOCK_USER_2);
+  19 |         await apiCreateRecipe('Pasta Bolognese', [], [MOCK_USER_2.id]);
+  20 |         await apiCreateRecipe('Caesar Salad', [], [], { prepTime: 15, cookTime: 10, servings: 4 });
+  21 |         await authenticatedPage.goto('/recipes');
+  22 |         await expect(authenticatedPage.getByRole('button', { name: 'Pasta Bolognese' })).toBeVisible();
+  23 |         await expect(authenticatedPage.getByRole('button', { name: 'Caesar Salad' })).toBeVisible();
+  24 |         await settle(authenticatedPage);
+  25 |         await expect(authenticatedPage).toHaveScreenshot('recipes-populated.png');
+  26 |     });
+  27 | });
+  28 | 
+```
