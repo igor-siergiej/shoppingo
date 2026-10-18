@@ -15,6 +15,7 @@ import ConfigLoader from './components/ConfigLoader';
 import ErrorBoundary from './components/ErrorBoundary';
 import LoadingPage from './components/LoadingPage';
 import { RootLayout } from './components/RootLayout';
+import RouteChangeTracker from './components/RouteChangeTracker';
 import RouterErrorHandler from './components/RouterErrorHandler';
 import { getAuthConfig } from './config/auth';
 import { PullToRefreshProvider } from './contexts/PullToRefreshContext';
@@ -222,6 +223,7 @@ const AppContent: React.FC = () => {
                             <UnitSystemProvider>
                                 <PullToRefreshProvider>
                                     <PWAProvider>
+                                        <RouteChangeTracker />
                                         <RouterProvider router={router} />
                                     </PWAProvider>
                                 </PullToRefreshProvider>

@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { clearList, clearSelected } from '../api';
 import { drainOutbox } from '../offline/drainer';
 import { outboxStore } from '../offline/outboxStore';
+import { track } from '../utils/analytics';
 import { logger } from '../utils/logger';
 
 export const useItemPageMutations = (listTitle?: string) => {
@@ -114,6 +115,10 @@ export const useItemPageMutations = (listTitle?: string) => {
             );
 
             return { previousData };
+        },
+        onSuccess: (_data, _variables, context) => {
+            const count = context?.previousData?.items?.length ?? 0;
+            track('list_cleared', { list: listTitle ?? 'unknown', count });
         },
         onError: (_err, _variables, context) => {
             logger.warn('Failed to clear all items', { listTitle });

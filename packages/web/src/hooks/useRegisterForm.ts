@@ -3,6 +3,7 @@ import { useAuth, useAuthConfig } from '@imapps/web-utils';
 import { useForm } from 'react-hook-form';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { z } from 'zod';
+import { track } from '../utils/analytics';
 import { logger } from '../utils/logger';
 import { usernameField } from './authSchemas';
 
@@ -69,6 +70,7 @@ export const useRegisterForm = () => {
 
             const responseData = await response.json();
             login(responseData.accessToken);
+            track('sign_up_completed', { username: data.username });
             logger.info('Registration successful', { username: data.username });
 
             const from = location.state?.from?.pathname || '/';

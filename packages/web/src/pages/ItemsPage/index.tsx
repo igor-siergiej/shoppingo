@@ -15,6 +15,7 @@ import { useConfirmation } from '../../hooks/useConfirmation';
 import { useGoBack } from '../../hooks/useGoBack';
 import { useGroupByAisle } from '../../hooks/useGroupByAisle';
 import { useItemPageMutations } from '../../hooks/useItemPageMutations';
+import { track } from '../../utils/analytics';
 import { logger } from '../../utils/logger';
 import { EmptyState } from './EmptyState';
 import { ErrorState } from './ErrorState';
@@ -90,15 +91,18 @@ const ItemsPage = () => {
     };
 
     const handleAddItem = async (itemName: string, quantity?: number, unit?: string) => {
-        return new Promise((resolve, reject) => {
-            addItemMutation.mutate(
-                { id: crypto.randomUUID(), itemName, quantity, unit },
-                {
-                    onSuccess: resolve,
-                    onError: reject,
-                }
-            );
-        });
+        const { promise, resolve, reject } = Promise.withResolvers<void>();
+        addItemMutation.mutate(
+            { id: crypto.randomUUID(), itemName, quantity, unit },
+            {
+                onSuccess: () => {
+                    track('item_added', { source: 'typed', count: 1 });
+                    resolve();
+                },
+                onError: reject,
+            }
+        );
+        return promise;
     };
 
     const handleAddItems = async (spoken: Array<SpokenItem>) => {
@@ -106,6 +110,7 @@ const ItemsPage = () => {
             listTitle,
             spoken.map(({ name, quantity, unit }) => ({ itemName: name, quantity, unit }))
         );
+        track('item_added', { source: 'voice', count: spoken.length });
         await refetch();
     };
 
