@@ -36,25 +36,92 @@ Give a household one shared place to do the shopping together, so everyone stays
 
 ## Architecture
 
+Diagram of packages, runtime services, homelab deployment and external APIs:
+[`docs/diagrams/architecture.excalidraw`](docs/diagrams/architecture.excalidraw)
+(open in excalidraw.com or the VS Code Excalidraw extension).
+
 Bun-workspace monorepo — `packages/web`, `packages/api`, `packages/types`
-(shared interfaces).
+(shared interfaces and the Zod request schemas, `@shoppingo/types/schemas`).
 
 - **web** — React 19 + TypeScript + Vite. Tailwind + Radix/shadcn UI, React
   Query for server state, React Router, react-hook-form + Zod for forms,
-  `vite-plugin-pwa` for the service worker / offline / share-target.
-- **api** — Koa + TypeScript in a clean-architecture layout: `domain/`
-  (services, entities), `infrastructure/` (MongoDB repositories, object store,
-  image generators, auth client), `interfaces/` (HTTP handlers), `routes/`,
-  `middleware/`, `dependencies/` (DI container).
-- **data** — MongoDB (native driver). Images live in MinIO / S3-compatible
-  object storage.
+  `vite-plugin-pwa` (`injectManifest`, `src/sw.ts`) for the service worker /
+  offline / share-target. Offline writes go to an IndexedDB outbox
+  (`src/offline/`) and replay on reconnect. Built to static files served by
+  nginx on `:3000` (`packages/web/nginx.conf`).
+- **api** — Hono on Bun (`Bun.serve`, entry `packages/api/src/index.ts`, no
+  build step — the image runs `src` directly) on `:4001`, in a
+  clean-architecture layout: `domain/` (services, entities), `infrastructure/`
+  (MongoDB repositories, object store, fal.ai clients, auth client, web push),
+  `interfaces/` (HTTP handlers), `routes/`, `middleware/`, `dependencies/` (DI
+  container). Prometheus metrics at `/api/metrics`, liveness at `/api/health`.
+- **data** — MongoDB (native driver) is the system of record. Images live in
+  MinIO / S3-compatible object storage and are served through the api
+  (`/api/image/:name`). OpenSearch holds an optional, derived index for
+  Discover search; when `OPENSEARCH_URL` is unset `/api/discover/*` answers
+  `503` and nothing else is affected.
 - **auth** — a separate service ([`kivo`](https://github.com/igor-siergiej/kivo))
-  issues JWT access/refresh tokens. The web client refreshes transparently: a
-  `401` triggers a token refresh and the original request is retried once
-  (`packages/web/src/api/makeRequest`).
-- **AI** — recipe import and image generation go through `fal.ai`
-  (FLUX.1 [schnell]); Gemini and OpenAI image generators are also wired up
-  behind the same interface.
+  issues JWT access/refresh tokens. The browser talks to kivo directly for
+  `/login`, `/register`, `/refresh` and `/logout`, using `AUTH_URL` from the
+  runtime `/config.json`; the access token is held in module memory, not DOM
+  storage. The api checks every bearer token against kivo `/verify` (positive
+  results cached 30 s) and looks users up via kivo `/users` with
+  `X-Service-Token`. A `401` makes the web client refresh and retry the
+  original request once (`packages/web/src/api/makeRequest`).
+- **realtime** — list members get live updates over a websocket at
+  `/api/ws/lists/:title`. The browser first asks for a single-use ticket
+  (`POST /api/lists/:title/socket-ticket`, 30 s TTL) because `WebSocket`
+  cannot send an `Authorization` header. Fan-out (`ListRealtimeHub`) is
+  in-process: events carry no state, clients refetch, and the api is assumed
+  to run as one container.
+- **notifications** — Web Push (VAPID) subscriptions under `/api/push/*`; a
+  daily scheduler in the api sends todo reminders.
+- **sharing** — friend codes, per-list/per-recipe members, and list invite
+  links (`/api/lists/invites/*`).
+- **AI** — everything goes through fal.ai with `FAL_KEY`: images via
+  `fal-ai/flux/schnell` (`FalImageGenerator`), text via `fal-ai/any-llm`
+  (`FalLlmClient`, default model `google/gemini-2.5-flash-lite`) for recipe
+  tagging, substitutes, item aisles and spoken-item parsing. Recipe import
+  is JSON-LD first, then HTML heuristics; the LLM is only a third tier when
+  `RECIPE_IMPORT_LLM_ENABLED`, or the sole parser when
+  `RECIPE_IMPORT_LLM_FIRST`. Outbound fetches of recipe pages and images go
+  through the SSRF guard in `infrastructure/safeFetch.ts`. AI routes are
+  rate-limited (`middleware/aiRateLimit.ts`).
+- **Discover** — shared recipe library fed from the Wikibooks Cookbook and
+  user-published recipes; public read-only `/api/public/discover/*` (CORS
+  allow-list `PUBLIC_DISCOVER_ORIGINS`) feeds the marketing site. See
+  [docs/](docs/README.md).
+- **WebMCP** — three browser-agent tools registered from the web app; see
+  [docs/webmcp.md](docs/webmcp.md).
+
+## Configuration
+
+Names only; `.env.example` has dev values and comments. The api reads its
+env through `packages/api/src/config/index.ts` (fails at boot on a missing
+required value).
+
+| Variable | Required | Purpose |
+|---|---|---|
+| `PORT` | yes | api listen port (`4001`) |
+| `CONNECTION_URI`, `DATABASE_NAME` | yes | MongoDB |
+| `BUCKET_ENDPOINT`, `BUCKET_NAME`, `BUCKET_ACCESS_KEY`, `BUCKET_SECRET_KEY` | yes | MinIO / S3 |
+| `AUTH_URL` | no | kivo base URL; must be `https://`, except `http://kivo:<port>` (docker network) or `http://localhost` outside production (`config/auth-url.ts`) |
+| `SERVICE_TOKEN` | no | shared secret sent to kivo `/users` as `X-Service-Token` |
+| `FAL_KEY`, `FAL_MODEL`, `FAL_RECIPE_MODEL` | no | fal.ai key and model overrides |
+| `RECIPE_IMPORT_LLM_ENABLED`, `RECIPE_IMPORT_LLM_FIRST`, `RECIPE_IMPORT_LLM_API_KEY`, `RECIPE_IMPORT_LLM_MODEL` | no | recipe-import LLM tier; the key falls back to `FAL_KEY` |
+| `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` | no | Web Push |
+| `OPENSEARCH_URL` | no | Discover search index; unset = Discover off |
+| `PUBLIC_DISCOVER_ORIGINS` | no | CORS allow-list for `/api/public/discover/*` |
+| `DISCOVERY_ADMIN_USER_IDS` | no | kivo user ids allowed to moderate Discover |
+| `WIKIBOOKS_USER_AGENT` | no | User-Agent for `discover:ingest` |
+
+Web: runtime `packages/web/public/config.json` (`AUTH_URL`, the kivo URL the
+browser calls; cached in `localStorage` for offline launch). Build-time:
+`APP_VERSION` (version badge), `VITE_WEBMCP_OT_TOKEN` (WebMCP origin trial).
+Installing dependencies needs `NODE_AUTH_TOKEN` for the `@imapps/*` registry
+(`.bunfig.toml`); the Dockerfiles take it as a build arg. Tests add
+`OPENSEARCH_TEST_URL` (api integration tests), `E2E_OPENSEARCH_URL` and
+`E2E_BASE_URL` (Playwright).
 
 ## Running it
 
@@ -81,6 +148,26 @@ The full self-host stack (web + api + mongo + minio + kivo from published
 images) lives in `selfhost/docker-compose.yml`; see
 [Self-hosting](#self-hosting) below.
 
+### Scripts
+
+Root `package.json`:
+
+| Script | What it does |
+|---|---|
+| `start`, `start:web`, `start:api` | web (Vite `:4000`, proxies `/api` + websockets to `:4001`) and/or api (`bun --watch`, env from `.env`) |
+| `dev:local` | `scripts/dev-local.sh`: mongo + minio from `selfhost/`, mock kivo on `:3099`, web + api |
+| `mock-kivo` | the mock kivo on its own |
+| `reindex:discovery` | rebuild the OpenSearch Discover index from Mongo |
+| `discover:ingest`, `discover:validate` | Wikibooks Cookbook ingest / library validation ([docs/discovery-ingest.md](docs/discovery-ingest.md)) |
+| `lint`, `lint:fix`, `format` | Biome |
+| `test:e2e`, `test:e2e:ui`, `test:e2e:update-snapshots` | Playwright |
+| `tsc:e2e` | type-check `e2e/` |
+| `test:scripts` | Bun tests for `scripts/` (coverage gate, release-notes collector) |
+| `load:local` | k6 capacity test against a throwaway local stack ([scripts/load/README.md](scripts/load/README.md)) |
+| `audit` | `fallow-audit` (dead code / complexity) |
+
+### Testing
+
 ```bash
 bun run lint                                       # Biome
 bunx tsc -p packages/api/tsconfig.json --noEmit    # API types
@@ -90,6 +177,17 @@ bun run --filter @shoppingo/web test               # Vitest component tests
 bun run test:e2e                                   # Playwright; needs the dev stack
 bun run load:local                                 # k6 (manual; see scripts/load)
 ```
+
+- **Unit** — api and script tests use `bun:test`; CI enforces 90 % line and
+  function coverage on the api lcov via `scripts/check-coverage.js`. Web
+  component tests use Vitest with no coverage gate.
+- **e2e** — Playwright starts web (`:4000`) and an e2e api (`:4001`,
+  database `shoppingo_e2e`, mock kivo on `:3099`) itself, but needs Mongo and
+  MinIO running. Projects: `chromium` (functional), `mobile-visual` and
+  `desktop-visual` (screenshot diffs). Discover specs skip unless
+  `E2E_OPENSEARCH_URL` is set. `@smoke`-tagged specs are what the homelab's
+  nightly prod smoke runs against https://shoppingo.imapps.uk. See
+  [e2e/README.md](e2e/README.md) and [e2e/COVERAGE.md](e2e/COVERAGE.md).
 
 ## Contributing
 
@@ -101,9 +199,39 @@ label picks out small, contained starting points.
 
 ## CI/CD
 
-- **`pr.yml`** on every PR: lint → API/web tests → Playwright e2e → report.
-- **`cd.yml`** on merge to `main`: semantic-release (version + changelog) →
-  Docker image build/publish → deploy webhook. Deployed on Dokploy.
+- **`pr.yml`** on every PR: `lint` (Biome + `tsc:e2e`) → `test` (`tsc
+  --noEmit`, api tests with coverage against a real OpenSearch service, web
+  tests, script tests, 90 % gate) and `e2e` (Playwright against Mongo 7 +
+  OpenSearch services; HTML report published to GitHub Pages and linked from
+  a sticky PR comment) → `semgrep`. `fallow-deadcode` runs after `lint`;
+  `.kanban-cli.json` treats `lint`, `test`, `e2e`, `fallow-deadcode` as the
+  required checks.
+- **`cd.yml`** on push to `main`: semantic-release (version bump in every
+  `package.json`, `CHANGELOG.md`, `packages/web/src/data/release-notes.json`
+  from `Release-Notes:` trailers) → `publish-images.sh` from the
+  [`utils`](https://github.com/igor-siergiej/utils) submodule
+  (`.github/workflows-utils`) builds `Dockerfile.api` / `Dockerfile.web` and
+  pushes `igurusama/imapps:shoppingo-{api,web}-<version>` and `-latest` to
+  Docker Hub → two `curl` POSTs to the Dokploy deploy webhooks
+  (`DEPLOY_WEB_URL`, `DEPLOY_API_URL`), authenticated with a Cloudflare Access
+  service token.
+- **Production** runs on the `foundry` homelab: Dokploy swarm apps
+  `shoppingo-web` and `shoppingo-api` in the `apps` project, on
+  `dokploy-network` with the shared `mongodb`, `minio` and `opensearch`
+  containers. Traefik routes `shoppingo.imapps.uk` (`/api/*` to the api,
+  everything else to web); remote traffic arrives through the Cloudflare
+  tunnel with an Access **bypass** (the app does its own auth via kivo), LAN
+  traffic via split-horizon DNS. Gatus checks `/` and `/api/health`;
+  Prometheus scrapes `/api/metrics`. The authoritative map is
+  `docs/homelab.md` in the `foundry` repo. Production env values live in
+  Dokploy and are not in this repo.
+
+## Docs
+
+[`docs/README.md`](docs/README.md) indexes the feature docs (Discover,
+WebMCP) and the architecture diagram. Contributor workflow, commit format and
+PR flow: [CONTRIBUTING.md](CONTRIBUTING.md). Agent/architecture reference:
+[AGENTS.md](AGENTS.md). Security reporting: [SECURITY.md](SECURITY.md).
 
 ## Decisions
 
