@@ -6,14 +6,14 @@ run quickly and points at the deeper reference material in
 
 ## Quick start
 
-You need **Bun 1.x** and **Docker** (for Mongo and MinIO).
+You need **Bun 1.x** and **Docker** (for Mongo and RustFS, the S3-compatible object store).
 
 ```bash
 git clone https://github.com/igor-siergiej/shoppingo
 cd shoppingo
 bun install
 cp .env.example .env
-bun run dev:local                  # mongo + minio + mock-kivo + web (:4000) + api (:4001)
+bun run dev:local                  # mongo + rustfs + mock-kivo + web (:4000) + api (:4001)
 ```
 
 Open <http://localhost:4000> and register a new account (any username and a
@@ -26,7 +26,7 @@ the api's `AUTH_URL` rule only allows `http://localhost` outside production.
 If you want a real kivo, launch it and export
 `AUTH_URL=https://kivo.example.com` before `bun run start`.
 
-The full self-host stack (web + api + mongo + minio + kivo from published
+The full self-host stack (web + api + mongo + rustfs + kivo from published
 images) lives in `selfhost/docker-compose.yml`; a single
 `docker compose up -d` from there is also a valid end-to-end run.
 `dev:local` is the developer ergonomics path — it skips the published web/api

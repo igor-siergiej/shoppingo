@@ -1,0 +1,11 @@
+@shoppingo/api start: 26 |         return url.toString().replace(/\/$/, '');
+@shoppingo/api start: 27 |     }
+@shoppingo/api start: 28 |     if (url.hostname === 'localhost' && url.protocol === 'http:' && !isProduction) {
+@shoppingo/api start: 29 |         return url.toString().replace(/\/$/, '');
+@shoppingo/api start: 30 |     }
+@shoppingo/api start: 31 |     throw new Error(
+@shoppingo/api start:                    ^
+@shoppingo/api start: error: AUTH_URL must use https:// (or http://kivo in docker, or http://localhost outside production), got 'http://127.0.0.1:3099'
+@shoppingo/api start:       at httpsUrl (/home/home/imapps/shoppingo/.worktrees/rustfs-dev/packages/api/src/config/auth-url.ts:31:15)
+@shoppingo/api start:       at new ConfigService (/home/home/imapps/shoppingo/.worktrees/rustfs-dev/node_modules/.bun/@imapps+api-utils@0.6.0/node_modules/@imapps/api-utils/build/index.mjs:50:30)
+@shoppingo/api start:       at /home/home/imapps/shoppingo/.worktrees/rustfs-dev/packages/api/src/config/index.ts:46:23

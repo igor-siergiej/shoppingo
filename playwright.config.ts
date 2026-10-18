@@ -84,8 +84,8 @@ export default defineConfig({
                 DATABASE_NAME: 'shoppingo_e2e',
                 BUCKET_ENDPOINT: 'localhost:9000',
                 BUCKET_NAME: 'shoppingo',
-                BUCKET_ACCESS_KEY: 'minioadmin',
-                BUCKET_SECRET_KEY: 'minioadmin',
+                BUCKET_ACCESS_KEY: 'rustfsadmin',
+                BUCKET_SECRET_KEY: 'rustfsadmin',
                 // Only the dedicated e2e search engine, never a developer's OPENSEARCH_URL from .env. Empty = discovery off.
                 OPENSEARCH_URL: process.env.E2E_OPENSEARCH_URL ?? '',
                 // The public read endpoint echoes the allow-listed origin in Access-Control-Allow-Origin.

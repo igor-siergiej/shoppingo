@@ -56,8 +56,8 @@ async function reindexDiscovery(): Promise<void> {
             OPENSEARCH_URL: E2E_OPENSEARCH_URL,
             BUCKET_ENDPOINT: 'localhost:9000',
             BUCKET_NAME: 'shoppingo',
-            BUCKET_ACCESS_KEY: 'minioadmin',
-            BUCKET_SECRET_KEY: 'minioadmin',
+            BUCKET_ACCESS_KEY: 'rustfsadmin',
+            BUCKET_SECRET_KEY: 'rustfsadmin',
         },
     });
 }
@@ -76,7 +76,7 @@ export async function seedDiscoveryLibrary(recipes: DiscoveryRecipe[]): Promise<
     await reindexDiscovery();
 }
 
-/** Sets image keys on a recipe directly; the API only writes these after a real MinIO upload or AI generation. */
+/** Sets image keys on a recipe directly; the API only writes these after a real object-store upload or AI generation. */
 export async function seedRecipeImageKeys(
     recipeId: string,
     keys: { coverImageKey?: string; aiImageKey?: string }

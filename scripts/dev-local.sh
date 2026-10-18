@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Compose the local-only dev stack:
-#   - Mongo + MinIO from selfhost/docker-compose (dev infra only — no api/web/kivo images)
+#   - Mongo + RustFS (S3-compatible object store) from selfhost/docker-compose (dev infra only — no api/web/kivo images)
 #   - Self-hosted mock kivo on 127.0.0.1:3099 (refuses NODE_ENV=production, plain-text creds)
 #   - API on :4001 pointed at the mock kivo
 #   - Web on :4000
@@ -15,7 +15,7 @@
 # The api/web load environment from .env (or .env.example as a starting point),
 # and the mock is the AUTH_URL referenced by the api. Use this when you want a
 # fast inner loop without pulling the published web/api images; the full
-# self-host stack (web + api + mongo + minio + kivo from published images)
+# self-host stack (web + api + mongo + rustfs + kivo from published images)
 # still lives in selfhost/docker-compose.yml.
 
 set -euo pipefail
@@ -28,6 +28,12 @@ fi
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 HERE="$ROOT/scripts"
 COMPOSE_FILE="$ROOT/selfhost/docker-compose.yml"
+# The compose file requires RustFS credentials, normally from selfhost/.env. Default to the dev ones only when
+# that file is absent: exported shell env would otherwise override it.
+if [[ ! -f "$ROOT/selfhost/.env" ]]; then
+    export RUSTFS_ACCESS_KEY="${RUSTFS_ACCESS_KEY:-rustfsadmin}"
+    export RUSTFS_SECRET_KEY="${RUSTFS_SECRET_KEY:-rustfsadmin}"
+fi
 
 WEB_PORT="${WEB_PORT:-4000}"
 API_PORT="${API_PORT:-4001}"
@@ -48,21 +54,21 @@ cleanup() {
     [[ -n "${API_PID:-}" ]] && kill "$API_PID" 2>/dev/null
     [[ -n "${KIVO_PID:-}" ]] && kill "$KIVO_PID" 2>/dev/null
     wait 2>/dev/null
-    echo "==> Stopping Mongo + MinIO"
-    docker compose -f "$COMPOSE_FILE" stop mongo minio >/dev/null 2>&1 || true
+    echo "==> Stopping Mongo + RustFS"
+    docker compose -f "$COMPOSE_FILE" stop mongo rustfs >/dev/null 2>&1 || true
 }
 trap cleanup EXIT INT TERM
 
-echo "==> Starting Mongo + MinIO (selfhost/docker-compose, dev infra only)"
-docker compose -f "$COMPOSE_FILE" up -d mongo minio minio-init >/dev/null
+echo "==> Starting Mongo + RustFS (selfhost/docker-compose, dev infra only)"
+docker compose -f "$COMPOSE_FILE" up -d mongo rustfs rustfs-init >/dev/null
 
-# Wait for MinIO to be reachable on the host. The minio-init one-shot only succeeds once minio is up.
+# Wait for the object store to be reachable on the host. The rustfs-init one-shot only succeeds once rustfs is up.
 for _ in $(seq 1 30); do
-    if curl -sf "http://127.0.0.1:9000/minio/health/ready" >/dev/null 2>&1; then break; fi
+    if curl -sf "http://127.0.0.1:9000/health/ready" >/dev/null 2>&1; then break; fi
     sleep 0.5
 done
-if ! curl -sf "http://127.0.0.1:9000/minio/health/ready" >/dev/null; then
-    echo "MinIO did not come up; see docker logs shoppingo-selfhost-minio-1" >&2
+if ! curl -sf "http://127.0.0.1:9000/health/ready" >/dev/null; then
+    echo "RustFS did not come up; see docker logs shoppingo-selfhost-rustfs-1" >&2
     exit 1
 fi
 

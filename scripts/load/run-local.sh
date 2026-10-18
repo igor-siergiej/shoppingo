@@ -40,7 +40,7 @@ PIDS+=($!)
 (cd "$ROOT/packages/api" && env -i PATH="$PATH" HOME="$HOME" \
     PORT="$API_PORT" AUTH_URL="http://localhost:$KIVO_PORT" \
     CONNECTION_URI="$MONGO_URI" DATABASE_NAME="$DB_NAME" \
-    BUCKET_ENDPOINT=localhost:9000 BUCKET_NAME=shoppingo BUCKET_ACCESS_KEY=minioadmin BUCKET_SECRET_KEY=minioadmin \
+    BUCKET_ENDPOINT=localhost:9000 BUCKET_NAME=shoppingo BUCKET_ACCESS_KEY=rustfsadmin BUCKET_SECRET_KEY=rustfsadmin \
     OPENSEARCH_URL= bun src/index.ts) >"$RUN_DIR/api.log" 2>&1 &
 PIDS+=($!)
 
