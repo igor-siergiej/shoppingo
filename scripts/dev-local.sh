@@ -90,7 +90,7 @@ echo "==> Starting api on :${API_PORT} (logs: $HERE/logs/api.log)"
     dotenv -e .env -- \
         env NODE_ENV=development \
             PORT="$API_PORT" \
-            AUTH_URL="http://127.0.0.1:${KIVO_PORT}" \
+            AUTH_URL="http://localhost:${KIVO_PORT}" \
             BUCKET_ENDPOINT="localhost:9000" \
         bun run --filter @shoppingo/api start
 ) >"$HERE/logs/api.log" 2>&1 &
@@ -109,7 +109,7 @@ echo "==> Starting web on :${WEB_PORT} (logs: $HERE/logs/web.log)"
     cd "$ROOT"
     dotenv -e .env -- \
         env PORT="$WEB_PORT" \
-            AUTH_URL="http://127.0.0.1:${KIVO_PORT}" \
+            AUTH_URL="http://localhost:${KIVO_PORT}" \
         bun run start:web
 ) >"$HERE/logs/web.log" 2>&1 &
 WEB_PID=$!
