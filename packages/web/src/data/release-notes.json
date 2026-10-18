@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.106.2",
+    "date": "2026-10-18",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Recipe photos you uploaded no longer go missing in the Add from recipe and Use up an ingredient lists, or after the app has been open for a while."
+      }
+    ]
+  },
+  {
     "version": "1.106.1",
     "date": "2026-10-18",
     "notes": [

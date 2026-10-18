@@ -1,3 +1,10 @@
+## [1.106.2](https://github.com/igor-siergiej/shoppingo/compare/v1.106.1...v1.106.2) (2026-10-18)
+
+
+### Bug Fixes
+
+* **web:** load uploaded recipe covers with a fresh token ([#256](https://github.com/igor-siergiej/shoppingo/issues/256)) ([8118830](https://github.com/igor-siergiej/shoppingo/commit/8118830cc36a5e577847f90336604943f3f45e1d))
+
 ## [1.106.1](https://github.com/igor-siergiej/shoppingo/compare/v1.106.0...v1.106.1) (2026-10-18)
 
 
