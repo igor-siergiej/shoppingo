@@ -1,3 +1,10 @@
+## [1.106.3](https://github.com/igor-siergiej/shoppingo/compare/v1.106.2...v1.106.3) (2026-10-18)
+
+
+### Bug Fixes
+
+* **api:** serve uploaded recipe covers with private cache control ([#257](https://github.com/igor-siergiej/shoppingo/issues/257)) ([a223ec8](https://github.com/igor-siergiej/shoppingo/commit/a223ec895083fe939723c57eeaecb93849866586))
+
 ## [1.106.2](https://github.com/igor-siergiej/shoppingo/compare/v1.106.1...v1.106.2) (2026-10-18)
 
 
