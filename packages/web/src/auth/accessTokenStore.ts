@@ -6,10 +6,21 @@
 // design: the next render triggers the web-utils useTokenInitialization to refresh from the
 // HttpOnly refresh cookie.
 
+import { returningUserCookie } from './returningUserCookie';
+
 let currentAccessToken: string | null = null;
+let returningUserMarked = false;
 
 export const getAccessToken = (): string | null => currentAccessToken;
 
+// Every sign-in, registration and session refresh lands here, so a stored token is the signal
+// that this browser belongs to a returning user. Marked once per page load, so the cookie's
+// year-long expiry slides with use.
 export const setAccessToken = (token: string | null): void => {
     currentAccessToken = token;
+    if (!token || returningUserMarked) return;
+    returningUserMarked = true;
+    const cookie = returningUserCookie(window.location.hostname);
+    // biome-ignore lint/suspicious/noDocumentCookie: the Cookie Store API is missing from Firefox.
+    if (cookie) document.cookie = cookie;
 };
