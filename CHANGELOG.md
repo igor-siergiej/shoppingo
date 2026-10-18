@@ -1,3 +1,10 @@
+## [1.105.1](https://github.com/igor-siergiej/shoppingo/compare/v1.105.0...v1.105.1) (2026-10-18)
+
+
+### Bug Fixes
+
+* **web:** render RouteChangeTracker inside the router ([#254](https://github.com/igor-siergiej/shoppingo/issues/254)) ([442e7c6](https://github.com/igor-siergiej/shoppingo/commit/442e7c6e423f72b9e969eab74e7c4b116c8c755d)), closes [#252](https://github.com/igor-siergiej/shoppingo/issues/252)
+
 # [1.105.0](https://github.com/igor-siergiej/shoppingo/compare/v1.104.0...v1.105.0) (2026-10-18)
 
 

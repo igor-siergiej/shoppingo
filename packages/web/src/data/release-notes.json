@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.105.1",
+    "date": "2026-10-18",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Fixes Shoppingo showing \"Something went wrong\" instead of loading."
+      }
+    ]
+  },
+  {
     "version": "1.105.0",
     "date": "2026-10-18",
     "notes": [
