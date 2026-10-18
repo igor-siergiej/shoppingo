@@ -114,7 +114,7 @@ export const track = (event: string, data?: EventPayload): void => {
     window.umami?.track(event, data);
 };
 
-// fallow-ignore-next-line unused-export (kept for #73 consent UX)
+// fallow-ignore-next-line unused-export
 export const identify = (id: string): void => {
     if (!ensureInjected()) return;
     window.umami?.identify(id);
@@ -124,13 +124,13 @@ export const identify = (id: string): void => {
  * Start a session-replay session. Requires the opt-in consent in
  * #73. Sample rate is server-side, not here.
  */
-// fallow-ignore-next-line unused-export (kept for #73 consent UX)
+// fallow-ignore-next-line unused-export
 export const startReplay = (): void => {
     if (!ensureInjected()) return;
     window.umami?.startSessionReplay?.();
 };
 
-// fallow-ignore-next-line unused-export (kept for #73 consent UX)
+// fallow-ignore-next-line unused-export
 export const stopReplay = (): void => {
     if (!ensureInjected()) return;
     window.umami?.stopSessionReplay?.();

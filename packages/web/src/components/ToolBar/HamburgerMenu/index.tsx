@@ -1,10 +1,11 @@
-import { Bell, Download, Loader2, LogOut, Moon, RefreshCw, Settings, Sun } from 'lucide-react';
+import { Bell, Download, Loader2, LogOut, Moon, RefreshCw, Settings, Sparkles, Sun, X } from 'lucide-react';
 import { motion } from 'motion/react';
 import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../../../components/ui/button';
 import { Switch } from '../../../components/ui/switch';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { useGuest } from '../../../guest/GuestContext';
 import { usePushNotifications } from '../../../hooks/usePushNotifications';
 import { usePWA } from '../../../hooks/usePWA';
 
@@ -109,6 +110,7 @@ const UpdateButton = ({ hasUpdate, isCheckingForUpdate, onUpdate, onCheck }: Upd
 export const HamburgerMenu = ({ onClose, onLogout }: HamburgerMenuProps) => {
     const { canInstall, isInstalled, hasUpdate, installApp, updateApp, checkForUpdate, isCheckingForUpdate } = usePWA();
     const navigate = useNavigate();
+    const { isGuest } = useGuest();
 
     const handleInstall = async () => {
         const success = await installApp();
@@ -173,16 +175,45 @@ export const HamburgerMenu = ({ onClose, onLogout }: HamburgerMenuProps) => {
                 </Button>
             </MenuItem>
 
-            <MenuItem delay={0.15}>
-                <Button
-                    variant="destructive"
-                    onClick={onLogout}
-                    className="w-full justify-center h-9 text-sm font-medium transition-all duration-200 hover:bg-red-600 active:scale-95"
-                >
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Log out
-                </Button>
-            </MenuItem>
+            {isGuest ? (
+                <>
+                    <MenuItem delay={0.14}>
+                        <Button
+                            variant="outline"
+                            onClick={() => {
+                                onClose();
+                                navigate('/register');
+                            }}
+                            className={OUTLINE_BTN}
+                            data-testid="hamburger-sign-up"
+                        >
+                            <Sparkles className="h-4 w-4 mr-2" />
+                            Sign up to save your lists
+                        </Button>
+                    </MenuItem>
+                    <MenuItem delay={0.15}>
+                        <Button
+                            variant="destructive"
+                            onClick={onLogout}
+                            className="w-full justify-center h-9 text-sm font-medium transition-all duration-200 hover:bg-red-600 active:scale-95"
+                        >
+                            <X className="h-4 w-4 mr-2" />
+                            Exit guest mode
+                        </Button>
+                    </MenuItem>
+                </>
+            ) : (
+                <MenuItem delay={0.15}>
+                    <Button
+                        variant="destructive"
+                        onClick={onLogout}
+                        className="w-full justify-center h-9 text-sm font-medium transition-all duration-200 hover:bg-red-600 active:scale-95"
+                    >
+                        <LogOut className="h-4 w-4 mr-2" />
+                        Log out
+                    </Button>
+                </MenuItem>
+            )}
         </div>
     );
 };

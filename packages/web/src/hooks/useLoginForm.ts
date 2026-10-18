@@ -3,6 +3,7 @@ import { useAuth, useAuthConfig } from '@imapps/web-utils';
 import { useForm } from 'react-hook-form';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { z } from 'zod';
+import { useMigration } from '../guest/useMigration';
 import { logger } from '../utils/logger';
 import { usernameField } from './authSchemas';
 
@@ -31,6 +32,7 @@ export const useLoginForm = () => {
     const location = useLocation();
     const { login } = useAuth();
     const config = useAuthConfig();
+    const { migrateAfterAuth } = useMigration();
 
     const {
         register,
@@ -66,7 +68,12 @@ export const useLoginForm = () => {
                 throw new Error('Login successful but no token received');
             }
 
-            login(responseData.token || responseData.accessToken);
+            const accessToken = responseData.token || responseData.accessToken;
+            login(accessToken);
+
+            // Upload any guest lists before navigating so the account lands with them.
+            await migrateAfterAuth(accessToken);
+
             logger.info('Login successful', { username: data.username });
 
             navigate(redirectTarget(location.state?.from), { replace: true });

@@ -1,4 +1,3 @@
-// fallow-ignore-file unused-file
 import { useEffect, useState } from 'react';
 
 export interface AiFeatures {

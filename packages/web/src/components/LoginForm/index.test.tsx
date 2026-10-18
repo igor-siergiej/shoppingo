@@ -3,9 +3,22 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { LoginForm } from './index';
 
 const mockUseLoginForm = vi.fn();
+const mockEnterGuestMode = vi.fn();
 
 vi.mock('../../hooks/useLoginForm', () => ({
     useLoginForm: () => mockUseLoginForm(),
+}));
+
+vi.mock('../../guest/GuestContext', () => ({
+    useGuest: () => ({
+        isGuest: false,
+        enterGuestMode: mockEnterGuestMode,
+        exitGuestMode: vi.fn(),
+    }),
+}));
+
+vi.mock('react-router-dom', () => ({
+    useNavigate: () => vi.fn(),
 }));
 
 vi.mock('./LoginFormFields', () => ({
@@ -61,7 +74,7 @@ describe('LoginForm', () => {
 
         render(<LoginForm />);
 
-        const submitButton = screen.getByRole('button');
+        const submitButton = screen.getByRole('button', { name: /logging in/i });
         expect(submitButton).toBeDisabled();
     });
 
