@@ -191,6 +191,8 @@ describe('ImageHandlers', () => {
                 const response = await imageHandlers.getImage(ctx);
 
                 expect(ctx.header).toHaveBeenCalledWith('Content-Type', 'image/webp');
+                // Member-only image: a shared cache (CDN, proxy) must never store it for other requesters.
+                expect(ctx.header).toHaveBeenCalledWith('Cache-Control', 'private, max-age=31536000, immutable');
                 expect(response).toBeDefined();
             });
 
