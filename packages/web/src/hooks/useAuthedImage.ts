@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { getAuthHeaders } from '../utils/authHeaders';
+import { getAccessToken } from '../auth/accessTokenStore';
+import { refreshSession } from '../auth/refreshSession';
 
 export interface UseAuthedImageResult {
     imageUrl: string | null;
@@ -7,8 +8,18 @@ export interface UseAuthedImageResult {
     hasError: boolean;
 }
 
+// The access token is only refreshed on demand, so it can expire while a screen is open. A 401 on a token we
+// did send gets one refresh-and-retry, like makeRequest. A request with no token stays a plain failure: there is
+// no session to refresh, and guests must not trigger one.
+// fallow-ignore-next-line complexity
 const fetchImageObjectUrl = async (imageKey: string): Promise<string> => {
-    const response = await fetch(`/api/image/${encodeURIComponent(imageKey)}`, { headers: getAuthHeaders() });
+    const url = `/api/image/${encodeURIComponent(imageKey)}`;
+    const token = getAccessToken();
+    let response = await fetch(url, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+    if (response.status === 401 && token) {
+        const freshToken = await refreshSession();
+        if (freshToken) response = await fetch(url, { headers: { Authorization: `Bearer ${freshToken}` } });
+    }
     if (!response.ok) throw new Error('Image request failed');
     return URL.createObjectURL(await response.blob());
 };
