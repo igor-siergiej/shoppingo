@@ -1,5 +1,19 @@
 [
   {
+    "version": "1.105.0",
+    "date": "2026-10-18",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Add Umami analytics module + the seven core events"
+      },
+      {
+        "type": "improvement",
+        "text": "Shoppingo has a new home at app.shoppingo.imapps.uk — the old apex now serves the landing page only. Reinstall the app once you see the banner."
+      }
+    ]
+  },
+  {
     "version": "1.104.0",
     "date": "2026-10-17",
     "notes": [

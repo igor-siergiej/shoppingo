@@ -1,3 +1,10 @@
+# [1.105.0](https://github.com/igor-siergiej/shoppingo/compare/v1.104.0...v1.105.0) (2026-10-18)
+
+
+### Features
+
+* **web:** add Umami analytics module + the seven core events ([#252](https://github.com/igor-siergiej/shoppingo/issues/252)) ([54d435a](https://github.com/igor-siergiej/shoppingo/commit/54d435a125094cda1941fdae53727a23e3863bea)), closes [#72](https://github.com/igor-siergiej/shoppingo/issues/72) [#73](https://github.com/igor-siergiej/shoppingo/issues/73)
+
 # [1.104.0](https://github.com/igor-siergiej/shoppingo/compare/v1.103.0...v1.104.0) (2026-10-17)
 
 
