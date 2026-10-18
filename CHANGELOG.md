@@ -1,3 +1,10 @@
+# [1.107.0](https://github.com/igor-siergiej/shoppingo/compare/v1.106.4...v1.107.0) (2026-10-18)
+
+
+### Features
+
+* **web:** mark returning users so shoppingo.imapps.uk opens the app ([#260](https://github.com/igor-siergiej/shoppingo/issues/260)) ([5ee7713](https://github.com/igor-siergiej/shoppingo/commit/5ee771352a7db4acd3c89dd51ced4899cf86efae)), closes [#82](https://github.com/igor-siergiej/shoppingo/issues/82) [#5](https://github.com/igor-siergiej/shoppingo/issues/5)
+
 ## [1.106.4](https://github.com/igor-siergiej/shoppingo/compare/v1.106.3...v1.106.4) (2026-10-18)
 
 

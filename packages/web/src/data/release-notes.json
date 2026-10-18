@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.107.0",
+    "date": "2026-10-18",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Once shoppingo.imapps.uk becomes the Shoppingo homepage, visiting it takes you straight to the app if you've signed in before."
+      }
+    ]
+  },
+  {
     "version": "1.106.4",
     "date": "2026-10-18",
     "notes": [
