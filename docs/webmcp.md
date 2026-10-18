@@ -16,7 +16,7 @@ withdrawn (via `AbortSignal`) on sign-out.
 
 ## Origin trial token
 
-WebMCP is an origin trial in Chrome 149+. Register `https://shoppingo.imapps.uk` for the trial, then build the
+WebMCP is an origin trial in Chrome 149+. Register `https://app.shoppingo.imapps.uk` for the trial, then build the
 web image with the token:
 
 ```
@@ -25,6 +25,11 @@ VITE_WEBMCP_OT_TOKEN=<token> bun run --filter @shoppingo/web build
 
 The token is injected as an `origin-trial` meta tag **only in production builds** (`__IS_PROD__`). Dev builds and
 builds without the variable add nothing, and browsers without WebMCP are unaffected.
+
+> The old `https://shoppingo.imapps.uk` trial token is left in place for the cutover window
+> (see shoppingo-app-subdomain-move #82): the apex briefly still served the app during
+> migration. After #82, the apex serves the landing site, which doesn't load this
+> bundle, so the old token has no effect on the live page.
 
 ## Verifying manually
 
