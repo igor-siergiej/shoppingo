@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.106.4",
+    "date": "2026-10-18",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Recipe photos load again in Firefox, and Firefox no longer keeps your sign-in token in browser storage."
+      }
+    ]
+  },
+  {
     "version": "1.106.3",
     "date": "2026-10-18",
     "notes": [

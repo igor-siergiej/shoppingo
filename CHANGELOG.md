@@ -1,3 +1,10 @@
+## [1.106.4](https://github.com/igor-siergiej/shoppingo/compare/v1.106.3...v1.106.4) (2026-10-18)
+
+
+### Bug Fixes
+
+* **web:** keep the access token in memory on Firefox too ([#258](https://github.com/igor-siergiej/shoppingo/issues/258)) ([fa22678](https://github.com/igor-siergiej/shoppingo/commit/fa22678a5a0326e005e96a3cbd6d3a03bff2dbb3))
+
 ## [1.106.3](https://github.com/igor-siergiej/shoppingo/compare/v1.106.2...v1.106.3) (2026-10-18)
 
 
