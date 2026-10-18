@@ -4,7 +4,7 @@ import './index.css';
 // token lives in module memory, not in window.localStorage. See auth/storagePatches.ts.
 import './auth/storagePatches';
 
-import { AuthConfigProvider, AuthProvider, ProtectedRoute, UserProvider } from '@imapps/web-utils';
+import { AuthConfigProvider, AuthProvider, UserProvider } from '@imapps/web-utils';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React, { Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
@@ -22,6 +22,8 @@ import { PullToRefreshProvider } from './contexts/PullToRefreshContext';
 import { PWAProvider } from './contexts/PWAContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { UnitSystemProvider } from './contexts/UnitSystemContext';
+import { GuestAwareProtectedRoute, GuestEntryRoute, RequireAuth } from './guest/GuestAwareProtectedRoute';
+import { GuestProvider, useGuest } from './guest/GuestContext';
 import { applyManifestForTheme } from './utils/applyManifestForTheme';
 import { installWebMcpOriginTrialToken } from './webmcp/originTrial';
 
@@ -55,6 +57,16 @@ const SettingsPage = lazyLoadPage(() => import('./pages/SettingsPage'), 'setting
 const DiscoverPage = lazyLoadPage(() => import('./pages/DiscoverPage'), 'discover page');
 const DiscoverRecipePage = lazyLoadPage(() => import('./pages/DiscoverRecipePage'), 'discover recipe page');
 const UseUpIngredientPage = lazyLoadPage(() => import('./pages/UseUpIngredientPage'), 'use up ingredient page');
+const GuestListsPage = lazyLoadPage(() => import('./pages/GuestListsPage'), 'guest lists page');
+const GuestItemsPage = lazyLoadPage(() => import('./pages/GuestItemsPage'), 'guest items page');
+const SignUpCtaPage = lazyLoadPage(() => import('./pages/SignUpCtaPage'), 'sign up prompt');
+
+// Renders either the authenticated or the guest lists page depending on the
+// active session. Pulled out so the index route element stays declarative.
+const IndexDispatcher = () => {
+    const { isGuest } = useGuest();
+    return isGuest ? <GuestListsPage /> : <ListPage />;
+};
 
 // v5 pauses queries and mutations while the browser reports offline. This app is offline-first: reads are served by
 // the service worker's cache and writes only go into the local outbox, so both must keep running (the v3 behaviour).
@@ -95,12 +107,31 @@ const router = createBrowserRouter([
         errorElement: <RouterErrorHandler />,
     },
     {
+        // Triggered when a guest tries to open an account-only feature (Discover, AI, Calendar, Friends).
+        // The page explains what's locked and offers register / login as exits.
+        path: '/signup-cta',
+        element: (
+            <RootLayout showLayout={false}>
+                <Suspense fallback={<LoadingPage />}>
+                    <SignUpCtaPage />
+                </Suspense>
+            </RootLayout>
+        ),
+        errorElement: <RouterErrorHandler />,
+    },
+    {
+        // Linked from the landing site's "Try it without an account" button.
+        path: '/try',
+        element: <GuestEntryRoute />,
+        errorElement: <RouterErrorHandler />,
+    },
+    {
         path: '/',
         element: (
             <AppInitializer>
-                <ProtectedRoute>
+                <GuestAwareProtectedRoute>
                     <RootLayout />
-                </ProtectedRoute>
+                </GuestAwareProtectedRoute>
             </AppInitializer>
         ),
         errorElement: <RouterErrorHandler />,
@@ -109,15 +140,37 @@ const router = createBrowserRouter([
                 index: true,
                 element: (
                     <Suspense fallback={<LoadingPage />}>
-                        <ListPage />
+                        <IndexDispatcher />
                     </Suspense>
                 ),
             },
             {
+                path: 'guest/list/:listId',
+                element: (
+                    <Suspense fallback={<LoadingPage />}>
+                        <GuestItemsPage />
+                    </Suspense>
+                ),
+            },
+            {
+                // Authenticated ItemsPage — keyed by the list's display title so
+                // legacy `/list/Groceries` URLs and the new id-suffixed form both work.
                 path: 'list/:listTitle',
                 element: (
                     <Suspense fallback={<LoadingPage />}>
-                        <ItemsPage />
+                        <RequireAuth>
+                            <ItemsPage />
+                        </RequireAuth>
+                    </Suspense>
+                ),
+            },
+            {
+                path: 'list/:listTitle/:listId',
+                element: (
+                    <Suspense fallback={<LoadingPage />}>
+                        <RequireAuth>
+                            <ItemsPage />
+                        </RequireAuth>
                     </Suspense>
                 ),
             },
@@ -125,7 +178,9 @@ const router = createBrowserRouter([
                 path: 'recipes',
                 element: (
                     <Suspense fallback={<LoadingPage />}>
-                        <RecipesPage />
+                        <RequireAuth>
+                            <RecipesPage />
+                        </RequireAuth>
                     </Suspense>
                 ),
             },
@@ -133,7 +188,9 @@ const router = createBrowserRouter([
                 path: 'recipes/new',
                 element: (
                     <Suspense fallback={<LoadingPage />}>
-                        <AddRecipePage />
+                        <RequireAuth>
+                            <AddRecipePage />
+                        </RequireAuth>
                     </Suspense>
                 ),
             },
@@ -141,7 +198,9 @@ const router = createBrowserRouter([
                 path: 'recipes/use-up',
                 element: (
                     <Suspense fallback={<LoadingPage />}>
-                        <UseUpIngredientPage />
+                        <RequireAuth>
+                            <UseUpIngredientPage />
+                        </RequireAuth>
                     </Suspense>
                 ),
             },
@@ -149,7 +208,9 @@ const router = createBrowserRouter([
                 path: 'discover',
                 element: (
                     <Suspense fallback={<LoadingPage />}>
-                        <DiscoverPage />
+                        <RequireAuth>
+                            <DiscoverPage />
+                        </RequireAuth>
                     </Suspense>
                 ),
             },
@@ -157,7 +218,9 @@ const router = createBrowserRouter([
                 path: 'discover/:recipeId',
                 element: (
                     <Suspense fallback={<LoadingPage />}>
-                        <DiscoverRecipePage />
+                        <RequireAuth>
+                            <DiscoverRecipePage />
+                        </RequireAuth>
                     </Suspense>
                 ),
             },
@@ -165,7 +228,9 @@ const router = createBrowserRouter([
                 path: 'recipes/:recipeId',
                 element: (
                     <Suspense fallback={<LoadingPage />}>
-                        <RecipeDetailPage />
+                        <RequireAuth>
+                            <RecipeDetailPage />
+                        </RequireAuth>
                     </Suspense>
                 ),
             },
@@ -181,7 +246,9 @@ const router = createBrowserRouter([
                 path: 'calendar',
                 element: (
                     <Suspense fallback={<LoadingPage />}>
-                        <CalendarPage />
+                        <RequireAuth>
+                            <CalendarPage />
+                        </RequireAuth>
                     </Suspense>
                 ),
             },
@@ -189,7 +256,9 @@ const router = createBrowserRouter([
                 path: 'meal-plan',
                 element: (
                     <Suspense fallback={<LoadingPage />}>
-                        <MealPlanPage />
+                        <RequireAuth>
+                            <MealPlanPage />
+                        </RequireAuth>
                     </Suspense>
                 ),
             },
@@ -197,7 +266,9 @@ const router = createBrowserRouter([
                 path: 'friends',
                 element: (
                     <Suspense fallback={<LoadingPage />}>
-                        <FriendsPage />
+                        <RequireAuth>
+                            <FriendsPage />
+                        </RequireAuth>
                     </Suspense>
                 ),
             },
@@ -240,7 +311,9 @@ const App: React.FC = () => {
     return (
         <ErrorBoundary>
             <ConfigLoader>
-                <AppContent />
+                <GuestProvider>
+                    <AppContent />
+                </GuestProvider>
             </ConfigLoader>
         </ErrorBoundary>
     );

@@ -48,6 +48,10 @@ vi.mock('../../hooks/useManageUsers', () => ({
     }),
 }));
 
+vi.mock('../../guest/GuestContext', () => ({
+    useGuest: () => ({ isGuest: false, exitGuestMode: vi.fn() }),
+}));
+
 vi.mock('./HamburgerMenu', () => ({
     HamburgerMenu: () => <div data-testid="hamburger-menu">Menu</div>,
 }));

@@ -24,6 +24,7 @@ import useMeasure from 'react-use-measure';
 
 import type { SpokenItem } from '../../api';
 import { Card } from '../../components/ui/card';
+import { useGuest } from '../../guest/GuestContext';
 import { useManageUsers } from '../../hooks/useManageUsers';
 import { useToolBarState } from '../../hooks/useToolBarState';
 import { clearUserData } from '../../offline/clearUserData';
@@ -100,6 +101,7 @@ const ToolBar = ({
     const queryClient = useQueryClient();
     const { user } = useUser();
     const userId = user?.id;
+    const { isGuest, exitGuestMode } = useGuest();
 
     const {
         isManageUsersOpen,
@@ -218,6 +220,11 @@ const ToolBar = ({
     }, [menuWidth, maxWidth]);
 
     const handleLogout = async () => {
+        if (isGuest) {
+            exitGuestMode();
+            navigate('/');
+            return;
+        }
         await logout();
         await clearUserData(queryClient);
         navigate('/login');
