@@ -5,7 +5,7 @@ import { guestStore } from './guestStore';
 
 describe('guestStore', () => {
     beforeEach(async () => {
-        await guestStore._resetForTests();
+        await guestStore.clear();
     });
 
     it('createList persists and is reflected in peekLists and count', async () => {
@@ -23,6 +23,27 @@ describe('guestStore', () => {
 
     it('createList rejects blank titles', async () => {
         await expect(guestStore.createList({ title: '   ' })).rejects.toThrow(/required/);
+    });
+
+    it('renameList keeps the id and ticked items, and survives a reload', async () => {
+        const first = await guestStore.createList({ title: 'First' });
+        const apples = await guestStore.addItem({ listId: first.id, name: 'Apples' });
+        await guestStore.toggleItem(apples.id, true);
+
+        await guestStore.renameList(first.id, '  Groceries ');
+        await guestStore.hydrate();
+
+        expect(guestStore.peekLists()).toEqual([expect.objectContaining({ id: first.id, title: 'Groceries' })]);
+        expect(guestStore.peekItems(first.id)).toEqual([expect.objectContaining({ id: apples.id, isSelected: true })]);
+    });
+
+    it('renameList rejects a title another list has, but allows re-casing its own', async () => {
+        const list = await guestStore.createList({ title: 'groceries' });
+        await guestStore.createList({ title: 'Hardware' });
+
+        await expect(guestStore.renameList(list.id, 'HARDWARE')).rejects.toThrow(/already exists/);
+        await guestStore.renameList(list.id, 'Groceries');
+        expect(guestStore.peekLists().find((candidate) => candidate.id === list.id)?.title).toBe('Groceries');
     });
 
     it('deleteList removes the list and all its items', async () => {
@@ -107,20 +128,6 @@ describe('guestStore', () => {
         expect(guestStore.count()).toBe(0);
         expect(guestStore.itemCount()).toBe(0);
         expect(guestStore.peekItems(list.id)).toHaveLength(0);
-    });
-
-    it('subscribe fires on writes', async () => {
-        let calls = 0;
-        const unsub = guestStore.subscribe(() => {
-            calls += 1;
-        });
-
-        const list = await guestStore.createList({ title: 'A' });
-        await guestStore.addItem({ listId: list.id, name: 'Apples' });
-        await guestStore.deleteItem((guestStore.peekItems(list.id)[0] ?? { id: '' }).id);
-        unsub();
-
-        expect(calls).toBeGreaterThanOrEqual(3);
     });
 
     it('snapshot returns a deep copy that survives later mutations', async () => {

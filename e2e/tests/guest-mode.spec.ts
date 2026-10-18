@@ -184,9 +184,15 @@ test.describe('Guest mode', () => {
         await itemInput.fill('Apples');
         await page.getByRole('button', { name: 'Add Item' }).click();
 
-        // Tick the item.
         const checkbox = page.getByRole('checkbox', { name: /mark apples/i });
         await expect(checkbox).toBeVisible();
+
+        // A reload starts with an empty in-memory mirror: the guest's list
+        // and item must come back from IndexedDB.
+        await page.reload();
+        await expect(checkbox).toBeVisible();
+
+        // Tick the item.
         await checkbox.click();
         await expect(checkbox).toBeChecked();
 

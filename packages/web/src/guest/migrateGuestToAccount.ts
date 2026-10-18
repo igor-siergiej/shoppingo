@@ -1,13 +1,14 @@
 import type { ListType, User } from '@shoppingo/types';
 import { addItem, addList, updateItem } from '../api';
 import { logger } from '../utils/logger';
-import { guestStore } from './guestStore';
+import { type GuestItem, guestStore } from './guestStore';
 
 // Migration pushes every guest list to the server, then every item inside it.
 // Title clashes with lists the user already owns get a numeric suffix and
 // are retried; everything else surfaces as a per-list failure so the rest of
-// the migration can still proceed. The guest store is cleared only when every
-// list has either been uploaded or explicitly recorded as a failure.
+// the migration can still proceed. Each uploaded list is removed from the
+// guest store at once, so the store ends up holding only the lists that
+// failed, ready for the next sign-in to retry.
 
 export interface MigrateAdapter {
     addList: (title: string, listType: ListType) => Promise<unknown>;
@@ -30,7 +31,7 @@ export interface MigrationResult {
     listsUploaded: number;
     itemsUploaded: number;
     listsRenamed: number;
-    /** Total list-level failures. When non-zero the local store is kept so the user can retry. */
+    /** Total list-level failures. Those lists stay in the guest store for a retry. */
     listFailures: number;
     failures: Array<MigrationFailure>;
 }
@@ -38,15 +39,13 @@ export interface MigrationResult {
 const MAX_RENAME_ATTEMPTS = 100;
 
 const statusOf = (err: unknown): number | undefined => {
-    if (!err || typeof err !== 'object' || !('status' in err)) return undefined;
-    const status = (err as Record<string, unknown>).status;
+    const status = err instanceof Error && 'status' in err ? err.status : undefined;
     return typeof status === 'number' ? status : undefined;
 };
 
 const messageOf = (err: unknown): string => (err instanceof Error ? err.message : String(err));
 
-// fallow-ignore-next-line unused-export
-export const createLiveMigrateAdapter = (user: User): MigrateAdapter => ({
+const createLiveMigrateAdapter = (user: User): MigrateAdapter => ({
     async addList(title, listType) {
         return await addList(title, user, undefined, listType);
     },
@@ -58,6 +57,7 @@ export const createLiveMigrateAdapter = (user: User): MigrateAdapter => ({
     },
 });
 
+// fallow-ignore-next-line complexity
 const uploadListWithRename = async (listTitle: string, listType: ListType, adapter: MigrateAdapter) => {
     let attempt = 0;
     let candidate = listTitle;
@@ -82,6 +82,37 @@ export interface MigrateOptions {
     store?: typeof guestStore;
 }
 
+// Uploads one list's items; failures are recorded, not thrown, because the
+// list itself already lives on the server and a retry won't fix one item.
+// fallow-ignore-next-line complexity
+const uploadItems = async (
+    items: Array<GuestItem>,
+    listTitle: string,
+    adapter: MigrateAdapter,
+    result: MigrationResult
+) => {
+    for (const item of items) {
+        try {
+            // Reusing the guest id keeps the upload idempotent on retry
+            // and lets the ticked state follow the item.
+            await adapter.addItem({
+                listTitle,
+                id: item.id,
+                name: item.name,
+                ...(item.quantity !== undefined && { quantity: item.quantity }),
+                ...(item.unit !== undefined && { unit: item.unit }),
+            });
+            if (item.isSelected) await adapter.selectItem({ listTitle, id: item.id });
+            result.itemsUploaded += 1;
+        } catch (err) {
+            const reason = messageOf(err);
+            logger.error('Failed to migrate guest item', { listTitle, itemName: item.name, reason });
+            result.failures.push({ listTitle, reason: `item "${item.name}": ${reason}` });
+        }
+    }
+};
+
+// fallow-ignore-next-line complexity
 export const migrateGuestToAccount = async (
     user: User,
     adapter: MigrateAdapter = createLiveMigrateAdapter(user),
@@ -105,16 +136,11 @@ export const migrateGuestToAccount = async (
     logger.info('Migrating guest data to account', { listCount: snapshot.lists.length });
 
     for (const list of snapshot.lists) {
-        let uploadedTitle: string;
+        let uploaded: { uploadedTitle: string; renamed: boolean };
         try {
-            const uploaded = await uploadListWithRename(list.title, list.listType, adapter);
-            uploadedTitle = uploaded.uploadedTitle;
-            if (uploaded.renamed) {
-                result.listsRenamed += 1;
-                logger.info('Renamed guest list during migration', { from: list.title, to: uploadedTitle });
-            }
-            result.listsUploaded += 1;
+            uploaded = await uploadListWithRename(list.title, list.listType, adapter);
         } catch (err) {
+            // The list stays in the guest store so the next sign-in retries it.
             const reason = messageOf(err);
             logger.error('Failed to migrate guest list', { listTitle: list.title, reason });
             result.listFailures += 1;
@@ -122,47 +148,17 @@ export const migrateGuestToAccount = async (
             continue;
         }
 
-        const items = snapshot.itemsByList.get(list.id) ?? [];
-        for (const item of items) {
-            try {
-                // Reusing the guest id keeps the upload idempotent on retry
-                // and lets the ticked state follow the item.
-                await adapter.addItem({
-                    listTitle: uploadedTitle,
-                    id: item.id,
-                    name: item.name,
-                    ...(item.quantity !== undefined && { quantity: item.quantity }),
-                    ...(item.unit !== undefined && { unit: item.unit }),
-                });
-                if (item.isSelected) await adapter.selectItem({ listTitle: uploadedTitle, id: item.id });
-                result.itemsUploaded += 1;
-            } catch (err) {
-                const reason = messageOf(err);
-                logger.error('Failed to migrate guest item', {
-                    listTitle: uploadedTitle,
-                    itemName: item.name,
-                    reason,
-                });
-                result.failures.push({ listTitle: uploadedTitle, reason: `item "${item.name}": ${reason}` });
-            }
+        result.listsUploaded += 1;
+        if (uploaded.renamed) {
+            result.listsRenamed += 1;
+            logger.info('Renamed guest list during migration', { from: list.title, to: uploaded.uploadedTitle });
         }
+        await uploadItems(snapshot.itemsByList.get(list.id) ?? [], uploaded.uploadedTitle, adapter, result);
+        // Drop it locally right away so a retry after a partial failure
+        // doesn't upload it a second time under a "(1)" title.
+        await store.deleteList(list.id);
     }
 
-    // Item-level failures don't block: the list already lives on the server, so
-    // the user isn't going to retry just for a single item. List-level failures
-    // DO block — they leave guest data on the device so a retry can reattach it.
-    if (result.listFailures === 0) {
-        await store.clear();
-        logger.info('Guest data migration complete', {
-            listsUploaded: result.listsUploaded,
-            itemsUploaded: result.itemsUploaded,
-            listsRenamed: result.listsRenamed,
-        });
-    } else {
-        logger.warn('Guest data migration finished with list failures; local store kept', {
-            listFailures: result.listFailures,
-        });
-    }
-
+    logger.info('Guest data migration finished', { ...result, failures: result.failures.length });
     return result;
 };
