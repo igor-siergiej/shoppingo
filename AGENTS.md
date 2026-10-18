@@ -12,7 +12,7 @@ Shoppingo is a collaborative shopping-list, recipe and calendar app (PWA) with a
 ## Architecture
 - **Frontend**: React 19 + TypeScript + Vite + Tailwind CSS + shadcn/ui + PWA (vite-plugin-pwa)
 - **Backend**: Bun + Hono + TypeScript + MongoDB (entry `packages/api/src/index.ts`, served with `Bun.serve`; no build step, the Docker image copies `src`)
-- **Additional Services**: MinIO (object storage), OpenSearch (recipe Discover search, optional), fal.ai (FLUX.1 [schnell] images and `any-llm` for recipe import, tagging, substitutes, item aisles and voice parsing, via `FAL_KEY`)
+- **Additional Services**: RustFS (S3-compatible object storage), OpenSearch (recipe Discover search, optional), fal.ai (FLUX.1 [schnell] images and `any-llm` for recipe import, tagging, substitutes, item aisles and voice parsing, via `FAL_KEY`)
 
 ## Requirements
 - **Bun**: v1.x
@@ -57,7 +57,7 @@ Run these from the root directory:
 ## Environment Setup
 The project requires:
 - MongoDB (localhost:27017)
-- MinIO object storage (192.168.68.54:7000)
+- S3-compatible object store (RustFS) on localhost:9000 (`BUCKET_*` in `.env`)
 - fal.ai API key (set `FAL_KEY`)
 
 Environment variables are in `.env` file (development values).
@@ -65,7 +65,7 @@ Environment variables are in `.env` file (development values).
 ## API Structure (`packages/api/`)
 Clean architecture with:
 - `domain/` - Business logic and repository interfaces (ListService, RecipeService, TodoService, MealPlanService, FriendService, ImageService, DiscoveryService, NotificationService, AuthorizationService, ItemCategoryService, SharedMembers, ...)
-- `infrastructure/` - External integrations: `Mongo*Repository` classes, `HttpAuthClient`, `BucketStore` (MinIO), `Fal*` clients (FalLlmClient plus the image/tag/substitute/category/parser wrappers), `OpenSearchDiscoveryIndex`, `WebPushSender`, `HttpPageFetcher`/`HttpImageFetcher` (SSRF-guarded via `safeFetch`), `imageProcessor`
+- `infrastructure/` - External integrations: `Mongo*Repository` classes, `HttpAuthClient`, `BucketStore` (S3-compatible object store via `@imapps/api-utils` `ObjectStoreConnection`), `Fal*` clients (FalLlmClient plus the image/tag/substitute/category/parser wrappers), `OpenSearchDiscoveryIndex`, `WebPushSender`, `HttpPageFetcher`/`HttpImageFetcher` (SSRF-guarded via `safeFetch`), `imageProcessor`
 - `interfaces/` - Hono handlers (ListHandlers, RecipeHandlers, TodoHandlers, MealPlanHandlers, ImageHandlers, DiscoveryHandlers, ...)
 - `routes/` - API route definitions (every mutating route with a JSON body is wired to a Zod schema from `@shoppingo/types/schemas`; `routes/validation.test.ts` enforces it)
 - `middleware/` - Hono middleware (auth, validateJson, aiRateLimit, notifyListChanged)
@@ -75,7 +75,7 @@ Clean architecture with:
 Key dependencies:
 - Hono for the HTTP server
 - MongoDB native driver
-- MinIO for file storage
+- S3-compatible object store (RustFS) for file storage
 - fal.ai for AI image and text generation
 - Sharp for image processing
 - `@imapps/api-utils` - Shared utilities for configuration, database connections, and logging

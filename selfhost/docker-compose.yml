@@ -18,37 +18,38 @@ services:
       timeout: 5s
       retries: 5
 
-  minio:
-    image: minio/minio
+  rustfs:
+    image: rustfs/rustfs:1.0.3@sha256:9ca9559533b537d10482fe923288b676ad08f92a7069d9a17327fbae3cab688b
     restart: unless-stopped
-    command: server /data --console-address ":9001"
     environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?MINIO_ROOT_USER must be set}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?MINIO_ROOT_PASSWORD must be set}
+      RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:?RUSTFS_ACCESS_KEY must be set}
+      RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:?RUSTFS_SECRET_KEY must be set}
+      RUSTFS_ADDRESS: ":9000"
+      RUSTFS_CONSOLE_ADDRESS: ":9001"
+      RUSTFS_CONSOLE_ENABLE: "true"
     volumes:
-      - minio-data:/data
+      - rustfs-data:/data
     networks:
       - internal
     healthcheck:
-      test: ["CMD", "curl", "-fsS", "http://localhost:9000/minio/health/ready"]
+      test: ["CMD", "curl", "-fsS", "http://localhost:9000/health/ready"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  # One-shot container that creates the bucket. Restarts on its own until the
-  # bucket exists; minio readiness is what gates it via the depends_on below.
-  minio-init:
-    image: minio/mc
+  # One-shot container that creates the bucket (a no-op when it already
+  # exists); rustfs readiness gates it via the depends_on below.
+  rustfs-init:
+    image: rustfs/rc:v0.1.36@sha256:ab024bfebee49a750ce886b4c70963ccd9ddaa03f491704a90710641d7a26699
     depends_on:
-      minio:
+      rustfs:
         condition: service_healthy
     networks:
       - internal
     entrypoint: ["sh", "-c"]
     command: >
-      "mc alias set local http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD}
-       && mc mb -p local/${BUCKET_NAME:-shoppingo} || true
-       && exit 0"
+      "rc alias set local http://rustfs:9000 ${RUSTFS_ACCESS_KEY} ${RUSTFS_SECRET_KEY} &&
+      rc bucket create --ignore-existing local/${BUCKET_NAME:-shoppingo}"
     restart: "no"
 
   kivo:
@@ -70,7 +71,7 @@ services:
     depends_on:
       mongo:
         condition: service_healthy
-      minio-init:
+      rustfs-init:
         condition: service_completed_successfully
       kivo:
         condition: service_healthy
@@ -79,10 +80,10 @@ services:
       AUTH_URL: "http://kivo:3008"
       CONNECTION_URI: "mongodb://mongo:27017"
       DATABASE_NAME: ${DATABASE_NAME:-shoppingo}
-      BUCKET_ENDPOINT: "minio:9000"
+      BUCKET_ENDPOINT: "rustfs:9000"
       BUCKET_NAME: ${BUCKET_NAME:-shoppingo}
-      BUCKET_ACCESS_KEY: ${MINIO_ROOT_USER}
-      BUCKET_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
+      BUCKET_ACCESS_KEY: ${RUSTFS_ACCESS_KEY}
+      BUCKET_SECRET_KEY: ${RUSTFS_SECRET_KEY}
       # AI features: leave FAL_KEY unset to disable recipe-import LLM, image
       # generation and substitutes. With no key the routes return upstream
       # errors; the UI flows that need them can be ignored or skipped.
@@ -108,7 +109,7 @@ services:
 
 volumes:
   mongo-data:
-  minio-data:
+  rustfs-data:
 
 networks:
   internal:

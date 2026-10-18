@@ -56,7 +56,7 @@ Bun-workspace monorepo — `packages/web`, `packages/api`, `packages/types`
   `interfaces/` (HTTP handlers), `routes/`, `middleware/`, `dependencies/` (DI
   container). Prometheus metrics at `/api/metrics`, liveness at `/api/health`.
 - **data** — MongoDB (native driver) is the system of record. Images live in
-  MinIO / S3-compatible object storage and are served through the api
+  S3-compatible object storage (RustFS) and are served through the api
   (`/api/image/:name`). OpenSearch holds an optional, derived index for
   Discover search; when `OPENSEARCH_URL` is unset `/api/discover/*` answers
   `503` and nothing else is affected.
@@ -104,7 +104,7 @@ required value).
 |---|---|---|
 | `PORT` | yes | api listen port (`4001`) |
 | `CONNECTION_URI`, `DATABASE_NAME` | yes | MongoDB |
-| `BUCKET_ENDPOINT`, `BUCKET_NAME`, `BUCKET_ACCESS_KEY`, `BUCKET_SECRET_KEY` | yes | MinIO / S3 |
+| `BUCKET_ENDPOINT`, `BUCKET_NAME`, `BUCKET_ACCESS_KEY`, `BUCKET_SECRET_KEY` | yes | S3-compatible object store (RustFS) |
 | `AUTH_URL` | no | kivo base URL; must be `https://`, except `http://kivo:<port>` (docker network) or `http://localhost` outside production (`config/auth-url.ts`) |
 | `SERVICE_TOKEN` | no | shared secret sent to kivo `/users` as `X-Service-Token` |
 | `FAL_KEY`, `FAL_MODEL`, `FAL_RECIPE_MODEL` | no | fal.ai key and model overrides |
@@ -131,7 +131,7 @@ For a quick local-only spin-up that doesn't need a separate `kivo` checkout:
 ```bash
 bun install
 cp .env.example .env
-bun run dev:local                        # mongo + minio + mock-kivo + web (:4000) + api (:4001)
+bun run dev:local                        # mongo + rustfs + mock-kivo + web (:4000) + api (:4001)
 ```
 
 `dev:local` starts a self-hosted mock kivo (localhost only, refuses to run in
@@ -140,11 +140,11 @@ stack) reachable, the more explicit flow still works:
 
 ```bash
 docker compose -f selfhost/docker-compose.yml up -d \
-    mongo minio minio-init               # dev infra only — no published images
+    mongo rustfs rustfs-init             # dev infra only — no published images
 bun run start                            # web on :4000, api on :4001
 ```
 
-The full self-host stack (web + api + mongo + minio + kivo from published
+The full self-host stack (web + api + mongo + rustfs + kivo from published
 images) lives in `selfhost/docker-compose.yml`; see
 [Self-hosting](#self-hosting) below.
 
@@ -155,7 +155,7 @@ Root `package.json`:
 | Script | What it does |
 |---|---|
 | `start`, `start:web`, `start:api` | web (Vite `:4000`, proxies `/api` + websockets to `:4001`) and/or api (`bun --watch`, env from `.env`) |
-| `dev:local` | `scripts/dev-local.sh`: mongo + minio from `selfhost/`, mock kivo on `:3099`, web + api |
+| `dev:local` | `scripts/dev-local.sh`: mongo + rustfs from `selfhost/`, mock kivo on `:3099`, web + api |
 | `mock-kivo` | the mock kivo on its own |
 | `reindex:discovery` | rebuild the OpenSearch Discover index from Mongo |
 | `discover:ingest`, `discover:validate` | Wikibooks Cookbook ingest / library validation ([docs/discovery-ingest.md](docs/discovery-ingest.md)) |
@@ -183,7 +183,7 @@ bun run load:local                                 # k6 (manual; see scripts/loa
   component tests use Vitest with no coverage gate.
 - **e2e** — Playwright starts web (`:4000`) and an e2e api (`:4001`,
   database `shoppingo_e2e`, mock kivo on `:3099`) itself, but needs Mongo and
-  MinIO running. Projects: `chromium` (functional), `mobile-visual` and
+  the object store running. Projects: `chromium` (functional), `mobile-visual` and
   `desktop-visual` (screenshot diffs). Discover specs skip unless
   `E2E_OPENSEARCH_URL` is set. `@smoke`-tagged specs are what the homelab's
   nightly prod smoke runs against https://shoppingo.imapps.uk. See
@@ -217,7 +217,7 @@ label picks out small, contained starting points.
   service token.
 - **Production** runs on the `foundry` homelab: Dokploy swarm apps
   `shoppingo-web` and `shoppingo-api` in the `apps` project, on
-  `dokploy-network` with the shared `mongodb`, `minio` and `opensearch`
+  `dokploy-network` with the shared `mongodb`, `rustfs` and `opensearch`
   containers. Traefik routes `shoppingo.imapps.uk` (`/api/*` to the api,
   everything else to web); remote traffic arrives through the Cloudflare
   tunnel with an Access **bypass** (the app does its own auth via kivo), LAN
@@ -252,11 +252,11 @@ PR flow: [CONTRIBUTING.md](CONTRIBUTING.md). Agent/architecture reference:
 ## Self-hosting
 
 Everything published to Docker Hub. `selfhost/docker-compose.yml` brings up
-web, api, mongo, minio and kivo with one command:
+web, api, mongo, rustfs and kivo with one command:
 
 ```bash
 cp selfhost/.env.example selfhost/.env
-$EDITOR selfhost/.env          # at minimum set MINIO_ROOT_USER + MINIO_ROOT_PASSWORD
+$EDITOR selfhost/.env          # at minimum set RUSTFS_ACCESS_KEY + RUSTFS_SECRET_KEY
 cd selfhost
 docker compose up -d           # web on http://localhost:4000
 ./smoke.sh                     # waits for /api/health, then exits 0
@@ -264,8 +264,9 @@ docker compose up -d           # web on http://localhost:4000
 
 The web container proxies `/api/*` to the api container via nginx
 (`packages/web/nginx.conf`), so a single host port forwards both the SPA and
-the API. Mongo and MinIO persist into named volumes (`mongo-data`, `minio-data`).
-A one-shot `minio-init` container creates the configured bucket on first run.
+the API. Mongo and RustFS persist into named volumes (`mongo-data`, `rustfs-data`).
+A one-shot `rustfs-init` container (the `rc` CLI) creates the configured bucket
+on first run.
 
 `FAL_KEY` is optional. Without it, the API wires disabled AI
 implementations and every AI endpoint (recipe import, image generation,
@@ -281,14 +282,14 @@ when unset. If you set only the LLM key, recipe import and substitutes
 work but image generation stays off.
 
 Backups: `docker compose exec -T mongo mongodump --archive` (or
-`mongodump` to a mounted dir) for MongoDB, and a `mc mirror` of the configured
-bucket for MinIO. Restore with the matching `mongorestore` and `mc mirror`
-pair. Both volumes live in the `docker-compose.yml` named volumes; keep their
+`mongodump` to a mounted dir) for MongoDB, and an `rc mirror` (the
+[RustFS CLI](https://github.com/rustfs/cli)) of the configured bucket for
+RustFS. Restore with the matching `mongorestore` and `rc mirror` pair. Both volumes live in the `docker-compose.yml` named volumes; keep their
 host paths in the same backup.
 
 Upgrades: `docker compose pull && docker compose up -d` rolls the `web`,
 `api`, and `kivo` images to their `:latest` tag while reusing the data
-volumes. Mongo and MinIO stay on the image tags pinned in the compose file
+volumes. Mongo and RustFS stay on the image tags pinned in the compose file
 until you change them — pin those versions deliberately.
 
 ## Licence

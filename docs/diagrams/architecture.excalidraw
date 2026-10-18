@@ -1737,7 +1737,7 @@
       "lineHeight": 1.25
     },
     {
-      "id": "minio",
+      "id": "rustfs",
       "type": "rectangle",
       "x": 529,
       "y": 2034,
@@ -1763,7 +1763,7 @@
       "boundElements": [
         {
           "type": "text",
-          "id": "minio__text"
+          "id": "rustfs__text"
         },
         {
           "type": "arrow",
@@ -1775,7 +1775,7 @@
       "locked": false
     },
     {
-      "id": "minio__text",
+      "id": "rustfs__text",
       "type": "text",
       "x": 549,
       "y": 2049,
@@ -1800,13 +1800,13 @@
       "updated": 1760000000000,
       "link": null,
       "locked": false,
-      "text": "minio:9000\nimages bucket",
-      "originalText": "minio:9000\nimages bucket",
+      "text": "rustfs:9000\nimages bucket",
+      "originalText": "rustfs:9000\nimages bucket",
       "fontSize": 16,
       "fontFamily": 5,
       "textAlign": "center",
       "verticalAlign": "middle",
-      "containerId": "minio",
+      "containerId": "rustfs",
       "autoResize": true,
       "lineHeight": 1.25
     },
@@ -3629,7 +3629,7 @@
         "gap": 2
       },
       "endBinding": {
-        "elementId": "minio",
+        "elementId": "rustfs",
         "focus": 0,
         "gap": 2
       }
