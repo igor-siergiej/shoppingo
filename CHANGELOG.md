@@ -1,3 +1,10 @@
+## [1.106.1](https://github.com/igor-siergiej/shoppingo/compare/v1.106.0...v1.106.1) (2026-10-18)
+
+
+### Bug Fixes
+
+* **web:** guest lists survive reloads, renames and partial sign-up failures ([#255](https://github.com/igor-siergiej/shoppingo/issues/255)) ([2b88d09](https://github.com/igor-siergiej/shoppingo/commit/2b88d0907701808c442bc7b998711b93cada8e6b)), closes [#253](https://github.com/igor-siergiej/shoppingo/issues/253)
+
 # [1.106.0](https://github.com/igor-siergiej/shoppingo/compare/v1.105.1...v1.106.0) (2026-10-18)
 
 

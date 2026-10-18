@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.106.1",
+    "date": "2026-10-18",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Lists you make before signing up no longer disappear when you refresh the page, and renaming one keeps its ticked items."
+      }
+    ]
+  },
+  {
     "version": "1.106.0",
     "date": "2026-10-18",
     "notes": [
