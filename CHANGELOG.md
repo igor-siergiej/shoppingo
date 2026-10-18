@@ -1,3 +1,10 @@
+# [1.106.0](https://github.com/igor-siergiej/shoppingo/compare/v1.105.1...v1.106.0) (2026-10-18)
+
+
+### Features
+
+* **web:** guest mode — try the app without an account ([#253](https://github.com/igor-siergiej/shoppingo/issues/253)) ([af49b37](https://github.com/igor-siergiej/shoppingo/commit/af49b37b7b57b39200ce7bd02e0982270068b28e))
+
 ## [1.105.1](https://github.com/igor-siergiej/shoppingo/compare/v1.105.0...v1.105.1) (2026-10-18)
 
 

@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.106.0",
+    "date": "2026-10-18",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "You can now try Shoppingo without an account. Your lists stay on your device, and signing up later keeps them."
+      }
+    ]
+  },
+  {
     "version": "1.105.1",
     "date": "2026-10-18",
     "notes": [
