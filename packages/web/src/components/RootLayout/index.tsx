@@ -7,6 +7,7 @@ import { recordInAppNavigation } from '../../utils/navigationHistory';
 import Appbar from '../Appbar';
 import { Layout } from '../Layout';
 import NetworkStatusAlert from '../NetworkStatusAlert';
+import RouteChangeTracker from '../RouteChangeTracker';
 import SiteMoveBanner from '../SiteMoveBanner';
 
 interface RootLayoutProps {
@@ -26,6 +27,8 @@ export const RootLayout = ({ children, showLayout = true }: RootLayoutProps) => 
 
     return (
         <div className="min-h-screen bg-background flex flex-col pt-14 md:pt-16">
+            {/* Inside the router: every route renders exactly one RootLayout. */}
+            <RouteChangeTracker />
             <Appbar />
             <NetworkStatusAlert />
             <SiteMoveBanner />
