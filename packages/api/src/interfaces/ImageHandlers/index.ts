@@ -56,7 +56,8 @@ export const getImage = async (c: Context<HonoVars>) => {
                 });
 
                 c.header('Content-Type', contentType);
-                c.header('Cache-Control', 'public, max-age=31536000, immutable');
+                // private: the key is immutable, but only recipe members may read it, so no shared cache may keep a copy.
+                c.header('Cache-Control', 'private, max-age=31536000, immutable');
                 return c.body(Readable.toWeb(stream as Readable) as unknown as ReadableStream);
             }
 
