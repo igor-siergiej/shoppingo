@@ -21,6 +21,7 @@ import { Label } from '../../components/ui/label';
 import { Textarea } from '../../components/ui/textarea';
 import { useUnitSystem } from '../../contexts/UnitSystemContext';
 import { useRecipeMutations } from '../../hooks/useRecipeMutations';
+import { track } from '../../utils/analytics';
 import { logger } from '../../utils/logger';
 import { toOptionalNumber } from '../../utils/parseRecipeMeta';
 import { splitIntoSteps } from '../../utils/splitIntoSteps';
@@ -129,6 +130,7 @@ const AddRecipePage = () => {
         setImportStage('fetching');
         setError('');
         setImportError('');
+        track('recipe_import_started', { source: 'link' });
         try {
             const draft = await importRecipe(target, controller.signal);
 
@@ -309,6 +311,7 @@ const AddRecipePage = () => {
                 throw new Error('Failed to create recipe');
             }
 
+            track('recipe_saved', { source: link.trim() ? 'link' : 'manual' });
             navigate('/recipes');
         } catch (err) {
             const message = err instanceof Error ? err.message : 'Failed to create recipe';

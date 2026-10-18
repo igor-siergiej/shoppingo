@@ -1,11 +1,12 @@
 import { useUser } from '@imapps/web-utils';
 import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getRecipesQuery } from '../../api';
 import { PinnedSearchField } from '../../components/PinnedSearchField';
 import ToolBar from '../../components/ToolBar';
 import { useIngredientWasteSearch } from '../../hooks/useIngredientWasteSearch';
+import { track } from '../../utils/analytics';
 import { WasteMatchResults } from './WasteMatchResults';
 
 // Full page rather than a bottom drawer (which capped results at 60vh and put the field under
@@ -21,6 +22,15 @@ const UseUpIngredientPage = () => {
     );
     const matches = useIngredientWasteSearch(allRecipes, query);
 
+    // Fire one search event per non-empty query. Debounced to keep the
+    // event count reasonable as the user types.
+    useEffect(() => {
+        const term = query.trim();
+        if (term.length < 2) return;
+        const t = setTimeout(() => track('useup_search', { term, results: matches.length }), 400);
+        return () => clearTimeout(t);
+    }, [query, matches.length]);
+
     return (
         <>
             <div className="flex flex-col min-h-full justify-between">
@@ -29,7 +39,10 @@ const UseUpIngredientPage = () => {
                     <WasteMatchResults
                         query={query}
                         matches={matches}
-                        onSelect={(recipeId) => navigate(`/recipes/${recipeId}`)}
+                        onSelect={(recipeId) => {
+                            track('useup_recipe_opened', { recipeId, term: query.trim() });
+                            navigate(`/recipes/${recipeId}`);
+                        }}
                     />
                 </div>
                 <PinnedSearchField
