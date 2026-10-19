@@ -16,6 +16,8 @@ vi.mock('../NetworkStatusAlert', () => ({
     default: () => <div data-testid="network-alert">Network Alert</div>,
 }));
 
+vi.mock('../SiteMoveBanner', () => ({ default: (): null => null }));
+
 vi.mock('../Layout', () => ({
     Layout: ({ children }: { children: React.ReactNode }) => <div data-testid="layout">{children}</div>,
 }));

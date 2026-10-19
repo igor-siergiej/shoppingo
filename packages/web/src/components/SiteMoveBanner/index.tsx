@@ -1,49 +1,34 @@
-import { AlertCircle, ExternalLink } from 'lucide-react';
+import { AlertCircle, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { Alert, AlertDescription, AlertTitle } from '../../components/ui/alert';
-import { loadConfig } from '../../utils/config';
+import { usePWA } from '../../hooks/usePWA';
+import { clearSiteMovePending, isSiteMovePending } from '../../utils/siteMove';
+import { Button } from '../ui/button';
 
 /**
- * Host the banner is gated on. The apex stays on the landing site after #82, but during
- * the cutover window the apex briefly still serves the app — that's the only moment this
- * banner should appear.
+ * Asks people forwarded from the old address (see utils/siteMove.ts) to reinstall the app from
+ * this one: their installed copy still opens the landing site and gets no notifications. Hidden
+ * inside an installed window, where the user is already on the new install.
  */
-const OLD_HOST = 'shoppingo.imapps.uk';
-const NEW_APP_URL = 'https://shoppingo-app.imapps.uk';
-
 const SiteMoveBanner = () => {
-    const [visible, setVisible] = useState(false);
+    const { canInstall, isInstalled, installApp } = usePWA();
+    const [pending, setPending] = useState(isSiteMovePending);
 
+    // Installing from this address (banner button or browser UI) finishes the move.
     useEffect(() => {
-        let cancelled = false;
-        // Only on the OLD apex (i.e. on the live-app apex during cutover).
-        if (window.location.host !== OLD_HOST) {
-            return () => {
-                cancelled = true;
-            };
+        if (pending && isInstalled) {
+            clearSiteMovePending();
+            setPending(false);
         }
+    }, [pending, isInstalled]);
 
-        // Config is loaded by ConfigLoader above this in the tree, but reading it
-        // again here keeps the banner self-contained — loadConfig is idempotent and
-        // reads from cache after the first call.
-        void loadConfig()
-            .then((config) => {
-                if (cancelled) return;
-                setVisible(config.MOVE_BANNER_ENABLED === true);
-            })
-            .catch(() => {
-                // If config can't load, the banner stays hidden — fail closed.
-                if (cancelled) return;
-                setVisible(false);
-            });
+    if (!pending || isInstalled) return null;
 
-        return () => {
-            cancelled = true;
-        };
-    }, []);
-
-    if (!visible) return null;
+    const dismiss = () => {
+        clearSiteMovePending();
+        setPending(false);
+    };
 
     return (
         <div className="fixed top-[80px] left-0 right-0 z-50 px-4" role="alert" data-testid="site-move-banner">
@@ -54,17 +39,19 @@ const SiteMoveBanner = () => {
                         <div className="flex-1">
                             <AlertTitle>Shoppingo has moved</AlertTitle>
                             <AlertDescription>
-                                Open <span className="font-medium">shoppingo-app.imapps.uk</span> and reinstall the app
-                                to keep getting push notifications and offline sync. Your data carries over.
+                                Shoppingo now lives at <span className="font-medium">shoppingo-app.imapps.uk</span>. If
+                                you installed it on your home screen or desktop, remove the old one and install it again
+                                from here to keep getting notifications.
                             </AlertDescription>
+                            {canInstall && (
+                                <Button className="mt-2" size="sm" onClick={() => void installApp()}>
+                                    Install app
+                                </Button>
+                            )}
                         </div>
-                        <a
-                            className="inline-flex items-center gap-1 text-sm font-medium underline-offset-4 hover:underline"
-                            href={NEW_APP_URL}
-                            rel="noopener noreferrer"
-                        >
-                            Open <ExternalLink className="h-4 w-4" aria-hidden="true" />
-                        </a>
+                        <Button variant="ghost" size="icon" aria-label="Dismiss" onClick={dismiss}>
+                            <X className="h-4 w-4" aria-hidden="true" />
+                        </Button>
                     </div>
                 </Alert>
             </div>

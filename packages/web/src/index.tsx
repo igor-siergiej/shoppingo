@@ -24,8 +24,11 @@ import { UnitSystemProvider } from './contexts/UnitSystemContext';
 import { GuestAwareProtectedRoute, GuestEntryRoute, RequireAuth } from './guest/GuestAwareProtectedRoute';
 import { GuestProvider } from './guest/GuestContext';
 import { applyManifestForTheme } from './utils/applyManifestForTheme';
+import { captureSiteMoveMarker } from './utils/siteMove';
 import { installWebMcpOriginTrialToken } from './webmcp/originTrial';
 
+// Before createBrowserRouter below: the router's auth redirect would drop `?moved=1`.
+captureSiteMoveMarker();
 applyManifestForTheme();
 installWebMcpOriginTrialToken(import.meta.env.VITE_WEBMCP_OT_TOKEN, __IS_PROD__);
 

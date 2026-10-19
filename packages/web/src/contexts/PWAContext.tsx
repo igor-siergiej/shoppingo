@@ -43,7 +43,13 @@ interface PWAProviderProps {
 export const PWAProvider: React.FC<PWAProviderProps> = ({ children }) => {
     const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
     const [canInstall, setCanInstall] = useState(false);
-    const [isInstalled, setIsInstalled] = useState(false);
+    // Read on first render, not in an effect, so consumers (SiteMoveBanner) never see a false
+    // `isInstalled` for a frame inside an installed window.
+    const [isInstalled, setIsInstalled] = useState(
+        () =>
+            window.matchMedia?.('(display-mode: standalone)').matches === true ||
+            ('standalone' in navigator && navigator.standalone === true)
+    );
     const [hasUpdate, setHasUpdate] = useState(false);
     const [shouldShowUpdateToast, setShouldShowUpdateToast] = useState(false);
     const [isUpdating, setIsUpdating] = useState(false);
@@ -123,12 +129,6 @@ export const PWAProvider: React.FC<PWAProviderProps> = ({ children }) => {
     }, [shouldShowUpdateToast, updateApp]);
 
     useEffect(() => {
-        const isStandalone =
-            window.matchMedia?.('(display-mode: standalone)').matches ||
-            (navigator as unknown as { standalone?: boolean }).standalone === true;
-
-        setIsInstalled(Boolean(isStandalone));
-
         const handleBeforeInstallPrompt = (e: Event) => {
             e.preventDefault();
             const event = e as BeforeInstallPromptEvent;
