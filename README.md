@@ -6,7 +6,7 @@ A shared shopping-list PWA built around how people actually shop: plan from
 recipes, or just add things to a list — either way the list is one tap away in
 the shop, works offline, and stays in sync with whoever you share it with.
 
-**Live app:** https://app.shoppingo.imapps.uk
+**Live app:** https://shoppingo-app.imapps.uk
 **Marketing site:** https://d3o01nt4oiwfr9.cloudfront.net (apex cutover pending)
 
 <p align="center">

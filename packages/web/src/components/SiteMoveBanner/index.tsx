@@ -10,7 +10,7 @@ import { loadConfig } from '../../utils/config';
  * banner should appear.
  */
 const OLD_HOST = 'shoppingo.imapps.uk';
-const NEW_APP_URL = 'https://app.shoppingo.imapps.uk';
+const NEW_APP_URL = 'https://shoppingo-app.imapps.uk';
 
 const SiteMoveBanner = () => {
     const [visible, setVisible] = useState(false);
@@ -54,7 +54,7 @@ const SiteMoveBanner = () => {
                         <div className="flex-1">
                             <AlertTitle>Shoppingo has moved</AlertTitle>
                             <AlertDescription>
-                                Open <span className="font-medium">app.shoppingo.imapps.uk</span> and reinstall the app
+                                Open <span className="font-medium">shoppingo-app.imapps.uk</span> and reinstall the app
                                 to keep getting push notifications and offline sync. Your data carries over.
                             </AlertDescription>
                         </div>

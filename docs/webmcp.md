@@ -16,7 +16,7 @@ withdrawn (via `AbortSignal`) on sign-out.
 
 ## Origin trial token
 
-WebMCP is an origin trial in Chrome 149+. Register `https://app.shoppingo.imapps.uk` for the trial, then build the
+WebMCP is an origin trial in Chrome 149+. Register `https://shoppingo-app.imapps.uk` for the trial, then build the
 web image with the token:
 
 ```
