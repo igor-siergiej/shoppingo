@@ -1,3 +1,10 @@
+## [1.107.1](https://github.com/igor-siergiej/shoppingo/compare/v1.107.0...v1.107.1) (2026-10-19)
+
+
+### Bug Fixes
+
+* move the app host to shoppingo-app.imapps.uk ([#261](https://github.com/igor-siergiej/shoppingo/issues/261)) ([46a6a08](https://github.com/igor-siergiej/shoppingo/commit/46a6a081e7d2738925f7d29ee57afbbb28327fe1)), closes [#82](https://github.com/igor-siergiej/shoppingo/issues/82)
+
 # [1.107.0](https://github.com/igor-siergiej/shoppingo/compare/v1.106.4...v1.107.0) (2026-10-18)
 
 

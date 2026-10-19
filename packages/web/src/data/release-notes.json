@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.107.1",
+    "date": "2026-10-19",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Move the app host to shoppingo-app.imapps.uk"
+      }
+    ]
+  },
+  {
     "version": "1.107.0",
     "date": "2026-10-18",
     "notes": [
