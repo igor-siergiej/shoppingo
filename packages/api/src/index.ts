@@ -17,13 +17,13 @@ const port = config.get('port');
 
 // Origins the browser can send Authorization headers from. See shoppingo #108 and
 // shoppingo-app-subdomain-move #82: `shoppingo.imapps.co.uk` is the old apex, removed;
-// the app moves to `https://app.shoppingo.imapps.uk`. The apex
+// the app moves to `https://shoppingo-app.imapps.uk`. The apex
 // `https://shoppingo.imapps.uk` now serves the landing site (shoppingo-site), not the
 // app, so it is intentionally absent.
 const allowedOrigins: Array<string> = [
     'http://shoppingo.imapps.staging',
     'http://localhost:4000',
-    'https://app.shoppingo.imapps.uk',
+    'https://shoppingo-app.imapps.uk',
 ];
 
 export const onStartup = async () => {
