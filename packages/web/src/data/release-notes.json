@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.107.2",
+    "date": "2026-10-20",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Trying Shoppingo without an account now looks and works exactly like the real app, opening a list no longer fails, and a clear Sign up button sits in the top bar."
+      }
+    ]
+  },
+  {
     "version": "1.107.1",
     "date": "2026-10-19",
     "notes": [

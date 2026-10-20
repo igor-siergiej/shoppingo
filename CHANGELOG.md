@@ -1,3 +1,10 @@
+## [1.107.2](https://github.com/igor-siergiej/shoppingo/compare/v1.107.1...v1.107.2) (2026-10-20)
+
+
+### Bug Fixes
+
+* **web:** guest mode uses the real lists and items pages ([#268](https://github.com/igor-siergiej/shoppingo/issues/268)) ([b65d53d](https://github.com/igor-siergiej/shoppingo/commit/b65d53d94faf5f491492e69f07145f865a92acfa))
+
 ## [1.107.1](https://github.com/igor-siergiej/shoppingo/compare/v1.107.0...v1.107.1) (2026-10-19)
 
 
