@@ -17,6 +17,13 @@ import { createRoutes } from './routes';
 
 const port = config.get('port');
 
+const mountBetterAuth = (app: ReturnType<typeof createApp>) => {
+    if (!config.get('betterAuthSecret')) return;
+    const auth = dependencyContainer.resolve(DependencyToken.Auth);
+    app.use('/api/*', csrf({ origin: allowedOrigins }));
+    app.on(['GET', 'POST'], '/api/auth/*', (c) => auth.handler(c.req.raw));
+};
+
 export const onStartup = async () => {
     try {
         startDefaultMetrics();
@@ -52,17 +59,9 @@ export const onStartup = async () => {
         // Better Auth session cookie. Mounted on GET + POST so `/api/auth/get-session` (HEAD/GET)
         // and the form POSTs land on the same handler. `c.req.raw` is passed through — Hono does
         // not consume the body before reaching this point, so a full sign-up round-trip works.
-        // Optional today: `BETTER_AUTH_SECRET` not being set means the factory above threw at
-        // resolve time; guarded so the API still boots without the env (kivo bearer stays valid
-        // until Task 9). Task 7 (web cutover) will make this required.
-        if (config.get('betterAuthSecret')) {
-            const auth = dependencyContainer.resolve(DependencyToken.Auth);
-            // CSRF on the rest of /api/* — cookie auth replaces bearer headers and needs the
-            // origin check. Better Auth's own originCheckMiddleware applies the same allow-list
-            // on /api/auth/*.
-            app.use('/api/*', csrf({ origin: allowedOrigins }));
-            app.on(['GET', 'POST'], '/api/auth/*', (c) => auth.handler(c.req.raw));
-        }
+        // Optional today: `BETTER_AUTH_SECRET` not being set skips the mount so the api boots
+        // and keeps authenticating through kivo bearer tokens (Task 9 will remove that path).
+        mountBetterAuth(app);
 
         logger.info('Starting API server - connecting to database and object store');
         await database.connect({

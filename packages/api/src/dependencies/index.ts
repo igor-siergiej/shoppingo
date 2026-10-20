@@ -78,6 +78,27 @@ const register = <K extends keyof Dependencies & string>(token: K, make: () => D
     );
 };
 
+const googleConfig = (): { clientId: string; clientSecret: string } | undefined => {
+    const clientId = config.get('googleClientId');
+    const clientSecret = config.get('googleClientSecret');
+    return clientId && clientSecret ? { clientId, clientSecret } : undefined;
+};
+
+const buildBetterAuth = () => {
+    const secret = config.get('betterAuthSecret');
+    if (!secret) throw new Error('BETTER_AUTH_SECRET must be set');
+    const baseURL = config.get('betterAuthUrl');
+    if (!baseURL) throw new Error('BETTER_AUTH_URL must be set');
+    const db = new MongoClient(config.get('connectionUri')).db(config.get('databaseName'));
+    return createAuth({
+        database: mongodbAdapter(db, { transaction: false }),
+        secret,
+        baseURL,
+        trustedOrigins: allowedOrigins,
+        google: googleConfig(),
+    });
+};
+
 export const registerDepdendencies = () => {
     // Core infrastructure services
     dependencyContainer.registerSingleton(DependencyToken.Database, MongoDbConnection);
@@ -95,26 +116,7 @@ export const registerDepdendencies = () => {
     // and Task 9 (kivo removal) is the natural place to revisit when prod mongo gains
     // transactions. Skipped entirely while BETTER_AUTH_SECRET is unset — the api boots and
     // continues to accept kivo bearer tokens only, matching today's prod until the env lands.
-    register(DependencyToken.Auth, () => {
-        const secret = config.get('betterAuthSecret');
-        if (!secret) throw new Error('BETTER_AUTH_SECRET must be set');
-        const baseURL = config.get('betterAuthUrl');
-        if (!baseURL) throw new Error('BETTER_AUTH_URL must be set');
-        const googleClientId = config.get('googleClientId');
-        const googleClientSecret = config.get('googleClientSecret');
-        const db = new MongoClient(config.get('connectionUri')).db(config.get('databaseName'));
-        return createAuth({
-            database: mongodbAdapter(db, { transaction: false }),
-            secret,
-            baseURL,
-            trustedOrigins: allowedOrigins,
-            google:
-                googleClientId && googleClientSecret
-                    ? { clientId: googleClientId, clientSecret: googleClientSecret }
-                    : undefined,
-        });
-    });
-
+    register(DependencyToken.Auth, () => buildBetterAuth());
     // Domain services using factory classes
     register(
         DependencyToken.ListRepository,

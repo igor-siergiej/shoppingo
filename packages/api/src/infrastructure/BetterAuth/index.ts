@@ -8,6 +8,16 @@ import { username } from 'better-auth/plugins';
 // later locking a Google user out via `account_not_linked`.
 const PLACEHOLDER_EMAIL_DOMAIN = 'users.invalid';
 
+const rejectEmailSignIn = (path: string) => {
+    // Placeholder emails are not credentials; passwords sign in by username only.
+    if (path === '/sign-in/email') throw new APIError('NOT_FOUND');
+};
+
+const usernameFromBody = (body: unknown): string => {
+    const candidate = (body as { username?: unknown })?.username;
+    return typeof candidate === 'string' ? candidate.trim() : '';
+};
+
 export interface AuthOptions {
     database: BetterAuthOptions['database'];
     secret: string;
@@ -38,10 +48,9 @@ export const createAuth = ({ database, secret, baseURL, trustedOrigins, google }
         advanced: { ipAddress: { ipAddressHeaders: ['x-forwarded-for'] } },
         hooks: {
             before: createAuthMiddleware(async (ctx) => {
-                // Placeholder emails are not credentials; passwords sign in by username only.
-                if (ctx.path === '/sign-in/email') throw new APIError('NOT_FOUND');
+                rejectEmailSignIn(ctx.path);
                 if (ctx.path !== '/sign-up/email') return;
-                const name = typeof ctx.body?.username === 'string' ? ctx.body.username.trim() : '';
+                const name = usernameFromBody(ctx.body);
                 if (!name) throw new APIError('BAD_REQUEST', { message: 'Username is required' });
                 // Never store a client-supplied email: an unverified real address would squat it and block that
                 // person's later Google sign-in (account_not_linked).

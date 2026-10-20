@@ -142,17 +142,21 @@ export const __setAuthGetterForTests = (next: AuthGetter) => {
     getAuthForRequest = next;
 };
 
+const sessionToAuthUser = (session: { user: { id: string; username?: string | null; displayUsername?: string | null } }, c: Context<AuthVariables>): AuthUser | Response => {
+    const username = session.user.displayUsername ?? session.user.username;
+    if (!username) {
+        return c.json({ error: 'username_required' }, 403);
+    }
+    return { id: session.user.id, username };
+};
+
 const resolveBetterAuthSession = async (c: Context<AuthVariables>): Promise<AuthUser | undefined | Response> => {
     const auth = getAuthForRequest();
     if (!auth) return undefined;
     try {
         const session = await auth.api.getSession({ headers: c.req.raw.headers });
         if (!session) return undefined;
-        const username = session.user.displayUsername ?? session.user.username;
-        if (!username) {
-            return c.json({ error: 'username_required' }, 403);
-        }
-        return { id: session.user.id, username };
+        return sessionToAuthUser(session, c);
     } catch (error) {
         console.error('Better Auth getSession failed:', error);
         // A broken Better Auth store must not lock the user out — fall through to kivo bearer.
@@ -178,13 +182,13 @@ export const authenticate = async (c: Context<AuthVariables>, next: Next) => {
 // Re-exported so callers (e.g. `conditionalImageAuth` in routes/index.ts) can soft-authenticate
 // when they want to honour either path without ever returning 401.
 export const softAuthenticate = async (c: Context<AuthVariables>): Promise<AuthUser | undefined> => {
-    const sessionUser = await resolveBetterAuthSession(c);
-    if (sessionUser instanceof Response) return undefined;
-    if (sessionUser) return sessionUser;
+    const fromSession = await resolveBetterAuthSession(c);
+    if (fromSession instanceof Response) return undefined;
+    if (fromSession) return fromSession;
+    return bearerFromCache(c.req.header('authorization'));
+};
 
-    const authHeader = c.req.header('authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) return undefined;
-    const key = cacheKey(authHeader);
-    const cachedUser = readCache(key);
-    return cachedUser;
+const bearerFromCache = (authHeader: string | undefined): AuthUser | undefined => {
+    if (!authHeader?.startsWith('Bearer ')) return undefined;
+    return readCache(cacheKey(authHeader));
 };
