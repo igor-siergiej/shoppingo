@@ -47,10 +47,25 @@ const MealPlanPage = () => {
     const onError = (error: unknown) => notifyError(error instanceof Error ? error.message : 'Something went wrong');
 
     const addMutation = useMutation({ mutationFn: createMealPlanEntry, onSuccess: refresh, onError });
+    // The stepper reads entry.servings from this cache, so it's updated before the request: a second
+    // tap before the refetch would otherwise send the same value again and lose an increment. The
+    // scope runs the updates one after another, so the server ends on the last tap's value.
     const servingsMutation = useMutation({
         mutationFn: ({ id, servings }: { id: string; servings: number }) => updateMealPlanEntry(id, { servings }),
-        onSuccess: refresh,
-        onError,
+        scope: { id: 'meal-plan-servings' },
+        onMutate: async ({ id, servings }) => {
+            await queryClient.cancelQueries({ queryKey: planKey });
+            const previous = queryClient.getQueryData<Array<MealPlanEntry>>(planKey);
+            queryClient.setQueryData<Array<MealPlanEntry>>(planKey, (old) =>
+                old?.map((entry) => (entry.id === id ? { ...entry, servings } : entry))
+            );
+            return { previous };
+        },
+        onError: (error, _variables, context) => {
+            if (context?.previous) queryClient.setQueryData(planKey, context.previous);
+            onError(error);
+        },
+        onSettled: refresh,
     });
     const removeMutation = useMutation({ mutationFn: deleteMealPlanEntry, onSuccess: refresh, onError });
 
