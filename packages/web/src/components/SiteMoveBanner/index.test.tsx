@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { captureSiteMoveMarker } from '../../utils/siteMove';
+import { captureSiteMoveMarker, isSiteMovePending } from '../../utils/siteMove';
 import SiteMoveBanner from './index';
 
 const pwa = vi.hoisted(() => ({ canInstall: false, isInstalled: false, installApp: vi.fn() }));
@@ -16,6 +16,7 @@ const arriveAt = (path: string) => {
 describe('SiteMoveBanner', () => {
     beforeEach(() => {
         localStorage.clear();
+        sessionStorage.clear();
         pwa.canInstall = false;
         pwa.isInstalled = false;
         pwa.installApp.mockReset();
@@ -55,10 +56,26 @@ describe('SiteMoveBanner', () => {
         expect(screen.queryByTestId('site-move-banner')).not.toBeInTheDocument();
     });
 
-    it('is hidden and finished inside an installed window', () => {
+    it('keeps asking inside the old installed app, which opens this address out of its scope', () => {
         arriveAt('/?moved=1');
         pwa.isInstalled = true;
 
+        render(<SiteMoveBanner />);
+
+        expect(screen.getByTestId('site-move-banner')).toHaveTextContent(
+            /open shoppingo-app\.imapps\.uk in your browser/i
+        );
+        expect(isSiteMovePending()).toBe(true);
+    });
+
+    it('finishes once the app is opened from its new install', () => {
+        arriveAt('/?moved=1');
+        render(<SiteMoveBanner />).unmount();
+
+        // A new install opens this address directly, in its own window, without the marker.
+        sessionStorage.clear();
+        arriveAt('/');
+        pwa.isInstalled = true;
         render(<SiteMoveBanner />);
         expect(screen.queryByTestId('site-move-banner')).not.toBeInTheDocument();
 

@@ -3,27 +3,59 @@ import { useEffect, useState } from 'react';
 
 import { Alert, AlertDescription, AlertTitle } from '../../components/ui/alert';
 import { usePWA } from '../../hooks/usePWA';
-import { clearSiteMovePending, isSiteMovePending } from '../../utils/siteMove';
+import { clearSiteMovePending, isSiteMovePending, wasForwardedFromOldAddress } from '../../utils/siteMove';
 import { Button } from '../ui/button';
+
+// The old install can't install the new one from inside itself, so it gets browser instructions
+// instead of the install button.
+const MoveInstructions = ({ inOldInstall }: { inOldInstall: boolean }) => {
+    const { canInstall, installApp } = usePWA();
+
+    if (inOldInstall) {
+        return (
+            <AlertDescription>
+                This is the old Shoppingo app. Open <span className="font-medium">shoppingo-app.imapps.uk</span> in your
+                browser, install it from there, then remove this one to keep getting notifications.
+            </AlertDescription>
+        );
+    }
+
+    return (
+        <>
+            <AlertDescription>
+                Shoppingo now lives at <span className="font-medium">shoppingo-app.imapps.uk</span>. If you installed it
+                on your home screen or desktop, remove the old one and install it again from here to keep getting
+                notifications.
+            </AlertDescription>
+            {canInstall && (
+                <Button className="mt-2" size="sm" onClick={() => void installApp()}>
+                    Install app
+                </Button>
+            )}
+        </>
+    );
+};
 
 /**
  * Asks people forwarded from the old address (see utils/siteMove.ts) to reinstall the app from
- * this one: their installed copy still opens the landing site and gets no notifications. Hidden
- * inside an installed window, where the user is already on the new install.
+ * this one: their installed copy still opens the landing site and gets no notifications. An app
+ * window opened through the forward is the old install; any other app window is the new one.
  */
 const SiteMoveBanner = () => {
-    const { canInstall, isInstalled, installApp } = usePWA();
+    const { isInstalled } = usePWA();
     const [pending, setPending] = useState(isSiteMovePending);
+    const [inOldInstall] = useState(() => isInstalled && wasForwardedFromOldAddress());
+    const inNewInstall = isInstalled && !inOldInstall;
 
-    // Installing from this address (banner button or browser UI) finishes the move.
+    // Opening the app from its new install (banner button or browser UI) finishes the move.
     useEffect(() => {
-        if (pending && isInstalled) {
+        if (pending && inNewInstall) {
             clearSiteMovePending();
             setPending(false);
         }
-    }, [pending, isInstalled]);
+    }, [pending, inNewInstall]);
 
-    if (!pending || isInstalled) return null;
+    if (!pending || inNewInstall) return null;
 
     const dismiss = () => {
         clearSiteMovePending();
@@ -38,16 +70,7 @@ const SiteMoveBanner = () => {
                         <AlertCircle className="h-5 w-5 mt-[2px]" aria-hidden="true" />
                         <div className="flex-1">
                             <AlertTitle>Shoppingo has moved</AlertTitle>
-                            <AlertDescription>
-                                Shoppingo now lives at <span className="font-medium">shoppingo-app.imapps.uk</span>. If
-                                you installed it on your home screen or desktop, remove the old one and install it again
-                                from here to keep getting notifications.
-                            </AlertDescription>
-                            {canInstall && (
-                                <Button className="mt-2" size="sm" onClick={() => void installApp()}>
-                                    Install app
-                                </Button>
-                            )}
+                            <MoveInstructions inOldInstall={inOldInstall} />
                         </div>
                         <Button variant="ghost" size="icon" aria-label="Dismiss" onClick={dismiss}>
                             <X className="h-4 w-4" aria-hidden="true" />
