@@ -167,13 +167,11 @@ The project uses shared packages published to GitHub Packages (migration to publ
 - Registry configured via `.bunfig.toml` (requires `NODE_AUTH_TOKEN` env var)
 
 ## Deployment & Infrastructure
-The project is deployed using **GitOps** with Kubernetes:
-- **Staging**: `shoppingo.imapps.staging` - Automated deployment from main branch
-- **Production**: `shoppingo.imapps.co.uk` - Controlled production releases
-- **Container Registry**: `192.168.68.54:31834/shoppingo-api` and `shoppingo-web`
-- **Orchestration**: Kubernetes with ArgoCD for GitOps deployment
-- **Ingress**: Traefik for HTTP routing (`/api/*` to API, rest to web frontend)
-- See `../argonaut/CLAUDE.md` for complete deployment infrastructure documentation
+Production runs as Dokploy swarm apps (`shoppingo-web`, `shoppingo-api`) on the `foundry` homelab, behind the Cloudflare tunnel:
+- **App**: `https://tandra.uk` (Traefik: `/api/*` to the api, rest to web). Auth is kivo at `https://kivo.tandra.uk` (same site as the app, which kivo's `SameSite=Strict` refresh cookie needs)
+- **Old app host**: `shoppingo-app.imapps.uk` 301s to `tandra.uk` from `packages/web/nginx.conf`, which also serves a service worker that retires the old install
+- **Landing site**: `https://shoppingo.imapps.uk` (separate `shoppingo-site` repo, CloudFront)
+- See the README "CI/CD" section and `docs/homelab.md` in the `foundry` repo for the full map
 
 ## CI/CD Pipeline (`.github/workflows/ci-cd.yml`)
 Jobs run in sequence: **lint → test → release → build-publish**

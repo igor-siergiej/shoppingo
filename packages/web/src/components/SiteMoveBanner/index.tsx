@@ -14,8 +14,8 @@ const MoveInstructions = ({ inOldInstall }: { inOldInstall: boolean }) => {
     if (inOldInstall) {
         return (
             <AlertDescription>
-                This is the old Shoppingo app. Open <span className="font-medium">shoppingo-app.imapps.uk</span> in your
-                browser, install it from there, then remove this one to keep getting notifications.
+                This is the old Shoppingo app. Open <span className="font-medium">tandra.uk</span> in your browser,
+                install it from there, then remove this one to keep getting notifications.
             </AlertDescription>
         );
     }
@@ -23,9 +23,8 @@ const MoveInstructions = ({ inOldInstall }: { inOldInstall: boolean }) => {
     return (
         <>
             <AlertDescription>
-                Shoppingo now lives at <span className="font-medium">shoppingo-app.imapps.uk</span>. If you installed it
-                on your home screen or desktop, remove the old one and install it again from here to keep getting
-                notifications.
+                Shoppingo now lives at <span className="font-medium">tandra.uk</span>. If you installed it on your home
+                screen or desktop, remove the old one and install it again from here to keep getting notifications.
             </AlertDescription>
             {canInstall && (
                 <Button className="mt-2" size="sm" onClick={() => void installApp()}>
@@ -37,8 +36,8 @@ const MoveInstructions = ({ inOldInstall }: { inOldInstall: boolean }) => {
 };
 
 /**
- * Asks people forwarded from the old address (see utils/siteMove.ts) to reinstall the app from
- * this one: their installed copy still opens the landing site and gets no notifications. An app
+ * Asks people forwarded from an old address (see utils/siteMove.ts) to reinstall the app from
+ * this one: their installed copy still opens the old address and gets no notifications. An app
  * window opened through the forward is the old install; any other app window is the new one.
  */
 const SiteMoveBanner = () => {
