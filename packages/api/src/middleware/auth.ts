@@ -142,7 +142,10 @@ export const __setAuthGetterForTests = (next: AuthGetter) => {
     getAuthForRequest = next;
 };
 
-const sessionToAuthUser = (session: { user: { id: string; username?: string | null; displayUsername?: string | null } }, c: Context<AuthVariables>): AuthUser | Response => {
+const sessionToAuthUser = (
+    session: { user: { id: string; username?: string | null; displayUsername?: string | null } },
+    c: Context<AuthVariables>
+): AuthUser | Response => {
     const username = session.user.displayUsername ?? session.user.username;
     if (!username) {
         return c.json({ error: 'username_required' }, 403);
