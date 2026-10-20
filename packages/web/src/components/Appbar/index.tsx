@@ -1,12 +1,17 @@
-import { lazy, Suspense, useState } from 'react';
+import { lazy, type ReactNode, Suspense, useState } from 'react';
 import { useLastSeenVersion } from '../../hooks/useLastSeenVersion';
 import { SyncStatusBadge } from '../SyncStatusBadge';
 
 // Pulls in the full release history, so it only loads once someone opens the panel.
 const WhatsNewDrawer = lazy(() => import('../WhatsNewDrawer'));
 
+interface AppbarProps {
+    /** Page-level controls shown top right, before the sync badge. */
+    actions?: ReactNode;
+}
+
 // fallow-ignore-next-line complexity
-const Appbar = () => {
+const Appbar = ({ actions }: AppbarProps) => {
     const [isWhatsNewOpen, setIsWhatsNewOpen] = useState(false);
     const [hasOpenedWhatsNew, setHasOpenedWhatsNew] = useState(false);
     // Captured when the panel opens, before markSeen clears it, so the panel
@@ -46,7 +51,10 @@ const Appbar = () => {
                         )}
                     </div>
                 </div>
-                <SyncStatusBadge />
+                <div className="flex items-center gap-2">
+                    {actions}
+                    <SyncStatusBadge />
+                </div>
             </div>
             {hasOpenedWhatsNew && (
                 <Suspense fallback={null}>

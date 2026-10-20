@@ -148,9 +148,12 @@ export const HamburgerMenu = ({ onClose, onLogout }: HamburgerMenuProps) => {
                 <ThemeToggle />
             </MenuItem>
 
-            <MenuItem delay={0.1}>
-                <NotificationToggle />
-            </MenuItem>
+            {/* Push subscriptions are tied to an account. */}
+            {!isGuest && (
+                <MenuItem delay={0.1}>
+                    <NotificationToggle />
+                </MenuItem>
+            )}
 
             <MenuItem delay={0.1}>
                 <UpdateButton

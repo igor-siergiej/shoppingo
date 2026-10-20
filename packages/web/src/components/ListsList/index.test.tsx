@@ -14,9 +14,8 @@ vi.mock('react-router-dom', () => ({
     useNavigate: () => mockNavigate,
 }));
 
-vi.mock('../../api', () => ({
-    deleteList: mockDeleteList,
-    updateListName: mockUpdateListName,
+vi.mock('../../hooks/useListSource', () => ({
+    useListSource: () => ({ deleteList: mockDeleteList, renameList: mockUpdateListName }),
 }));
 
 vi.mock('../../hooks/useConfirmation', () => ({

@@ -2,8 +2,10 @@ import 'fake-indexeddb/auto';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type * as Api from '../api';
 
-vi.mock('../api', () => ({
+vi.mock('../api', async (importOriginal) => ({
+    ...(await importOriginal<typeof Api>()),
     updateItem: vi.fn().mockResolvedValue(undefined),
     deleteItem: vi.fn().mockResolvedValue(undefined),
     updateItemName: vi.fn().mockResolvedValue(undefined),
@@ -12,13 +14,16 @@ vi.mock('../api', () => ({
 
 vi.mock('../offline/drainer', () => ({ drainOutbox: vi.fn().mockResolvedValue(undefined) }));
 
+import { GuestProvider } from '../guest/GuestContext';
 import { outboxStore } from '../offline/outboxStore';
 import { useItemMutations } from './useItemMutations';
 
 const wrap =
     (client: QueryClient) =>
     ({ children }: { children: React.ReactNode }) => (
-        <QueryClientProvider client={client}>{children}</QueryClientProvider>
+        <QueryClientProvider client={client}>
+            <GuestProvider>{children}</GuestProvider>
+        </QueryClientProvider>
     );
 
 describe('useItemMutations (id-addressed)', () => {

@@ -150,11 +150,14 @@ test.describe('Guest mode', () => {
     test('@smoke /try deep link from the landing site opens a guest session', async ({ page }) => {
         await page.goto('/try');
         await page.waitForURL((url) => url.pathname === '/');
-        await expect(page.getByTestId('guest-mode-banner')).toBeVisible();
+        await expect(page.getByTestId('guest-mode-indicator').getByRole('button', { name: 'Sign up' })).toBeVisible();
+        await expect(page.getByText('No lists yet')).toBeVisible();
     });
 
     // Not @smoke: registration would hit the real auth service on a live run.
-    test('try-it → create list → add items → sign up → list survives reload', async ({ page }) => {
+    test('try-it → create list → open it from the lists page → add items → sign up → list survives reload', async ({
+        page,
+    }) => {
         // The full flow covers guest IDB writes, sign-up, the migration that
         // hits the mocked server, and a reload — well past the 8s default.
         test.setTimeout(30_000);
@@ -166,41 +169,54 @@ test.describe('Guest mode', () => {
         // Land in guest mode via the new entry point.
         await page.getByTestId('try-it-button').click();
         await page.waitForURL('/');
+        await expect(page.getByTestId('guest-mode-indicator')).toBeVisible();
 
-        // The guest banner should be visible.
-        await expect(page.getByTestId('guest-mode-banner')).toBeVisible();
-
-        // Create a list "Groceries".
+        // Create a list "Groceries". Guests can't share, so the drawer has no friend picker.
         await page.locator('button[class*="border-primary"]').first().click();
+        await expect(page.getByText('Share with')).toHaveCount(0);
         await page.getByLabel('List Name').fill('Groceries');
         await page.getByRole('button', { name: 'Add List' }).click();
-        await page.waitForURL(/\/guest\/list\//);
 
-        // Add an item via the items-page input. The guest items page renders
-        // its own simple row, but the add-item drawer is reused from the
-        // authenticated flow, so the same input selector works.
+        // Like a signed-in user, the guest stays on the lists page and opens the list from its card.
+        await page.getByRole('button', { name: 'Groceries' }).click();
+        await page.waitForURL(/\/list\/[^/]+$/);
+        // The signed-in items page's empty state, not "Unable to load items" or the sign-up wall.
+        await expect(page.getByText('No items yet')).toBeVisible();
+
+        // The real items page and add-item drawer.
         await page.locator('button[class*="border-primary"]').first().click();
-        const itemInput = page.getByPlaceholder('Enter item name...');
-        await itemInput.fill('Apples');
+        await page.getByPlaceholder('Enter item name...').fill('Apples');
         await page.getByRole('button', { name: 'Add Item' }).click();
-
-        const checkbox = page.getByRole('checkbox', { name: /mark apples/i });
-        await expect(checkbox).toBeVisible();
+        await expect(page.getByText('Apples')).toBeVisible();
 
         // A reload starts with an empty in-memory mirror: the guest's list
         // and item must come back from IndexedDB.
         await page.reload();
-        await expect(checkbox).toBeVisible();
+        await expect(page.getByText('Apples')).toBeVisible();
 
-        // Tick the item.
-        await checkbox.click();
-        await expect(checkbox).toBeChecked();
+        // Tick the item, and let the write land in IndexedDB before leaving the page.
+        await page.getByText('Apples').click();
+        await expect
+            .poll(() =>
+                page.evaluate(
+                    () =>
+                        new Promise<boolean>((resolve) => {
+                            const open = indexedDB.open('shoppingo-guest');
+                            open.onsuccess = () => {
+                                const db = open.result;
+                                const read = db.transaction('items').objectStore('items').getAll();
+                                read.onsuccess = () => {
+                                    db.close();
+                                    resolve(read.result.some((item) => item.name === 'Apples' && item.isSelected));
+                                };
+                            };
+                        })
+                )
+            )
+            .toBe(true);
 
-        // Sign up from the banner.
-        await page
-            .getByTestId('guest-mode-banner')
-            .getByRole('button', { name: /sign up/i })
-            .click();
+        // Sign up from the app bar.
+        await page.getByTestId('guest-mode-indicator').getByRole('button', { name: 'Sign up' }).click();
         await page.waitForURL('/register');
         // Reload so the register page starts with a cold in-memory store: the
         // migration must read the guest data back from IndexedDB itself.

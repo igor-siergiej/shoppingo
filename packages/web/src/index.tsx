@@ -22,7 +22,7 @@ import { PWAProvider } from './contexts/PWAContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { UnitSystemProvider } from './contexts/UnitSystemContext';
 import { GuestAwareProtectedRoute, GuestEntryRoute, RequireAuth } from './guest/GuestAwareProtectedRoute';
-import { GuestProvider, useGuest } from './guest/GuestContext';
+import { GuestProvider } from './guest/GuestContext';
 import { applyManifestForTheme } from './utils/applyManifestForTheme';
 import { installWebMcpOriginTrialToken } from './webmcp/originTrial';
 
@@ -56,16 +56,7 @@ const SettingsPage = lazyLoadPage(() => import('./pages/SettingsPage'), 'setting
 const DiscoverPage = lazyLoadPage(() => import('./pages/DiscoverPage'), 'discover page');
 const DiscoverRecipePage = lazyLoadPage(() => import('./pages/DiscoverRecipePage'), 'discover recipe page');
 const UseUpIngredientPage = lazyLoadPage(() => import('./pages/UseUpIngredientPage'), 'use up ingredient page');
-const GuestListsPage = lazyLoadPage(() => import('./pages/GuestListsPage'), 'guest lists page');
-const GuestItemsPage = lazyLoadPage(() => import('./pages/GuestItemsPage'), 'guest items page');
 const SignUpCtaPage = lazyLoadPage(() => import('./pages/SignUpCtaPage'), 'sign up prompt');
-
-// Renders either the authenticated or the guest lists page depending on the
-// active session. Pulled out so the index route element stays declarative.
-const IndexDispatcher = () => {
-    const { isGuest } = useGuest();
-    return isGuest ? <GuestListsPage /> : <ListPage />;
-};
 
 // v5 pauses queries and mutations while the browser reports offline. This app is offline-first: reads are served by
 // the service worker's cache and writes only go into the local outbox, so both must keep running (the v3 behaviour).
@@ -139,27 +130,17 @@ const router = createBrowserRouter([
                 index: true,
                 element: (
                     <Suspense fallback={<LoadingPage />}>
-                        <IndexDispatcher />
+                        <ListPage />
                     </Suspense>
                 ),
             },
             {
-                path: 'guest/list/:listId',
-                element: (
-                    <Suspense fallback={<LoadingPage />}>
-                        <GuestItemsPage />
-                    </Suspense>
-                ),
-            },
-            {
-                // Authenticated ItemsPage — keyed by the list's display title so
-                // legacy `/list/Groceries` URLs and the new id-suffixed form both work.
+                // Keyed by the list's display title so legacy `/list/Groceries` URLs and the new id-suffixed form
+                // both work. Guests use the same page, backed by their on-device lists.
                 path: 'list/:listTitle',
                 element: (
                     <Suspense fallback={<LoadingPage />}>
-                        <RequireAuth>
-                            <ItemsPage />
-                        </RequireAuth>
+                        <ItemsPage />
                     </Suspense>
                 ),
             },
@@ -167,9 +148,7 @@ const router = createBrowserRouter([
                 path: 'list/:listTitle/:listId',
                 element: (
                     <Suspense fallback={<LoadingPage />}>
-                        <RequireAuth>
-                            <ItemsPage />
-                        </RequireAuth>
+                        <ItemsPage />
                     </Suspense>
                 ),
             },

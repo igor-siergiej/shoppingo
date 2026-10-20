@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { Toaster } from 'sonner';
+import { GuestSignUpCta } from '../../guest/GuestSignUpCta';
 import { useWebMcpTools } from '../../hooks/useWebMcpTools';
 import { recordInAppNavigation } from '../../utils/navigationHistory';
 import Appbar from '../Appbar';
@@ -29,7 +30,8 @@ export const RootLayout = ({ children, showLayout = true }: RootLayoutProps) => 
         <div className="min-h-screen bg-background flex flex-col pt-14 md:pt-16">
             {/* Inside the router: every route renders exactly one RootLayout. */}
             <RouteChangeTracker />
-            <Appbar />
+            {/* App pages only: the bare login/register/sign-up pages are where the guest CTA leads. */}
+            <Appbar actions={showLayout ? <GuestSignUpCta /> : undefined} />
             <NetworkStatusAlert />
             <SiteMoveBanner />
             {showLayout ? (
