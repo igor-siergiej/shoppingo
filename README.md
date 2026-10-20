@@ -6,8 +6,8 @@ A shared shopping-list PWA built around how people actually shop: plan from
 recipes, or just add things to a list — either way the list is one tap away in
 the shop, works offline, and stays in sync with whoever you share it with.
 
-**Live app:** https://shoppingo-app.imapps.uk
-**Marketing site:** https://d3o01nt4oiwfr9.cloudfront.net (apex cutover pending)
+**Live app:** https://tandra.uk
+**Marketing site:** https://shoppingo.imapps.uk
 
 <p align="center">
   <img src="docs/images/lists.png" alt="Shoppingo lists screen" width="195" />
@@ -186,7 +186,7 @@ bun run load:local                                 # k6 (manual; see scripts/loa
   the object store running. Projects: `chromium` (functional), `mobile-visual` and
   `desktop-visual` (screenshot diffs). Discover specs skip unless
   `E2E_OPENSEARCH_URL` is set. `@smoke`-tagged specs are what the homelab's
-  nightly prod smoke runs against https://shoppingo.imapps.uk. See
+  nightly prod smoke runs against https://tandra.uk. See
   [e2e/README.md](e2e/README.md) and [e2e/COVERAGE.md](e2e/COVERAGE.md).
 
 ## Contributing
@@ -218,10 +218,12 @@ label picks out small, contained starting points.
 - **Production** runs on the `foundry` homelab: Dokploy swarm apps
   `shoppingo-web` and `shoppingo-api` in the `apps` project, on
   `dokploy-network` with the shared `mongodb`, `rustfs` and `opensearch`
-  containers. Traefik routes `shoppingo.imapps.uk` (`/api/*` to the api,
-  everything else to web); remote traffic arrives through the Cloudflare
-  tunnel with an Access **bypass** (the app does its own auth via kivo), LAN
-  traffic via split-horizon DNS. Gatus checks `/` and `/api/health`;
+  containers. Traefik routes `tandra.uk` (`/api/*` to the api,
+  everything else to web) and `kivo.tandra.uk` to kivo, so kivo's
+  `SameSite=Strict` refresh cookie stays same-site with the app. Both arrive
+  through the Cloudflare tunnel; the zone has no Access apps (the app does its
+  own auth via kivo). The old app host `shoppingo-app.imapps.uk` still reaches
+  `shoppingo-web`, whose nginx 301s it to `tandra.uk`. Gatus checks `/` and `/api/health`;
   Prometheus scrapes `/api/metrics`. The authoritative map is
   `docs/homelab.md` in the `foundry` repo. Production env values live in
   Dokploy and are not in this repo.

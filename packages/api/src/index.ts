@@ -15,16 +15,12 @@ import { createRoutes } from './routes';
 
 const port = config.get('port');
 
-// Origins the browser can send Authorization headers from. See shoppingo #108 and
-// shoppingo-app-subdomain-move #82: `shoppingo.imapps.co.uk` is the old apex, removed;
-// the app moves to `https://shoppingo-app.imapps.uk`. The apex
-// `https://shoppingo.imapps.uk` now serves the landing site (shoppingo-site), not the
-// app, so it is intentionally absent.
-const allowedOrigins: Array<string> = [
-    'http://shoppingo.imapps.staging',
-    'http://localhost:4000',
-    'https://shoppingo-app.imapps.uk',
-];
+// Origins the browser can send Authorization headers from. See shoppingo #108. The app lives on
+// the `https://tandra.uk` apex; its earlier hosts (`shoppingo.imapps.co.uk`,
+// `shoppingo-app.imapps.uk`) only redirect there (packages/web/nginx.conf), and
+// `https://shoppingo.imapps.uk` serves the landing site (shoppingo-site), so none of them are
+// listed.
+const allowedOrigins: Array<string> = ['http://shoppingo.imapps.staging', 'http://localhost:4000', 'https://tandra.uk'];
 
 export const onStartup = async () => {
     try {

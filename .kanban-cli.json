@@ -22,7 +22,7 @@
     "pollIntervalMs": 15000
   },
   "environments": {
-    "production": { "baseUrl": "https://shoppingo-app.imapps.uk" }
+    "production": { "baseUrl": "https://tandra.uk" }
   },
   "targetEnvironment": "production",
   "retryPolicy": { "implement": 3, "e2e_local": 3, "ci": 3, "deploy": 2, "e2e_live": 1 },

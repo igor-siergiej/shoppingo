@@ -1,6 +1,7 @@
-// Shoppingo moved from shoppingo.imapps.uk (now the landing site) to shoppingo-app.imapps.uk.
-// Installed copies of the old PWA still open the old address; the landing site forwards those
-// users here with `?moved=1` (shoppingo-site infra/cloudfront.tf and src/pages/index.astro).
+// Shoppingo moved from shoppingo.imapps.uk (now the landing site) to shoppingo-app.imapps.uk, then
+// to tandra.uk. Installed copies of the old PWAs still open the old addresses; the landing site
+// (shoppingo-site infra/cloudfront.tf and src/pages/index.astro) and the shoppingo-app.imapps.uk
+// redirect (packages/web/nginx.conf) forward those users here with `?moved=1`.
 // The marker is moved into localStorage so SiteMoveBanner can keep asking them to reinstall
 // until they dismiss it or install the app from this address.
 
