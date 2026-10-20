@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.108.1",
+    "date": "2026-10-20",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "If you still use the old Shoppingo app icon, it now shows a banner explaining how to switch to the new one."
+      }
+    ]
+  },
+  {
     "version": "1.108.0",
     "date": "2026-10-20",
     "notes": [

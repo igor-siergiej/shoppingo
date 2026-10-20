@@ -1,3 +1,10 @@
+## [1.108.1](https://github.com/igor-siergiej/shoppingo/compare/v1.108.0...v1.108.1) (2026-10-20)
+
+
+### Bug Fixes
+
+* **web:** show the "Shoppingo has moved" banner inside the old installed app ([#269](https://github.com/igor-siergiej/shoppingo/issues/269)) ([004918d](https://github.com/igor-siergiej/shoppingo/commit/004918d528c7b5ad234af57c1957534bb1570787))
+
 # [1.108.0](https://github.com/igor-siergiej/shoppingo/compare/v1.107.3...v1.108.0) (2026-10-20)
 
 
