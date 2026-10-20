@@ -1,7 +1,9 @@
 import 'dotenv/config';
 
 import { createApp } from '@imapps/api-utils/hono';
+import { csrf } from 'hono/csrf';
 import { config } from './config';
+import { allowedOrigins } from './config/cors';
 import { dependencyContainer, registerDepdendencies } from './dependencies';
 import { DependencyToken } from './dependencies/types';
 import { websocket } from './infrastructure/bunWebSocket';
@@ -14,13 +16,6 @@ import {
 import { createRoutes } from './routes';
 
 const port = config.get('port');
-
-// Origins the browser can send Authorization headers from. See shoppingo #108. The app lives on
-// the `https://tandra.uk` apex; its earlier hosts (`shoppingo.imapps.co.uk`,
-// `shoppingo-app.imapps.uk`) only redirect there (packages/web/nginx.conf), and
-// `https://shoppingo.imapps.uk` serves the landing site (shoppingo-site), so none of them are
-// listed.
-const allowedOrigins: Array<string> = ['http://shoppingo.imapps.staging', 'http://localhost:4000', 'https://tandra.uk'];
 
 export const onStartup = async () => {
     try {
@@ -53,6 +48,21 @@ export const onStartup = async () => {
             endTimer(labels);
             httpRequestsTotal.inc(labels);
         });
+
+        // Better Auth session cookie. Mounted on GET + POST so `/api/auth/get-session` (HEAD/GET)
+        // and the form POSTs land on the same handler. `c.req.raw` is passed through — Hono does
+        // not consume the body before reaching this point, so a full sign-up round-trip works.
+        // Optional today: `BETTER_AUTH_SECRET` not being set means the factory above threw at
+        // resolve time; guarded so the API still boots without the env (kivo bearer stays valid
+        // until Task 9). Task 7 (web cutover) will make this required.
+        if (config.get('betterAuthSecret')) {
+            const auth = dependencyContainer.resolve(DependencyToken.Auth);
+            // CSRF on the rest of /api/* — cookie auth replaces bearer headers and needs the
+            // origin check. Better Auth's own originCheckMiddleware applies the same allow-list
+            // on /api/auth/*.
+            app.use('/api/*', csrf({ origin: allowedOrigins }));
+            app.on(['GET', 'POST'], '/api/auth/*', (c) => auth.handler(c.req.raw));
+        }
 
         logger.info('Starting API server - connecting to database and object store');
         await database.connect({

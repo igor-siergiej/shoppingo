@@ -78,6 +78,13 @@ services:
     environment:
       PORT: "4001"
       AUTH_URL: "http://kivo:3008"
+      # Better Auth env (kivo-replacement, see docs/superpowers/specs/2026-10-20-built-in-auth-design.md).
+      # Required once the web cutover ships; before that the api boots without them and keeps
+      # accepting kivo bearer tokens. Public origin of the web app, not the api container.
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:4000}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
       CONNECTION_URI: "mongodb://mongo:27017"
       DATABASE_NAME: ${DATABASE_NAME:-shoppingo}
       BUCKET_ENDPOINT: "rustfs:9000"

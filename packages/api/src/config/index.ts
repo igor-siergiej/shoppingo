@@ -11,6 +11,12 @@ import { httpsUrl } from './auth-url';
 const schema = {
     port: { parser: parsers.number, from: 'PORT' },
     authUrl: { parser: httpsUrl, from: 'AUTH_URL', optional: true },
+    // Better Auth (kivo-replacement, Task 3 #141). Required once the cutover ships; leave optional here so a fresh
+    // clone without the env still boots (kivo bearer tokens remain valid until Task 9 removes them).
+    betterAuthSecret: { parser: parsers.string, from: 'BETTER_AUTH_SECRET', optional: true },
+    betterAuthUrl: { parser: parsers.string, from: 'BETTER_AUTH_URL', optional: true },
+    googleClientId: { parser: parsers.string, from: 'GOOGLE_CLIENT_ID', optional: true },
+    googleClientSecret: { parser: parsers.string, from: 'GOOGLE_CLIENT_SECRET', optional: true },
     connectionUri: { parser: parsers.string, from: 'CONNECTION_URI' },
     databaseName: { parser: parsers.string, from: 'DATABASE_NAME' },
     falKey: { parser: parsers.string, from: 'FAL_KEY', optional: true },
@@ -76,3 +82,21 @@ export const aiFeaturesFromEnv = (env: NodeJS.ProcessEnv = process.env): AiFeatu
         recipeTagger: llm,
     };
 };
+
+/**
+ * Snapshot of which auth features the api exposes. Used by `/api/features`
+ * to tell the web which auth-related controls to surface (today only the
+ * Google sign-in button; the kivo → Better Auth cutover has not happened).
+ */
+export interface AuthFeaturesSummary {
+    googleSignIn: boolean;
+}
+
+/**
+ * Pure helper: turn the env at call time into the auth feature flags the
+ * web reads. Kept separate from `config` so tests can drive it without
+ * going through the full ConfigService cache.
+ */
+export const authFeaturesFromEnv = (env: NodeJS.ProcessEnv = process.env): AuthFeaturesSummary => ({
+    googleSignIn: Boolean(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET),
+});

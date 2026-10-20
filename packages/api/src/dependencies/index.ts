@@ -1,7 +1,10 @@
+import { mongodbAdapter } from '@better-auth/mongo-adapter';
 import { Logger, MongoDbConnection, ObjectStoreConnection } from '@imapps/api-utils';
 import { Client } from '@opensearch-project/opensearch';
+import { MongoClient } from 'mongodb';
 
 import { config } from '../config';
+import { allowedOrigins } from '../config/cors';
 import { AuthorizationService } from '../domain/AuthorizationService';
 import { DailyReminderScheduler } from '../domain/DailyReminderScheduler';
 import { DiscoveryCopyService } from '../domain/DiscoveryCopyService';
@@ -27,6 +30,7 @@ import { WikibooksIngestService } from '../domain/WikibooksIngest';
 import { WikibooksCoverService } from '../domain/WikibooksIngest/cover';
 import { WsTicketStore } from '../domain/WsTicketStore';
 import { BucketStore } from '../infrastructure/BucketStore';
+import { createAuth } from '../infrastructure/BetterAuth';
 import { CachedIngredientSubstituter } from '../infrastructure/CachedIngredientSubstituter';
 import { FalImageGenerator } from '../infrastructure/FalImageGenerator';
 import { FalIngredientSubstituter } from '../infrastructure/FalIngredientSubstituter';
@@ -83,6 +87,33 @@ export const registerDepdendencies = () => {
     dependencyContainer.registerSingleton(DependencyToken.AuthorizationService, AuthorizationService);
     dependencyContainer.registerSingleton(DependencyToken.ListRealtimeHub, ListRealtimeHub);
     dependencyContainer.registerSingleton(DependencyToken.WsTicketStore, WsTicketStore);
+
+    // Better Auth — owns the embedded username/password + Google flow mounted at /api/auth/*.
+    // The api-utils Mongo connection hides its `Db`, so we open a fresh MongoClient against the
+    // same connectionUri/databaseName (the driver connects lazily). `transaction: false` because
+    // the local dev mongo is a standalone without a replica set; prod is a single node today,
+    // and Task 9 (kivo removal) is the natural place to revisit when prod mongo gains
+    // transactions. Skipped entirely while BETTER_AUTH_SECRET is unset — the api boots and
+    // continues to accept kivo bearer tokens only, matching today's prod until the env lands.
+    register(DependencyToken.Auth, () => {
+        const secret = config.get('betterAuthSecret');
+        if (!secret) throw new Error('BETTER_AUTH_SECRET must be set');
+        const baseURL = config.get('betterAuthUrl');
+        if (!baseURL) throw new Error('BETTER_AUTH_URL must be set');
+        const googleClientId = config.get('googleClientId');
+        const googleClientSecret = config.get('googleClientSecret');
+        const db = new MongoClient(config.get('connectionUri')).db(config.get('databaseName'));
+        return createAuth({
+            database: mongodbAdapter(db, { transaction: false }),
+            secret,
+            baseURL,
+            trustedOrigins: allowedOrigins,
+            google:
+                googleClientId && googleClientSecret
+                    ? { clientId: googleClientId, clientSecret: googleClientSecret }
+                    : undefined,
+        });
+    });
 
     // Domain services using factory classes
     register(
