@@ -183,7 +183,6 @@ Jobs run in sequence: **lint → test → release → build-publish**
 ## Related Services
 - **Authentication**: Uses `kivo` service (port 3008) for user authentication
   - `AUTH_URL` must be `https://...` (the config rejects any non-https value at boot, so a future migration to plaintext is impossible by construction)
-  - `SERVICE_TOKEN` is sent as `X-Service-Token` on every `/users` call once `kivo`'s `LOOKUP_AUTH_ENABLED` is on; same value lives in both apps
   - The web app holds the access token in module memory (see `packages/web/src/auth/accessTokenStore.ts` + `storagePatches.ts`); it is not in `localStorage` / `sessionStorage`
 - **Shared Utilities**: Depends on `@igor-siergiej/api-utils` and `@igor-siergiej/web-utils`
 - **GitOps Deployment**: Managed via `argonaut` Kubernetes GitOps repository

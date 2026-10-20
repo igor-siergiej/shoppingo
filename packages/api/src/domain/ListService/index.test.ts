@@ -5,7 +5,6 @@ import { ListType } from '@shoppingo/types';
 import type { IdGenerator } from '../IdGenerator';
 import type { ListRepository } from '../ListRepository';
 import { ListService } from './index';
-import type { AuthClient } from './types';
 
 class MockListRepository implements ListRepository {
     async ensureIndexes(): Promise<void> {}
@@ -74,15 +73,6 @@ class MockIdGenerator implements IdGenerator {
     }
 }
 
-class MockAuthClient implements AuthClient {
-    async getUsersByUsernames(usernames: Array<string>): Promise<Array<User>> {
-        return usernames.map((username) => ({
-            id: `user-${username}`,
-            username,
-        }));
-    }
-}
-
 class MockFriends {
     edges = new Set<string>(); // "a|b" sorted
     private key(a: string, b: string) {
@@ -109,26 +99,16 @@ describe('ListService', () => {
     let listService: ListService;
     let mockRepository: MockListRepository;
     let mockIdGenerator: MockIdGenerator;
-    let mockAuthClient: MockAuthClient;
     let friends: MockFriends;
     let mockUser: User;
 
     beforeEach(() => {
         mockRepository = new MockListRepository();
         mockIdGenerator = new MockIdGenerator();
-        mockAuthClient = new MockAuthClient();
         friends = new MockFriends();
         mockUser = { id: 'user-1', username: 'testuser' };
 
-        listService = new ListService(
-            mockRepository,
-            mockIdGenerator,
-            mockAuthClient,
-            undefined,
-            undefined,
-            undefined,
-            friends
-        );
+        listService = new ListService(mockRepository, mockIdGenerator, undefined, undefined, undefined, friends);
     });
 
     describe('Getting lists for a user', () => {
@@ -278,7 +258,7 @@ describe('ListService', () => {
 
         describe('When no friend service is configured', () => {
             it('should silently seed the owner only, ignoring any selected friend ids', async () => {
-                const serviceWithoutFriends = new ListService(mockRepository, mockIdGenerator, mockAuthClient);
+                const serviceWithoutFriends = new ListService(mockRepository, mockIdGenerator);
 
                 const result = await serviceWithoutFriends.addList('New List', new Date('2023-01-01'), mockUser, [
                     'friend-2',
@@ -944,7 +924,7 @@ describe('ListService', () => {
 
         describe('When no friend service is configured', () => {
             it('should throw a 403 error', async () => {
-                const serviceWithoutFriends = new ListService(mockRepository, mockIdGenerator, mockAuthClient);
+                const serviceWithoutFriends = new ListService(mockRepository, mockIdGenerator);
                 const mockList: List = {
                     id: 'list-1',
                     title: 'Test List',
@@ -1464,7 +1444,7 @@ describe('ListService notifications', () => {
         const idGenerator = { generate: () => 'i1' } as never;
         const notify = { notifyItemAdded: mock(async () => {}), notifyItemsAdded: mock(async () => {}) };
 
-        const service = new ListService(repo, idGenerator, undefined, undefined, undefined, notify as never);
+        const service = new ListService(repo, idGenerator, undefined, undefined, notify as never);
         await service.addItem('Groceries', 'Milk', new Date(), undefined, undefined, {
             id: 'u1',
             username: 'owner',
@@ -1500,7 +1480,6 @@ describe('ListService item categories', () => {
         service = new ListService(
             repo,
             new MockIdGenerator(),
-            undefined,
             undefined,
             undefined,
             undefined,
