@@ -5,9 +5,9 @@
     "start": "bun --watch src/index.ts",
     "start:e2e": "bun src/index.ts",
     "build": "cp -r src build",
-    "test": "bun test",
-    "test:coverage": "bun test --coverage",
-    "test:run": "bun test",
+    "test": "bun test --isolate",
+    "test:coverage": "bun test --isolate --coverage",
+    "test:run": "bun test --isolate",
     "reindex": "bun scripts/reindex-discovery.ts",
     "ingest": "bun scripts/ingest-wikibooks.ts",
     "validate-library": "bun scripts/validate-discovery-library.ts"
