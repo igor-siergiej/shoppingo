@@ -1,7 +1,6 @@
 import 'dotenv/config';
 
 import { createApp } from '@imapps/api-utils/hono';
-import { csrf } from 'hono/csrf';
 import { config } from './config';
 import { allowedOrigins } from './config/cors';
 import { dependencyContainer, registerDepdendencies } from './dependencies';
@@ -13,6 +12,7 @@ import {
     metricsRegister,
     startDefaultMetrics,
 } from './infrastructure/metrics';
+import { csrfForFormPosts } from './middleware/csrf';
 import { createRoutes } from './routes';
 
 const port = config.get('port');
@@ -20,7 +20,7 @@ const port = config.get('port');
 const mountBetterAuth = (app: ReturnType<typeof createApp>) => {
     if (!config.get('betterAuthSecret')) return;
     const auth = dependencyContainer.resolve(DependencyToken.Auth);
-    app.use('/api/*', csrf({ origin: allowedOrigins }));
+    app.use('/api/*', csrfForFormPosts(allowedOrigins));
     app.on(['GET', 'POST'], '/api/auth/*', (c) => auth.handler(c.req.raw));
 };
 
