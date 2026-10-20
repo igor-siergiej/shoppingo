@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'bun:test';
 
-import '../../test-setup';
 import { IpRateLimiter } from '../../infrastructure/rateLimit';
 
 const mockDependencyContainer = {

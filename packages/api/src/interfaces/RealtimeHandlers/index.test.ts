@@ -1,7 +1,6 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'bun:test';
 import { Hono } from 'hono';
 
-import '../../test-setup';
 import { ListRealtimeHub } from '../../domain/ListRealtimeHub';
 import { WsTicketStore } from '../../domain/WsTicketStore';
 import { websocket } from '../../infrastructure/bunWebSocket';
