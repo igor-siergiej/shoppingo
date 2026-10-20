@@ -1,7 +1,6 @@
 import type { ListResponse } from '@shoppingo/types';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { deleteList, updateListName } from '../../api';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -13,12 +12,14 @@ import {
     AlertDialogTitle,
 } from '../../components/ui/alert-dialog';
 import { useConfirmation } from '../../hooks/useConfirmation';
+import { useListSource } from '../../hooks/useListSource';
 import { ListItem } from './ListItem';
 import type { ListsListProps } from './types';
 
 // fallow-ignore-next-line complexity
 const ListsList = ({ lists, refetch, currentUserId }: ListsListProps) => {
     const navigate = useNavigate();
+    const source = useListSource();
     const [editingList, setEditingList] = useState<string | null>(null);
     const [editValue, setEditValue] = useState<string>('');
     const { confirm, isOpen, config, handleConfirm, handleCancel } = useConfirmation();
@@ -31,7 +32,7 @@ const ListsList = ({ lists, refetch, currentUserId }: ListsListProps) => {
     const handleEditSave = async (list: ListResponse) => {
         if (editValue.trim() && editValue !== list.title) {
             try {
-                await updateListName(list.id, editValue.trim());
+                await source.renameList(list.id, editValue.trim());
                 refetch();
             } catch (error) {
                 console.error('Error updating list name:', error);
@@ -65,7 +66,7 @@ const ListsList = ({ lists, refetch, currentUserId }: ListsListProps) => {
                     description: `Are you sure you want to delete "${list.title}"? This action cannot be undone and all items will be permanently removed.`,
                     actionLabel: 'Delete List',
                     onConfirm: async () => {
-                        await deleteList(list.id);
+                        await source.deleteList(list.id);
                         refetch();
                     },
                 });

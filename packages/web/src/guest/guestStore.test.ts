@@ -95,6 +95,19 @@ describe('guestStore', () => {
         expect(guestStore.peekItems(list.id)[0].name).toBe('Pears');
     });
 
+    it('updateItemQuantity changes only the fields passed, and quantity and aisle survive a reload', async () => {
+        const list = await guestStore.createList({ title: 'A' });
+        const item = await guestStore.addItem({ listId: list.id, name: 'Milk', quantity: 1, unit: 'l' });
+
+        await guestStore.updateItemQuantity(item.id, { quantity: 2 });
+        await guestStore.updateItemCategory(item.id, 'dairy');
+        await guestStore.hydrate();
+
+        expect(guestStore.peekItems(list.id)[0]).toEqual(
+            expect.objectContaining({ quantity: 2, unit: 'l', category: 'dairy' })
+        );
+    });
+
     it('clearList keeps the list but drops its items', async () => {
         const list = await guestStore.createList({ title: 'A' });
         await guestStore.addItem({ listId: list.id, name: 'Apples' });

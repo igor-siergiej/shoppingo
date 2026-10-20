@@ -3,7 +3,7 @@ import { ListType as ListTypeEnum } from '@shoppingo/types';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { addItemsBulk, getListQuery, type SpokenItem } from '../../api';
+import { addItemsBulk, type SpokenItem } from '../../api';
 import { ConfirmationDialog } from '../../components/ConfirmationDialog';
 import { GroupByAisleToggle } from '../../components/GroupByAisleToggle';
 import ItemCheckBoxList from '../../components/ItemCheckBoxList';
@@ -11,10 +11,12 @@ import { ListViewers } from '../../components/ListViewers';
 import { ItemsSkeleton } from '../../components/LoadingSkeleton';
 import ToolBar from '../../components/ToolBar';
 import { usePullToRefreshContext } from '../../contexts/PullToRefreshContext';
+import { useGuest } from '../../guest/GuestContext';
 import { useConfirmation } from '../../hooks/useConfirmation';
 import { useGoBack } from '../../hooks/useGoBack';
 import { useGroupByAisle } from '../../hooks/useGroupByAisle';
 import { useItemPageMutations } from '../../hooks/useItemPageMutations';
+import { useListSource } from '../../hooks/useListSource';
 import { track } from '../../utils/analytics';
 import { logger } from '../../utils/logger';
 import { EmptyState } from './EmptyState';
@@ -28,9 +30,12 @@ const ItemsPage = () => {
     const [currentListType, setCurrentListType] = useState<ListType>(ListTypeEnum.SHOPPING);
     const [groupByAisle, toggleGroupByAisle] = useGroupByAisle();
     const { confirm, isOpen, config: confirmConfig, handleConfirm, handleCancel } = useConfirmation();
+    const { isGuest } = useGuest();
+    const source = useListSource();
 
     const { data, isLoading, isError, refetch } = useQuery({
-        ...getListQuery(listTitle),
+        ...source.listQuery(listTitle ?? ''),
+        enabled: !!listTitle,
     });
 
     const listType = data?.listType || ListTypeEnum.SHOPPING;
@@ -120,7 +125,7 @@ const ItemsPage = () => {
             {isError && !data && <ErrorState onRetry={() => void refetch()} />}
             {!isLoading && data && (
                 <div className="flex flex-col">
-                    <ListViewers listTitle={listTitle} />
+                    {!isGuest && <ListViewers listTitle={listTitle} />}
                     {isEmpty ? (
                         <EmptyState listType={currentListType} />
                     ) : (
@@ -141,7 +146,8 @@ const ItemsPage = () => {
 
             <ToolBar
                 onAddItem={handleAddItem}
-                onAddItems={handleAddItems}
+                // Voice parsing is an account-only AI call, so guests get the typed add only.
+                onAddItems={isGuest ? undefined : handleAddItems}
                 handleGoBack={handleGoBack}
                 handleClearSelected={handleClearSelected}
                 handleRemoveAll={handleClearList}

@@ -11,6 +11,7 @@ import {
 import { outboxStore } from './outboxStore';
 
 export interface ListItemsData {
+    title?: string;
     listType: ListType;
     items: Item[];
     users: Array<{ id: string; username: string }> | User[];

@@ -1,4 +1,4 @@
-import { ListType } from '@shoppingo/types';
+import { type ItemCategory, ListType } from '@shoppingo/types';
 import { type DBSchema, type IDBPDatabase, openDB } from 'idb';
 
 // Local-only store for guest sessions: lists and items are persisted in
@@ -20,6 +20,7 @@ export interface GuestItem {
     isSelected: boolean;
     quantity?: number;
     unit?: string;
+    category?: ItemCategory;
     createdAt: number;
     /** Monotonic counter for stable ordering when two items land in the same millisecond. */
     seq: number;
@@ -69,7 +70,10 @@ const assertFreeTitle = (title: string, ownId?: string): string => {
 };
 
 // Applies `patch` to one stored item, in IndexedDB and the mirror.
-const patchItem = async (itemId: string, patch: Partial<Pick<GuestItem, 'isSelected' | 'name'>>) => {
+const patchItem = async (
+    itemId: string,
+    patch: Partial<Pick<GuestItem, 'isSelected' | 'name' | 'quantity' | 'unit' | 'category'>>
+) => {
     const db = await getDB();
     const existing = await db.get(ITEMS_STORE, itemId);
     if (!existing) return;
@@ -141,9 +145,10 @@ export const guestStore = {
         return total;
     },
 
-    async createList(input: { title: string; listType?: ListType }): Promise<GuestList> {
+    /** `id` lets the caller key its optimistic row before the write lands, like the server flow. */
+    async createList(input: { id?: string; title: string; listType?: ListType }): Promise<GuestList> {
         const list: GuestList = {
-            id: crypto.randomUUID(),
+            id: input.id ?? crypto.randomUUID(),
             title: assertFreeTitle(input.title),
             listType: input.listType ?? ListType.SHOPPING,
             createdAt: Date.now(),
@@ -180,13 +185,19 @@ export const guestStore = {
     },
 
     // fallow-ignore-next-line complexity
-    async addItem(input: { listId: string; name: string; quantity?: number; unit?: string }): Promise<GuestItem> {
+    async addItem(input: {
+        id?: string;
+        listId: string;
+        name: string;
+        quantity?: number;
+        unit?: string;
+    }): Promise<GuestItem> {
         const name = input.name.trim();
         if (!name) throw new Error('Item name is required');
         const list = listsMirror.find((l) => l.id === input.listId);
         if (!list) throw new Error('List not found');
         const item: GuestItem = {
-            id: crypto.randomUUID(),
+            id: input.id ?? crypto.randomUUID(),
             listId: input.listId,
             name,
             isSelected: false,
@@ -210,6 +221,18 @@ export const guestStore = {
         const trimmed = name.trim();
         if (!trimmed) throw new Error('Item name is required');
         await patchItem(itemId, { name: trimmed });
+    },
+
+    /** Like the server, only the fields passed are changed. */
+    async updateItemQuantity(itemId: string, { quantity, unit }: { quantity?: number; unit?: string }): Promise<void> {
+        await patchItem(itemId, {
+            ...(quantity !== undefined && { quantity }),
+            ...(unit !== undefined && { unit }),
+        });
+    },
+
+    async updateItemCategory(itemId: string, category: ItemCategory): Promise<void> {
+        await patchItem(itemId, { category });
     },
 
     async deleteItem(itemId: string): Promise<void> {
