@@ -1,3 +1,10 @@
+# [1.109.0](https://github.com/igor-siergiej/shoppingo/compare/v1.108.1...v1.109.0) (2026-10-20)
+
+
+### Features
+
+* move the app to tandra.uk ([#270](https://github.com/igor-siergiej/shoppingo/issues/270)) ([ebe5fef](https://github.com/igor-siergiej/shoppingo/commit/ebe5fefa1ebd29d4b4234c780a66edb6f34d9161))
+
 ## [1.108.1](https://github.com/igor-siergiej/shoppingo/compare/v1.108.0...v1.108.1) (2026-10-20)
 
 

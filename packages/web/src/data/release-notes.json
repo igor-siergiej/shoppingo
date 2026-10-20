@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.109.0",
+    "date": "2026-10-20",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Shoppingo has moved to tandra.uk. Old links and installs send you there; reinstall the app from tandra.uk to keep getting notifications."
+      }
+    ]
+  },
+  {
     "version": "1.108.1",
     "date": "2026-10-20",
     "notes": [
