@@ -1,3 +1,10 @@
+# [1.108.0](https://github.com/igor-siergiej/shoppingo/compare/v1.107.3...v1.108.0) (2026-10-20)
+
+
+### Features
+
+* **web:** show the "Shoppingo has moved" banner to users forwarded from the old address ([#263](https://github.com/igor-siergiej/shoppingo/issues/263)) ([a5c0221](https://github.com/igor-siergiej/shoppingo/commit/a5c0221a26cc55cdd5d2a34903acab73cd3fb93d)), closes [shoppingo-site#6](https://github.com/shoppingo-site/issues/6)
+
 ## [1.107.3](https://github.com/igor-siergiej/shoppingo/compare/v1.107.2...v1.107.3) (2026-10-20)
 
 

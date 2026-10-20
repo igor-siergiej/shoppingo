@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.108.0",
+    "date": "2026-10-20",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "If you installed Shoppingo from its old address, the app now tells you to reinstall it from shoppingo-app.imapps.uk, with an install button where your browser supports one."
+      }
+    ]
+  },
+  {
     "version": "1.107.3",
     "date": "2026-10-20",
     "notes": [
