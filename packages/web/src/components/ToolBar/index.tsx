@@ -397,8 +397,8 @@ const ToolBar = ({
                 <VoiceAddDrawer open={isVoiceDrawerOpen} onOpenChange={setIsVoiceDrawerOpen} onAddMany={onAddItems} />
             )}
 
-            {/* ManageLabelsDrawer */}
-            <ManageLabelsDrawer open={isManageLabelsOpen} onOpenChange={setIsManageLabelsOpen} />
+            {/* ManageLabelsDrawer: labels are account data, and fetching them as a guest only fails. */}
+            {!isGuest && <ManageLabelsDrawer open={isManageLabelsOpen} onOpenChange={setIsManageLabelsOpen} />}
 
             {/* ManageUsersDrawer and Drawer backdrop */}
             {currentList && isItemsPage && (

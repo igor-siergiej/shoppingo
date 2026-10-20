@@ -1,11 +1,11 @@
 import type { ListType, User } from '@shoppingo/types';
 import { useQueryClient } from '@tanstack/react-query';
-import { drainOutbox } from '../offline/drainer';
-import { outboxStore } from '../offline/outboxStore';
 import { logger } from '../utils/logger';
+import { useListSource } from './useListSource';
 
 export const useCreateList = (user: User | undefined) => {
     const queryClient = useQueryClient();
+    const source = useListSource();
     return async (title: string, listType: ListType, selectedUsers: string[]) => {
         if (!user) {
             logger.warn('Attempted to add list without user');
@@ -23,16 +23,7 @@ export const useCreateList = (user: User | undefined) => {
                 { id, title, dateAdded: new Date(), items: [], users: [user], listType, ownerId: user.id },
             ];
         });
-        await outboxStore.enqueue({
-            id: crypto.randomUUID(),
-            entityType: 'list',
-            op: 'list.create',
-            targetId: id,
-            scope: user.id,
-            payload: { title, listType, selectedUsers, user, ownerId: user.id },
-            createdAt: Date.now(),
-        });
-        void drainOutbox();
+        await source.createList({ id, title, listType, selectedUsers, user });
         logger.info('List create queued', { listTitle: title, listType });
     };
 };

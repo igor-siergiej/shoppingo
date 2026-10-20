@@ -6,13 +6,18 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('../offline/drainer', () => ({ drainOutbox: vi.fn().mockResolvedValue(undefined) }));
 
+import { GuestProvider } from '../guest/GuestContext';
 import { outboxStore } from '../offline/outboxStore';
 import { useCreateList } from './useCreateList';
 
 const user = { id: 'user-1', username: 'me' };
 const wrap =
     (client: QueryClient) =>
-    ({ children }: { children: ReactNode }) => <QueryClientProvider client={client}>{children}</QueryClientProvider>;
+    ({ children }: { children: ReactNode }) => (
+        <QueryClientProvider client={client}>
+            <GuestProvider>{children}</GuestProvider>
+        </QueryClientProvider>
+    );
 
 describe('useCreateList', () => {
     beforeEach(async () => {

@@ -1,9 +1,7 @@
-import { useUser } from '@imapps/web-utils';
 import type { ListType } from '@shoppingo/types';
 import { useQuery } from '@tanstack/react-query';
 import { AlertTriangle, ListPlus } from 'lucide-react';
 import { useEffect } from 'react';
-import { getListsQuery } from '../../api';
 import ListsList from '../../components/ListsList';
 import { ListsSkeleton } from '../../components/LoadingSkeleton';
 import ToolBar from '../../components/ToolBar';
@@ -11,12 +9,14 @@ import { Button } from '../../components/ui/button';
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '../../components/ui/empty';
 import { usePullToRefreshContext } from '../../contexts/PullToRefreshContext';
 import { useCreateList } from '../../hooks/useCreateList';
+import { useListSource, useListUser } from '../../hooks/useListSource';
 import { logger } from '../../utils/logger';
 
 const ListsPage = () => {
-    const { user } = useUser();
+    const user = useListUser();
+    const source = useListSource();
     const { data, isLoading, isError, refetch } = useQuery({
-        ...getListsQuery(user?.id || ''),
+        ...source.listsQuery(user?.id || ''),
         enabled: !!user?.id,
     });
     const { registerRefresh } = usePullToRefreshContext();

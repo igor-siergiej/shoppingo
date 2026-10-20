@@ -1,13 +1,12 @@
 import type { Item, ListType } from '@shoppingo/types';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { clearList, clearSelected } from '../api';
-import { drainOutbox } from '../offline/drainer';
-import { outboxStore } from '../offline/outboxStore';
 import { track } from '../utils/analytics';
 import { logger } from '../utils/logger';
+import { useListSource } from './useListSource';
 
 export const useItemPageMutations = (listTitle?: string) => {
     const queryClient = useQueryClient();
+    const source = useListSource();
 
     const addItemMutation = useMutation({
         // `id` is chosen by the caller so the optimistic cache entry and the queued intent share it;
@@ -23,20 +22,7 @@ export const useItemPageMutations = (listTitle?: string) => {
             quantity?: number;
             unit?: string;
         }) => {
-            await outboxStore.enqueue({
-                id: crypto.randomUUID(),
-                entityType: 'item',
-                op: 'item.add',
-                targetId: id,
-                scope: listTitle ?? '',
-                payload: {
-                    name: itemName,
-                    ...(quantity !== undefined && { quantity }),
-                    ...(unit !== undefined && { unit }),
-                },
-                createdAt: Date.now(),
-            });
-            void drainOutbox();
+            await source.addItem(listTitle ?? '', { id, name: itemName, quantity, unit });
             return id;
         },
         onMutate: async ({ id, itemName, quantity, unit }) => {
@@ -76,7 +62,7 @@ export const useItemPageMutations = (listTitle?: string) => {
     });
 
     const clearSelectedMutation = useMutation({
-        mutationFn: () => clearSelected(listTitle),
+        mutationFn: () => source.clearSelected(listTitle ?? ''),
         onMutate: async () => {
             await queryClient.cancelQueries({ queryKey: [listTitle] });
             const previousData = queryClient.getQueryData<{ listType: ListType; items: Item[] }>([listTitle]);
@@ -102,7 +88,7 @@ export const useItemPageMutations = (listTitle?: string) => {
     });
 
     const clearListMutation = useMutation({
-        mutationFn: () => clearList(listTitle),
+        mutationFn: () => source.clearList(listTitle ?? ''),
         onMutate: async () => {
             await queryClient.cancelQueries({ queryKey: [listTitle] });
             const previousData = queryClient.getQueryData<{ listType: ListType; items: Item[] }>([listTitle]);

@@ -15,6 +15,7 @@ import {
 import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
 import { RippleButton } from '../../../components/ui/ripple';
+import { useGuest } from '../../../guest/GuestContext';
 import { FriendPicker } from '../../FriendPicker';
 
 export interface AddListDrawerProps {
@@ -30,6 +31,8 @@ export const AddListDrawer = ({ open, onOpenChange, onAdd, placeholder }: AddLis
     const [shareWith, setShareWith] = useState<string[]>([]);
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    // Sharing needs an account (and friends), so guests only name the list.
+    const { isGuest } = useGuest();
 
     const handleSubmit = async () => {
         const trimmedName = newName.trim();
@@ -102,10 +105,12 @@ export const AddListDrawer = ({ open, onOpenChange, onAdd, placeholder }: AddLis
                             {error && <p className="text-sm text-destructive">{error}</p>}
                         </div>
 
-                        <div className="space-y-2">
-                            <Label>Share with</Label>
-                            <FriendPicker value={shareWith} onChange={setShareWith} seedAllByDefault />
-                        </div>
+                        {!isGuest && (
+                            <div className="space-y-2">
+                                <Label>Share with</Label>
+                                <FriendPicker value={shareWith} onChange={setShareWith} seedAllByDefault />
+                            </div>
+                        )}
                     </div>
                     <DrawerFooter>
                         <Button onClick={handleSubmit} disabled={isLoading}>
