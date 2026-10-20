@@ -51,7 +51,7 @@ Run these from the root directory:
 - `bun run --filter @shoppingo/api test` - Run API tests (Bun native test runner). CI also enforces 90% line and function coverage via `scripts/check-coverage.js` on the lcov report (bun's own `coverageThreshold` is per file, so it can't express a global gate)
 - `bun run --filter @shoppingo/web test` - Run web component tests (Vitest). No coverage gate: the web package has no coverage provider installed and the e2e suite is the main safety net for UI; add `@vitest/coverage-v8` and a threshold if that changes
 - `bun run load:local` - On-demand k6 API capacity test against a throwaway local API/DB with a mock auth verifier (not in CI; see `scripts/load/README.md`)
-- API and script tests use Bun's native runner: import from `bun:test` (module mocks leak across files in one run, so prefer injecting dependencies). Web tests use Vitest (`vitest`).
+- API and script tests use Bun's native runner: import from `bun:test`. The API `test` scripts pass `--isolate`, so `mock.module`/`vi.mock` and spies on shared singletons (e.g. `config`) can't leak into other files; script tests (`bun run test:scripts`) aren't isolated, so prefer injecting dependencies there. Web tests use Vitest (`vitest`).
 - `bun run tsc --noEmit` does not actually type-check (the tsconfigs only hold project references), so rely on the editor or run `tsc -p` against a concrete tsconfig when touching types
 
 ## Environment Setup
