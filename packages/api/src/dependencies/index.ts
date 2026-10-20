@@ -26,7 +26,6 @@ import { TodoService } from '../domain/TodoService';
 import { WikibooksIngestService } from '../domain/WikibooksIngest';
 import { WikibooksCoverService } from '../domain/WikibooksIngest/cover';
 import { WsTicketStore } from '../domain/WsTicketStore';
-import { HttpAuthClient } from '../infrastructure/AuthClient';
 import { BucketStore } from '../infrastructure/BucketStore';
 import { CachedIngredientSubstituter } from '../infrastructure/CachedIngredientSubstituter';
 import { FalImageGenerator } from '../infrastructure/FalImageGenerator';
@@ -80,7 +79,6 @@ export const registerDepdendencies = () => {
     dependencyContainer.registerSingleton(DependencyToken.Database, MongoDbConnection);
     dependencyContainer.registerSingleton(DependencyToken.Logger, Logger);
     dependencyContainer.registerSingleton(DependencyToken.Bucket, ObjectStoreConnection);
-    dependencyContainer.registerSingleton(DependencyToken.AuthClient, HttpAuthClient);
     dependencyContainer.registerSingleton(DependencyToken.IdGenerator, UuidGenerator);
     dependencyContainer.registerSingleton(DependencyToken.AuthorizationService, AuthorizationService);
     dependencyContainer.registerSingleton(DependencyToken.ListRealtimeHub, ListRealtimeHub);
@@ -124,7 +122,6 @@ export const registerDepdendencies = () => {
             new ListService(
                 dependencyContainer.resolve(DependencyToken.ListRepository),
                 dependencyContainer.resolve(DependencyToken.IdGenerator),
-                dependencyContainer.resolve(DependencyToken.AuthClient),
                 dependencyContainer.resolve(DependencyToken.Logger),
                 dependencyContainer.resolve(DependencyToken.AuthorizationService),
                 dependencyContainer.resolve(DependencyToken.NotificationService),
@@ -169,7 +166,6 @@ export const registerDepdendencies = () => {
                 dependencyContainer.resolve(DependencyToken.Logger),
                 dependencyContainer.resolve(DependencyToken.AuthorizationService),
                 dependencyContainer.resolve(DependencyToken.RecipeImageService),
-                dependencyContainer.resolve(DependencyToken.AuthClient),
                 dependencyContainer.resolve(DependencyToken.FriendService),
                 dependencyContainer.resolve(DependencyToken.RecipeTagger),
                 dependencyContainer.resolve(DependencyToken.IngredientSubstituter)

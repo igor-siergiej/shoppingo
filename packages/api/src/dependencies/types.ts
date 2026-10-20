@@ -35,7 +35,6 @@ import type { ListInviteService } from '../domain/ListInviteService';
 import type { ListRealtimeHub } from '../domain/ListRealtimeHub';
 import type { ListRepository } from '../domain/ListRepository';
 import type { ListService } from '../domain/ListService';
-import type { AuthClient } from '../domain/ListService/types';
 import type { MealPlanRepository } from '../domain/MealPlanRepository';
 import type { MealPlanService } from '../domain/MealPlanService';
 import type { NotificationService } from '../domain/NotificationService';
@@ -82,7 +81,6 @@ export enum DependencyToken {
     ListRepository = 'ListRepository',
     ListService = 'ListService',
     RecipeService = 'RecipeService',
-    AuthClient = 'AuthClient',
     AuthorizationService = 'AuthorizationService',
     ImageStore = 'ImageStore',
     ImageGenerator = 'ImageGenerator',
@@ -141,7 +139,6 @@ export type Dependencies = {
     [DependencyToken.ListRepository]: ListRepository;
     [DependencyToken.ListService]: ListService;
     [DependencyToken.RecipeService]: RecipeService;
-    [DependencyToken.AuthClient]: AuthClient;
     [DependencyToken.AuthorizationService]: AuthorizationService;
     [DependencyToken.ImageStore]: ImageStore;
     [DependencyToken.ImageGenerator]: ImageGenerator;

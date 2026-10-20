@@ -10,7 +10,6 @@ import type { ListRepository } from '../ListRepository';
 import type { NotificationService } from '../NotificationService';
 import { resolveFriendMembers } from '../SharedMembers';
 import { isMergeableIngredient, resolveMergedQuantity, resolveMergedUnit } from './ingredientMatching';
-import type { AuthClient } from './types';
 
 // How many times a contended list write is re-read and retried before giving up.
 const MAX_WRITE_ATTEMPTS = 8;
@@ -29,7 +28,6 @@ export class ListService {
     constructor(
         private readonly repo: ListRepository,
         private readonly idGenerator: IdGenerator,
-        readonly _auth?: AuthClient,
         private readonly logger?: Logger,
         authorizationService?: AuthorizationService,
         private readonly notificationService?: NotificationService,

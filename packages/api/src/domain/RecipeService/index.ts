@@ -7,10 +7,6 @@ import type { RecipeImageService } from '../RecipeImageService';
 import type { RecipeRepository } from '../RecipeRepository';
 import { resolveFriendMembers } from '../SharedMembers';
 
-interface AuthClient {
-    getUsersByUsernames(usernames: Array<string>): Promise<Array<User>>;
-}
-
 interface RecipeTagger {
     generateTags(title: string, ingredients: Ingredient[], instructions?: string[]): Promise<string[]>;
 }
@@ -43,7 +39,6 @@ export class RecipeService {
         private logger?: Logger,
         authorizationService?: AuthorizationService,
         private recipeImageService?: RecipeImageService,
-        readonly _auth?: AuthClient,
         private readonly friendService?: FriendService,
         private readonly tagger?: RecipeTagger,
         private readonly substituter?: IngredientSubstituter
