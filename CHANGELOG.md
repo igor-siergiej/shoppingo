@@ -1,3 +1,10 @@
+## [1.107.3](https://github.com/igor-siergiej/shoppingo/compare/v1.107.2...v1.107.3) (2026-10-20)
+
+
+### Bug Fixes
+
+* **web:** quick taps on the meal plan portions stepper no longer lose an increment ([#264](https://github.com/igor-siergiej/shoppingo/issues/264)) ([54a76e5](https://github.com/igor-siergiej/shoppingo/commit/54a76e580dad0db7fce417dd028efc23d23887cb))
+
 ## [1.107.2](https://github.com/igor-siergiej/shoppingo/compare/v1.107.1...v1.107.2) (2026-10-20)
 
 

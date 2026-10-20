@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.107.3",
+    "date": "2026-10-20",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Tapping + or − quickly on a planned recipe's portions now counts every tap, even on a slow connection."
+      }
+    ]
+  },
+  {
     "version": "1.107.2",
     "date": "2026-10-20",
     "notes": [
