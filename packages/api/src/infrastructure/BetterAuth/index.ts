@@ -2,7 +2,11 @@ import { type Auth as BetterAuth, type BetterAuthOptions, betterAuth } from 'bet
 import { APIError, createAuthMiddleware } from 'better-auth/api';
 import { username } from 'better-auth/plugins';
 
-export const PLACEHOLDER_EMAIL_DOMAIN = 'users.invalid';
+// Reserved TLD that never routes (RFC 2606). Password users get `<uuid>@<this>` so Better
+// Auth's `user.email` constraint is satisfied without ever accepting a real address:
+// keeping any real email out of the row is what stops an unverified password sign-up from
+// later locking a Google user out via `account_not_linked`.
+const PLACEHOLDER_EMAIL_DOMAIN = 'users.invalid';
 
 export interface AuthOptions {
     database: BetterAuthOptions['database'];

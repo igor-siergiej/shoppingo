@@ -156,14 +156,24 @@ export const createRoutes = (): Hono<Vars> => {
     // Resolved lazily through the DI container on each request (its first lookup resolves the
     // Auth singleton; subsequent calls hit the cached container entry). Returns undefined when
     // Better Auth is not configured.
-    const resolveBetterAuthSessionCookieName = async (): Promise<string | undefined> => {
+    const betterAuthSessionCookieName = async (): Promise<string | undefined> => {
+        const auth: Auth | undefined = await resolveBetterAuth();
+        return auth ? (await auth.$context).authCookies?.sessionToken?.name : undefined;
+    };
+
+    const resolveBetterAuth = async (): Promise<Auth | undefined> => {
         try {
-            const auth: Auth = dependencyContainer.resolve(DependencyToken.Auth);
-            const ctx = await auth.$context;
-            return ctx.authCookies?.sessionToken?.name;
+            return dependencyContainer.resolve(DependencyToken.Auth);
         } catch {
             return undefined;
         }
+    };
+
+    const hasAnyAuthCredential = async (c: Context<Vars>): Promise<boolean> => {
+        if (c.req.header('authorization')) return true;
+        const cookieName = await betterAuthSessionCookieName();
+        const cookieHeader = c.req.header('cookie') ?? '';
+        return cookieName ? cookieHeader.includes(`${cookieName}=`) : false;
     };
 
     const conditionalImageAuth = async (c: Context<Vars>, next: Next) => {
@@ -175,10 +185,7 @@ export const createRoutes = (): Hono<Vars> => {
         // who is paying for a generation. Accept either a kivo `authorization` header or Better
         // Auth's session cookie; softAuthenticate avoids 401 (it just resolves the user when one
         // is present).
-        const sessionCookieName = await resolveBetterAuthSessionCookieName();
-        const cookieHeader = c.req.header('cookie') ?? '';
-        const hasCookie = sessionCookieName ? cookieHeader.includes(`${sessionCookieName}=`) : false;
-        if (!c.req.header('authorization') && !hasCookie) {
+        if (!(await hasAnyAuthCredential(c))) {
             return next();
         }
         await softAuthenticate(c);

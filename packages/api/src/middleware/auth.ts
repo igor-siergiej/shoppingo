@@ -177,7 +177,6 @@ export const authenticate = async (c: Context<AuthVariables>, next: Next) => {
 
 // Re-exported so callers (e.g. `conditionalImageAuth` in routes/index.ts) can soft-authenticate
 // when they want to honour either path without ever returning 401.
-// fallow-ignore-next-line unused-export
 export const softAuthenticate = async (c: Context<AuthVariables>): Promise<AuthUser | undefined> => {
     const sessionUser = await resolveBetterAuthSession(c);
     if (sessionUser instanceof Response) return undefined;
@@ -187,14 +186,5 @@ export const softAuthenticate = async (c: Context<AuthVariables>): Promise<AuthU
     if (!authHeader || !authHeader.startsWith('Bearer ')) return undefined;
     const key = cacheKey(authHeader);
     const cachedUser = readCache(key);
-    if (cachedUser) return cachedUser;
-    // The full kivo roundtrip is kept inside `authenticateKivoBearer`; `softAuthenticate` callers
-    // (image auth) cannot surface a 401, so they silently fall back to anonymous when kivo fails.
-    // fallow-ignore-next-line typescript/no-explicit-any
-    const stub = {} as Context<AuthVariables>;
-    let captured: AuthUser | undefined;
-    await authenticateKivoBearer(stub, async () => {
-        captured = stub.get?.('user');
-    }).catch(() => undefined);
-    return captured;
+    return cachedUser;
 };
