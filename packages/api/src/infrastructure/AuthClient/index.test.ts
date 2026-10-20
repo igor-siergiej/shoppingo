@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
 import type { User } from '@shoppingo/types';
 
-import '../../test-setup';
 import { HttpAuthClient } from './index';
 
 class MockConfig {

@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'bun:test';
 import type { Context } from 'hono';
 
-import '../test-setup';
 import { config } from '../config';
 import { authenticate, clearVerifyCache } from './auth';
 

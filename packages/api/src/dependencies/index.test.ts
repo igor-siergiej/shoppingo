@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'bun:test';
 
-import '../test-setup';
 import { dependencyContainer, registerDepdendencies } from './index';
 import { DependencyToken } from './types';
 
