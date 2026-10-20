@@ -6,6 +6,8 @@
 
 const MARKER_PARAM = 'moved';
 const PENDING_KEY = 'shoppingo:site-move-pending';
+// Per window: set when this window was opened through the forward, i.e. by the old install.
+const FORWARDED_KEY = 'shoppingo:site-move-forwarded';
 
 /**
  * Runs before the router is created: the forwarded URL is `/?moved=1`, and the auth redirect to
@@ -21,8 +23,22 @@ export const captureSiteMoveMarker = () => {
 
     try {
         localStorage.setItem(PENDING_KEY, '1');
+        sessionStorage.setItem(FORWARDED_KEY, '1');
     } catch {
         // Storage blocked: the banner can't be remembered, so it isn't shown.
+    }
+};
+
+/**
+ * True when this window was opened through the forward from the old address. The old install
+ * shows this address out of its scope in an app window, which reports `display-mode: standalone`
+ * just like a new install does; the new install opens this address directly and never has it.
+ */
+export const wasForwardedFromOldAddress = () => {
+    try {
+        return sessionStorage.getItem(FORWARDED_KEY) === '1';
+    } catch {
+        return false;
     }
 };
 
