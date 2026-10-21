@@ -107,6 +107,18 @@ describe('registerSchema', () => {
                 expect(result.data.username).toBe('alice');
             }
         });
+
+        it('accepts letters, digits, underscores and dots', () => {
+            expect(registerSchema.safeParse({ ...valid, username: 'Mari_Lou.2' }).success).toBe(true);
+        });
+
+        it.each(['mari-lou', 'mari lou', 'mari@example.com'])('rejects %s, which the server refuses', (username) => {
+            const result = registerSchema.safeParse({ ...valid, username });
+            expect(result.success).toBe(false);
+            if (!result.success) {
+                expect(result.error.issues[0].message).toBe('Use only letters, numbers, underscores and dots');
+            }
+        });
     });
 });
 
