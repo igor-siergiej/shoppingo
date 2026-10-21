@@ -16,7 +16,7 @@ withdrawn (via `AbortSignal`) on sign-out.
 
 ## Origin trial token
 
-WebMCP is an origin trial in Chrome 149+. Register `https://tandra.uk` for the trial, then build the
+WebMCP is an origin trial in Chrome 149+. Register `https://app.tandra.uk` for the trial, then build the
 web image with the token:
 
 ```
@@ -27,9 +27,9 @@ The token is injected as an `origin-trial` meta tag **only in production builds*
 builds without the variable add nothing, and browsers without WebMCP are unaffected.
 
 > Trial tokens are per origin. The app moved from `https://shoppingo.imapps.uk` to
-> `https://shoppingo-app.imapps.uk` (#82) and then to `https://tandra.uk`; the old hosts only
-> serve the landing site or a redirect, so a token issued for either of them has no effect and
-> must be replaced by one for `https://tandra.uk`.
+> `https://shoppingo-app.imapps.uk` (#82), then to `https://tandra.uk` and then to
+> `https://app.tandra.uk`; the old hosts only serve the landing site or a redirect, so a token
+> issued for any of them has no effect and must be replaced by one for `https://app.tandra.uk`.
 
 ## Verifying manually
 

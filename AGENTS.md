@@ -168,9 +168,9 @@ The project uses shared packages published to GitHub Packages (migration to publ
 
 ## Deployment & Infrastructure
 Production runs as Dokploy swarm apps (`shoppingo-web`, `shoppingo-api`) on the `foundry` homelab, behind the Cloudflare tunnel:
-- **App**: `https://tandra.uk` (Traefik: `/api/*` to the api, rest to web). Auth is kivo at `https://kivo.tandra.uk` (same site as the app, which kivo's `SameSite=Strict` refresh cookie needs)
-- **Old app host**: `shoppingo-app.imapps.uk` 301s to `tandra.uk` from `packages/web/nginx.conf`, which also serves a service worker that retires the old install
-- **Landing site**: `https://shoppingo.imapps.uk` (separate `shoppingo-site` repo, CloudFront)
+- **App**: `https://app.tandra.uk` (Traefik: `/api/*` to the api, rest to web). Auth is kivo at `https://kivo.tandra.uk` (same site as the app, which kivo's `SameSite=Strict` refresh cookie needs)
+- **Old app hosts**: `shoppingo-app.imapps.uk` 301s to `app.tandra.uk` from `packages/web/nginx.conf`, which also serves a service worker that retires the old install. The `tandra.uk` apex served the app until it moved to `app.tandra.uk`; the landing site's edge function now redirects its old app paths
+- **Landing site**: `https://tandra.uk` (separate `shoppingo-site` repo, CloudFront)
 - See the README "CI/CD" section and `docs/homelab.md` in the `foundry` repo for the full map
 
 ## CI/CD Pipeline (`.github/workflows/ci-cd.yml`)
