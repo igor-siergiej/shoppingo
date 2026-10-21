@@ -6,7 +6,8 @@ import AppInitializer from './index';
 
 const authState = { isAuthenticated: false, isLoading: true, logout: vi.fn(async () => {}) };
 
-vi.mock('../../auth', () => ({ useAuth: () => authState }));
+const refreshSession = vi.fn(async () => null);
+vi.mock('../../auth', () => ({ useAuth: () => authState, useRefreshSession: () => refreshSession }));
 
 vi.mock('../../hooks/usePWA', () => ({
     usePWA: vi.fn(() => ({ isUpdating: false })),
@@ -28,6 +29,7 @@ const renderApp = () =>
                 <Routes>
                     <Route path="/lists" element={<AppInitializer>Test Content</AppInitializer>} />
                     <Route path="/login" element={<p>Login screen</p>} />
+                    <Route path="/choose-username" element={<p>Choose a username</p>} />
                 </Routes>
             </MemoryRouter>
         </QueryClientProvider>
@@ -90,5 +92,18 @@ describe('AppInitializer', () => {
 
         expect(authState.logout).not.toHaveBeenCalled();
         expect(screen.getByText('Test Content')).toBeInTheDocument();
+    });
+
+    it('re-reads the session and asks for a username when the api requires one', async () => {
+        Object.assign(authState, { isAuthenticated: true, isLoading: false });
+        refreshSession.mockClear();
+        renderApp();
+
+        await act(async () => {
+            window.dispatchEvent(new CustomEvent('auth:username-required'));
+        });
+
+        expect(refreshSession).toHaveBeenCalledTimes(1);
+        expect(screen.getByText('Choose a username')).toBeInTheDocument();
     });
 });

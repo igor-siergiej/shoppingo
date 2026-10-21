@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../auth';
+import { useAuth, useRefreshSession } from '../../auth';
 import { usePWA } from '../../hooks/usePWA';
 import { onIntentsDiscarded, startDrainer } from '../../offline/drainer';
 import { outboxStore } from '../../offline/outboxStore';
@@ -16,6 +16,7 @@ interface AppInitializerProps {
 const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
     const [timeoutReached, setTimeoutReached] = useState(false);
     const { isAuthenticated, isLoading, logout } = useAuth();
+    const refreshSession = useRefreshSession();
     const navigate = useNavigate();
     const { isUpdating } = usePWA();
     const queryClient = useQueryClient();
@@ -55,6 +56,20 @@ const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
             window.removeEventListener('auth:session-expired', handleSessionExpired);
         };
     }, [logout, navigate]);
+
+    useEffect(() => {
+        // The api refuses app routes to a signed-in user with no username yet. Re-read the session so the
+        // choose-username page sees `needsUsername`, then send them there.
+        const handleUsernameRequired = () => {
+            void refreshSession().then(() => navigate('/choose-username', { replace: true }));
+        };
+
+        window.addEventListener('auth:username-required', handleUsernameRequired);
+
+        return () => {
+            window.removeEventListener('auth:username-required', handleUsernameRequired);
+        };
+    }, [refreshSession, navigate]);
 
     return (
         <AnimatePresence mode="wait">

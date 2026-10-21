@@ -12,6 +12,10 @@ vi.mock('./RegisterFormFields', () => ({
     RegisterFormFields: () => <div data-testid="form-fields">Register Fields</div>,
 }));
 
+vi.mock('../GoogleButton', () => ({
+    GoogleButton: () => <button type="button">Continue with Google</button>,
+}));
+
 describe('RegisterForm', () => {
     beforeEach(() => {
         mockUseRegisterForm.mockReturnValue({
@@ -47,6 +51,11 @@ describe('RegisterForm', () => {
         expect(submitButton).toHaveAttribute('type', 'submit');
     });
 
+    it('offers Google sign-in', () => {
+        render(<RegisterForm />);
+        expect(screen.getByRole('button', { name: 'Continue with Google' })).toBeInTheDocument();
+    });
+
     it('disables button when submitting', () => {
         mockUseRegisterForm.mockReturnValue({
             register: vi.fn(),
@@ -61,7 +70,7 @@ describe('RegisterForm', () => {
 
         render(<RegisterForm />);
 
-        const submitButton = screen.getByRole('button');
+        const submitButton = screen.getByRole('button', { name: 'Creating Account...' });
         expect(submitButton).toBeDisabled();
     });
 

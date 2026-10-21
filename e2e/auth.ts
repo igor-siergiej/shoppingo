@@ -21,7 +21,7 @@ export const spreadAuthRateLimit = (page: Page) =>
     );
 
 /** Signs `user` in against the api and returns the session cookie as `name=value`. */
-export const signInCookie = async (user: User = MOCK_USER): Promise<{ name: string; value: string }> => {
+const signInCookie = async (user: User = MOCK_USER): Promise<{ name: string; value: string }> => {
     const res = await fetch(`${API_BASE}/api/auth/sign-in/username`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Origin: WEB_ORIGIN, 'X-Forwarded-For': nextClientIp() },

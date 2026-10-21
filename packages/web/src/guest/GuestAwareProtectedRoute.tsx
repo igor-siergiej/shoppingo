@@ -1,6 +1,6 @@
 import { type ReactNode, useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { ProtectedRoute, useAuth } from '../auth';
+import { ProtectedRoute, useAuth, useUser } from '../auth';
 import LoadingPage from '../components/LoadingPage';
 import { useGuest } from './GuestContext';
 
@@ -9,11 +9,16 @@ interface GuestAwareProtectedRouteProps {
 }
 
 // Routes wrapped by this component accept either an authenticated session or
-// an active guest session. Logged-out visitors are bounced to /login.
+// an active guest session. Logged-out visitors are bounced to /login; a
+// signed-in user who has not picked a username yet (fresh Google sign-up) is
+// sent to pick one first.
 export const GuestAwareProtectedRoute = ({ children }: GuestAwareProtectedRouteProps) => {
     const { isAuthenticated } = useAuth();
+    const { needsUsername } = useUser();
     const { isGuest } = useGuest();
     const location = useLocation();
+
+    if (needsUsername) return <Navigate to="/choose-username" replace />;
 
     if (isAuthenticated || isGuest) {
         return <>{children}</>;
@@ -27,7 +32,10 @@ export const GuestAwareProtectedRoute = ({ children }: GuestAwareProtectedRouteP
 // log in, so the page never silently fails for them.
 export const RequireAuth = ({ children }: { children: ReactNode }) => {
     const { isAuthenticated } = useAuth();
+    const { needsUsername } = useUser();
     const { isGuest } = useGuest();
+
+    if (needsUsername) return <Navigate to="/choose-username" replace />;
 
     if (isAuthenticated) {
         return <>{children}</>;

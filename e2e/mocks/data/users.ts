@@ -9,8 +9,3 @@ export const PASSWORDS: Record<string, string> = {
     testuser: 'password123',
     otheruser: 'password123',
 };
-
-export const makeUser = (overrides?: Partial<User>): User => ({
-    ...MOCK_USER,
-    ...overrides,
-});

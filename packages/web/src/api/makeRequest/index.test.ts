@@ -31,4 +31,36 @@ describe('makeRequest', () => {
 
         window.removeEventListener('auth:session-expired', expired);
     });
+
+    it('announces a missing username on 403 username_required', async () => {
+        vi.stubGlobal(
+            'fetch',
+            vi.fn(async () => new Response('{"error":"username_required"}', { status: 403 }))
+        );
+        const required = vi.fn();
+        window.addEventListener('auth:username-required', required);
+
+        await expect(
+            makeRequest({ pathname: '/api/lists', method: 'GET', operationString: 'get lists' } as never)
+        ).rejects.toMatchObject({ message: 'username_required', status: 403 });
+        expect(required).toHaveBeenCalledTimes(1);
+
+        window.removeEventListener('auth:username-required', required);
+    });
+
+    it('treats any other 403 as a plain error', async () => {
+        vi.stubGlobal(
+            'fetch',
+            vi.fn(async () => new Response('{"error":"Forbidden"}', { status: 403 }))
+        );
+        const required = vi.fn();
+        window.addEventListener('auth:username-required', required);
+
+        await expect(
+            makeRequest({ pathname: '/api/lists', method: 'GET', operationString: 'get lists' } as never)
+        ).rejects.toMatchObject({ message: 'Forbidden', status: 403 });
+        expect(required).not.toHaveBeenCalled();
+
+        window.removeEventListener('auth:username-required', required);
+    });
 });

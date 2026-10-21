@@ -17,16 +17,23 @@ vi.mock('../../guest/GuestContext', () => ({
     }),
 }));
 
+let searchParams = new URLSearchParams();
 vi.mock('react-router-dom', () => ({
     useNavigate: () => vi.fn(),
+    useSearchParams: () => [searchParams],
 }));
 
 vi.mock('./LoginFormFields', () => ({
     LoginFormFields: () => <div data-testid="form-fields">Form Fields</div>,
 }));
 
+vi.mock('../GoogleButton', () => ({
+    GoogleButton: () => <button type="button">Continue with Google</button>,
+}));
+
 describe('LoginForm', () => {
     beforeEach(() => {
+        searchParams = new URLSearchParams();
         mockUseLoginForm.mockReturnValue({
             register: vi.fn(),
             handleSubmit: (fn: (data: unknown) => void) => (e: Event) => {
@@ -100,5 +107,22 @@ describe('LoginForm', () => {
 
         const signUpLink = screen.getByRole('link', { name: /sign up/i });
         expect(signUpLink).toHaveAttribute('href', '/register');
+    });
+
+    it('offers Google sign-in', () => {
+        render(<LoginForm />);
+        expect(screen.getByRole('button', { name: 'Continue with Google' })).toBeInTheDocument();
+    });
+
+    it('explains a Google sign-in that came back with an error', () => {
+        searchParams = new URLSearchParams('error=access_denied');
+        render(<LoginForm />);
+        expect(screen.getByText('Google sign-in was cancelled.')).toBeInTheDocument();
+    });
+
+    it('falls back to a general message for unknown Google errors', () => {
+        searchParams = new URLSearchParams('error=something_new');
+        render(<LoginForm />);
+        expect(screen.getByText("Couldn't sign in with Google. Please try again.")).toBeInTheDocument();
     });
 });

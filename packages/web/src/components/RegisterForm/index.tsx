@@ -1,6 +1,7 @@
 import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 import { useRegisterForm } from '../../hooks/useRegisterForm';
+import { GoogleButton } from '../GoogleButton';
 import { RegisterFormFields } from './RegisterFormFields';
 
 export function RegisterForm({ className, ...props }: React.ComponentProps<'div'>) {
@@ -28,6 +29,7 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<'div'
                                 <Button type="submit" className="w-full" disabled={isSubmitting}>
                                     {isSubmitting ? 'Creating Account...' : 'Create Account'}
                                 </Button>
+                                <GoogleButton />
                             </div>
                         </div>
 

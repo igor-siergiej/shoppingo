@@ -9,6 +9,12 @@ export interface AiFeatures {
     recipeTagger: boolean;
 }
 
+export interface AuthFeatures {
+    googleSignIn: boolean;
+}
+
+type ServerFeatures = AiFeatures & AuthFeatures;
+
 // fallow-ignore-next-line unused-export
 export const DEFAULT_AI_FEATURES: AiFeatures = {
     imageGeneration: false,
@@ -19,24 +25,26 @@ export const DEFAULT_AI_FEATURES: AiFeatures = {
     recipeTagger: false,
 };
 
-let cached: { value: AiFeatures } | null = null;
-let inflight: Promise<AiFeatures> | null = null;
+const DEFAULT_FEATURES: ServerFeatures = { ...DEFAULT_AI_FEATURES, googleSignIn: false };
 
-const fetchFeatures = async (): Promise<AiFeatures> => {
+let cached: { value: ServerFeatures } | null = null;
+let inflight: Promise<ServerFeatures> | null = null;
+
+const fetchFeatures = async (): Promise<ServerFeatures> => {
     if (cached) return cached.value;
     if (inflight) return inflight;
     inflight = (async () => {
         try {
             const res = await fetch('/api/features');
             if (!res.ok) {
-                return DEFAULT_AI_FEATURES;
+                return DEFAULT_FEATURES;
             }
-            const data = (await res.json()) as Partial<AiFeatures>;
-            const merged: AiFeatures = { ...DEFAULT_AI_FEATURES, ...data };
+            const data = (await res.json()) as Partial<ServerFeatures>;
+            const merged: ServerFeatures = { ...DEFAULT_FEATURES, ...data };
             cached = { value: merged };
             return merged;
         } catch {
-            return DEFAULT_AI_FEATURES;
+            return DEFAULT_FEATURES;
         } finally {
             inflight = null;
         }
@@ -44,14 +52,8 @@ const fetchFeatures = async (): Promise<AiFeatures> => {
     return inflight;
 };
 
-/**
- * Reports which AI features the API has wired. When FAL_KEY is empty the
- * server returns all-false; the hook then drives hiding of the import-by-link
- * button, the recipe/image generator and the ingredient-substitutes popover,
- * with a short "Not available on this server" note.
- */
-export const useAiFeatures = (): AiFeatures => {
-    const [features, setFeatures] = useState<AiFeatures>(() => cached?.value ?? DEFAULT_AI_FEATURES);
+const useServerFeatures = (): ServerFeatures => {
+    const [features, setFeatures] = useState<ServerFeatures>(() => cached?.value ?? DEFAULT_FEATURES);
     useEffect(() => {
         let cancelled = false;
         fetchFeatures().then((value) => {
@@ -63,3 +65,14 @@ export const useAiFeatures = (): AiFeatures => {
     }, []);
     return features;
 };
+
+/**
+ * Reports which AI features the API has wired. When FAL_KEY is empty the
+ * server returns all-false; the hook then drives hiding of the import-by-link
+ * button, the recipe/image generator and the ingredient-substitutes popover,
+ * with a short "Not available on this server" note.
+ */
+export const useAiFeatures = (): AiFeatures => useServerFeatures();
+
+/** Reports which sign-in options the API offers: Google only when `GOOGLE_CLIENT_ID`/`_SECRET` are set. */
+export const useAuthFeatures = (): AuthFeatures => useServerFeatures();
