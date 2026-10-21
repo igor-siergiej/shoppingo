@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 # Compose the local-only dev stack:
-#   - Mongo + RustFS (S3-compatible object store) from selfhost/docker-compose (dev infra only — no api/web/kivo images)
-#   - Self-hosted mock kivo on 127.0.0.1:3099 (refuses NODE_ENV=production, plain-text creds)
-#   - API on :4001 pointed at the mock kivo
+#   - Mongo + RustFS (S3-compatible object store) from selfhost/docker-compose (dev infra only — no api/web images)
+#   - API on :4001 with built-in sign-in (Better Auth, dev secret)
 #   - Web on :4000
 #
 # A fresh clone reaches a logged-in list in four commands:
@@ -12,32 +11,33 @@
 #   bun install
 #   bun run dev:local            # web on http://localhost:4000
 #
-# The api/web load environment from .env (or .env.example as a starting point),
-# and the mock is the AUTH_URL referenced by the api. Use this when you want a
+# The api/web load environment from .env (or .env.example as a starting point).
+# Accounts are created through the web's register page. Use this when you want a
 # fast inner loop without pulling the published web/api images; the full
-# self-host stack (web + api + mongo + rustfs + kivo from published images)
+# self-host stack (web + api + mongo + rustfs from published images)
 # still lives in selfhost/docker-compose.yml.
 
 set -euo pipefail
 
 if [[ "${NODE_ENV:-}" == "production" ]]; then
-    echo "dev:local refuses to run under NODE_ENV=production (localhost-only mock, http://AUTH_URL)." >&2
+    echo "dev:local refuses to run under NODE_ENV=production (dev-only Better Auth secret)." >&2
     exit 1
 fi
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 HERE="$ROOT/scripts"
 COMPOSE_FILE="$ROOT/selfhost/docker-compose.yml"
-# The compose file requires RustFS credentials, normally from selfhost/.env. Default to the dev ones only when
-# that file is absent: exported shell env would otherwise override it.
+# The compose file requires RustFS credentials and a Better Auth secret (only the api service uses the secret,
+# but compose interpolates the whole file), normally from selfhost/.env. Default to dev values only when that
+# file is absent: exported shell env would otherwise override it.
 if [[ ! -f "$ROOT/selfhost/.env" ]]; then
     export RUSTFS_ACCESS_KEY="${RUSTFS_ACCESS_KEY:-rustfsadmin}"
     export RUSTFS_SECRET_KEY="${RUSTFS_SECRET_KEY:-rustfsadmin}"
+    export BETTER_AUTH_SECRET="${BETTER_AUTH_SECRET:-dev-local-better-auth-secret-not-for-prod}"
 fi
 
 WEB_PORT="${WEB_PORT:-4000}"
 API_PORT="${API_PORT:-4001}"
-KIVO_PORT="${MOCK_KIVO_PORT:-3099}"
 
 if [[ ! -f "$ROOT/.env" && -f "$ROOT/.env.example" ]]; then
     echo "==> No .env found; copying .env.example to .env (edit it before re-running for real secrets)" >&2
@@ -49,10 +49,9 @@ mkdir -p "$HERE/logs"
 cleanup() {
     set +e
     echo
-    echo "==> Stopping web + api + mock"
+    echo "==> Stopping web + api"
     [[ -n "${WEB_PID:-}" ]] && kill "$WEB_PID" 2>/dev/null
     [[ -n "${API_PID:-}" ]] && kill "$API_PID" 2>/dev/null
-    [[ -n "${KIVO_PID:-}" ]] && kill "$KIVO_PID" 2>/dev/null
     wait 2>/dev/null
     echo "==> Stopping Mongo + RustFS"
     docker compose -f "$COMPOSE_FILE" stop mongo rustfs >/dev/null 2>&1 || true
@@ -72,25 +71,12 @@ if ! curl -sf "http://127.0.0.1:9000/health/ready" >/dev/null; then
     exit 1
 fi
 
-echo "==> Starting mock kivo on http://127.0.0.1:${KIVO_PORT}"
-PORT="$KIVO_PORT" NODE_ENV=development bun "$HERE/mock-kivo/bin.ts" >"$HERE/logs/mock-kivo.log" 2>&1 &
-KIVO_PID=$!
-for _ in $(seq 1 30); do
-    if curl -sf "http://127.0.0.1:${KIVO_PORT}/health" >/dev/null 2>&1; then break; fi
-    sleep 0.2
-done
-if ! curl -sf "http://127.0.0.1:${KIVO_PORT}/health" >/dev/null; then
-    echo "mock kivo did not come up; see $HERE/logs/mock-kivo.log" >&2
-    exit 1
-fi
-
 echo "==> Starting api on :${API_PORT} (logs: $HERE/logs/api.log)"
 (
     cd "$ROOT"
     dotenv -e .env -- \
         env NODE_ENV=development \
             PORT="$API_PORT" \
-            AUTH_URL="http://localhost:${KIVO_PORT}" \
             BETTER_AUTH_SECRET="${BETTER_AUTH_SECRET:-dev-local-better-auth-secret-not-for-prod}" \
             BETTER_AUTH_URL="http://localhost:${WEB_PORT}" \
             BUCKET_ENDPOINT="localhost:9000" \
@@ -111,7 +97,6 @@ echo "==> Starting web on :${WEB_PORT} (logs: $HERE/logs/web.log)"
     cd "$ROOT"
     dotenv -e .env -- \
         env PORT="$WEB_PORT" \
-            AUTH_URL="http://localhost:${KIVO_PORT}" \
         bun run start:web
 ) >"$HERE/logs/web.log" 2>&1 &
 WEB_PID=$!
@@ -125,8 +110,7 @@ cat <<EOF
 dev:local is up:
   web:    http://localhost:${WEB_PORT}
   api:    http://localhost:${API_PORT}/api/health
-  kivo:   http://127.0.0.1:${KIVO_PORT} (mock, localhost only)
-  logs:   $HERE/logs/{web,api,mock-kivo}.log
+  logs:   $HERE/logs/{web,api}.log
 
 Open http://localhost:${WEB_PORT} and register a new account (any username + 6+ char password).
 Press Ctrl-C to stop.

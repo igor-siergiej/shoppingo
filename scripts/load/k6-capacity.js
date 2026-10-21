@@ -5,12 +5,10 @@
  * STEP_DURATION. Every request is tagged with its step, so the summary shows p95 latency and error
  * rate per load level and names the last level that stayed inside the budget.
  *
- * Auth is ALWAYS the isolated mock verifier (scripts/load/mock-kivo.ts): tokens are JWT-shaped with
- * { id, username } and the API's AUTH_URL must point at the mock. The reported number therefore
- * excludes kivo.
+ * Auth is the API's built-in Better Auth: setup() signs up throwaway fixture users via
+ * /api/auth/sign-up/email and every request carries the returned session cookie.
  */
 import { check, fail, sleep } from 'k6';
-import encoding from 'k6/encoding';
 import exec from 'k6/execution';
 import http from 'k6/http';
 import { Counter, Trend } from 'k6/metrics';
@@ -144,12 +142,33 @@ const apiLag = new Trend('api_eventloop_lag_p99_ms');
 
 http.setResponseCallback(http.expectedStatuses(200, 201, 204));
 
-const mockToken = (id, username) => {
-    const part = (o) => encoding.b64encode(JSON.stringify(o), 'rawstd');
-    return [part({ alg: 'HS256', typ: 'JWT' }), part({ id, username, exp: 9999999999 }), part('k6')].join('.');
+// Must be one of the API's trusted origins (BETTER_AUTH_URL), or Better Auth rejects the sign-up.
+const ORIGIN = __ENV.AUTH_ORIGIN ?? 'http://localhost:4000';
+const SESSION_COOKIE = 'better-auth.session_token';
+
+// Better Auth limits sign-ups per client IP (3 per 10s), so each fixture user gets its own X-Forwarded-For.
+const signUp = (username, n) => {
+    const password = `k6-${username}-pw`;
+    const res = http.post(
+        `${BASE_URL}/api/auth/sign-up/email`,
+        JSON.stringify({ email: `${crypto.randomUUID()}@users.invalid`, name: username, username, password }),
+        {
+            headers: {
+                'Content-Type': 'application/json',
+                Origin: ORIGIN,
+                'X-Forwarded-For': `10.${(n >> 16) & 255}.${(n >> 8) & 255}.${n & 255}`,
+            },
+            tags: { phase: 'seed' },
+            redirects: 0,
+        }
+    );
+    if (res.status !== 200) fail(`sign-up failed for ${username}: ${res.status} ${res.body}`);
+    const cookie = res.cookies[SESSION_COOKIE]?.[0]?.value;
+    if (!cookie) fail(`sign-up for ${username} returned no ${SESSION_COOKIE} cookie`);
+    return { id: res.json('user.id'), token: `${SESSION_COOKIE}=${cookie}` };
 };
 
-const headers = (token) => ({ Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' });
+const headers = (token) => ({ Cookie: token, 'Content-Type': 'application/json' });
 const enc = encodeURIComponent;
 const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
@@ -214,15 +233,14 @@ const aiCounters = (text) => ({
 
 export function setup() {
     const runId = Date.now().toString(36);
-    const users = [];
-    for (let i = 0; i < USERS; i++) {
-        const id = `k6-${runId}-user-${i}`;
-        users.push({ id, token: mockToken(id, id), lists: [], recipes: [] });
-    }
-    const bg = { id: `k6-${runId}-bg`, token: mockToken(`k6-${runId}-bg`, `k6-${runId}-bg`), lists: [], recipes: [] };
-
     const health = http.get(`${BASE_URL}/api/health`);
     if (health.status !== 200) fail(`${BASE_URL}/api/health returned ${health.status}`);
+
+    const users = [];
+    for (let i = 0; i < USERS; i++) {
+        users.push({ ...signUp(`k6_${runId}_u${i}`, i + 1), lists: [], recipes: [] });
+    }
+    const bg = { ...signUp(`k6_${runId}_bg`, USERS + 1), lists: [], recipes: [] };
 
     const baselineText = readMetrics();
     const baseline = baselineText ? aiCounters(baselineText) : null;
@@ -396,7 +414,7 @@ export function handleSummary(data) {
 
     const lines = [
         '',
-        `shoppingo API capacity (auth: isolated mock verifier, target: ${BASE_URL})`,
+        `shoppingo API capacity (auth: built-in Better Auth, target: ${BASE_URL})`,
         `budget: p95 < ${P95_MS} ms and error rate < ${(ERROR_RATE * 100).toFixed(1)}%; fixtures: ${USERS} users x (${LISTS_PER_USER} lists x ${ITEMS_PER_LIST} items + ${RECIPES_PER_USER} recipes) + ${BACKGROUND_LISTS} background lists + ${BACKGROUND_RECIPES} background recipes`,
         '',
         'step  sess/s(t)  req/s    p50 ms   p95 ms   p99 ms   err %   lost  api cores  lag p99 ms  verdict',

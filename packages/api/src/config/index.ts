@@ -1,20 +1,9 @@
 import { ConfigService, parsers } from '@imapps/api-utils';
 
-import { httpsUrl } from './auth-url';
-
-// AUTH_URL is where we POST the bearer token to /users and /verify. See `./auth-url.ts` for the
-// full rule. The bearer token must never cross plaintext to a remote host, so the validator
-// refuses anything that is not https://, with two host-local exceptions: `http://kivo:port` (the
-// docker bridge, any environment) and `http://localhost` (the dev:local / e2e mock, gated to
-// non-production).
-
 const schema = {
     port: { parser: parsers.number, from: 'PORT' },
-    authUrl: { parser: httpsUrl, from: 'AUTH_URL', optional: true },
-    // Better Auth (kivo-replacement, Task 3 #141). Required once the cutover ships; leave optional here so a fresh
-    // clone without the env still boots (kivo bearer tokens remain valid until Task 9 removes them).
-    betterAuthSecret: { parser: parsers.string, from: 'BETTER_AUTH_SECRET', optional: true },
-    betterAuthUrl: { parser: parsers.string, from: 'BETTER_AUTH_URL', optional: true },
+    betterAuthSecret: { parser: parsers.string, from: 'BETTER_AUTH_SECRET' },
+    betterAuthUrl: { parser: parsers.string, from: 'BETTER_AUTH_URL' },
     googleClientId: { parser: parsers.string, from: 'GOOGLE_CLIENT_ID', optional: true },
     googleClientSecret: { parser: parsers.string, from: 'GOOGLE_CLIENT_SECRET', optional: true },
     connectionUri: { parser: parsers.string, from: 'CONNECTION_URI' },
@@ -86,7 +75,7 @@ export const aiFeaturesFromEnv = (env: NodeJS.ProcessEnv = process.env): AiFeatu
 /**
  * Snapshot of which auth features the api exposes. Used by `/api/features`
  * to tell the web which auth-related controls to surface (today only the
- * Google sign-in button; the kivo → Better Auth cutover has not happened).
+ * Google sign-in button).
  */
 export interface AuthFeaturesSummary {
     googleSignIn: boolean;

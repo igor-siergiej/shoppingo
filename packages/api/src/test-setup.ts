@@ -5,7 +5,6 @@ process.env.BUCKET_NAME = 'test';
 process.env.BUCKET_ACCESS_KEY = 'test';
 process.env.BUCKET_SECRET_KEY = 'test';
 process.env.BUCKET_ENDPOINT = 'localhost:9000';
-process.env.AUTH_URL = 'https://auth.test.local';
 process.env.FAL_KEY = 'test-key';
 // Required for `config.get('betterAuthSecret')` and `'betterAuthUrl')` to resolve during the DI
 // singleton factories at boot. Tests that exercise Better Auth construct their own `createAuth`

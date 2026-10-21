@@ -6,15 +6,11 @@ import { username } from 'better-auth/plugins';
 // Auth's `user.email` constraint is satisfied without ever accepting a real address:
 // keeping any real email out of the row is what stops an unverified password sign-up from
 // later locking a Google user out via `account_not_linked`.
-// Exports below are consumed by packages/api/scripts/auth (fallow ignores scripts/).
-// fallow-ignore-next-line unused-export
-export const PLACEHOLDER_EMAIL_DOMAIN = 'users.invalid';
+const PLACEHOLDER_EMAIL_DOMAIN = 'users.invalid';
 
 // Matches the register form's `usernameField` (packages/web/src/hooks/authSchemas.ts).
-// fallow-ignore-next-line unused-export
-export const USERNAME_MIN_LENGTH = 3;
-// fallow-ignore-next-line unused-export
-export const USERNAME_MAX_LENGTH = 50;
+const USERNAME_MIN_LENGTH = 3;
+const USERNAME_MAX_LENGTH = 50;
 
 const rejectEmailSignIn = (path: string) => {
     // Placeholder emails are not credentials; passwords sign in by username only.

@@ -1362,10 +1362,6 @@
         {
           "type": "arrow",
           "id": "edge13"
-        },
-        {
-          "type": "arrow",
-          "id": "edge14"
         }
       ],
       "updated": 1760000000000,
@@ -1517,10 +1513,6 @@
         },
         {
           "type": "arrow",
-          "id": "edge15"
-        },
-        {
-          "type": "arrow",
           "id": "edge16"
         },
         {
@@ -1574,91 +1566,13 @@
       "updated": 1760000000000,
       "link": null,
       "locked": false,
-      "text": "shoppingo-api\nBun.serve :4001\nREST, WS /api/ws,\n/api/metrics",
-      "originalText": "shoppingo-api\nBun.serve :4001\nREST, WS /api/ws,\n/api/metrics",
+      "text": "shoppingo-api (+ auth)\nBun.serve :4001\nREST, WS /api/ws,\n/api/metrics",
+      "originalText": "shoppingo-api (+ auth)\nBun.serve :4001\nREST, WS /api/ws,\n/api/metrics",
       "fontSize": 16,
       "fontFamily": 5,
       "textAlign": "center",
       "verticalAlign": "middle",
       "containerId": "api",
-      "autoResize": true,
-      "lineHeight": 1.25
-    },
-    {
-      "id": "kivo",
-      "type": "rectangle",
-      "x": 611.8333333333333,
-      "y": 1791,
-      "width": 224,
-      "height": 70,
-      "angle": 0,
-      "strokeColor": "#2f9e44",
-      "backgroundColor": "#b2f2bb",
-      "fillStyle": "solid",
-      "strokeWidth": 2,
-      "strokeStyle": "solid",
-      "roughness": 1,
-      "opacity": 100,
-      "groupIds": [],
-      "frameId": null,
-      "roundness": {
-        "type": 3
-      },
-      "seed": 538779566,
-      "version": 1,
-      "versionNonce": 1401465216,
-      "isDeleted": false,
-      "boundElements": [
-        {
-          "type": "text",
-          "id": "kivo__text"
-        },
-        {
-          "type": "arrow",
-          "id": "edge14"
-        },
-        {
-          "type": "arrow",
-          "id": "edge15"
-        }
-      ],
-      "updated": 1760000000000,
-      "link": null,
-      "locked": false
-    },
-    {
-      "id": "kivo__text",
-      "type": "text",
-      "x": 631.8333333333333,
-      "y": 1806,
-      "width": 184,
-      "height": 40,
-      "angle": 0,
-      "strokeColor": "#1e1e1e",
-      "backgroundColor": "transparent",
-      "fillStyle": "solid",
-      "strokeWidth": 1,
-      "strokeStyle": "solid",
-      "roughness": 1,
-      "opacity": 100,
-      "groupIds": [],
-      "frameId": null,
-      "roundness": null,
-      "seed": 97593742,
-      "version": 1,
-      "versionNonce": 1515882211,
-      "isDeleted": false,
-      "boundElements": null,
-      "updated": 1760000000000,
-      "link": null,
-      "locked": false,
-      "text": "kivo (auth, JWT)\nseparate Dokploy app",
-      "originalText": "kivo (auth, JWT)\nseparate Dokploy app",
-      "fontSize": 16,
-      "fontFamily": 5,
-      "textAlign": "center",
-      "verticalAlign": "middle",
-      "containerId": "kivo",
       "autoResize": true,
       "lineHeight": 1.25
     },
@@ -3309,204 +3223,6 @@
       "textAlign": "center",
       "verticalAlign": "middle",
       "containerId": "edge13",
-      "autoResize": true,
-      "lineHeight": 1.25
-    },
-    {
-      "id": "edge14",
-      "type": "arrow",
-      "x": 644.625,
-      "y": 1428,
-      "width": 116.54166666666663,
-      "height": 363,
-      "angle": 0,
-      "strokeColor": "#1e1e1e",
-      "backgroundColor": "transparent",
-      "fillStyle": "solid",
-      "strokeWidth": 2,
-      "strokeStyle": "solid",
-      "roughness": 1,
-      "opacity": 100,
-      "groupIds": [],
-      "frameId": null,
-      "roundness": null,
-      "seed": 958682701,
-      "version": 1,
-      "versionNonce": 447550768,
-      "isDeleted": false,
-      "boundElements": [
-        {
-          "type": "text",
-          "id": "edge14__label"
-        }
-      ],
-      "updated": 1760000000000,
-      "link": null,
-      "locked": false,
-      "points": [
-        [
-          0,
-          0
-        ],
-        [
-          0,
-          10
-        ],
-        [
-          103,
-          10
-        ],
-        [
-          103,
-          52
-        ],
-        [
-          116.54166666666663,
-          52
-        ],
-        [
-          116.54166666666663,
-          363
-        ]
-      ],
-      "lastCommittedPoint": null,
-      "startArrowhead": null,
-      "endArrowhead": "arrow",
-      "startBinding": {
-        "elementId": "traefik",
-        "focus": 0,
-        "gap": 2
-      },
-      "endBinding": {
-        "elementId": "kivo",
-        "focus": 0,
-        "gap": 2
-      }
-    },
-    {
-      "id": "edge14__label",
-      "type": "text",
-      "x": 627.625,
-      "y": 1450,
-      "width": 114,
-      "height": 18,
-      "angle": 0,
-      "strokeColor": "#495057",
-      "backgroundColor": "transparent",
-      "fillStyle": "solid",
-      "strokeWidth": 1,
-      "strokeStyle": "solid",
-      "roughness": 1,
-      "opacity": 100,
-      "groupIds": [],
-      "frameId": null,
-      "roundness": null,
-      "seed": 37633308,
-      "version": 1,
-      "versionNonce": 1973728753,
-      "isDeleted": false,
-      "boundElements": null,
-      "updated": 1760000000000,
-      "link": null,
-      "locked": false,
-      "text": "kivo.imapps.uk",
-      "originalText": "kivo.imapps.uk",
-      "fontSize": 14,
-      "fontFamily": 5,
-      "textAlign": "center",
-      "verticalAlign": "middle",
-      "containerId": "edge14",
-      "autoResize": true,
-      "lineHeight": 1.25
-    },
-    {
-      "id": "edge15",
-      "type": "arrow",
-      "x": 686.5,
-      "y": 1662,
-      "width": 0,
-      "height": 129,
-      "angle": 0,
-      "strokeColor": "#1e1e1e",
-      "backgroundColor": "transparent",
-      "fillStyle": "solid",
-      "strokeWidth": 2,
-      "strokeStyle": "solid",
-      "roughness": 1,
-      "opacity": 100,
-      "groupIds": [],
-      "frameId": null,
-      "roundness": null,
-      "seed": 748636908,
-      "version": 1,
-      "versionNonce": 1744857999,
-      "isDeleted": false,
-      "boundElements": [
-        {
-          "type": "text",
-          "id": "edge15__label"
-        }
-      ],
-      "updated": 1760000000000,
-      "link": null,
-      "locked": false,
-      "points": [
-        [
-          0,
-          0
-        ],
-        [
-          0,
-          129
-        ]
-      ],
-      "lastCommittedPoint": null,
-      "startArrowhead": null,
-      "endArrowhead": "arrow",
-      "startBinding": {
-        "elementId": "api",
-        "focus": 0,
-        "gap": 2
-      },
-      "endBinding": {
-        "elementId": "kivo",
-        "focus": 0,
-        "gap": 2
-      }
-    },
-    {
-      "id": "edge15__label",
-      "type": "text",
-      "x": 487.5,
-      "y": 1734,
-      "width": 193,
-      "height": 35,
-      "angle": 0,
-      "strokeColor": "#495057",
-      "backgroundColor": "transparent",
-      "fillStyle": "solid",
-      "strokeWidth": 1,
-      "strokeStyle": "solid",
-      "roughness": 1,
-      "opacity": 100,
-      "groupIds": [],
-      "frameId": null,
-      "roundness": null,
-      "seed": 1731834389,
-      "version": 1,
-      "versionNonce": 134381003,
-      "isDeleted": false,
-      "boundElements": null,
-      "updated": 1760000000000,
-      "link": null,
-      "locked": false,
-      "text": "/verify (30s cache)\n/users + X-Service-Token",
-      "originalText": "/verify (30s cache)\n/users + X-Service-Token",
-      "fontSize": 14,
-      "fontFamily": 5,
-      "textAlign": "center",
-      "verticalAlign": "middle",
-      "containerId": "edge15",
       "autoResize": true,
       "lineHeight": 1.25
     },

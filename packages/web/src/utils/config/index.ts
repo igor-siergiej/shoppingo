@@ -1,4 +1,3 @@
-import { getStorageItem, setStorageItem } from '@imapps/web-utils';
 import type { AppConfig, ConfigState } from './types';
 
 const CONFIG_STORAGE_KEY = 'shoppingo:config';
@@ -12,10 +11,9 @@ const configState: ConfigState = {
 // Missing, unparsable and non-object cache entries all mean "no cached config".
 // fallow-ignore-next-line complexity
 const readCachedConfig = (): AppConfig | null => {
-    const raw = getStorageItem(CONFIG_STORAGE_KEY, 'localStorage');
-    if (!raw) return null;
-
     try {
+        const raw = localStorage.getItem(CONFIG_STORAGE_KEY);
+        if (!raw) return null;
         const cached = JSON.parse(raw);
         return cached && typeof cached === 'object' ? (cached as AppConfig) : null;
     } catch {
@@ -40,7 +38,11 @@ export const loadConfig = async (): Promise<AppConfig> => {
         const configData = await response.json();
         configState.config = configData as AppConfig;
         configState.isLoading = false;
-        setStorageItem(CONFIG_STORAGE_KEY, JSON.stringify(configState.config), 'localStorage');
+        try {
+            localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(configState.config));
+        } catch {
+            // Storage unavailable or full: the cache is only an offline fallback.
+        }
 
         return configState.config;
     } catch (error) {

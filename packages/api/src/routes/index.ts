@@ -31,7 +31,6 @@ import { bodyLimit } from 'hono/body-limit';
 import { aiFeaturesFromEnv, authFeaturesFromEnv } from '../config';
 import { dependencyContainer } from '../dependencies';
 import { DependencyToken } from '../dependencies/types';
-import type { Auth } from '../infrastructure/BetterAuth';
 import { createDiscoveryHandlers } from '../interfaces/DiscoveryHandlers';
 import { generateFriendCode, getFriends, redeemFriendCode, removeFriend } from '../interfaces/FriendHandlers';
 import { getImage } from '../interfaces/ImageHandlers';
@@ -154,23 +153,11 @@ export const createRoutes = (): Hono<Vars> => {
 
     // Better Auth sets its own session cookie name (defaults to `better-auth.session_token`).
     // Resolved lazily through the DI container on each request (its first lookup resolves the
-    // Auth singleton; subsequent calls hit the cached container entry). Returns undefined when
-    // Better Auth is not configured.
-    const betterAuthSessionCookieName = async (): Promise<string | undefined> => {
-        const auth: Auth | undefined = await resolveBetterAuth();
-        return auth ? (await auth.$context).authCookies?.sessionToken?.name : undefined;
-    };
-
-    const resolveBetterAuth = async (): Promise<Auth | undefined> => {
-        try {
-            return dependencyContainer.resolve(DependencyToken.Auth);
-        } catch {
-            return undefined;
-        }
-    };
+    // Auth singleton; subsequent calls hit the cached container entry).
+    const betterAuthSessionCookieName = async (): Promise<string | undefined> =>
+        (await dependencyContainer.resolve(DependencyToken.Auth).$context).authCookies?.sessionToken?.name;
 
     const hasAnyAuthCredential = async (c: Context<Vars>): Promise<boolean> => {
-        if (c.req.header('authorization')) return true;
         const cookieName = await betterAuthSessionCookieName();
         const cookieHeader = c.req.header('cookie') ?? '';
         return cookieName ? cookieHeader.includes(`${cookieName}=`) : false;
@@ -181,10 +168,9 @@ export const createRoutes = (): Hono<Vars> => {
         if (name.startsWith('recipe-upload/') || name.startsWith('discovery-image/')) {
             return authenticate(c, next);
         }
-        // Cached item images stay public; a token or session cookie, when sent, only identifies
-        // who is paying for a generation. Accept either a kivo `authorization` header or Better
-        // Auth's session cookie; softAuthenticate avoids 401 (it just resolves the user when one
-        // is present).
+        // Cached item images stay public; a session cookie, when sent, only identifies who is
+        // paying for a generation. softAuthenticate avoids 401 (it just resolves the user when
+        // one is present).
         if (!(await hasAnyAuthCredential(c))) {
             return next();
         }

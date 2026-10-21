@@ -26,7 +26,8 @@ handling (`packages/api/src/infrastructure/AuthClient`,
 `packages/web/src/auth`, `packages/api/src/middleware`), image upload and
 proxying (`infrastructure/ObjectStore*`, `infrastructure/MediaWikiCookbookSource`),
 webhook handlers (`routes/index.ts`), MongoDB queries and S3 object-store access
-patterns, the kivo integration hardening, and the PWA service worker.
+patterns, the Better Auth configuration (`packages/api/src/infrastructure/BetterAuth`,
+mounted at `/api/auth/*`), and the PWA service worker.
 
 **Do not** open a public GitHub issue, discussion, PR or Bluesky DM for
 security reports. Anything in a public channel risks disclosure before a fix
@@ -62,8 +63,7 @@ vulnerability form first and a key exchange can happen there.
 
 In scope: this repository and the published Docker images.
 
-Out of scope: the kivo auth service (handled in
-[`igor-siergiej/kivo`](https://github.com/igor-siergiej/kivo)), the
+Out of scope: the
 self-hosted / hosted third-party dependencies (MongoDB, the RustFS object store, the reverse
 proxy, the cloud), and social-engineering attacks. Rate-limiting bugs on the
 demo instance of shoppingo are also out of scope unless they affect the

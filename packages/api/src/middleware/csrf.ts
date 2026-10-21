@@ -2,10 +2,9 @@ import type { Context, Next } from 'hono';
 import { csrf } from 'hono/csrf';
 
 /**
- * CSRF guard for `/api/*`, used once Better Auth session cookies replace kivo bearer headers
- * (shoppingo #141). Cookie auth means the browser now attaches credentials to any request it
- * makes to this origin, so a cross-site page can drive mutating routes unless the origin is
- * checked. Better Auth applies its own equivalent check inside `/api/auth/*`.
+ * CSRF guard for `/api/*`. Better Auth session cookies mean the browser attaches credentials
+ * to any request it makes to this origin, so a cross-site page can drive mutating routes unless
+ * the origin is checked. Better Auth applies its own equivalent check inside `/api/auth/*`.
  *
  * `hono/csrf` deliberately treats a *missing* Content-Type as `text/plain` so an attacker
  * cannot dodge the check by stripping the header — that default is what stops content-type
