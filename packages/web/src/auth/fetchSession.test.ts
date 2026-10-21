@@ -26,9 +26,9 @@ describe('fetchSession', () => {
         expect(await fetchSession()).toEqual({ user: { id: 'u1', username: 'Igor' }, needsUsername: false });
     });
 
-    it('keeps the cached user through a server error', async () => {
+    it.each([502, 429])('keeps the cached user through a %i', async (status) => {
         sessionCache.write({ id: 'u1', username: 'Igor' });
-        respond(502, {});
+        respond(status, {});
 
         expect((await fetchSession()).user).toEqual({ id: 'u1', username: 'Igor' });
     });

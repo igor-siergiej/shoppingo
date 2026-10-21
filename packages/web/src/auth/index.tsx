@@ -39,6 +39,26 @@ const markReturningUser = () => {
     if (cookie) document.cookie = cookie;
 };
 
+// Set while a sign-out has not reached the server (offline, network error). The httpOnly cookie is still
+// valid then, so the next launch must finish the sign-out before asking who is signed in.
+const SIGN_OUT_PENDING_KEY = 'shoppingo:sign-out-pending';
+
+const signOutOnServer = async (): Promise<boolean> => {
+    try {
+        const { error } = await authClient.signOut({});
+        return !error;
+    } catch {
+        return false;
+    }
+};
+
+const finishPendingSignOut = async (): Promise<boolean> => {
+    if (!localStorage.getItem(SIGN_OUT_PENDING_KEY)) return true;
+    if (!(await signOutOnServer())) return false;
+    localStorage.removeItem(SIGN_OUT_PENDING_KEY);
+    return true;
+};
+
 interface AuthContextValue {
     session: SessionSnapshot;
     isLoading: boolean;
@@ -69,12 +89,16 @@ export const AuthRoot = ({ children }: { children: ReactNode }) => {
     const logout = useCallback(async () => {
         sessionCache.clear();
         setSession(SIGNED_OUT);
-        // The local sign-out stands even when the request fails (offline, already expired).
-        await authClient.signOut({}).catch((): undefined => undefined);
+        localStorage.setItem(SIGN_OUT_PENDING_KEY, '1');
+        await finishPendingSignOut();
     }, []);
 
     useEffect(() => {
-        void refresh().finally(() => setIsLoading(false));
+        const start = async () => {
+            // Until an earlier sign-out reaches the server, stay signed out rather than trust the cookie.
+            if (await finishPendingSignOut()) await refresh();
+        };
+        void start().finally(() => setIsLoading(false));
     }, [refresh]);
 
     const value = useMemo(() => ({ session, isLoading, refresh, logout }), [session, isLoading, refresh, logout]);
@@ -93,10 +117,16 @@ export const useAuth = (): AuthState => {
     return { isAuthenticated: Boolean(session.user) || session.needsUsername, isLoading, logout };
 };
 
-/** Re-reads the session after sign-in or sign-up; resolves to the signed-in user, if any. */
+/**
+ * Re-reads the session after sign-in or sign-up; resolves to the signed-in user, if any. The fresh cookie
+ * replaced any session an earlier offline sign-out left behind, so there is nothing left to finish.
+ */
 export const useRefreshSession = (): (() => Promise<SessionUser | null>) => {
     const { refresh } = useAuthContext();
-    return useCallback(async () => (await refresh()).user, [refresh]);
+    return useCallback(async () => {
+        localStorage.removeItem(SIGN_OUT_PENDING_KEY);
+        return (await refresh()).user;
+    }, [refresh]);
 };
 
 /** Redirects to `/login` when signed out, remembering where the visitor was headed. */

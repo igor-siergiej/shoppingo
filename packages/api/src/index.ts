@@ -20,7 +20,10 @@ const port = config.get('port');
 const mountBetterAuth = (app: ReturnType<typeof createApp>) => {
     if (!config.get('betterAuthSecret')) return;
     const auth = dependencyContainer.resolve(DependencyToken.Auth);
-    app.use('/api/*', csrfForFormPosts(allowedOrigins));
+    // The public origin Better Auth is configured for is the app's own origin (self-hosts included), so
+    // multipart uploads from it must pass the form-post origin check too.
+    const publicOrigin = new URL(config.get('betterAuthUrl') as string).origin;
+    app.use('/api/*', csrfForFormPosts([...allowedOrigins, publicOrigin]));
     app.on(['GET', 'POST'], '/api/auth/*', (c) => auth.handler(c.req.raw));
 };
 

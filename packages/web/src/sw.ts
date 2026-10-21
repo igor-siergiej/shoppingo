@@ -11,8 +11,10 @@ clientsClaim();
 
 // Offline reads depend on this cache (react-query is not persisted). It holds per-user data, so the app deletes
 // it on logout (offline/clearUserData.ts); keep the name in sync with API_CACHE_NAME there. Workbox only caches GETs.
+// /api/auth is never cached: a stored get-session answer would outlive sign-in and sign-out (the app keeps its
+// own offline copy of the signed-in user in auth/sessionCache.ts).
 registerRoute(
-    ({ url }) => url.pathname.startsWith('/api/'),
+    ({ url }) => url.pathname.startsWith('/api/') && !url.pathname.startsWith('/api/auth/'),
     new NetworkFirst({ cacheName: 'api-cache', networkTimeoutSeconds: 2 })
 );
 registerRoute(({ url }) => url.pathname === '/config.json', new NetworkFirst({ cacheName: 'config-cache' }));

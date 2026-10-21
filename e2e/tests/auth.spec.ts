@@ -1,6 +1,8 @@
 import { expect, test } from '../fixtures';
 
 const freshUsername = () => `user${Date.now()}${Math.floor(Math.random() * 1000)}`;
+// The live run starts on a host that redirects to the app's own host, so match the path only.
+const atPath = (path: string) => (url: URL) => url.pathname === path;
 
 test.describe('Login', () => {
     test('renders login form', async ({ loginPage }) => {
@@ -100,14 +102,14 @@ test('@smoke a new account can register, sign out, and sign back in', async ({ p
 
     await registerPage.goto();
     await registerPage.register(username, 'smokepass123', 'smokepass123');
-    await page.waitForURL('/');
+    await page.waitForURL(atPath('/'));
     await expect(page.getByRole('button', { name: 'Menu' })).toBeVisible();
 
     await page.getByRole('button', { name: 'Menu' }).click();
     await page.getByRole('button', { name: 'Log out' }).click();
-    await page.waitForURL('/login');
+    await page.waitForURL(atPath('/login'));
 
     await loginPage.login(username, 'smokepass123');
-    await page.waitForURL('/');
+    await page.waitForURL(atPath('/'));
     await expect(page.getByText('No lists yet')).toBeVisible();
 });

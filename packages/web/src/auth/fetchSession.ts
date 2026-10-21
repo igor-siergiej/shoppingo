@@ -27,7 +27,7 @@ const offlineSnapshot = (): SessionSnapshot => {
  * Asks the api who is signed in. A network failure or a server error keeps the cached user so an
  * offline launch still opens the app; only an explicit "no session" (401 or a null body) signs out.
  */
-// One request with four outcomes (offline, server error, signed out, signed in); splitting would scatter them.
+// One request with five outcomes (offline, server trouble, signed out, no username, signed in); splitting would scatter them.
 // fallow-ignore-next-line complexity
 export const fetchSession = async (): Promise<SessionSnapshot> => {
     let response: Response;
@@ -36,7 +36,8 @@ export const fetchSession = async (): Promise<SessionSnapshot> => {
     } catch {
         return offlineSnapshot();
     }
-    if (response.status >= 500) return offlineSnapshot();
+    // A server error or a rate limit says nothing about the session: keep what we knew.
+    if (response.status >= 500 || response.status === 429) return offlineSnapshot();
 
     const body: SessionBody | null = response.ok ? await response.json().catch((): null => null) : null;
     if (!body?.user) {
