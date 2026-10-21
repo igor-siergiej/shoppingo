@@ -1,3 +1,10 @@
+# [1.112.0](https://github.com/igor-siergiej/shoppingo/compare/v1.111.0...v1.112.0) (2026-10-21)
+
+
+### Features
+
+* **scripts:** kivo user import and admin password reset ([#276](https://github.com/igor-siergiej/shoppingo/issues/276)) ([d551799](https://github.com/igor-siergiej/shoppingo/commit/d5517999e60c41396d9274172500a522a6427315)), closes [#142](https://github.com/igor-siergiej/shoppingo/issues/142)
+
 # [1.111.0](https://github.com/igor-siergiej/shoppingo/compare/v1.110.0...v1.111.0) (2026-10-21)
 
 

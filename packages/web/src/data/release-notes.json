@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.112.0",
+    "date": "2026-10-21",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Kivo user import and admin password reset"
+      }
+    ]
+  },
+  {
     "version": "1.111.0",
     "date": "2026-10-21",
     "notes": [
