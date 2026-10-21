@@ -106,6 +106,8 @@ required value).
 | `CONNECTION_URI`, `DATABASE_NAME` | yes | MongoDB |
 | `BUCKET_ENDPOINT`, `BUCKET_NAME`, `BUCKET_ACCESS_KEY`, `BUCKET_SECRET_KEY` | yes | S3-compatible object store (RustFS) |
 | `AUTH_URL` | no | kivo base URL; must be `https://`, except `http://kivo:<port>` (docker network) or `http://localhost` outside production (`config/auth-url.ts`) |
+| `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` | no (until the web cutover) | built-in Better Auth at `/api/auth/*`; unset = kivo-only |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | no | Google sign-in (both or neither) |
 | `FAL_KEY`, `FAL_MODEL`, `FAL_RECIPE_MODEL` | no | fal.ai key and model overrides |
 | `RECIPE_IMPORT_LLM_ENABLED`, `RECIPE_IMPORT_LLM_FIRST`, `RECIPE_IMPORT_LLM_API_KEY`, `RECIPE_IMPORT_LLM_MODEL` | no | recipe-import LLM tier; the key falls back to `FAL_KEY` |
 | `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` | no | Web Push |
@@ -158,12 +160,30 @@ Root `package.json`:
 | `mock-kivo` | the mock kivo on its own |
 | `reindex:discovery` | rebuild the OpenSearch Discover index from Mongo |
 | `discover:ingest`, `discover:validate` | Wikibooks Cookbook ingest / library validation ([docs/discovery-ingest.md](docs/discovery-ingest.md)) |
+| `auth:import-kivo`, `auth:reset-password` | auth admin; see [Admin](#admin) |
 | `lint`, `lint:fix`, `format` | Biome |
 | `test:e2e`, `test:e2e:ui`, `test:e2e:update-snapshots` | Playwright |
 | `tsc:e2e` | type-check `e2e/` |
 | `test:scripts` | Bun tests for `scripts/` (coverage gate, release-notes collector) |
 | `load:local` | k6 capacity test against a throwaway local stack ([scripts/load/README.md](scripts/load/README.md)) |
 | `audit` | `fallow-audit` (dead code / complexity) |
+
+### Admin
+
+Both use the api's `CONNECTION_URI` / `DATABASE_NAME` / `BETTER_AUTH_SECRET` /
+`BETTER_AUTH_URL` (from `.env`, or exported to point at another environment).
+
+- `KIVO_CONNECTION_URI=… KIVO_DATABASE_NAME=… bun run auth:import-kivo [--apply]`
+  copies kivo's `users` into Better Auth, keeping each kivo id (so lists,
+  recipes and shares stay attached) and password hash (argon2id or legacy
+  bcrypt). Dry run unless `--apply`; already-imported ids are skipped, so it is
+  safe to re-run. Users who could never sign in (username outside 3–50
+  letters/digits/`_`/`.`, unknown hash, username already taken) are listed as
+  rejected and not written.
+- `bun run auth:reset-password <username>` prompts twice for the new password
+  without echoing it (or reads it from stdin with `--password-stdin`), then
+  signs the user out everywhere. There is no email, so this is the only
+  recovery path for a forgotten password.
 
 ### Testing
 

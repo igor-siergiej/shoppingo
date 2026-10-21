@@ -1,4 +1,4 @@
-import { type Auth as BetterAuth, type BetterAuthOptions, betterAuth } from 'better-auth';
+import { type BetterAuthOptions, betterAuth } from 'better-auth';
 import { APIError, createAuthMiddleware } from 'better-auth/api';
 import { username } from 'better-auth/plugins';
 
@@ -6,7 +6,15 @@ import { username } from 'better-auth/plugins';
 // Auth's `user.email` constraint is satisfied without ever accepting a real address:
 // keeping any real email out of the row is what stops an unverified password sign-up from
 // later locking a Google user out via `account_not_linked`.
-const PLACEHOLDER_EMAIL_DOMAIN = 'users.invalid';
+// Exports below are consumed by packages/api/scripts/auth (fallow ignores scripts/).
+// fallow-ignore-next-line unused-export
+export const PLACEHOLDER_EMAIL_DOMAIN = 'users.invalid';
+
+// Matches the register form's `usernameField` (packages/web/src/hooks/authSchemas.ts).
+// fallow-ignore-next-line unused-export
+export const USERNAME_MIN_LENGTH = 3;
+// fallow-ignore-next-line unused-export
+export const USERNAME_MAX_LENGTH = 50;
 
 const rejectEmailSignIn = (path: string) => {
     // Placeholder emails are not credentials; passwords sign in by username only.
@@ -26,7 +34,7 @@ export interface AuthOptions {
     google?: { clientId: string; clientSecret: string };
 }
 
-export const createAuth = ({ database, secret, baseURL, trustedOrigins, google }: AuthOptions): BetterAuth =>
+export const createAuth = ({ database, secret, baseURL, trustedOrigins, google }: AuthOptions) =>
     betterAuth({
         database,
         secret,
@@ -43,7 +51,7 @@ export const createAuth = ({ database, secret, baseURL, trustedOrigins, google }
         socialProviders: google
             ? { google: { clientId: google.clientId, clientSecret: google.clientSecret, prompt: 'select_account' } }
             : {},
-        plugins: [username({ minUsernameLength: 3, maxUsernameLength: 50 })],
+        plugins: [username({ minUsernameLength: USERNAME_MIN_LENGTH, maxUsernameLength: USERNAME_MAX_LENGTH })],
         rateLimit: { enabled: true, customRules: { '/sign-in/username': { window: 60, max: 10 } } },
         advanced: { ipAddress: { ipAddressHeaders: ['x-forwarded-for'] } },
         hooks: {
@@ -68,4 +76,5 @@ export const createAuth = ({ database, secret, baseURL, trustedOrigins, google }
         },
     });
 
-export type Auth = BetterAuth;
+// Inferred rather than better-auth's generic `Auth`, which drops the username plugin's endpoints (`signInUsername`).
+export type Auth = ReturnType<typeof createAuth>;

@@ -64,6 +64,12 @@ bun run test:e2e --grep "@smoke"  # smoke subset; safe to run against any deploy
 - **Release notes** for user-visible changes use a `Release-Notes:` trailer at
   the end of the commit body and the PR body. See `AGENTS.md` for the format
   and what counts as user-visible.
+- **Admin scripts** that need api code (DI container, Better Auth) live in
+  `packages/api/scripts/` and get a root `package.json` alias. Keep their logic
+  in an importable module with the store injected (see
+  `packages/api/scripts/auth/lib.ts`) so the api's Bun tests cover it; the CLI
+  file only parses args and wires dependencies. Anything that writes defaults
+  to a dry run and takes `--apply`.
 - **Licence** is AGPL-3.0-or-later. New source files don't need a header
   (this repo doesn't keep them), but the AGPL's network clause applies if
   you ship a derivative service.
