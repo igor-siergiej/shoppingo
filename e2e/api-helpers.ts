@@ -1,17 +1,9 @@
-import { MOCK_TOKEN, MOCK_TOKEN_2 } from './mocks/auth';
-import { MOCK_USER_2 } from './mocks/data/users';
-
-const API_BASE = 'http://localhost:4001';
-
-const authHeaders = {
-    'Content-Type': 'application/json',
-    Authorization: `Bearer ${MOCK_TOKEN}`,
-};
+import { API_BASE, MOCK_USER, MOCK_USER_2, sessionHeaders } from './auth';
 
 export async function apiCreateList(title: string, listType = 'shopping', selectedFriendIds?: Array<string>) {
     const res = await fetch(`${API_BASE}/api/lists`, {
         method: 'PUT',
-        headers: authHeaders,
+        headers: await sessionHeaders(),
         body: JSON.stringify({
             title,
             listType,
@@ -30,7 +22,7 @@ export async function apiAddItem(
 ) {
     const res = await fetch(`${API_BASE}/api/lists/${encodeURIComponent(listTitle)}/items`, {
         method: 'PUT',
-        headers: authHeaders,
+        headers: await sessionHeaders(),
         body: JSON.stringify({ itemName, dateAdded: new Date().toISOString(), ...overrides }),
     });
     if (!res.ok) throw new Error(`apiAddItem failed: ${await res.text()}`);
@@ -41,14 +33,14 @@ export async function apiDeleteItem(listTitle: string, itemName: string) {
     const itemId = await resolveItemId(listTitle, itemName);
     const res = await fetch(
         `${API_BASE}/api/lists/${encodeURIComponent(listTitle)}/items/${encodeURIComponent(itemId)}`,
-        { method: 'DELETE', headers: authHeaders }
+        { method: 'DELETE', headers: await sessionHeaders() }
     );
     if (!res.ok) throw new Error(`apiDeleteItem failed: ${await res.text()}`);
 }
 
 async function resolveItemId(listTitle: string, itemName: string): Promise<string> {
     const res = await fetch(`${API_BASE}/api/lists/title/${encodeURIComponent(listTitle)}`, {
-        headers: authHeaders,
+        headers: await sessionHeaders(),
     });
     if (!res.ok) throw new Error(`resolveItemId: get list failed: ${await res.text()}`);
     const list = (await res.json()) as { items: Array<{ id: string; name: string }> };
@@ -67,7 +59,7 @@ export async function apiUpdateItem(
         `${API_BASE}/api/lists/${encodeURIComponent(listTitle)}/items/${encodeURIComponent(itemId)}`,
         {
             method: 'POST',
-            headers: authHeaders,
+            headers: await sessionHeaders(),
             body: JSON.stringify(updates),
         }
     );
@@ -91,11 +83,11 @@ export async function apiCreateRecipe(
 ) {
     const res = await fetch(`${API_BASE}/api/recipes`, {
         method: 'PUT',
-        headers: authHeaders,
+        headers: await sessionHeaders(),
         body: JSON.stringify({
             title,
             dateAdded: new Date().toISOString(),
-            user: { id: 'user-testuser', username: 'testuser' },
+            user: MOCK_USER,
             selectedUsers,
             ingredients,
             ...options,
@@ -108,7 +100,7 @@ export async function apiCreateRecipe(
 async function apiPut<T>(path: string, body: unknown): Promise<T> {
     const res = await fetch(`${API_BASE}${path}`, {
         method: 'PUT',
-        headers: authHeaders,
+        headers: await sessionHeaders(),
         body: JSON.stringify(body),
     });
     if (!res.ok) throw new Error(`PUT ${path} failed: ${await res.text()}`);
@@ -127,7 +119,9 @@ export const apiCreateLabel = (body: { name: string; color: string }) =>
     apiPut<{ id: string; name: string; color: string }>('/api/labels', body);
 
 export async function apiGetList(listTitle: string) {
-    const res = await fetch(`${API_BASE}/api/lists/title/${encodeURIComponent(listTitle)}`, { headers: authHeaders });
+    const res = await fetch(`${API_BASE}/api/lists/title/${encodeURIComponent(listTitle)}`, {
+        headers: await sessionHeaders(),
+    });
     if (!res.ok) throw new Error(`apiGetList failed: ${await res.text()}`);
     return res.json() as Promise<{
         id: string;
@@ -140,13 +134,13 @@ export async function apiSetItemCategory(listTitle: string, itemName: string, ca
     const itemId = await resolveItemId(listTitle, itemName);
     const res = await fetch(
         `${API_BASE}/api/lists/${encodeURIComponent(listTitle)}/items/${encodeURIComponent(itemId)}/category`,
-        { method: 'PUT', headers: authHeaders, body: JSON.stringify({ category }) }
+        { method: 'PUT', headers: await sessionHeaders(), body: JSON.stringify({ category }) }
     );
     if (!res.ok) throw new Error(`apiSetItemCategory failed: ${await res.text()}`);
 }
 
 export async function apiGetRecipes() {
-    const res = await fetch(`${API_BASE}/api/recipes`, { headers: authHeaders });
+    const res = await fetch(`${API_BASE}/api/recipes`, { headers: await sessionHeaders() });
     if (!res.ok) throw new Error(`apiGetRecipes failed: ${await res.text()}`);
     return res.json() as Promise<
         Array<{
@@ -167,7 +161,7 @@ export async function apiGetRecipes() {
 export async function apiCreateRecipeAsOtherUser(title: string, sharedWith: Array<string>) {
     const res = await fetch(`${API_BASE}/api/recipes`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${MOCK_TOKEN_2}` },
+        headers: await sessionHeaders(MOCK_USER_2),
         body: JSON.stringify({
             title,
             dateAdded: new Date().toISOString(),
@@ -182,7 +176,7 @@ export async function apiCreateRecipeAsOtherUser(title: string, sharedWith: Arra
 }
 
 export async function apiGetTodos() {
-    const res = await fetch(`${API_BASE}/api/todos`, { headers: authHeaders });
+    const res = await fetch(`${API_BASE}/api/todos`, { headers: await sessionHeaders() });
     if (!res.ok) throw new Error(`apiGetTodos failed: ${await res.text()}`);
     return res.json() as Promise<
         Array<{
@@ -200,20 +194,18 @@ export async function apiGetTodos() {
 export async function apiCreateTodoAsOtherUser(body: { title: string; dueDate: string }, sharedWith: Array<string>) {
     const res = await fetch(`${API_BASE}/api/todos`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${MOCK_TOKEN_2}` },
+        headers: await sessionHeaders(MOCK_USER_2),
         body: JSON.stringify({ ...body, userIds: sharedWith }),
     });
     if (!res.ok) throw new Error(`apiCreateTodoAsOtherUser failed: ${await res.text()}`);
     return res.json() as Promise<{ id: string; title: string }>;
 }
 
-const otherUserHeaders = { 'Content-Type': 'application/json', Authorization: `Bearer ${MOCK_TOKEN_2}` };
-
 /** Creates a shopping list owned by the second mock user, shared with the given user ids (they must be friends). */
 export async function apiCreateListAsOtherUser(title: string, sharedWith: Array<string>) {
     const res = await fetch(`${API_BASE}/api/lists`, {
         method: 'PUT',
-        headers: otherUserHeaders,
+        headers: await sessionHeaders(MOCK_USER_2),
         body: JSON.stringify({
             title,
             listType: 'shopping',
@@ -229,7 +221,7 @@ export async function apiCreateListAsOtherUser(title: string, sharedWith: Array<
 export async function apiRemoveListMemberAsOtherUser(listTitle: string, memberId: string) {
     const res = await fetch(
         `${API_BASE}/api/lists/${encodeURIComponent(listTitle)}/users/${encodeURIComponent(memberId)}`,
-        { method: 'DELETE', headers: otherUserHeaders }
+        { method: 'DELETE', headers: await sessionHeaders(MOCK_USER_2) }
     );
     if (!res.ok) throw new Error(`apiRemoveListMemberAsOtherUser failed: ${await res.text()}`);
 }

@@ -15,7 +15,7 @@ const readCachedConfig = (): AppConfig | null => {
 
     try {
         const cached = JSON.parse(raw);
-        return cached.AUTH_URL ? (cached as AppConfig) : null;
+        return cached && typeof cached === 'object' ? (cached as AppConfig) : null;
     } catch {
         return null;
     }
@@ -35,11 +35,6 @@ export const loadConfig = async (): Promise<AppConfig> => {
         }
 
         const configData = await response.json();
-
-        if (!configData.AUTH_URL) {
-            throw new Error('AUTH_URL is required in config.json');
-        }
-
         configState.config = configData as AppConfig;
         configState.isLoading = false;
         setStorageItem(CONFIG_STORAGE_KEY, JSON.stringify(configState.config), 'localStorage');

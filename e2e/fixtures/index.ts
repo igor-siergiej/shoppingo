@@ -1,6 +1,6 @@
 import { test as base, type Page } from '@playwright/test';
 import { MongoClient } from 'mongodb';
-import { MOCK_TOKEN, mockAuthRoutes } from '../mocks/auth';
+import { signInAs, spreadAuthRateLimit } from '../auth';
 import { resolveMongoUri } from '../mongo-uri';
 import { DiscoverPage } from '../page-objects/DiscoverPage';
 import { ItemsPage } from '../page-objects/ItemsPage';
@@ -25,6 +25,12 @@ interface Fixtures {
 }
 
 export const test = base.extend<Fixtures>({
+    // Every page spreads its sign-in/sign-up calls over distinct client addresses (see e2e/auth.ts).
+    page: async ({ page }, use) => {
+        await spreadAuthRateLimit(page);
+        await use(page);
+    },
+
     authenticatedPage: async ({ page }, use) => {
         const client = new MongoClient(MONGO_URI);
         await client.connect();
@@ -41,7 +47,7 @@ export const test = base.extend<Fixtures>({
         await db.collection('discoveryReports').deleteMany({});
         await client.close();
 
-        await mockAuthRoutes(page);
+        await signInAs(page);
 
         // The CI api runs without FAL_KEY, so /api/features reports every AI flag
         // as off. The web disables the corresponding controls in that case, which
@@ -67,10 +73,6 @@ export const test = base.extend<Fixtures>({
         await page.route(/\/api\/image\//, (route) =>
             route.fulfill({ status: 200, contentType: 'image/gif', body: Buffer.from('GIF89a', 'ascii') })
         );
-
-        await page.addInitScript((token) => {
-            localStorage.setItem('accessToken', token);
-        }, MOCK_TOKEN);
 
         await use(page);
     },
@@ -105,4 +107,4 @@ export const test = base.extend<Fixtures>({
 });
 
 export { expect } from '@playwright/test';
-export { mockAuthRoutes };
+export { signInAs };

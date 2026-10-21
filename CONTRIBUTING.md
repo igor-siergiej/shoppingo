@@ -16,15 +16,14 @@ cp .env.example .env
 bun run dev:local                  # mongo + rustfs + mock-kivo + web (:4000) + api (:4001)
 ```
 
-Open <http://localhost:4000> and register a new account (any username and a
-6+ character password will do; the mock-kivo keeps the user in memory).
+Open <http://localhost:4000> and register a new account (3–50 character
+username of letters, digits, `_` or `.`; 8+ character password). Accounts live
+in your local Mongo; sign-in is built into the api (Better Auth), configured by
+`BETTER_AUTH_SECRET` / `BETTER_AUTH_URL` in `.env`.
 
-`dev:local` starts its own mock kivo on `127.0.0.1:3099` and points the api
-at it — no separate [`igor-siergiej/kivo`](https://github.com/igor-siergiej/kivo)
-checkout is needed. The script refuses to run with `NODE_ENV=production` and
-the api's `AUTH_URL` rule only allows `http://localhost` outside production.
-If you want a real kivo, launch it and export
-`AUTH_URL=https://kivo.example.com` before `bun run start`.
+`dev:local` still starts a mock kivo on `127.0.0.1:3099` for the api's legacy
+bearer fallback; the web no longer talks to it (it goes away with jott #147).
+The script refuses to run with `NODE_ENV=production`.
 
 The full self-host stack (web + api + mongo + rustfs + kivo from published
 images) lives in `selfhost/docker-compose.yml`; a single

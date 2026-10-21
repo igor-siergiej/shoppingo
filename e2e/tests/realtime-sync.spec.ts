@@ -1,8 +1,7 @@
 import type { Browser } from '@playwright/test';
 import { apiAddItem, apiCreateList, apiDeleteItem, apiUpdateItem } from '../api-helpers';
 import { seedFriendship } from '../db-helpers';
-import { expect, mockAuthRoutes, test } from '../fixtures';
-import { MOCK_TOKEN_2 } from '../mocks/auth';
+import { expect, signInAs, test } from '../fixtures';
 import { MOCK_USER, MOCK_USER_2 } from '../mocks/data/users';
 
 const LIST_TITLE = 'Shared Realtime';
@@ -16,11 +15,10 @@ const shareListWithSecondUser = async (browser: Browser) => {
 
     const context = await browser.newContext();
     const page = await context.newPage();
-    await mockAuthRoutes(page, MOCK_USER_2);
+    await signInAs(page, MOCK_USER_2);
     await page.route(/\/api\/image\//, (route) =>
         route.fulfill({ status: 200, contentType: 'image/gif', body: Buffer.from('GIF89a', 'ascii') })
     );
-    await page.addInitScript((token) => localStorage.setItem('accessToken', token), MOCK_TOKEN_2);
     return { context, page };
 };
 

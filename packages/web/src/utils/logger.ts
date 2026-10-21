@@ -3,8 +3,6 @@
  * Logs are then collected by Promtail and sent to Loki
  */
 
-import { getAccessToken } from '../auth/accessTokenStore';
-
 interface LogEntry {
     level: 'debug' | 'info' | 'warn' | 'error';
     message: string;
@@ -21,17 +19,9 @@ class FrontendLogger {
     private batchTimer: NodeJS.Timeout | null = null;
     private apiUrl = '/api/logs';
 
+    // The session cookie rides along with the same-origin request; no header needed.
     private getAuthHeaders(): Record<string, string> {
-        const headers: Record<string, string> = {
-            'Content-Type': 'application/json',
-        };
-
-        const accessToken = getAccessToken();
-        if (accessToken) {
-            headers.Authorization = `Bearer ${accessToken}`;
-        }
-
-        return headers;
+        return { 'Content-Type': 'application/json' };
     }
 
     private createLogEntry(level: LogEntry['level'], message: string, context?: Record<string, unknown>): LogEntry {

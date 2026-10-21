@@ -47,10 +47,7 @@
   "ignoreUnresolvedImports": ["bun:test", "virtual:pwa-register/react"],
   "ignoreExports": [
     { "file": "packages/api/src/dependencies/types.ts", "exports": ["CollectionNames"] },
-    {
-      "file": "packages/web/src/hooks/useRegisterForm.ts",
-      "exports": ["registerSchema", "parseRegisterError"]
-    }
+    { "file": "packages/web/src/hooks/useRegisterForm.ts", "exports": ["registerSchema"] }
   ],
   "ignoreDependencies": [
     "@radix-ui/react-alert-dialog",

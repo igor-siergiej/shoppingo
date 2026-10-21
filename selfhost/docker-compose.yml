@@ -78,10 +78,9 @@ services:
     environment:
       PORT: "4001"
       AUTH_URL: "http://kivo:3008"
-      # Better Auth env (kivo-replacement, see docs/superpowers/specs/2026-10-20-built-in-auth-design.md).
-      # Required once the web cutover ships; before that the api boots without them and keeps
-      # accepting kivo bearer tokens. Public origin of the web app, not the api container.
-      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-}
+      # Built-in sign-in (Better Auth). The secret signs session cookies; the URL is the public
+      # origin of the web app, not the api container.
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?set BETTER_AUTH_SECRET in selfhost/.env (openssl rand -base64 32)}
       BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:4000}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}

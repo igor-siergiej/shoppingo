@@ -60,14 +60,13 @@ Bun-workspace monorepo — `packages/web`, `packages/api`, `packages/types`
   (`/api/image/:name`). OpenSearch holds an optional, derived index for
   Discover search; when `OPENSEARCH_URL` is unset `/api/discover/*` answers
   `503` and nothing else is affected.
-- **auth** — a separate service ([`kivo`](https://github.com/igor-siergiej/kivo))
-  issues JWT access/refresh tokens. The browser talks to kivo directly for
-  `/login`, `/register`, `/refresh` and `/logout`, using `AUTH_URL` from the
-  runtime `/config.json`; the access token is held in module memory, not DOM
-  storage. The api checks every bearer token against kivo `/verify` (positive
-  results cached 30 s) and looks users up via kivo `/users` with
-  `X-Service-Token`. A `401` makes the web client refresh and retry the
-  original request once (`packages/web/src/api/makeRequest`).
+- **auth** — built into the api with [Better Auth](https://better-auth.com) at
+  `/api/auth/*`: username + password (argon2id), no email. The session is an
+  httpOnly same-origin cookie, so the web sends no `Authorization` header; a
+  `401` from the api signs the web client out (`auth:session-expired`). The
+  last signed-in `{id, username}` is cached in `localStorage` so an offline
+  launch still opens the app. The api still accepts kivo bearer tokens as a
+  fallback until kivo is removed (jott #147).
 - **realtime** — list members get live updates over a websocket at
   `/api/ws/lists/:title`. The browser first asks for a single-use ticket
   (`POST /api/lists/:title/socket-ticket`, 30 s TTL) because `WebSocket`
@@ -105,8 +104,8 @@ required value).
 | `PORT` | yes | api listen port (`4001`) |
 | `CONNECTION_URI`, `DATABASE_NAME` | yes | MongoDB |
 | `BUCKET_ENDPOINT`, `BUCKET_NAME`, `BUCKET_ACCESS_KEY`, `BUCKET_SECRET_KEY` | yes | S3-compatible object store (RustFS) |
-| `AUTH_URL` | no | kivo base URL; must be `https://`, except `http://kivo:<port>` (docker network) or `http://localhost` outside production (`config/auth-url.ts`) |
-| `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` | no (until the web cutover) | built-in Better Auth at `/api/auth/*`; unset = kivo-only |
+| `AUTH_URL` | no | legacy kivo base URL for the bearer fallback; must be `https://`, except `http://kivo:<port>` (docker network) or `http://localhost` outside production (`config/auth-url.ts`) |
+| `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` | yes | Better Auth at `/api/auth/*`: cookie-signing secret and the public origin the browser sees |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | no | Google sign-in (both or neither) |
 | `FAL_KEY`, `FAL_MODEL`, `FAL_RECIPE_MODEL` | no | fal.ai key and model overrides |
 | `RECIPE_IMPORT_LLM_ENABLED`, `RECIPE_IMPORT_LLM_FIRST`, `RECIPE_IMPORT_LLM_API_KEY`, `RECIPE_IMPORT_LLM_MODEL` | no | recipe-import LLM tier; the key falls back to `FAL_KEY` |
@@ -116,8 +115,8 @@ required value).
 | `DISCOVERY_ADMIN_USER_IDS` | no | kivo user ids allowed to moderate Discover |
 | `WIKIBOOKS_USER_AGENT` | no | User-Agent for `discover:ingest` |
 
-Web: runtime `packages/web/public/config.json` (`AUTH_URL`, the kivo URL the
-browser calls; cached in `localStorage` for offline launch). Build-time:
+Web: runtime `packages/web/public/config.json` (optional `analytics`; cached in
+`localStorage` for offline launch). Build-time:
 `APP_VERSION` (version badge), `VITE_WEBMCP_OT_TOKEN` (WebMCP origin trial).
 Installing dependencies needs `NODE_AUTH_TOKEN` for the `@imapps/*` registry
 (`.bunfig.toml`); the Dockerfiles take it as a build arg. Tests add
@@ -201,8 +200,10 @@ bun run load:local                                 # k6 (manual; see scripts/loa
   function coverage on the api lcov via `scripts/check-coverage.js`. Web
   component tests use Vitest with no coverage gate.
 - **e2e** — Playwright starts web (`:4000`) and an e2e api (`:4001`,
-  database `shoppingo_e2e`, mock kivo on `:3099`) itself, but needs Mongo and
-  the object store running. Projects: `chromium` (functional), `mobile-visual` and
+  database `shoppingo_e2e`) itself, but needs Mongo and the object store
+  running. Global setup seeds two accounts (`testuser`, `otheruser`; see
+  `e2e/mocks/data/users.ts`) and specs sign in through the real
+  `/api/auth` (`e2e/auth.ts`). Projects: `chromium` (functional), `mobile-visual` and
   `desktop-visual` (screenshot diffs). Discover specs skip unless
   `E2E_OPENSEARCH_URL` is set. `@smoke`-tagged specs are what the homelab's
   nightly prod smoke runs against https://tandra.uk. See

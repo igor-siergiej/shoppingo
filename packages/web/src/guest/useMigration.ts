@@ -1,5 +1,5 @@
-import { extractUserFromToken } from '@imapps/web-utils';
 import { useCallback } from 'react';
+import type { SessionUser } from '../auth';
 import { logger } from '../utils/logger';
 import { useGuest } from './GuestContext';
 import { migrateGuestToAccount } from './migrateGuestToAccount';
@@ -17,15 +17,14 @@ export const useMigration = () => {
     const { isGuest, exitGuestMode } = useGuest();
 
     const migrateAfterAuth = useCallback(
-        async (accessToken: string): Promise<void> => {
+        async (user: SessionUser | null): Promise<void> => {
             try {
-                const userInfo = extractUserFromToken(accessToken);
-                if (!userInfo) {
-                    logger.warn('Cannot migrate guest data: access token did not contain a user');
+                if (!user) {
+                    logger.warn('Cannot migrate guest data: no signed-in user after authentication');
                     return;
                 }
 
-                await migrateGuestToAccount({ id: userInfo.id, username: userInfo.username });
+                await migrateGuestToAccount({ id: user.id, username: user.username });
             } catch (migrationError) {
                 logger.error('Guest migration failed', { error: String(migrationError) });
             } finally {

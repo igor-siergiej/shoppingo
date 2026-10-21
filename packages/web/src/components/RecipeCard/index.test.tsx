@@ -3,17 +3,6 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { RecipeCard } from './index';
 
-vi.mock('../../config/auth', () => ({
-    getAuthConfig: vi.fn(() => ({
-        accessTokenKey: 'accessToken',
-        storageType: 'localStorage',
-    })),
-}));
-
-vi.mock('@imapps/web-utils', () => ({
-    getStorageItem: vi.fn(() => null),
-}));
-
 describe('RecipeCard', () => {
     const mockRecipe: Recipe = {
         id: 'recipe-1',
@@ -67,8 +56,7 @@ describe('RecipeCard', () => {
 
         await waitFor(() => {
             expect(global.fetch).toHaveBeenCalledWith(
-                expect.stringContaining(`/api/image/${encodeURIComponent(mockRecipe.coverImageKey)}`),
-                expect.any(Object)
+                expect.stringContaining(`/api/image/${encodeURIComponent(mockRecipe.coverImageKey)}`)
             );
         });
 

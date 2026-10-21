@@ -8,9 +8,9 @@ Mocks for AI, speech and push live in `e2e/mocks` (see `e2e/README.md`).
 
 | Feature | Functional | Visual |
 | --- | --- | --- |
-| Login, register, validation, logout | `auth.spec.ts`, `login.spec.ts` | `auth.visual.spec.ts` |
+| Login, register, validation, logout, register → sign out → sign in (`@smoke`) | `auth.spec.ts`, `login.spec.ts` | `auth.visual.spec.ts` |
 | Wrong password, unknown user, taken username, password rules | `account-resilience.spec.ts` | |
-| Reload keeps session, signed-out deep link returns to the page after login, refresh failure, switching users | `account-resilience.spec.ts`, `token-refresh.spec.ts` | |
+| Reload keeps session, signed-out deep link returns to the page after login, expired session, switching users | `account-resilience.spec.ts` | |
 | Menu: settings, theme, install prompt, update check | `account-resilience.spec.ts` | |
 | Push notifications toggle | `account-resilience.spec.ts`, `mock-harness.spec.ts` | |
 | Settings: unit system | `preferred-units.spec.ts` | `more-screens.visual.spec.ts` |

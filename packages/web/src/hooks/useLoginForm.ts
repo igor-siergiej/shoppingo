@@ -1,8 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useAuth, useAuthConfig } from '@imapps/web-utils';
 import { useForm } from 'react-hook-form';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { z } from 'zod';
+import { useRefreshSession } from '../auth';
+import { authClient } from '../auth/client';
+import { authErrorMessage } from '../auth/errors';
 import { useMigration } from '../guest/useMigration';
 import { logger } from '../utils/logger';
 import { usernameField } from './authSchemas';
@@ -30,8 +32,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 export const useLoginForm = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { login } = useAuth();
-    const config = useAuthConfig();
+    const refreshSession = useRefreshSession();
     const { migrateAfterAuth } = useMigration();
 
     const {
@@ -43,36 +44,19 @@ export const useLoginForm = () => {
         resolver: zodResolver(loginSchema),
     });
 
-    // fallow-ignore-next-line complexity
     const onSubmit = async (data: LoginFormData) => {
         logger.info('Login attempt', { username: data.username });
         try {
-            const response = await fetch(`${config.authUrl}/login`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                credentials: 'include',
-                body: JSON.stringify(data),
+            const { error } = await authClient.signIn.username({
+                username: data.username,
+                password: data.password,
             });
+            if (error) throw new Error(authErrorMessage(error, 'Login failed'));
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Login failed');
-            }
-
-            const responseData = await response.json();
-
-            if (!responseData.token && !responseData.accessToken) {
-                logger.error('No token found in response from login endpoint');
-                throw new Error('Login successful but no token received');
-            }
-
-            const accessToken = responseData.token || responseData.accessToken;
-            login(accessToken);
+            const user = await refreshSession();
 
             // Upload any guest lists before navigating so the account lands with them.
-            await migrateAfterAuth(accessToken);
+            await migrateAfterAuth(user);
 
             logger.info('Login successful', { username: data.username });
 

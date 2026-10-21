@@ -5,19 +5,6 @@ import { useItemImage } from './useItemImage';
 // Mock fetch globally
 global.fetch = vi.fn();
 
-// Mock the auth config
-vi.mock('../config/auth', () => ({
-    getAuthConfig: () => ({
-        accessTokenKey: 'accessToken',
-        storageType: 'localStorage',
-    }),
-}));
-
-// Mock web-utils
-vi.mock('@imapps/web-utils', () => ({
-    getStorageItem: vi.fn(() => 'mock-token'),
-}));
-
 describe('useItemImage', () => {
     beforeEach(() => {
         vi.clearAllMocks();
@@ -46,28 +33,7 @@ describe('useItemImage', () => {
         renderHook(() => useItemImage('apple'));
 
         await waitFor(() => {
-            expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining('/api/image/apple'), expect.any(Object));
-        });
-    });
-
-    it('includes authorization header when token exists', async () => {
-        const mockBlob = new Blob(['test'], { type: 'image/png' });
-        (global.fetch as any).mockResolvedValueOnce({
-            ok: true,
-            blob: vi.fn().mockResolvedValueOnce(mockBlob),
-        });
-
-        renderHook(() => useItemImage('test-item'));
-
-        await waitFor(() => {
-            expect(global.fetch).toHaveBeenCalledWith(
-                expect.any(String),
-                expect.objectContaining({
-                    headers: expect.objectContaining({
-                        Authorization: expect.stringContaining('Bearer'),
-                    }),
-                })
-            );
+            expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining('/api/image/apple'));
         });
     });
 
@@ -154,13 +120,13 @@ describe('useItemImage', () => {
         });
 
         await waitFor(() => {
-            expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining('/api/image/apple'), expect.any(Object));
+            expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining('/api/image/apple'));
         });
 
         rerender({ name: 'banana' });
 
         await waitFor(() => {
-            expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining('/api/image/banana'), expect.any(Object));
+            expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining('/api/image/banana'));
         });
     });
 });
