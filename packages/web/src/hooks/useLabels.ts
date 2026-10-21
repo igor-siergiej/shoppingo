@@ -1,7 +1,7 @@
-import { useUser } from '@imapps/web-utils';
 import type { Label } from '@shoppingo/types';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getLabelsQuery } from '../api';
+import { useUser } from '../auth';
 import { drainOutbox } from '../offline/drainer';
 import { applyLabelIntent } from '../offline/intents';
 import { type OutboxIntent, outboxStore } from '../offline/outboxStore';

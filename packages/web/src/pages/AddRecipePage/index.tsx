@@ -1,4 +1,3 @@
-import { useUser } from '@imapps/web-utils';
 import type { Recipe, RecipeDifficulty } from '@shoppingo/types';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
@@ -11,6 +10,7 @@ import {
     importRecipe,
     uploadRecipeImage,
 } from '../../api';
+import { useUser } from '../../auth';
 import { FriendPicker } from '../../components/FriendPicker';
 import { RecipeTimingFields } from '../../components/RecipeTimingFields';
 import { StepsList } from '../../components/StepsList';

@@ -1,7 +1,7 @@
-import { useUser } from '@imapps/web-utils';
 import type { Todo } from '@shoppingo/types';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { type CreateTodoBody, getTodosQuery, type UpdateTodoBody } from '../api';
+import { useUser } from '../auth';
 import { drainOutbox } from '../offline/drainer';
 import { applyTodoIntent } from '../offline/intents';
 import { type OutboxIntent, outboxStore } from '../offline/outboxStore';

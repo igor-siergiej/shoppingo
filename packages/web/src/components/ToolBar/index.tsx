@@ -1,6 +1,5 @@
 'use client';
 
-import { useAuth, useUser } from '@imapps/web-utils';
 import type { Item } from '@shoppingo/types';
 import { ListType } from '@shoppingo/types';
 import { useQueryClient } from '@tanstack/react-query';
@@ -21,8 +20,8 @@ import { AnimatePresence, MotionConfig, motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import useMeasure from 'react-use-measure';
-
 import type { SpokenItem } from '../../api';
+import { useAuth, useUser } from '../../auth';
 import { Card } from '../../components/ui/card';
 import { useGuest } from '../../guest/GuestContext';
 import { useManageUsers } from '../../hooks/useManageUsers';

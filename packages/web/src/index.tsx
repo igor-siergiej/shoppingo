@@ -4,19 +4,18 @@ import './index.css';
 // token lives in module memory, not in window.localStorage. See auth/storagePatches.ts.
 import './auth/storagePatches';
 
-import { AuthConfigProvider, AuthProvider, UserProvider } from '@imapps/web-utils';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React, { Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
+import { AuthRoot } from './auth';
 import AppInitializer from './components/AppInitializer';
 import ConfigLoader from './components/ConfigLoader';
 import ErrorBoundary from './components/ErrorBoundary';
 import LoadingPage from './components/LoadingPage';
 import { RootLayout } from './components/RootLayout';
 import RouterErrorHandler from './components/RouterErrorHandler';
-import { getAuthConfig } from './config/auth';
 import { PullToRefreshProvider } from './contexts/PullToRefreshContext';
 import { PWAProvider } from './contexts/PWAContext';
 import { ThemeProvider } from './contexts/ThemeContext';
@@ -268,21 +267,17 @@ const router = createBrowserRouter([
 const AppContent: React.FC = () => {
     return (
         <QueryClientProvider client={queryClient}>
-            <AuthConfigProvider config={getAuthConfig()}>
-                <UserProvider>
-                    <AuthProvider>
-                        <ThemeProvider>
-                            <UnitSystemProvider>
-                                <PullToRefreshProvider>
-                                    <PWAProvider>
-                                        <RouterProvider router={router} />
-                                    </PWAProvider>
-                                </PullToRefreshProvider>
-                            </UnitSystemProvider>
-                        </ThemeProvider>
-                    </AuthProvider>
-                </UserProvider>
-            </AuthConfigProvider>
+            <AuthRoot>
+                <ThemeProvider>
+                    <UnitSystemProvider>
+                        <PullToRefreshProvider>
+                            <PWAProvider>
+                                <RouterProvider router={router} />
+                            </PWAProvider>
+                        </PullToRefreshProvider>
+                    </UnitSystemProvider>
+                </ThemeProvider>
+            </AuthRoot>
         </QueryClientProvider>
     );
 };

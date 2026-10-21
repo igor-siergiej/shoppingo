@@ -1,4 +1,4 @@
-import { useUser } from '@imapps/web-utils';
+import { useUser } from '../../auth';
 import { useListRealtime } from '../../hooks/useListRealtime';
 import { ViewerBanner } from './ViewerBanner';
 

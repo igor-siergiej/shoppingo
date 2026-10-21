@@ -9,7 +9,7 @@ vi.mock('react-router-dom', async () => {
     return { ...actual, useNavigate: () => mockNavigate };
 });
 
-vi.mock('@imapps/web-utils', () => ({
+vi.mock('../../auth', () => ({
     useUser: () => ({ user: { id: 'user-1' } }),
 }));
 

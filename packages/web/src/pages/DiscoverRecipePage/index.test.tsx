@@ -13,7 +13,7 @@ vi.mock('react-router-dom', async () => {
     return { ...actual, useNavigate: () => mockNavigate };
 });
 
-vi.mock('@imapps/web-utils', () => ({ useUser: () => ({ user: { id: 'user-1', username: 'me' } }) }));
+vi.mock('../../auth', () => ({ useUser: () => ({ user: { id: 'user-1', username: 'me' } }) }));
 vi.mock('../../components/ToolBar', () => ({ default: () => <div data-testid="toolbar" /> }));
 
 const SOURCE_URL = 'https://en.wikibooks.org/wiki/Cookbook:Fairy_Cakes';

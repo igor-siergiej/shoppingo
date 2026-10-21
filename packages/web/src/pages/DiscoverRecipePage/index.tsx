@@ -1,4 +1,3 @@
-import { useUser } from '@imapps/web-utils';
 import type { DiscoveryRecipe, DiscoveryRecipeSummary, Ingredient } from '@shoppingo/types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AlertTriangle, ArrowLeft, Check, ExternalLink, Plus } from 'lucide-react';
@@ -10,6 +9,7 @@ import {
     getRecipesQuery,
     getSimilarDiscoveryRecipesQuery,
 } from '../../api';
+import { useUser } from '../../auth';
 import { DiscoveryCover } from '../../components/DiscoveryCover';
 import { DiscoveryMeta, ESTIMATE_LEGEND, hasEstimates } from '../../components/DiscoveryMeta';
 import { ReportButton } from '../../components/PublishControls/ReportButton';

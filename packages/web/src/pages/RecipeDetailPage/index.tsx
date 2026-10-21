@@ -1,12 +1,12 @@
 'use client';
 
-import { useUser } from '@imapps/web-utils';
 import type { Ingredient, Recipe } from '@shoppingo/types';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ExternalLink, Pencil, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { addItemsBulk, getListsQuery, getRecipeQuery } from '../../api';
+import { useUser } from '../../auth';
 import { ManageUsersDrawer } from '../../components/ManageUsersDrawer';
 import ToolBar from '../../components/ToolBar';
 import {

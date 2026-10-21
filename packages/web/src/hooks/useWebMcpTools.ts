@@ -1,5 +1,5 @@
-import { useUser } from '@imapps/web-utils';
 import { useEffect } from 'react';
+import { useUser } from '../auth';
 import { registerWebMcpTools } from '../webmcp/registerTools';
 
 /** Offers the shopping tools to browser agents while a user is signed in, and withdraws them on sign-out. */
