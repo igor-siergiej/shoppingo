@@ -1,3 +1,18 @@
+# [2.0.0](https://github.com/igor-siergiej/tandra/compare/v1.115.0...v2.0.0) (2026-10-21)
+
+
+* chore!: rename Shoppingo to Tandra ([#283](https://github.com/igor-siergiej/tandra/issues/283)) ([c22fff1](https://github.com/igor-siergiej/tandra/commit/c22fff1429fc0750091dc79e4d1930ec1a64ed91))
+
+
+### BREAKING CHANGES
+
+* Prometheus metric names, Docker image tags
+(igurusama/imapps:tandra-{api,web}-*), workspace package names and
+browser storage keys change; data stored on the device under the old keys
+is no longer read. The old shoppingo*.imapps.uk hosts are no longer served.
+
+Release-Notes: Shoppingo is now Tandra. Settings saved on this device, like guest lists, start fresh.
+
 # [1.115.0](https://github.com/igor-siergiej/shoppingo/compare/v1.114.0...v1.115.0) (2026-10-21)
 
 
