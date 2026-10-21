@@ -14,7 +14,7 @@ const MoveInstructions = ({ inOldInstall }: { inOldInstall: boolean }) => {
     if (inOldInstall) {
         return (
             <AlertDescription>
-                This is the old Shoppingo app. Open <span className="font-medium">tandra.uk</span> in your browser,
+                This is the old Shoppingo app. Open <span className="font-medium">app.tandra.uk</span> in your browser,
                 install it from there, then remove this one to keep getting notifications.
             </AlertDescription>
         );
@@ -23,8 +23,8 @@ const MoveInstructions = ({ inOldInstall }: { inOldInstall: boolean }) => {
     return (
         <>
             <AlertDescription>
-                Shoppingo now lives at <span className="font-medium">tandra.uk</span>. If you installed it on your home
-                screen or desktop, remove the old one and install it again from here to keep getting notifications.
+                Shoppingo now lives at <span className="font-medium">app.tandra.uk</span>. If you installed it on your
+                home screen or desktop, remove the old one and install it again from here to keep getting notifications.
             </AlertDescription>
             {canInstall && (
                 <Button className="mt-2" size="sm" onClick={() => void installApp()}>
