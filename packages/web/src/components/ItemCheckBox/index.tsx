@@ -1,4 +1,4 @@
-import { type Item, type ItemCategory, type ListType, ListType as ListTypeEnum } from '@shoppingo/types';
+import { type Item, type ItemCategory, type ListType, ListType as ListTypeEnum } from '@tandra/types';
 import { motion } from 'motion/react';
 import { type MouseEvent, useId, useRef, useState } from 'react';
 import { QuantityUnitField } from '../../components/QuantityUnitField';

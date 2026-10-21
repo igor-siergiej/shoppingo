@@ -1,6 +1,6 @@
 // The last signed-in user, kept so an offline launch still knows who is signed in: the session
 // cookie is httpOnly and get-session needs the network. Only `{ id, username }`, never a credential.
-const KEY = 'shoppingo:session-user';
+const KEY = 'tandra:session-user';
 
 interface CachedSessionUser {
     id: string;

@@ -22,7 +22,7 @@ interface OutboxDB extends DBSchema {
     intents: { key: number; value: OutboxIntent };
 }
 
-const DB_NAME = 'shoppingo-outbox';
+const DB_NAME = 'tandra-outbox';
 const STORE = 'intents';
 
 let dbPromise: Promise<IDBPDatabase<OutboxDB>> | null = null;

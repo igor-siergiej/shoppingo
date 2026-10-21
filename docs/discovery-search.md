@@ -101,7 +101,7 @@ docker run -d --name opensearch -p 127.0.0.1:9200:9200 \
 OPENSEARCH_URL=http://localhost:9200
 
 # integration tests (real OpenSearch). Dedicated variable: the suite deletes every `discovery-recipes*` index it finds.
-OPENSEARCH_TEST_URL=http://localhost:9200 bun run --filter @shoppingo/api test
+OPENSEARCH_TEST_URL=http://localhost:9200 bun run --filter @tandra/api test
 ```
 
 Without `OPENSEARCH_TEST_URL` the integration suite is skipped and the unit tests still run. A 512 MB heap in a 1 GB
@@ -112,6 +112,6 @@ budget, was stable.
 
 Single-node OpenSearch on the Dokploy host, internal Docker network only (no published port), `-Xms1g -Xmx1g`, container
 memory limit 2 GB, data on a named volume. The compose file lives in the `foundry` repo (`opensearch/docker-compose.yml`).
-The API reaches it by service name: set `OPENSEARCH_URL=http://opensearch:9200` on the shoppingo API application.
+The API reaches it by service name: set `OPENSEARCH_URL=http://opensearch:9200` on the tandra API application.
 OpenSearch was chosen over Meilisearch/Typesense deliberately, partly to learn analyzers, mappings, aggregations and
 relevance tuning; the cost is roughly 2 GB of RAM.

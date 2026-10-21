@@ -1,5 +1,5 @@
 import type { MongoDbConnection } from '@imapps/api-utils';
-import type { DiscoveryRecipe, DiscoverySource } from '@shoppingo/types';
+import type { DiscoveryRecipe, DiscoverySource } from '@tandra/types';
 import { ObjectId } from 'mongodb';
 
 import { CollectionNames, type Collections } from '../../dependencies/types';

@@ -1,4 +1,4 @@
-import type { Label } from '@shoppingo/types';
+import type { Label } from '@tandra/types';
 import { format } from 'date-fns';
 import { type DayTodoItem, DayTodoList, type TodoRowHandlers } from '../../components/Calendar/DayTodoList';
 import { WeekAgenda } from '../../components/Calendar/WeekAgenda';

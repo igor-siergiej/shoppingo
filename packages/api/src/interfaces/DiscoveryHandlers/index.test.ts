@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'bun:test';
 import { errorHandler } from '@imapps/api-utils/hono';
-import type { DiscoveryRecipe } from '@shoppingo/types';
+import type { DiscoveryRecipe } from '@tandra/types';
 import { Hono } from 'hono';
 
 import type { DiscoveryCopyService } from '../../domain/DiscoveryCopyService';

@@ -1,4 +1,4 @@
-import type { User } from '@shoppingo/types';
+import type { User } from '@tandra/types';
 import { ArrowLeft } from 'lucide-react';
 import {
     AlertDialog,

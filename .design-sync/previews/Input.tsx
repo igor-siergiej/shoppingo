@@ -1,4 +1,4 @@
-import { Input } from '@shoppingo/web';
+import { Input } from '@tandra/web';
 
 export const Default = () => (
     <div style={{ width: 280 }}>

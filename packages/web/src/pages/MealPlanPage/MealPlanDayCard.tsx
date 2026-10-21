@@ -1,4 +1,4 @@
-import type { MealPlanEntry, Recipe } from '@shoppingo/types';
+import type { MealPlanEntry, Recipe } from '@tandra/types';
 import { format } from 'date-fns';
 import { CalendarDays, Plus } from 'lucide-react';
 import { Badge } from '../../components/ui/badge';

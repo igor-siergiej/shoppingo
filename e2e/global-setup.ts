@@ -4,7 +4,7 @@ import { DISCOVERY_FIXTURES } from './discovery-fixtures';
 import { MOCK_USER, MOCK_USER_2, PASSWORDS } from './mocks/data/users';
 import { resolveMongoUri } from './mongo-uri';
 
-const DB_NAME = 'shoppingo_e2e';
+const DB_NAME = 'tandra_e2e';
 
 // Writes the two fixture accounts in the shape Better Auth's Mongo adapter stores (user + credential
 // account), with fixed ids so specs can name them. Upserts, so a run that died before teardown is harmless.

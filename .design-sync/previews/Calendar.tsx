@@ -1,4 +1,4 @@
-import { Calendar } from '@shoppingo/web';
+import { Calendar } from '@tandra/web';
 
 export const DueDate = () => (
     <div style={{ border: '1px solid var(--border)', borderRadius: 12, width: 'fit-content' }}>

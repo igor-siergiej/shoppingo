@@ -1,4 +1,4 @@
-import type { Ingredient } from '@shoppingo/types';
+import type { Ingredient } from '@tandra/types';
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { useIngredientSelection } from './useIngredientSelection';

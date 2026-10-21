@@ -1,4 +1,4 @@
-import type { ItemCategory, ListResponse, ListType, User } from '@shoppingo/types';
+import type { ItemCategory, ListResponse, ListType, User } from '@tandra/types';
 import { clearList, clearSelected, deleteList, getListQuery, getListsQuery, updateListName } from '../api';
 import { useUser } from '../auth';
 import { useGuest } from '../guest/GuestContext';

@@ -1,4 +1,4 @@
-import { isoDay, type Recurrence, type Todo } from '@shoppingo/types';
+import { isoDay, type Recurrence, type Todo } from '@tandra/types';
 import type { UpdateTodoBody } from '../../../api';
 
 export interface EditValues {

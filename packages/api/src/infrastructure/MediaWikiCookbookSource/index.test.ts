@@ -57,7 +57,7 @@ describe('MediaWikiCookbookSource', () => {
 
         await source.listRecipePages();
 
-        expect(headers[0]?.['User-Agent']).toContain('Shoppingo');
+        expect(headers[0]?.['User-Agent']).toContain('Tandra');
         expect(calls[0]?.searchParams.get('maxlag')).toBe('5');
         expect(sleep).toHaveBeenCalledWith(250);
     });
@@ -192,7 +192,7 @@ describe('MediaWikiCookbookSource', () => {
             const image = await source.downloadImage('https://upload.wikimedia.org/x.jpg');
 
             expect(image).toEqual({ buffer: Buffer.from([1, 2, 3]), contentType: 'image/jpeg' });
-            expect(headers[0]?.['User-Agent']).toContain('Shoppingo');
+            expect(headers[0]?.['User-Agent']).toContain('Tandra');
         });
 
         it('backs off on 429 and gives up after a few attempts', async () => {

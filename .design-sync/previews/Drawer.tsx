@@ -6,7 +6,7 @@ import {
     DrawerFooter,
     DrawerHeader,
     DrawerTitle,
-} from '@shoppingo/web';
+} from '@tandra/web';
 
 export const Open = () => (
     <Drawer open modal={false}>

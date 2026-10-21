@@ -1,4 +1,4 @@
-import type { Recipe } from '@shoppingo/types';
+import type { Recipe } from '@tandra/types';
 import { useQuery } from '@tanstack/react-query';
 import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';

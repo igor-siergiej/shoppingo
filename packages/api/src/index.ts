@@ -105,7 +105,7 @@ export const onStartup = async () => {
             websocket,
         });
 
-        logger.info(`Shoppingo API server running on port ${port}`);
+        logger.info(`Tandra API server running on port ${port}`);
 
         dependencyContainer.resolve(DependencyToken.DailyReminderScheduler).start();
         logger.info('Daily todo reminder scheduler started');

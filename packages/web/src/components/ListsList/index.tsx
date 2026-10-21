@@ -1,4 +1,4 @@
-import type { ListResponse } from '@shoppingo/types';
+import type { ListResponse } from '@tandra/types';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {

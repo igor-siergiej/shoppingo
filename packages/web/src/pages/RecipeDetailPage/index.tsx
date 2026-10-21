@@ -1,6 +1,6 @@
 'use client';
 
-import type { Ingredient, Recipe } from '@shoppingo/types';
+import type { Ingredient, Recipe } from '@tandra/types';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ExternalLink, Pencil, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';

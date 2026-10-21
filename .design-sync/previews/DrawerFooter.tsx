@@ -1,4 +1,4 @@
-import { Button, DrawerFooter } from '@shoppingo/web';
+import { Button, DrawerFooter } from '@tandra/web';
 
 export const Default = () => (
     <div style={{ width: 360, border: '1px solid var(--border)', borderRadius: 12, background: 'var(--background)' }}>

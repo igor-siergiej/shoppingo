@@ -58,10 +58,10 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GH_TOKEN }}
       - run: bun run tsc --noEmit
-      - run: bun run --filter @shoppingo/api test --coverage --coverage-reporter=text --coverage-reporter=lcov
+      - run: bun run --filter @tandra/api test --coverage --coverage-reporter=text --coverage-reporter=lcov
         env:
           OPENSEARCH_TEST_URL: http://localhost:9200
-      - run: bun run --filter @shoppingo/web test
+      - run: bun run --filter @tandra/web test
       - run: bun run test:scripts
       - name: Check coverage threshold (90% lines and functions)
         run: bun scripts/check-coverage.js packages/api/coverage/lcov.info 90
@@ -106,7 +106,7 @@ jobs:
       - run: bunx playwright install --with-deps chromium
       - run: bun run test:e2e
         env:
-          CONNECTION_URI: mongodb://devuser:devpassword@localhost:27017/shoppingo_e2e?authSource=admin
+          CONNECTION_URI: mongodb://devuser:devpassword@localhost:27017/tandra_e2e?authSource=admin
           E2E_OPENSEARCH_URL: http://localhost:9200
       - uses: actions/upload-artifact@v4
         if: always()
@@ -146,7 +146,7 @@ jobs:
         with:
           header: playwright-report
           message: |
-            🎭 [Playwright report](https://igor-siergiej.github.io/shoppingo/pr-${{ github.event.pull_request.number }}/) for commit ${{ github.event.pull_request.head.sha }}
+            🎭 [Playwright report](https://igor-siergiej.github.io/tandra/pr-${{ github.event.pull_request.number }}/) for commit ${{ github.event.pull_request.head.sha }}
 
   # Blocking merge gate: dead code only. Run the analyzer directly via bunx
   # (the action hangs on a dead-code invocation). Analysis is <1s; the cost is

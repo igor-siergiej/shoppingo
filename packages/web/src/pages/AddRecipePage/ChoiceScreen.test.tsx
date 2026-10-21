@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { ChoiceScreen } from './ChoiceScreen';
 
-// Regression coverage for shoppingo-add-recipe-choice-dialog: the choice is now a modal
+// Regression coverage for tandra-add-recipe-choice-dialog: the choice is now a modal
 // overlay with a footer-only Cancel, not a full-page screen with a header X.
 describe('ChoiceScreen', () => {
     it('renders both options and no header Cancel (X) button', () => {

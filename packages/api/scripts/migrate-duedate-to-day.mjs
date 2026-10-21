@@ -8,7 +8,7 @@
  * Already-migrated YYYY-MM-DD values are left untouched (idempotent).
  *
  * Run against the target DB:
- *   CONNECTION_URI='mongodb://...' DATABASE_NAME='shoppingo' \
+ *   CONNECTION_URI='mongodb://...' DATABASE_NAME='tandra' \
  *     [TARGET_TZ='Europe/London'] [DRY_RUN=1] node packages/api/scripts/migrate-duedate-to-day.mjs
  */
 import { MongoClient } from 'mongodb';

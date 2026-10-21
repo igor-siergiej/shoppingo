@@ -12,7 +12,7 @@ import { guestStore } from './guestStore';
 // the tab and come back) and still find their lists. The data itself lives
 // in IndexedDB via `guestStore`; this context is just the on/off switch.
 
-const STORAGE_KEY = 'shoppingo:guest-mode';
+const STORAGE_KEY = 'tandra:guest-mode';
 
 const readFlag = (): boolean => {
     try {

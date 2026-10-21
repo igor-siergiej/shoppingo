@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import { Readable } from 'node:stream';
-import type { DiscoveryRecipe, Recipe, User } from '@shoppingo/types';
+import type { DiscoveryRecipe, Recipe, User } from '@tandra/types';
 
 import type { DiscoveryPublication } from '../DiscoveryPublicationRepository';
 import type { DiscoveryRecipeRepository } from '../DiscoveryRecipeRepository';

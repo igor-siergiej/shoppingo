@@ -1,5 +1,5 @@
 {
-  "name": "@shoppingo/api",
+  "name": "@tandra/api",
   "version": "1.115.0",
   "scripts": {
     "start": "bun --watch src/index.ts",
@@ -16,7 +16,7 @@
     "@better-auth/mongo-adapter": "1.7.12",
     "@imapps/api-utils": "0.6.0",
     "@opensearch-project/opensearch": "^3.9.0",
-    "@shoppingo/types": "workspace:*",
+    "@tandra/types": "workspace:*",
     "better-auth": "1.7.12",
     "cheerio": "^1.2.0",
     "dotenv": "^17.2.2",

@@ -1,4 +1,4 @@
-import type { MealPlanEntry } from '@shoppingo/types';
+import type { MealPlanEntry } from '@tandra/types';
 import { ImageOff, Utensils, X } from 'lucide-react';
 import { PortionsStepper } from '../../components/PortionsStepper';
 import { Badge } from '../../components/ui/badge';

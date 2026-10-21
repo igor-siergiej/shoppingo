@@ -2,7 +2,7 @@ import type { Context, Next } from 'hono';
 
 import { config } from '../config';
 
-const DEFAULT_ALLOWED_ORIGINS = ['https://shoppingo.imapps.uk', 'http://localhost:4000', 'http://localhost:5173'];
+const DEFAULT_ALLOWED_ORIGINS = ['https://tandra.uk', 'http://localhost:4000', 'http://localhost:5173'];
 
 const parseOrigins = (raw: string | undefined): string[] => {
     if (!raw) return DEFAULT_ALLOWED_ORIGINS;

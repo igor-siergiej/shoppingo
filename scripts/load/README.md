@@ -1,6 +1,6 @@
 # API capacity test (k6)
 
-Finds how many concurrent user sessions the shoppingo API handles before latency or errors leave budget.
+Finds how many concurrent user sessions the tandra API handles before latency or errors leave budget.
 Run it locally on demand, or let the `Load` workflow run a short gated version on PRs (see "CI").
 
 ```bash
@@ -14,7 +14,7 @@ STEPS=100,200,300 STEP_DURATION=20s bun run load:local
 |---|---|
 | API | `packages/api` on `:4101`, started with `env -i` (no `FAL_KEY`, no OpenSearch, nothing from `.env` except the Mongo URI) |
 | Auth | the throwaway API's own Better Auth (`BETTER_AUTH_SECRET`/`BETTER_AUTH_URL` set); k6 `setup()` signs each fixture user up via `POST /api/auth/sign-up/email` and sends the returned session cookie on every call |
-| Database | throwaway `shoppingo_k6` on the local dev Mongo; dropped on exit. The runner refuses non-localhost Mongo URIs |
+| Database | throwaway `tandra_k6` on the local dev Mongo; dropped on exit. The runner refuses non-localhost Mongo URIs |
 | k6 | `grafana/k6` in Docker with `--network host`; no local k6 install |
 
 Output lands in `scripts/load/results/<timestamp>/` (gitignored): `report.txt`, `summary.json`, `container-cpu.csv`, `api.log`.
@@ -33,11 +33,11 @@ Auth is the API's built-in Better Auth: each sign-up uses a distinct `X-Forwarde
 
 ## Zero AI spend
 
-The script never calls `/api/recipes/import`, `/image/generate` or `/api/recipes/substitutes`, and the API in `run-local.sh` has no `FAL_KEY`. Independently, `teardown()` diffs the server's own counters (`shoppingo_api_http_requests_total` for those routes, `shoppingo_images_generated_total`) against a baseline taken in `setup()`. The `ai_calls_detected` and `ai_check_unavailable` thresholds fail the run if either moved or the check could not be made.
+The script never calls `/api/recipes/import`, `/image/generate` or `/api/recipes/substitutes`, and the API in `run-local.sh` has no `FAL_KEY`. Independently, `teardown()` diffs the server's own counters (`tandra_api_http_requests_total` for those routes, `tandra_images_generated_total`) against a baseline taken in `setup()`. The `ai_calls_detected` and `ai_check_unavailable` thresholds fail the run if either moved or the check could not be made.
 
 ## Targets
 
-`BASE_URL` may only be `localhost`, `127.0.0.1` or `host.docker.internal`; anything else aborts. There is no staging deployment of shoppingo, and production must never be load tested. Everything runs against a throwaway API and database.
+`BASE_URL` may only be `localhost`, `127.0.0.1` or `host.docker.internal`; anything else aborts. There is no staging deployment of tandra, and production must never be load tested. Everything runs against a throwaway API and database.
 
 ## CI
 

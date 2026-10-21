@@ -1,4 +1,4 @@
-import type { Item } from '@shoppingo/types';
+import type { Item } from '@tandra/types';
 
 import { CATEGORY_LABELS, groupByCategory } from '../../utils/itemCategories';
 import ItemCheckBox from '../ItemCheckBox';

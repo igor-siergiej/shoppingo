@@ -7,7 +7,7 @@ import {
     CardFooter,
     CardHeader,
     CardTitle,
-} from '@shoppingo/web';
+} from '@tandra/web';
 
 export const RecipeCard = () => (
     <Card style={{ width: 340 }}>

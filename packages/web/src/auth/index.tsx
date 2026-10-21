@@ -1,5 +1,5 @@
 /**
- * The web's only auth surface. The session is Shoppingo's own Better Auth cookie (httpOnly,
+ * The web's only auth surface. The session is Tandra's own Better Auth cookie (httpOnly,
  * same-origin), so nothing here holds a credential: requests carry the cookie by themselves.
  * This module tracks who is signed in, keeps a copy for offline launches (`sessionCache`), and
  * exposes the narrow hooks every component reads.
@@ -41,7 +41,7 @@ const markReturningUser = () => {
 
 // Set while a sign-out has not reached the server (offline, network error). The httpOnly cookie is still
 // valid then, so the next launch must finish the sign-out before asking who is signed in.
-const SIGN_OUT_PENDING_KEY = 'shoppingo:sign-out-pending';
+const SIGN_OUT_PENDING_KEY = 'tandra:sign-out-pending';
 
 const signOutOnServer = async (): Promise<boolean> => {
     try {

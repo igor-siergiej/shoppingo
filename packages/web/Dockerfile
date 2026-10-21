@@ -19,7 +19,7 @@ COPY . .
 
 RUN NODE_AUTH_TOKEN=${NODE_AUTH_TOKEN} bun install --frozen-lockfile
 
-RUN APP_VERSION="$APP_VERSION" bun run --filter @shoppingo/web build
+RUN APP_VERSION="$APP_VERSION" bun run --filter @tandra/web build
 
 FROM nginx:alpine
 

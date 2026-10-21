@@ -1,4 +1,4 @@
-import { ITEM_CATEGORIES, type ItemCategory } from '@shoppingo/types';
+import { ITEM_CATEGORIES, type ItemCategory } from '@tandra/types';
 
 import type { FalLlmClient } from '../FalLlmClient';
 import { categorySchema } from './schema';

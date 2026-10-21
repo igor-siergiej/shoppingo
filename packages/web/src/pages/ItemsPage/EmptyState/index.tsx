@@ -1,4 +1,4 @@
-import type { ListType } from '@shoppingo/types';
+import type { ListType } from '@tandra/types';
 import { ShoppingCart } from 'lucide-react';
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '../../../components/ui/empty';
 

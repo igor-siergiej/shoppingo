@@ -6,7 +6,7 @@
  */
 import 'dotenv/config';
 
-import type { DiscoveryRecipe } from '@shoppingo/types';
+import type { DiscoveryRecipe } from '@tandra/types';
 
 import { config } from '../src/config';
 import { dependencyContainer, registerDepdendencies } from '../src/dependencies';

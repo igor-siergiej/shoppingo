@@ -1,4 +1,4 @@
-import type { Recipe } from '@shoppingo/types';
+import type { Recipe } from '@tandra/types';
 import { useState } from 'react';
 import { PinnedSearchField } from '../../components/PinnedSearchField';
 import { Button } from '../../components/ui/button';

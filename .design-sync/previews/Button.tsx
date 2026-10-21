@@ -1,4 +1,4 @@
-import { Button } from '@shoppingo/web';
+import { Button } from '@tandra/web';
 
 export const Variants = () => (
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center' }}>

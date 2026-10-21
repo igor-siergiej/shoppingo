@@ -1,4 +1,4 @@
-import type { RecipeImportResult } from '@shoppingo/types';
+import type { RecipeImportResult } from '@tandra/types';
 
 import type { ParsedIngredient } from '../IngredientStructurer/types';
 

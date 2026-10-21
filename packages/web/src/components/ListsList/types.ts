@@ -1,4 +1,4 @@
-import type { ListResponse } from '@shoppingo/types';
+import type { ListResponse } from '@tandra/types';
 
 export interface ListsListProps {
     lists: Array<ListResponse>;

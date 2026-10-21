@@ -1,4 +1,4 @@
-import type { Ingredient } from '@shoppingo/types';
+import type { Ingredient } from '@tandra/types';
 import { motion } from 'motion/react';
 import { type MouseEvent, useId, useRef, useState } from 'react';
 import { QuantityBadge } from '../../components/ItemCheckBox/QuantityBadge';

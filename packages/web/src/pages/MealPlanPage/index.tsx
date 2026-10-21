@@ -1,4 +1,4 @@
-import type { MealPlanEntry, Recipe } from '@shoppingo/types';
+import type { MealPlanEntry, Recipe } from '@tandra/types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { addDays, format } from 'date-fns';
 import { useMemo, useState } from 'react';

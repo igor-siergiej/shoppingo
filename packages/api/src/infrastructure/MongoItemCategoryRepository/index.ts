@@ -1,5 +1,5 @@
 import type { MongoDbConnection } from '@imapps/api-utils';
-import type { ItemCategory } from '@shoppingo/types';
+import type { ItemCategory } from '@tandra/types';
 
 import { CollectionNames, type Collections } from '../../dependencies/types';
 import type { ItemCategoryRepository } from '../../domain/ItemCategoryRepository';

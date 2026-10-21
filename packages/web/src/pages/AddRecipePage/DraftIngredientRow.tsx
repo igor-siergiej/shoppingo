@@ -1,4 +1,4 @@
-import { ListType } from '@shoppingo/types';
+import { ListType } from '@tandra/types';
 import { ItemCheckBoxCard } from '../../components/ItemCheckBox/ItemCheckBoxCard';
 import { SwipeRevealShell } from '../../components/SwipeRevealShell';
 import { useItemImage } from '../../hooks/useItemImage';

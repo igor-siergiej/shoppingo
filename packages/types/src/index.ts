@@ -176,7 +176,7 @@ export interface DiscoveryRecipe {
     /**
      * Stable URL slug for the public, unauthenticated discover API. Set on
      * user-published recipes; ingestion does not yet backfill the existing
-     * ~3.7k Wikibooks recipes (see shoppingo-public-discovery-api card body).
+     * ~3.7k Wikibooks recipes (see tandra-public-discovery-api card body).
      * Sparse: recipes without a slug are still served by id from the
      * authenticated /api/discover routes.
      */

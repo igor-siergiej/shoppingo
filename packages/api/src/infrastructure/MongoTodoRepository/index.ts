@@ -1,5 +1,5 @@
 import type { MongoDbConnection } from '@imapps/api-utils';
-import type { Todo } from '@shoppingo/types';
+import type { Todo } from '@tandra/types';
 
 import { CollectionNames, type Collections } from '../../dependencies/types';
 import type { TodoRepository } from '../../domain/TodoRepository';

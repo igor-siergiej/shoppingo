@@ -1,4 +1,4 @@
-import type { MealPlanEntry, Recipe } from '@shoppingo/types';
+import type { MealPlanEntry, Recipe } from '@tandra/types';
 import { describe, expect, it } from 'vitest';
 import { buildShoppingRows, dayKey, weekDays, weekStart } from './mealPlan';
 

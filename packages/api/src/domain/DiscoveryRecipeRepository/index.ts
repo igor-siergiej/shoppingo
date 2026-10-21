@@ -1,4 +1,4 @@
-import type { DiscoveryRecipe, DiscoverySource } from '@shoppingo/types';
+import type { DiscoveryRecipe, DiscoverySource } from '@tandra/types';
 
 /** System of record for the shared recipe library (`discoveryRecipes`). Personal recipes never pass through here. */
 export interface DiscoveryRecipeRepository {

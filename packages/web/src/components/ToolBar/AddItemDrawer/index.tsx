@@ -1,4 +1,4 @@
-import type { ListType } from '@shoppingo/types';
+import type { ListType } from '@tandra/types';
 import { Plus } from 'lucide-react';
 import { useId, useState } from 'react';
 import { QuantityUnitField } from '../../../components/QuantityUnitField';

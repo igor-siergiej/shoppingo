@@ -1,4 +1,4 @@
-import type { Recipe } from '@shoppingo/types';
+import type { Recipe } from '@tandra/types';
 import { Card, CardContent } from '../../components/ui/card';
 import { Skeleton } from '../../components/ui/skeleton';
 import { RecipeCard } from '../RecipeCard';

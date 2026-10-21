@@ -1,4 +1,4 @@
-import type { Friendship, User } from '@shoppingo/types';
+import type { Friendship, User } from '@tandra/types';
 
 interface SharedItem {
     ownerId?: string;

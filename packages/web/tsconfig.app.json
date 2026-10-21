@@ -8,7 +8,7 @@
     "emitDeclarationOnly": false,
     "types": ["vite/client", "vitest/globals", "@testing-library/jest-dom"],
     "paths": {
-      "@shoppingo/types": ["../types/src"],
+      "@tandra/types": ["../types/src"],
       "@/*": ["./src/*"]
     }
   },

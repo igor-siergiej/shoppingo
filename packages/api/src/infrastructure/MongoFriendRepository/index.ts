@@ -1,5 +1,5 @@
 import type { MongoDbConnection } from '@imapps/api-utils';
-import type { Friendship, PairingCode } from '@shoppingo/types';
+import type { Friendship, PairingCode } from '@tandra/types';
 
 import { CollectionNames, type Collections } from '../../dependencies/types';
 import type { FriendRepository } from '../../domain/FriendRepository';

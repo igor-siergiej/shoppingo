@@ -1,4 +1,4 @@
-import type { Ingredient, Recipe, User } from '@shoppingo/types';
+import type { Ingredient, Recipe, User } from '@tandra/types';
 import { useQueryClient } from '@tanstack/react-query';
 import { drainOutbox } from '../offline/drainer';
 import { applyRecipeIntent } from '../offline/intents';

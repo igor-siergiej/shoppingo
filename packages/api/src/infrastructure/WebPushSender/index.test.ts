@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, mock } from 'bun:test';
-import type { PushSubscription } from '@shoppingo/types';
+import type { PushSubscription } from '@tandra/types';
 
 const setVapidDetails = mock(() => {});
 const sendNotification = mock(async () => ({ statusCode: 201 }));

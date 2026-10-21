@@ -1,4 +1,4 @@
-import type { DiscoveryEstimatedField, Ingredient, RecipeDifficulty } from '@shoppingo/types';
+import type { DiscoveryEstimatedField, Ingredient, RecipeDifficulty } from '@tandra/types';
 
 /** A recipe page as the wiki lists it: stable page id, current title and revision. */
 export interface WikibooksPageRef {

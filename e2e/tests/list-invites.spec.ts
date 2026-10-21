@@ -4,7 +4,7 @@ import { expect, test } from '../fixtures';
 const authA = () => sessionHeaders(MOCK_USER);
 const authB = () => sessionHeaders(MOCK_USER_2);
 
-// End-to-end for shoppingo-invite-links. The e2e suite uses two fixture users
+// End-to-end for tandra-invite-links. The e2e suite uses two fixture users
 // (`testuser` and `otheruser`) seeded into Better Auth by global-setup. The web side
 // (the /invite/:token page) is exercised separately in unit tests; here we
 // exercise the API contract that the web client uses.

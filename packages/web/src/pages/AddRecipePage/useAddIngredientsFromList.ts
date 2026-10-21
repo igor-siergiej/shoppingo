@@ -1,5 +1,5 @@
-import type { ListResponse } from '@shoppingo/types';
-import { ListType } from '@shoppingo/types';
+import type { ListResponse } from '@tandra/types';
+import { ListType } from '@tandra/types';
 import { useState } from 'react';
 import type { Ingredient } from './IngredientsField';
 

@@ -1,4 +1,4 @@
-import type { Item, Label, ListResponse, ListType, Recipe, Todo, User } from '@shoppingo/types';
+import type { Item, Label, ListResponse, ListType, Recipe, Todo, User } from '@tandra/types';
 import {
     applyItemIntent,
     applyLabelIntent,

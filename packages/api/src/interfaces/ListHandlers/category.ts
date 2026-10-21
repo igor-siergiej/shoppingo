@@ -1,5 +1,5 @@
 import { APIError } from '@imapps/api-utils/hono';
-import type { ItemCategory } from '@shoppingo/types';
+import type { ItemCategory } from '@tandra/types';
 import type { Context } from 'hono';
 
 import { dependencyContainer } from '../../dependencies';

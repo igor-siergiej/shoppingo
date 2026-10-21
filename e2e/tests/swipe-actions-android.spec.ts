@@ -2,7 +2,7 @@ import { devices } from '@playwright/test';
 import { apiAddItem, apiCreateList } from '../api-helpers';
 import { expect, test } from '../fixtures';
 
-// Regression coverage for shoppingo-shopping-list-delete-double-press (reported on
+// Regression coverage for tandra-shopping-list-delete-double-press (reported on
 // Android Chrome): the revealed Delete button's hit-test can race the card's spring
 // settle animation, so a tap that lands before settle hits the still-overlapping
 // card (closing the swipe) instead of the button — "needs 2 presses". Pixel 5 uses

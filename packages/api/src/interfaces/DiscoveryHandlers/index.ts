@@ -1,11 +1,6 @@
 import type { Logger } from '@imapps/api-utils';
 import { APIError } from '@imapps/api-utils/hono';
-import type {
-    DiscoveryPublishRequest,
-    DiscoverySearchQuery,
-    DiscoverySource,
-    RecipeDifficulty,
-} from '@shoppingo/types';
+import type { DiscoveryPublishRequest, DiscoverySearchQuery, DiscoverySource, RecipeDifficulty } from '@tandra/types';
 import type { Context } from 'hono';
 
 import type { DiscoveryCopyService } from '../../domain/DiscoveryCopyService';

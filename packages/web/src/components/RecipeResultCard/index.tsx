@@ -1,4 +1,4 @@
-import type { Recipe } from '@shoppingo/types';
+import type { Recipe } from '@tandra/types';
 import { ImageOff } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useAuthedImage } from '../../hooks/useAuthedImage';

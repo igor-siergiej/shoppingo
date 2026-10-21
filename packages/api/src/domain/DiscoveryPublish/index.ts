@@ -1,5 +1,5 @@
 import type { Logger } from '@imapps/api-utils';
-import type { DiscoveryRecipe, Ingredient, PublishedRecipeRef, Recipe, User } from '@shoppingo/types';
+import type { DiscoveryRecipe, Ingredient, PublishedRecipeRef, Recipe, User } from '@tandra/types';
 
 import type { DiscoveryPublicationRepository } from '../DiscoveryPublicationRepository';
 import type { DiscoveryService } from '../DiscoveryService';

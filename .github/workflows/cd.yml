@@ -53,7 +53,7 @@ jobs:
         id: version
         run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
       - name: Publish Docker images
-        run: bash .github/workflows-utils/pipelines/scripts/publish-images.sh shoppingo ${{ steps.version.outputs.version }}
+        run: bash .github/workflows-utils/pipelines/scripts/publish-images.sh tandra ${{ steps.version.outputs.version }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GH_TOKEN }}
 

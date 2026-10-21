@@ -1,5 +1,5 @@
 import type { MongoDbConnection } from '@imapps/api-utils';
-import type { PushSubscription } from '@shoppingo/types';
+import type { PushSubscription } from '@tandra/types';
 
 import { CollectionNames, type Collections } from '../../dependencies/types';
 import type { PushSubscriptionRepository } from '../../domain/PushSubscriptionRepository';

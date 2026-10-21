@@ -1,4 +1,4 @@
-import { isoDay, type Label as LabelType, type Recurrence } from '@shoppingo/types';
+import { isoDay, type Label as LabelType, type Recurrence } from '@tandra/types';
 import { Plus } from 'lucide-react';
 import { useEffect, useId, useState } from 'react';
 import type { CreateTodoBody } from '../../../api';

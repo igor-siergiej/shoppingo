@@ -1,4 +1,4 @@
-import type { Recipe } from '@shoppingo/types';
+import type { Recipe } from '@tandra/types';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { RecipeResultCard } from './index';

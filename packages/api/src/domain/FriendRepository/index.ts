@@ -1,4 +1,4 @@
-import type { Friendship, PairingCode } from '@shoppingo/types';
+import type { Friendship, PairingCode } from '@tandra/types';
 
 export interface FriendRepository {
     ensureIndexes(): Promise<void>;

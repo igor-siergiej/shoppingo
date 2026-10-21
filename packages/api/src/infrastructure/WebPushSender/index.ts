@@ -1,5 +1,5 @@
 import type { Logger } from '@imapps/api-utils';
-import type { PushSubscription } from '@shoppingo/types';
+import type { PushSubscription } from '@tandra/types';
 import webpush from 'web-push';
 
 export type SendResult = 'ok' | 'gone' | 'error';

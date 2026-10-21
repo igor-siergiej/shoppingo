@@ -1,4 +1,4 @@
-import type { RecipeImportResult } from '@shoppingo/types';
+import type { RecipeImportResult } from '@tandra/types';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('../../api', () => ({

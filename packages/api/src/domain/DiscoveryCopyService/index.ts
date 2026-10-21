@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { Logger } from '@imapps/api-utils';
-import type { Recipe, User } from '@shoppingo/types';
+import type { Recipe, User } from '@tandra/types';
 
 import { copyImage } from '../DiscoveryPublish/copyImage';
 import type { DiscoveryService } from '../DiscoveryService';

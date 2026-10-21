@@ -1,5 +1,5 @@
 import type { Logger } from '@imapps/api-utils';
-import type { MealPlanEntry, Recipe } from '@shoppingo/types';
+import type { MealPlanEntry, Recipe } from '@tandra/types';
 import type { FriendService } from '../FriendService';
 import type { IdGenerator } from '../IdGenerator';
 import type { MealPlanRepository } from '../MealPlanRepository';

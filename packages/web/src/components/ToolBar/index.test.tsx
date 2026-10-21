@@ -1,4 +1,4 @@
-import { ListType } from '@shoppingo/types';
+import { ListType } from '@tandra/types';
 import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import ToolBar from './index';

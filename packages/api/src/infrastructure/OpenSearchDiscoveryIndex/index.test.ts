@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'bun:test';
 import { errors } from '@opensearch-project/opensearch';
-import type { DiscoveryRecipe } from '@shoppingo/types';
+import type { DiscoveryRecipe } from '@tandra/types';
 
 import type { NormalizedDiscoveryQuery } from '../../domain/DiscoveryService/types';
 import { toIndexDocument } from './document';

@@ -1,4 +1,4 @@
-import type { Recipe, RecipeDifficulty } from '@shoppingo/types';
+import type { Recipe, RecipeDifficulty } from '@tandra/types';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';

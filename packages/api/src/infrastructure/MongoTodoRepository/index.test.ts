@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, mock } from 'bun:test';
-import type { Todo } from '@shoppingo/types';
+import type { Todo } from '@tandra/types';
 import { MongoTodoRepository } from './index';
 
 const makeTodo = (over: Partial<Todo> = {}): Todo => ({

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
-import type { Item, List } from '@shoppingo/types';
-import { ListType } from '@shoppingo/types';
+import type { Item, List } from '@tandra/types';
+import { ListType } from '@tandra/types';
 
 import type { IdGenerator } from '../IdGenerator';
 import type { ListRepository } from '../ListRepository';

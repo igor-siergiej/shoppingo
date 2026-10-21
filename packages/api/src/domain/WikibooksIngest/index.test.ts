@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'bun:test';
-import type { DiscoveryRecipe } from '@shoppingo/types';
+import type { DiscoveryRecipe } from '@tandra/types';
 
 import { RuleIngredientStructurer } from '../RuleIngredientStructurer';
 import type { CoverOutcome } from './cover';

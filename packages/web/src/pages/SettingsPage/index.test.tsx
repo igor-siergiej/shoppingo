@@ -49,6 +49,6 @@ describe('SettingsPage', () => {
         await user.click(toggle);
 
         expect(toggle).toBeChecked();
-        expect(localStorage.getItem('shoppingo.voiceKeepListening')).toBe('true');
+        expect(localStorage.getItem('tandra.voiceKeepListening')).toBe('true');
     });
 });

@@ -14,7 +14,7 @@ Card 4 of 4 of the Discover feature: users can publish their own recipes to the 
   no `ownerId` and not the personal recipe's id. A test asserts none of these, nor the author's name, appears anywhere
   in the stored or indexed document.
 - `publishedBy` (the username) and the attribution naming the author are present **only if the user ticked "Show my
-  username"**; otherwise the attribution is `"<title>" by a Shoppingo user, CC BY-SA 4.0`.
+  username"**; otherwise the attribution is `"<title>" by a Tandra user, CC BY-SA 4.0`.
 - The back-reference (personal recipe id, library id, owner) lives in its own collection, `discoveryPublications`, and is
   never returned by a public endpoint. The library id (`user-<uuid>`) is minted before the library write and stored, so a
   retry after a half-finished publish reuses it instead of creating a second recipe.
@@ -46,7 +46,7 @@ of their own recipe shows "Your public recipe" with Unpublish, which works witho
 - **Moderation.** `POST /api/discover/recipes/:id/report` (any signed-in user, optional reason up to 500 characters; one
   report per person per recipe, a repeat replaces the reason) stores into `discoveryReports`. Admins read them with
   `GET /api/discover/reports` (grouped per recipe with counts and reasons, reporters not named) and remove a recipe with
-  `DELETE /api/discover/recipes/:id`. **Who may call these:** the shoppingo (Better Auth) user ids in `DISCOVERY_ADMIN_USER_IDS`
+  `DELETE /api/discover/recipes/:id`. **Who may call these:** the tandra (Better Auth) user ids in `DISCOVERY_ADMIN_USER_IDS`
   (comma-separated). Unset means nobody. Everyone else, including the recipe's own publisher, gets 403. Delisting removes
   the document from Mongo and the index and clears its publication and reports. It is refused for Wikibooks recipes (400):
   the next ingest would bring them straight back. There is no admin UI; the endpoints are for `curl`/a future screen.

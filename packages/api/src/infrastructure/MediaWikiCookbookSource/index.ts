@@ -9,7 +9,7 @@ import type {
 
 const API_URL = 'https://en.wikibooks.org/w/api.php';
 /** Wikimedia asks API clients to identify themselves and a way to contact the operator. */
-const DEFAULT_USER_AGENT = 'ShoppingoRecipeIngest/1.0 (https://shoppingo.imapps.uk; igorsiergiej@gmail.com)';
+const DEFAULT_USER_AGENT = 'TandraRecipeIngest/1.0 (https://app.tandra.uk; igorsiergiej@gmail.com)';
 /** Every Cookbook recipe page transcludes this template; the Cookbook namespace is 102. */
 const RECIPE_TEMPLATE = 'Template:Recipe';
 const COOKBOOK_NAMESPACE = '102';

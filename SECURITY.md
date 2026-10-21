@@ -4,7 +4,7 @@
 
 Only the latest commit on the `main` branch receives security fixes. Older
 releases and tags are not patched — please upgrade rather than ask for a
-backport. The published Docker images (`igor-siergiej/shoppingo-web:latest`
+backport. The published Docker images (`igor-siergiej/tandra-web:latest`
 and `:api`) always track `main`.
 
 | Branch  | Supported |
@@ -15,7 +15,7 @@ and `:api`) always track `main`.
 ## Reporting a vulnerability
 
 **Please use [GitHub private vulnerability
-reporting](https://github.com/igor-siergiej/shoppingo/security/advisories/new)
+reporting](https://github.com/igor-siergiej/tandra/security/advisories/new)
 on this repository.** It's enabled for this repo and goes straight to the
 maintainer. The report is visible only to the maintainer until they choose to
 publish it; no public issue, no disclosure timeline.
@@ -66,5 +66,5 @@ In scope: this repository and the published Docker images.
 Out of scope: the
 self-hosted / hosted third-party dependencies (MongoDB, the RustFS object store, the reverse
 proxy, the cloud), and social-engineering attacks. Rate-limiting bugs on the
-demo instance of shoppingo are also out of scope unless they affect the
+demo instance of tandra are also out of scope unless they affect the
 default configuration.

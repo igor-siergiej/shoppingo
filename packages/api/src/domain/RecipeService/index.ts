@@ -1,5 +1,5 @@
 import type { Logger } from '@imapps/api-utils';
-import type { Ingredient, Recipe, RecipeDifficulty, User } from '@shoppingo/types';
+import type { Ingredient, Recipe, RecipeDifficulty, User } from '@tandra/types';
 import { AuthorizationService } from '../AuthorizationService';
 import type { FriendService } from '../FriendService';
 import type { IdGenerator } from '../IdGenerator';

@@ -8,7 +8,7 @@
  */
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'bun:test';
 import { Client } from '@opensearch-project/opensearch';
-import type { DiscoveryRecipe } from '@shoppingo/types';
+import type { DiscoveryRecipe } from '@tandra/types';
 
 import { DiscoveryService } from '../../domain/DiscoveryService';
 import { type OpenSearchApi, OpenSearchDiscoveryIndex } from './index';

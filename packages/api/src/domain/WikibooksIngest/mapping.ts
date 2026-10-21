@@ -1,4 +1,4 @@
-import type { RecipeDifficulty } from '@shoppingo/types';
+import type { RecipeDifficulty } from '@tandra/types';
 
 export const WIKIBOOKS_LICENCE = 'CC-BY-SA-4.0';
 const WIKI_ARTICLE_URL = 'https://en.wikibooks.org/wiki/';

@@ -5,7 +5,7 @@ import type {
     PublicDiscoveryRecipe,
     PublicDiscoveryRecipePage,
     PublicDiscoveryRecipeSummary,
-} from '@shoppingo/types';
+} from '@tandra/types';
 import type { Context } from 'hono';
 
 import type { DiscoveryService } from '../../domain/DiscoveryService';

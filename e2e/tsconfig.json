@@ -2,7 +2,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@shoppingo/types": ["../packages/types/src"]
+      "@tandra/types": ["../packages/types/src"]
     },
     "strict": true,
     "esModuleInterop": true,

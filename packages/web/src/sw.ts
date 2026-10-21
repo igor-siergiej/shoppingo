@@ -44,7 +44,7 @@ self.addEventListener('push', (event: PushEvent) => {
         badge: '/badge-96.png',
         data: payload.data ?? {},
         // Per-list tag: repeated updates to the same list replace+re-alert; different lists stack separately.
-        tag: payload.data?.url ?? 'shoppingo',
+        tag: payload.data?.url ?? 'tandra',
         renotify: true,
         requireInteraction: true,
         vibrate: [200, 100, 200],

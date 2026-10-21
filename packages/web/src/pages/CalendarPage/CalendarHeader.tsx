@@ -1,4 +1,4 @@
-import type { Label } from '@shoppingo/types';
+import type { Label } from '@tandra/types';
 import { format } from 'date-fns';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { LabelFilter } from '../../components/Calendar/LabelFilter';

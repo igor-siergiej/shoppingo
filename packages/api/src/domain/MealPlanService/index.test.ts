@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'bun:test';
-import type { MealPlanEntry, Recipe, User } from '@shoppingo/types';
+import type { MealPlanEntry, Recipe, User } from '@tandra/types';
 
 import { MealPlanService } from './index';
 

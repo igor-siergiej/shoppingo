@@ -43,8 +43,8 @@ interface PWAProviderProps {
 export const PWAProvider: React.FC<PWAProviderProps> = ({ children }) => {
     const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
     const [canInstall, setCanInstall] = useState(false);
-    // Read on first render, not in an effect, so consumers (SiteMoveBanner) never see a false
-    // `isInstalled` for a frame inside an installed window.
+    // Read on first render, not in an effect, so consumers never see a false `isInstalled` for a
+    // frame inside an installed window.
     const [isInstalled, setIsInstalled] = useState(
         () =>
             window.matchMedia?.('(display-mode: standalone)').matches === true ||

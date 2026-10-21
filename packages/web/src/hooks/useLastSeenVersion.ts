@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
-const STORAGE_KEY = 'shoppingo:lastSeenVersion';
+const STORAGE_KEY = 'tandra:lastSeenVersion';
 
 /** Positive when `a` is a newer release than `b`; 0 when equal. */
 export const compareVersions = (a: string, b: string): number => {

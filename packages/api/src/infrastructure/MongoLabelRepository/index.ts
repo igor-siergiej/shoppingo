@@ -1,5 +1,5 @@
 import type { MongoDbConnection } from '@imapps/api-utils';
-import type { Label } from '@shoppingo/types';
+import type { Label } from '@tandra/types';
 
 import { CollectionNames, type Collections } from '../../dependencies/types';
 import type { LabelRepository } from '../../domain/LabelRepository';

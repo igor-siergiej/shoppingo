@@ -1,4 +1,4 @@
-import type { Label } from '@shoppingo/types';
+import type { Label } from '@tandra/types';
 
 export interface LabelRepository {
     ensureIndexes(): Promise<void>;

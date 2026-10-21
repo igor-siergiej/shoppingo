@@ -1,5 +1,5 @@
 import type { Logger } from '@imapps/api-utils';
-import type { Ingredient } from '@shoppingo/types';
+import type { Ingredient } from '@tandra/types';
 
 import { withImageExtension } from '../../infrastructure/objectKey';
 import type { ImageGenerator, ImageStore } from '../ImageService/types';

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
-import type { PushSubscription } from '@shoppingo/types';
+import type { PushSubscription } from '@tandra/types';
 import { MongoPushSubscriptionRepository } from './index';
 
 class FakeCollection {

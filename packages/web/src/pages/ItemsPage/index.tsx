@@ -1,5 +1,5 @@
-import type { ListType } from '@shoppingo/types';
-import { ListType as ListTypeEnum } from '@shoppingo/types';
+import type { ListType } from '@tandra/types';
+import { ListType as ListTypeEnum } from '@tandra/types';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';

@@ -15,7 +15,7 @@ import type {
     RecipeImportResult,
     Todo,
     User,
-} from '@shoppingo/types';
+} from '@tandra/types';
 import {
     foldPendingItems,
     foldPendingLabels,

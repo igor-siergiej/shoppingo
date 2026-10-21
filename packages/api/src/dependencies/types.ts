@@ -9,7 +9,7 @@ import type {
     PushSubscription,
     Recipe,
     Todo,
-} from '@shoppingo/types';
+} from '@tandra/types';
 
 import type { AuthorizationService } from '../domain/AuthorizationService';
 import type { DailyReminderScheduler } from '../domain/DailyReminderScheduler';

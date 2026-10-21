@@ -1,4 +1,4 @@
-import type { Recipe } from '@shoppingo/types';
+import type { Recipe } from '@tandra/types';
 import { ImageIcon, ImageOff, Sparkles } from 'lucide-react';
 import { useId, useRef, useState } from 'react';
 import { revertRecipeAiImage, uploadRecipeImage } from '../../api';

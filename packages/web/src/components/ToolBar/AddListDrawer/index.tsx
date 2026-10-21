@@ -1,5 +1,5 @@
-import type { ListType } from '@shoppingo/types';
-import { ListType as ListTypeEnum } from '@shoppingo/types';
+import type { ListType } from '@tandra/types';
+import { ListType as ListTypeEnum } from '@tandra/types';
 import { Plus } from 'lucide-react';
 import { useId, useState } from 'react';
 import { Button } from '../../../components/ui/button';

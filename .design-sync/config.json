@@ -1,7 +1,7 @@
 {
   "projectId": "d37df1a0-2fed-455c-b067-07d214b9d01e",
-  "pkg": "@shoppingo/web",
-  "globalName": "Shoppingo",
+  "pkg": "@tandra/web",
+  "globalName": "Tandra",
   "shape": "package",
   "srcDir": "src/components/ui",
   "tsconfig": "tsconfig.app.json",

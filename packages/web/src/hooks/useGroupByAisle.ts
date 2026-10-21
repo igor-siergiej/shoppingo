@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 
-const STORAGE_KEY = 'shoppingo.groupByAisle';
+const STORAGE_KEY = 'tandra.groupByAisle';
 
 const read = (): boolean => {
     try {

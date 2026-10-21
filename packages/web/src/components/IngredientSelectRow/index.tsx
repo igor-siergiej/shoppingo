@@ -1,4 +1,4 @@
-import type { Ingredient } from '@shoppingo/types';
+import type { Ingredient } from '@tandra/types';
 import { useItemImage } from '../../hooks/useItemImage';
 import { IngredientAvatar } from '../IngredientAvatar';
 

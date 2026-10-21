@@ -1,5 +1,5 @@
-import type { ListType } from '@shoppingo/types';
-import { ListType as ListTypeEnum } from '@shoppingo/types';
+import type { ListType } from '@tandra/types';
+import { ListType as ListTypeEnum } from '@tandra/types';
 import { Clock, ImageOff, Loader2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Card, CardContent } from '../../../components/ui/card';
