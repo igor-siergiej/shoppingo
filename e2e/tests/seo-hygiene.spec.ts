@@ -28,9 +28,9 @@ test.describe('SEO hygiene', () => {
         await page.goto('/login');
         const head = page.locator('head');
 
-        await expect(head.locator('meta[name="description"]')).toHaveAttribute('content', /Shoppingo/i);
+        await expect(head.locator('meta[name="description"]')).toHaveAttribute('content', /Tandra/i);
         await expect(head.locator('meta[name="robots"]')).toHaveAttribute('content', 'noindex');
-        await expect(head.locator('link[rel="canonical"]')).toHaveAttribute('href', /shoppingo\.imapps\.uk/);
+        await expect(head.locator('link[rel="canonical"]')).toHaveAttribute('href', /tandra\.uk/);
 
         await expect(head.locator('meta[property="og:image:width"]')).toHaveAttribute('content', '1200');
         await expect(head.locator('meta[property="og:image:height"]')).toHaveAttribute('content', '630');

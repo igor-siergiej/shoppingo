@@ -75,7 +75,7 @@ test.describe('Publishing recipes to Discover', () => {
         await pageB.getByRole('button', { name: new RegExp(TITLE) }).click();
         await expect(pageB.getByRole('heading', { name: TITLE })).toBeVisible();
         await expect(pageB.getByText(/Shared by/)).toHaveCount(0);
-        await expect(pageB.getByRole('region', { name: 'Source' })).toContainText('by a Shoppingo user, CC BY-SA 4.0');
+        await expect(pageB.getByRole('region', { name: 'Source' })).toContainText('by a Tandra user, CC BY-SA 4.0');
         await expect(pageB.getByText('red lentils', { exact: false })).toBeVisible();
 
         // B can report it, and adds it to their own recipes.

@@ -57,7 +57,7 @@ export const PublishDrawer = ({ open, onOpenChange, recipeId, recipeTitle, isUpd
 
                     <div className="space-y-4 px-4 pb-2 text-sm">
                         <p className="text-muted-foreground">
-                            Everyone using Shoppingo will be able to find, read and copy this recipe. Only a snapshot is
+                            Everyone using Tandra will be able to find, read and copy this recipe. Only a snapshot is
                             shared: your friends list, who you share this recipe with and later edits stay private
                             {isUpdate ? '. Publishing again replaces the public copy with the current version' : ''}.
                         </p>
