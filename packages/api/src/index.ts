@@ -2,6 +2,7 @@ import 'dotenv/config';
 
 import { createApp } from '@imapps/api-utils/hono';
 import { config } from './config';
+import { allowedOrigins } from './config/cors';
 import { dependencyContainer, registerDepdendencies } from './dependencies';
 import { DependencyToken } from './dependencies/types';
 import { websocket } from './infrastructure/bunWebSocket';
@@ -11,16 +12,17 @@ import {
     metricsRegister,
     startDefaultMetrics,
 } from './infrastructure/metrics';
+import { csrfForFormPosts } from './middleware/csrf';
 import { createRoutes } from './routes';
 
 const port = config.get('port');
 
-// Origins the browser can send Authorization headers from. See shoppingo #108. The app lives on
-// the `https://tandra.uk` apex; its earlier hosts (`shoppingo.imapps.co.uk`,
-// `shoppingo-app.imapps.uk`) only redirect there (packages/web/nginx.conf), and
-// `https://shoppingo.imapps.uk` serves the landing site (shoppingo-site), so none of them are
-// listed.
-const allowedOrigins: Array<string> = ['http://shoppingo.imapps.staging', 'http://localhost:4000', 'https://tandra.uk'];
+const mountBetterAuth = (app: ReturnType<typeof createApp>) => {
+    if (!config.get('betterAuthSecret')) return;
+    const auth = dependencyContainer.resolve(DependencyToken.Auth);
+    app.use('/api/*', csrfForFormPosts(allowedOrigins));
+    app.on(['GET', 'POST'], '/api/auth/*', (c) => auth.handler(c.req.raw));
+};
 
 export const onStartup = async () => {
     try {
@@ -53,6 +55,13 @@ export const onStartup = async () => {
             endTimer(labels);
             httpRequestsTotal.inc(labels);
         });
+
+        // Better Auth session cookie. Mounted on GET + POST so `/api/auth/get-session` (HEAD/GET)
+        // and the form POSTs land on the same handler. `c.req.raw` is passed through — Hono does
+        // not consume the body before reaching this point, so a full sign-up round-trip works.
+        // Optional today: `BETTER_AUTH_SECRET` not being set skips the mount so the api boots
+        // and keeps authenticating through kivo bearer tokens (Task 9 will remove that path).
+        mountBetterAuth(app);
 
         logger.info('Starting API server - connecting to database and object store');
         await database.connect({

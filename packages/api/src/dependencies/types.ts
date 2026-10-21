@@ -50,6 +50,7 @@ import type { TodoService } from '../domain/TodoService';
 import type { WikibooksIngestService } from '../domain/WikibooksIngest';
 import type { RecipeEstimator, WikibooksSource } from '../domain/WikibooksIngest/types';
 import type { WsTicketStore } from '../domain/WsTicketStore';
+import type { Auth } from '../infrastructure/BetterAuth';
 import type { CachedIngredientSubstituter } from '../infrastructure/CachedIngredientSubstituter';
 import type { FalItemTextParser } from '../infrastructure/FalItemTextParser';
 import type { FalLlmClient } from '../infrastructure/FalLlmClient';
@@ -81,6 +82,7 @@ export enum DependencyToken {
     ListRepository = 'ListRepository',
     ListService = 'ListService',
     RecipeService = 'RecipeService',
+    Auth = 'Auth',
     AuthorizationService = 'AuthorizationService',
     ImageStore = 'ImageStore',
     ImageGenerator = 'ImageGenerator',
@@ -139,6 +141,7 @@ export type Dependencies = {
     [DependencyToken.ListRepository]: ListRepository;
     [DependencyToken.ListService]: ListService;
     [DependencyToken.RecipeService]: RecipeService;
+    [DependencyToken.Auth]: Auth;
     [DependencyToken.AuthorizationService]: AuthorizationService;
     [DependencyToken.ImageStore]: ImageStore;
     [DependencyToken.ImageGenerator]: ImageGenerator;

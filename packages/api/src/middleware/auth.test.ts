@@ -1,8 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'bun:test';
+import { memoryAdapter } from 'better-auth/adapters/memory';
 import type { Context } from 'hono';
 
 import { config } from '../config';
-import { authenticate, clearVerifyCache } from './auth';
+import { type Auth, createAuth } from '../infrastructure/BetterAuth';
+import { __setAuthGetterForTests, authenticate, clearVerifyCache } from './auth';
 
 type AuthVars = { Variables: { user: { id: string; username: string } } };
 
@@ -319,5 +321,126 @@ describe('authenticate middleware', () => {
                 })
             );
         });
+    });
+});
+
+// Better Auth session-cookie path. Each test installs a fresh `memoryAdapter` Auth into the
+// middleware via the test seam, signs a user up to mint a real session cookie, and drives
+// `authenticate` with `Request`-shaped headers. The kivo-bearer fallback is verified above;
+// this block proves the new session path wires `c.get('user')` correctly.
+//
+// The memory adapter is `better-auth/adapters/memory`; its deep-shape parameter and the
+// `createAuth` factory parameter are structurally identical but the inference path treats
+// them as unrelated. Named alias keeps the cast honest and out of the call site.
+type AuthDatabase = Parameters<typeof createAuth>[0]['database'];
+
+describe('authenticate middleware with Better Auth session', () => {
+    interface UserRow {
+        id: string;
+        username?: string;
+        displayUsername?: string;
+    }
+    const buildAuth = (): { auth: Auth; db: { user: UserRow[] } } => {
+        const db: Record<string, unknown[]> = {
+            user: [],
+            session: [],
+            account: [],
+            verification: [],
+            rateLimit: [],
+        };
+        const memoryAuthDb = memoryAdapter(db) as unknown as AuthDatabase;
+        const auth = createAuth({
+            database: memoryAuthDb,
+            secret: 'test-secret-test-secret-test-secret-123',
+            baseURL: 'http://localhost:4000',
+            trustedOrigins: ['http://localhost:4000'],
+        });
+        return { auth, db: db as unknown as { user: UserRow[] } };
+    };
+
+    const signUpAndGetCookie = async (
+        auth: Auth
+    ): Promise<{ cookieHeader: string; userId: string; username: string }> => {
+        const signUp = await auth.api.signUpEmail({
+            body: { email: 'x@y.z', name: 'Alice', password: 'password123', username: 'Alice' },
+            asResponse: true,
+        });
+        const setCookie = signUp.headers.get('set-cookie');
+        if (!setCookie) throw new Error('sign-up did not set the session cookie');
+        const userId = ((await signUp.json()) as { user: { id: string } }).user.id;
+        return { cookieHeader: setCookie.split(';')[0], userId, username: 'Alice' };
+    };
+
+    beforeEach(() => {
+        __setAuthGetterForTests(() => undefined);
+        vi.clearAllMocks();
+        mockNext.mockClear();
+    });
+
+    it("sets c.get('user') to {id, username} when a session cookie is present", async () => {
+        const { auth } = buildAuth();
+        __setAuthGetterForTests(() => auth);
+        const { cookieHeader, userId, username } = await signUpAndGetCookie(auth);
+
+        const ctx = createMockContext({}, { cookie: cookieHeader });
+        await authenticate(ctx, mockNext);
+
+        expect(ctx.set).toHaveBeenCalledWith('user', { id: userId, username });
+        expect(mockNext).toHaveBeenCalled();
+    });
+
+    it('returns 403 username_required when the session user has no username yet', async () => {
+        const { auth, db } = buildAuth();
+        __setAuthGetterForTests(() => auth);
+        // Sign up normally so Better Auth hands back a properly-signed session cookie, then
+        // mutate the in-memory user row to clear its username — Better Auth's username
+        // validation hook rejects an empty username over its HTTP/adapter surface, but the
+        // memory adapter here is just an array, so the path that drives `getSession` is what
+        // a fresh Google sign-in (no username yet) actually looks like.
+        const signUp = await auth.api.signUpEmail({
+            body: {
+                email: 'google-user@example.test',
+                name: 'googleuser',
+                password: 'password123',
+                username: 'googleuser',
+            },
+            asResponse: true,
+        });
+        const cookieHeader = signUp.headers.get('set-cookie')?.split(';')[0];
+        if (!cookieHeader) throw new Error('sign-up did not set the session cookie');
+        const userId = ((await signUp.json()) as { user: { id: string } }).user.id;
+        const target = db.user.find((u) => u.id === userId);
+        if (target) {
+            delete target.username;
+            delete target.displayUsername;
+        }
+        const reqCtx = createMockContext({}, { cookie: cookieHeader });
+        const result = await authenticate(reqCtx, mockNext);
+
+        expect(result?.status).toBe(403);
+        expect(await result?.json()).toEqual({ error: 'username_required' });
+        expect(mockNext).not.toHaveBeenCalled();
+    });
+
+    it('returns 401 when no cookie and no bearer are present', async () => {
+        const ctx = createMockContext({});
+        const result = await authenticate(ctx, mockNext);
+        expect(result?.status).toBe(401);
+    });
+
+    it('prefers the Better Auth session over a kivo bearer header when both are present', async () => {
+        const { auth } = buildAuth();
+        __setAuthGetterForTests(() => auth);
+        const { cookieHeader, userId, username } = await signUpAndGetCookie(auth);
+        global.fetch = vi.fn().mockResolvedValue({
+            ok: true,
+            json: vi.fn().mockResolvedValue({ success: true, payload: { id: 'kivo-user', username: 'kivoBob' } }),
+        }) as unknown as typeof fetch;
+
+        const ctx = createMockContext({ authorization: 'Bearer kivo-token' }, { cookie: cookieHeader });
+        await authenticate(ctx, mockNext);
+
+        expect(ctx.set).toHaveBeenCalledWith('user', { id: userId, username });
+        expect(global.fetch).not.toHaveBeenCalled();
     });
 });
