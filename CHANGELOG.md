@@ -1,3 +1,10 @@
+# [1.110.0](https://github.com/igor-siergiej/shoppingo/compare/v1.109.0...v1.110.0) (2026-10-21)
+
+
+### Features
+
+* **api:** embed Better Auth next to kivo verification ([#271](https://github.com/igor-siergiej/shoppingo/issues/271)) ([f033b40](https://github.com/igor-siergiej/shoppingo/commit/f033b40bf9c913f9ae2ec91fc8eee10838fe4dbe)), closes [#147](https://github.com/igor-siergiej/shoppingo/issues/147) [#139](https://github.com/igor-siergiej/shoppingo/issues/139) [#142](https://github.com/igor-siergiej/shoppingo/issues/142)
+
 # [1.109.0](https://github.com/igor-siergiej/shoppingo/compare/v1.108.1...v1.109.0) (2026-10-20)
 
 
