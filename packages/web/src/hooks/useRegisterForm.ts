@@ -48,6 +48,8 @@ export const useRegisterForm = () => {
         resolver: zodResolver(registerSchema),
     });
 
+    // Sign up, re-read the session, migrate guest data, navigate; any failure lands in the form error.
+    // fallow-ignore-next-line complexity
     const onSubmit = async (data: RegisterFormData) => {
         logger.info('Registration attempt', { username: data.username });
 

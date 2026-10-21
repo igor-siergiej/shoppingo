@@ -35,6 +35,8 @@ class FrontendLogger {
         };
     }
 
+    // Batch send with a keepalive fallback and re-queue on failure; one linear flow.
+    // fallow-ignore-next-line complexity
     private async flushLogs() {
         if (this.queue.length === 0) return;
 

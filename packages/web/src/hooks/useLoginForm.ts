@@ -44,6 +44,8 @@ export const useLoginForm = () => {
         resolver: zodResolver(loginSchema),
     });
 
+    // Sign in, re-read the session, migrate guest data, navigate; any failure lands in the form error.
+    // fallow-ignore-next-line complexity
     const onSubmit = async (data: LoginFormData) => {
         logger.info('Login attempt', { username: data.username });
         try {

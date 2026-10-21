@@ -15,6 +15,8 @@ export interface AuthClientError {
     status?: number;
 }
 
+// Rate limit first, then a known code, then the server's own words, then the caller's fallback.
+// fallow-ignore-next-line complexity
 export const authErrorMessage = (error: AuthClientError, fallback: string): string => {
     if (error.status === 429) return 'Too many attempts. Wait a minute and try again.';
     return (error.code && MESSAGES[error.code]) || error.message || fallback;

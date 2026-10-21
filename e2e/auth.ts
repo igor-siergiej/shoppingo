@@ -1,4 +1,4 @@
-import type { Page } from '@playwright/test';
+import type { Browser, Page } from '@playwright/test';
 import type { User } from '@shoppingo/types';
 
 import { MOCK_USER, MOCK_USER_2, PASSWORDS } from './mocks/data/users';
@@ -41,6 +41,16 @@ export const signInCookie = async (user: User = MOCK_USER): Promise<{ name: stri
 export const signInAs = async (page: Page, user: User = MOCK_USER): Promise<void> => {
     const { name, value } = await signInCookie(user);
     await page.context().addCookies([{ name, value, domain: 'localhost', path: '/', httpOnly: true, sameSite: 'Lax' }]);
+};
+
+/** A fresh browser context signed in as `user`, with images stubbed (they are never under test). */
+export const openPageAs = async (browser: Browser, user: User): Promise<Page> => {
+    const page = await (await browser.newContext()).newPage();
+    await signInAs(page, user);
+    await page.route(/\/api\/image\//, (route) =>
+        route.fulfill({ status: 200, contentType: 'image/gif', body: Buffer.from('GIF89a', 'ascii') })
+    );
+    return page;
 };
 
 const sessions = new Map<string, Promise<{ name: string; value: string }>>();

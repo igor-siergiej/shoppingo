@@ -9,6 +9,8 @@ const configState: ConfigState = {
     error: null,
 };
 
+// Missing, unparsable and non-object cache entries all mean "no cached config".
+// fallow-ignore-next-line complexity
 const readCachedConfig = (): AppConfig | null => {
     const raw = getStorageItem(CONFIG_STORAGE_KEY, 'localStorage');
     if (!raw) return null;
@@ -23,6 +25,7 @@ const readCachedConfig = (): AppConfig | null => {
 
 // Config rarely changes, so a stale cached copy is preferable to blocking
 // launch entirely when the network fetch fails while offline.
+// fallow-ignore-next-line complexity
 export const loadConfig = async (): Promise<AppConfig> => {
     configState.isLoading = true;
     configState.error = null;

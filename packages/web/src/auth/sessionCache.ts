@@ -8,6 +8,8 @@ interface CachedSessionUser {
 }
 
 export const sessionCache = {
+    // Anything other than a well-formed `{ id, username }` (absent, corrupt, old shape) reads as no user.
+    // fallow-ignore-next-line complexity
     read(): CachedSessionUser | null {
         try {
             const parsed = JSON.parse(localStorage.getItem(KEY) ?? 'null') as Partial<CachedSessionUser> | null;

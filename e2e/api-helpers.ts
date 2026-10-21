@@ -1,9 +1,15 @@
+import type { User } from '@shoppingo/types';
 import { API_BASE, MOCK_USER, MOCK_USER_2, sessionHeaders } from './auth';
 
-export async function apiCreateList(title: string, listType = 'shopping', selectedFriendIds?: Array<string>) {
+const createListAs = async (
+    user: User,
+    title: string,
+    listType: string,
+    selectedFriendIds: Array<string> | undefined
+): Promise<{ id: string; title: string }> => {
     const res = await fetch(`${API_BASE}/api/lists`, {
         method: 'PUT',
-        headers: await sessionHeaders(),
+        headers: await sessionHeaders(user),
         body: JSON.stringify({
             title,
             listType,
@@ -11,9 +17,18 @@ export async function apiCreateList(title: string, listType = 'shopping', select
             dateAdded: new Date().toISOString(),
         }),
     });
-    if (!res.ok) throw new Error(`apiCreateList failed: ${await res.text()}`);
+    if (!res.ok) throw new Error(`create list as ${user.username} failed: ${await res.text()}`);
     return res.json() as Promise<{ id: string; title: string }>;
-}
+};
+
+const getAsTestUser = async <T>(path: string): Promise<T> => {
+    const res = await fetch(`${API_BASE}${path}`, { headers: await sessionHeaders() });
+    if (!res.ok) throw new Error(`GET ${path} failed: ${await res.text()}`);
+    return res.json() as Promise<T>;
+};
+
+export const apiCreateList = (title: string, listType = 'shopping', selectedFriendIds?: Array<string>) =>
+    createListAs(MOCK_USER, title, listType, selectedFriendIds);
 
 export async function apiAddItem(
     listTitle: string,
@@ -139,10 +154,8 @@ export async function apiSetItemCategory(listTitle: string, itemName: string, ca
     if (!res.ok) throw new Error(`apiSetItemCategory failed: ${await res.text()}`);
 }
 
-export async function apiGetRecipes() {
-    const res = await fetch(`${API_BASE}/api/recipes`, { headers: await sessionHeaders() });
-    if (!res.ok) throw new Error(`apiGetRecipes failed: ${await res.text()}`);
-    return res.json() as Promise<
+export const apiGetRecipes = () =>
+    getAsTestUser<
         Array<{
             id: string;
             title: string;
@@ -154,8 +167,7 @@ export async function apiGetRecipes() {
             cookTime?: number;
             servings?: number;
         }>
-    >;
-}
+    >('/api/recipes');
 
 /** Creates a recipe owned by the second mock user, shared with the given user ids (they must be friends). */
 export async function apiCreateRecipeAsOtherUser(title: string, sharedWith: Array<string>) {
@@ -175,10 +187,8 @@ export async function apiCreateRecipeAsOtherUser(title: string, sharedWith: Arra
     return res.json() as Promise<{ id: string; title: string }>;
 }
 
-export async function apiGetTodos() {
-    const res = await fetch(`${API_BASE}/api/todos`, { headers: await sessionHeaders() });
-    if (!res.ok) throw new Error(`apiGetTodos failed: ${await res.text()}`);
-    return res.json() as Promise<
+export const apiGetTodos = () =>
+    getAsTestUser<
         Array<{
             id: string;
             title: string;
@@ -187,8 +197,7 @@ export async function apiGetTodos() {
             completedAt?: string;
             recurrence?: { freq: string; interval: number; until?: string };
         }>
-    >;
-}
+    >('/api/todos');
 
 /** Creates a todo owned by the second mock user and shared with the given user ids (they must be friends). */
 export async function apiCreateTodoAsOtherUser(body: { title: string; dueDate: string }, sharedWith: Array<string>) {
@@ -202,20 +211,8 @@ export async function apiCreateTodoAsOtherUser(body: { title: string; dueDate: s
 }
 
 /** Creates a shopping list owned by the second mock user, shared with the given user ids (they must be friends). */
-export async function apiCreateListAsOtherUser(title: string, sharedWith: Array<string>) {
-    const res = await fetch(`${API_BASE}/api/lists`, {
-        method: 'PUT',
-        headers: await sessionHeaders(MOCK_USER_2),
-        body: JSON.stringify({
-            title,
-            listType: 'shopping',
-            selectedUsers: sharedWith,
-            dateAdded: new Date().toISOString(),
-        }),
-    });
-    if (!res.ok) throw new Error(`apiCreateListAsOtherUser failed: ${await res.text()}`);
-    return res.json() as Promise<{ id: string; title: string }>;
-}
+export const apiCreateListAsOtherUser = (title: string, sharedWith: Array<string>) =>
+    createListAs(MOCK_USER_2, title, 'shopping', sharedWith);
 
 /** Owner (second mock user) removes a member from their list. */
 export async function apiRemoveListMemberAsOtherUser(listTitle: string, memberId: string) {
