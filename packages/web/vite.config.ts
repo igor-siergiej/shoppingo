@@ -46,8 +46,8 @@ export default defineConfig(({ mode }) => {
                     globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest}'],
                 },
                 manifest: {
-                    name: 'Shoppingo',
-                    short_name: 'Shoppingo',
+                    name: 'Tandra',
+                    short_name: 'Tandra',
                     description: 'Shopping list application',
                     start_url: '/',
                     display: 'standalone',

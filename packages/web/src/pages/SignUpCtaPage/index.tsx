@@ -13,7 +13,7 @@ const REASON_COPY: Record<string, { title: string; description: string }> = {
 
 const fallback = {
     title: 'This needs an account',
-    description: 'Create a free account to keep your lists and unlock the rest of Shoppingo.',
+    description: 'Create a free account to keep your lists and unlock the rest of Tandra.',
 };
 
 // Shown when a guest navigates somewhere only registered users can use

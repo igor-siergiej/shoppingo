@@ -24,7 +24,7 @@ const ingredientKey = (ingredients: Array<Pick<Ingredient, 'name'>>): string =>
 const publicRecipePath = (libraryId: string): string => `/discover/${libraryId}`;
 
 const attributionFor = (title: string, authorName: string | undefined): string =>
-    `"${title}" by ${authorName ?? 'a Shoppingo user'}, CC BY-SA 4.0`;
+    `"${title}" by ${authorName ?? 'a Tandra user'}, CC BY-SA 4.0`;
 
 /**
  * Publishes a user's own recipe to the shared library as a SNAPSHOT: a new `discoveryRecipes` document that carries

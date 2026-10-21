@@ -14,8 +14,8 @@ const MoveInstructions = ({ inOldInstall }: { inOldInstall: boolean }) => {
     if (inOldInstall) {
         return (
             <AlertDescription>
-                This is the old Shoppingo app. Open <span className="font-medium">app.tandra.uk</span> in your browser,
-                install it from there, then remove this one to keep getting notifications.
+                This is the old copy of the app. Open <span className="font-medium">app.tandra.uk</span> in your
+                browser, install it from there, then remove this one to keep getting notifications.
             </AlertDescription>
         );
     }
@@ -23,8 +23,8 @@ const MoveInstructions = ({ inOldInstall }: { inOldInstall: boolean }) => {
     return (
         <>
             <AlertDescription>
-                Shoppingo now lives at <span className="font-medium">app.tandra.uk</span>. If you installed it on your
-                home screen or desktop, remove the old one and install it again from here to keep getting notifications.
+                Tandra now lives at <span className="font-medium">app.tandra.uk</span>. If you installed it on your home
+                screen or desktop, remove the old one and install it again from here to keep getting notifications.
             </AlertDescription>
             {canInstall && (
                 <Button className="mt-2" size="sm" onClick={() => void installApp()}>
@@ -68,7 +68,7 @@ const SiteMoveBanner = () => {
                     <div className="flex items-start gap-3">
                         <AlertCircle className="h-5 w-5 mt-[2px]" aria-hidden="true" />
                         <div className="flex-1">
-                            <AlertTitle>Shoppingo has moved</AlertTitle>
+                            <AlertTitle>Tandra has moved</AlertTitle>
                             <MoveInstructions inOldInstall={inOldInstall} />
                         </div>
                         <Button variant="ghost" size="icon" aria-label="Dismiss" onClick={dismiss}>

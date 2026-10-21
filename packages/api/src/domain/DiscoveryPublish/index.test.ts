@@ -183,7 +183,7 @@ describe('DiscoveryPublishService.publish', () => {
             expect(everything).not.toContain(secret);
         }
         expect(library.get(ref.libraryId)?.publishedBy).toBeUndefined();
-        expect(library.get(ref.libraryId)?.attribution).toBe('"Grandma Soup" by a Shoppingo user, CC BY-SA 4.0');
+        expect(library.get(ref.libraryId)?.attribution).toBe('"Grandma Soup" by a Tandra user, CC BY-SA 4.0');
         // New ingredient ids too: nothing links the copy back to the private ingredients.
         expect(library.get(ref.libraryId)?.ingredients.map((i) => i.id)).not.toContain('p1');
     });

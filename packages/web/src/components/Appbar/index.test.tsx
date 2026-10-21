@@ -26,13 +26,13 @@ describe('Appbar', () => {
     it('renders the logo', () => {
         render(<Appbar />);
 
-        expect(screen.getByAltText('Shoppingo')).toBeInTheDocument();
+        expect(screen.getByAltText('Tandra')).toBeInTheDocument();
     });
 
-    it('displays app title "Shoppingo"', () => {
+    it('displays app title "Tandra"', () => {
         render(<Appbar />);
 
-        expect(screen.getByText('Shoppingo')).toBeInTheDocument();
+        expect(screen.getByText('Tandra')).toBeInTheDocument();
     });
 
     it('has fixed positioning styling', () => {

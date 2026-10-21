@@ -46,7 +46,7 @@ const WhatsNewDrawer = ({ open, onOpenChange, highlightSince }: WhatsNewDrawerPr
             <div className="mx-auto flex w-full max-w-sm flex-col h-[70vh] max-h-[70vh]">
                 <DrawerHeader className="flex-shrink-0">
                     <DrawerTitle>What's new</DrawerTitle>
-                    <DrawerDescription>Everything that has shipped in Shoppingo</DrawerDescription>
+                    <DrawerDescription>Everything that has shipped in Tandra</DrawerDescription>
                 </DrawerHeader>
                 <div className="flex-1 overflow-y-auto px-4 pb-6 space-y-5">
                     {releases.length === 0 && (

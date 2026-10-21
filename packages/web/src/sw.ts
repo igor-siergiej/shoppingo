@@ -32,7 +32,7 @@ self.addEventListener('push', (event: PushEvent) => {
     try {
         payload = event.data.json();
     } catch {
-        payload = { title: 'Shoppingo', body: event.data.text() };
+        payload = { title: 'Tandra', body: event.data.text() };
     }
 
     // `renotify`/`vibrate` are valid at runtime but absent from the DOM lib's NotificationOptions.
@@ -57,7 +57,7 @@ self.addEventListener('push', (event: PushEvent) => {
             if (focused) {
                 return;
             }
-            await self.registration.showNotification(payload.title ?? 'Shoppingo', options);
+            await self.registration.showNotification(payload.title ?? 'Tandra', options);
         })()
     );
 });
