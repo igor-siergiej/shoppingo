@@ -1,3 +1,10 @@
+# [1.111.0](https://github.com/igor-siergiej/shoppingo/compare/v1.110.0...v1.111.0) (2026-10-21)
+
+
+### Features
+
+* **web:** serve the app from app.tandra.uk ([#274](https://github.com/igor-siergiej/shoppingo/issues/274)) ([6623fee](https://github.com/igor-siergiej/shoppingo/commit/6623feeb002f4c7eb44143af34b3d1e496696498)), closes [#270](https://github.com/igor-siergiej/shoppingo/issues/270)
+
 # [1.110.0](https://github.com/igor-siergiej/shoppingo/compare/v1.109.0...v1.110.0) (2026-10-21)
 
 

@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.111.0",
+    "date": "2026-10-21",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Shoppingo now lives at app.tandra.uk. Sign in there and reinstall the app; your lists and recipes are all still there."
+      }
+    ]
+  },
+  {
     "version": "1.110.0",
     "date": "2026-10-21",
     "notes": [
