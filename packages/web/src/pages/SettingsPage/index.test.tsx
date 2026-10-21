@@ -1,9 +1,11 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { UnitSystemProvider } from '../../contexts/UnitSystemContext';
 import SettingsPage from './index';
+
+vi.mock('./AccountSection', () => ({ AccountSection: () => <section>Account section</section> }));
 
 const renderPage = () =>
     render(
@@ -16,6 +18,11 @@ const renderPage = () =>
 
 describe('SettingsPage', () => {
     beforeEach(() => localStorage.clear());
+
+    it('includes the account section', () => {
+        renderPage();
+        expect(screen.getByText('Account section')).toBeInTheDocument();
+    });
 
     it('shows the unit options with Original selected by default', () => {
         renderPage();

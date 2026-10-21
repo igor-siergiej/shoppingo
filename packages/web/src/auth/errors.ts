@@ -21,3 +21,17 @@ export const authErrorMessage = (error: AuthClientError, fallback: string): stri
     if (error.status === 429) return 'Too many attempts. Wait a minute and try again.';
     return (error.code && MESSAGES[error.code]) || error.message || fallback;
 };
+
+// Better Auth sends a failed Google round trip back to the app as `?error=<code>`.
+const OAUTH_MESSAGES: Record<string, string> = {
+    access_denied: 'Google sign-in was cancelled.',
+    account_not_linked:
+        'That Google account matches an existing account. Sign in with your username, then link Google in Settings.',
+    account_already_linked_to_different_user: 'That Google account is already used by another Tandra account.',
+    state_mismatch: 'Google sign-in took too long. Please try again.',
+    please_restart_the_process: 'Google sign-in took too long. Please try again.',
+};
+
+/** Readable text for an OAuth callback `?error=` code; unknown codes get `fallback`. */
+export const oauthErrorMessage = (code: string, fallback: string): string =>
+    Object.hasOwn(OAUTH_MESSAGES, code) ? OAUTH_MESSAGES[code] : fallback;

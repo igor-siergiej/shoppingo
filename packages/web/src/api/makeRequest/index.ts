@@ -50,6 +50,10 @@ export const makeRequest = async ({
         }
 
         const errorMessage = await parseErrorMessage(response);
+        if (response.status === 403 && errorMessage === 'username_required') {
+            // Signed in through Google but no username picked yet: the app sends them to choose one.
+            window.dispatchEvent(new CustomEvent('auth:username-required'));
+        }
         logger.warn(`Request failed for ${operationString}`, {
             status: response.status,
             statusText: response.statusText,

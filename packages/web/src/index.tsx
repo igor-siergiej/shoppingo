@@ -46,6 +46,7 @@ const RegisterPage = lazyLoadPage(() => import('./pages/RegisterPage'), 'registe
 const RecipesPage = lazyLoadPage(() => import('./pages/RecipesPage'), 'recipes page');
 const AddRecipePage = lazyLoadPage(() => import('./pages/AddRecipePage'), 'add recipe page');
 const RecipeDetailPage = lazyLoadPage(() => import('./pages/RecipeDetailPage'), 'recipe detail page');
+const ChooseUsernamePage = lazyLoadPage(() => import('./pages/ChooseUsernamePage'), 'choose username page');
 const ShareTargetPage = lazyLoadPage(() => import('./pages/ShareTargetPage'), 'share target page');
 const CalendarPage = lazyLoadPage(() => import('./pages/CalendarPage'), 'calendar page');
 const MealPlanPage = lazyLoadPage(() => import('./pages/MealPlanPage'), 'meal plan page');
@@ -102,6 +103,18 @@ const router = createBrowserRouter([
             <RootLayout showLayout={false}>
                 <Suspense fallback={<LoadingPage />}>
                     <SignUpCtaPage />
+                </Suspense>
+            </RootLayout>
+        ),
+        errorElement: <RouterErrorHandler />,
+    },
+    {
+        // A first-time Google user lands here (Better Auth's newUserCallbackURL) to pick a username.
+        path: '/choose-username',
+        element: (
+            <RootLayout showLayout={false}>
+                <Suspense fallback={<LoadingPage />}>
+                    <ChooseUsernamePage />
                 </Suspense>
             </RootLayout>
         ),

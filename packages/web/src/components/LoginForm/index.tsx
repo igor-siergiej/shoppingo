@@ -1,15 +1,25 @@
 import { Sparkles } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { oauthErrorMessage } from '../../auth/errors';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 import { useGuest } from '../../guest/GuestContext';
 import { useLoginForm } from '../../hooks/useLoginForm';
+import { GoogleButton } from '../GoogleButton';
 import { LoginFormFields } from './LoginFormFields';
 
+// Password form, Google, guest entry and the OAuth callback error in one card.
+// fallow-ignore-next-line complexity
 export const LoginForm: React.FC = () => {
     const { register, handleSubmit, errors, isSubmitting, onSubmit } = useLoginForm();
     const { enterGuestMode } = useGuest();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    // A failed Google round trip lands back here with Better Auth's `?error=<code>`.
+    const googleError = searchParams.get('error');
+    const errorMessage =
+        errors.root?.message ??
+        (googleError && oauthErrorMessage(googleError, "Couldn't sign in with Google. Please try again."));
 
     const handleTryIt = () => {
         enterGuestMode();
@@ -28,16 +38,15 @@ export const LoginForm: React.FC = () => {
                         <div className="flex flex-col gap-6">
                             <LoginFormFields register={register} errors={errors} isSubmitting={isSubmitting} />
 
-                            {errors.root && (
-                                <div className="text-sm text-red-600 bg-red-50 p-3 rounded-md">
-                                    {errors.root.message}
-                                </div>
+                            {errorMessage && (
+                                <div className="text-sm text-red-600 bg-red-50 p-3 rounded-md">{errorMessage}</div>
                             )}
 
                             <div className="flex flex-col gap-3">
                                 <Button type="submit" className="w-full" disabled={isSubmitting}>
                                     {isSubmitting ? 'Logging in...' : 'Login'}
                                 </Button>
+                                <GoogleButton />
                                 <Button
                                     type="button"
                                     variant="ghost"

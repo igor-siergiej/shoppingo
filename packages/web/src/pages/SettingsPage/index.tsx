@@ -3,6 +3,7 @@ import { useUnitSystem } from '../../contexts/UnitSystemContext';
 import { useGoBack } from '../../hooks/useGoBack';
 import { useKeepListening } from '../../hooks/useKeepListening';
 import type { UnitSystem } from '../../utils/convertUnits';
+import { AccountSection } from './AccountSection';
 
 const UNIT_OPTIONS: Array<{ value: UnitSystem; label: string; hint: string }> = [
     { value: 'original', label: 'Original', hint: 'Keep amounts as written in the recipe' },
@@ -82,6 +83,8 @@ const SettingsPage = () => {
                     </span>
                 </label>
             </section>
+
+            <AccountSection />
         </div>
     );
 };
