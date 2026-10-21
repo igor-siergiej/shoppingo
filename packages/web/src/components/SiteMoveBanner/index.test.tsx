@@ -62,7 +62,7 @@ describe('SiteMoveBanner', () => {
 
         render(<SiteMoveBanner />);
 
-        expect(screen.getByTestId('site-move-banner')).toHaveTextContent(/open tandra\.uk in your browser/i);
+        expect(screen.getByTestId('site-move-banner')).toHaveTextContent(/open app\.tandra\.uk in your browser/i);
         expect(isSiteMovePending()).toBe(true);
     });
 
