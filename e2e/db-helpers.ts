@@ -1,11 +1,11 @@
 import { execFile } from 'node:child_process';
 import path from 'node:path';
 import { promisify } from 'node:util';
-import type { DiscoveryRecipe, User } from '@shoppingo/types';
+import type { DiscoveryRecipe, User } from '@tandra/types';
 import { MongoClient } from 'mongodb';
 import { resolveMongoUri } from './mongo-uri';
 
-const DB_NAME = 'shoppingo_e2e';
+const DB_NAME = 'tandra_e2e';
 
 /** Canonical sorted pair — mirrors the API's canonicalPair. */
 const sortPair = (a: User, b: User): { userIds: [string, string]; users: [User, User] } =>
@@ -55,9 +55,12 @@ async function reindexDiscovery(): Promise<void> {
             DATABASE_NAME: DB_NAME,
             OPENSEARCH_URL: E2E_OPENSEARCH_URL,
             BUCKET_ENDPOINT: 'localhost:9000',
-            BUCKET_NAME: 'shoppingo',
+            BUCKET_NAME: 'tandra',
             BUCKET_ACCESS_KEY: 'rustfsadmin',
             BUCKET_SECRET_KEY: 'rustfsadmin',
+            // The API config requires these even though reindexing never touches auth.
+            BETTER_AUTH_SECRET: 'e2e-better-auth-secret-not-for-prod-32+',
+            BETTER_AUTH_URL: 'http://localhost:4000',
         },
     });
 }

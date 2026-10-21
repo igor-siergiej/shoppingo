@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 
-const STORAGE_KEY = 'shoppingo.voiceKeepListening';
+const STORAGE_KEY = 'tandra.voiceKeepListening';
 
 const read = (): boolean => {
     try {

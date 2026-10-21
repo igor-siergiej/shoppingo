@@ -1,4 +1,4 @@
-import { Badge } from '@shoppingo/web';
+import { Badge } from '@tandra/web';
 
 export const Variants = () => (
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>

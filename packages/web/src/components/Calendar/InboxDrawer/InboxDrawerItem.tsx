@@ -1,4 +1,4 @@
-import type { Todo } from '@shoppingo/types';
+import type { Todo } from '@tandra/types';
 import { GripVertical } from 'lucide-react';
 import { SwipeableRow } from '../SwipeableRow';
 

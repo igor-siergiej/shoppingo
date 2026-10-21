@@ -1,5 +1,5 @@
 import type { Logger } from '@imapps/api-utils';
-import type { DiscoveryEstimatedField, DiscoveryRecipe, DiscoverySource } from '@shoppingo/types';
+import type { DiscoveryEstimatedField, DiscoveryRecipe, DiscoverySource } from '@tandra/types';
 
 import type { IdGenerator } from '../IdGenerator';
 import type { IngredientStructurer } from '../IngredientStructurer/types';

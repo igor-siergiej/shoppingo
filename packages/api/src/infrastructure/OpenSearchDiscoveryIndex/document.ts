@@ -1,4 +1,4 @@
-import type { DiscoveryRecipe, DiscoveryRecipeSummary } from '@shoppingo/types';
+import type { DiscoveryRecipe, DiscoveryRecipeSummary } from '@tandra/types';
 
 /** The searchable subset of a library recipe. Instructions and quantities stay in Mongo only. */
 // One flat field-by-field projection.

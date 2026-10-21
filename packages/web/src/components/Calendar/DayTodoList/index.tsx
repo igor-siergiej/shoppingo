@@ -1,4 +1,4 @@
-import type { Label, User } from '@shoppingo/types';
+import type { Label, User } from '@tandra/types';
 import { Users } from 'lucide-react';
 import { Checkbox } from '../../ui/checkbox';
 import { SwipeableRow } from '../SwipeableRow';

@@ -1,5 +1,5 @@
 import type { Logger } from '@imapps/api-utils';
-import type { ItemCategory } from '@shoppingo/types';
+import type { ItemCategory } from '@tandra/types';
 
 import type { ItemCategoryRepository } from '../ItemCategoryRepository';
 

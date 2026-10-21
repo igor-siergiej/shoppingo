@@ -1,6 +1,6 @@
 import { expect, test } from '../fixtures';
 
-// Guest mode lets a stranger try Shoppingo without an account. Their lists
+// Guest mode lets a stranger try Tandra without an account. Their lists
 // and items live in IndexedDB only, so the flow can only be exercised with
 // a clean browser context (no pre-seeded access token). The acceptance
 // criterion is "guest creates a list with items, registers, and the list
@@ -199,7 +199,7 @@ test.describe('Guest mode', () => {
                 page.evaluate(
                     () =>
                         new Promise<boolean>((resolve) => {
-                            const open = indexedDB.open('shoppingo-guest');
+                            const open = indexedDB.open('tandra-guest');
                             open.onsuccess = () => {
                                 const db = open.result;
                                 const read = db.transaction('items').objectStore('items').getAll();

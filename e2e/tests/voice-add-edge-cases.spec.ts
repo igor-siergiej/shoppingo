@@ -181,7 +181,7 @@ test.describe('Voice add: keep listening', () => {
     test('with keep-listening on, a pause does not end the session; tapping stop does', async ({
         authenticatedPage,
     }) => {
-        await authenticatedPage.addInitScript(() => localStorage.setItem('shoppingo.voiceKeepListening', 'true'));
+        await authenticatedPage.addInitScript(() => localStorage.setItem('tandra.voiceKeepListening', 'true'));
         await installFakeSpeech(authenticatedPage, { kind: 'sessions', transcripts: ['milk', 'and eggs'] });
         await mockSpokenItemsParse(authenticatedPage, { ok: { items: [{ name: 'milk' }, { name: 'eggs' }] } });
         await openVoiceDrawer(authenticatedPage);

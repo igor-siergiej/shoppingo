@@ -1,4 +1,4 @@
-import { Label, Switch } from '@shoppingo/web';
+import { Label, Switch } from '@tandra/web';
 
 export const States = () => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>

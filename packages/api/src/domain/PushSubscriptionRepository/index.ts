@@ -1,4 +1,4 @@
-import type { PushSubscription } from '@shoppingo/types';
+import type { PushSubscription } from '@tandra/types';
 
 export interface PushSubscriptionRepository {
     ensureIndexes(): Promise<void>;

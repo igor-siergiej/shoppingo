@@ -1,4 +1,4 @@
-import type { Todo } from '@shoppingo/types';
+import type { Todo } from '@tandra/types';
 import { InboxDrawerItem } from './InboxDrawerItem';
 
 export interface InboxDrawerListProps {

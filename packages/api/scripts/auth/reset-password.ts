@@ -1,5 +1,5 @@
 /**
- * Sets a new password for a Shoppingo user and signs them out of every device.
+ * Sets a new password for a Tandra user and signs them out of every device.
  * There is no email, so this is the only way back in for someone who forgot their password.
  *
  *   bun run auth:reset-password <username>                      (prompts, input hidden)

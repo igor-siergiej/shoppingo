@@ -11,7 +11,7 @@ import { RecipesPage } from '../page-objects/RecipesPage';
 import { RegisterPage } from '../page-objects/RegisterPage';
 
 const MONGO_URI = resolveMongoUri();
-const DB_NAME = 'shoppingo_e2e';
+const DB_NAME = 'tandra_e2e';
 
 interface Fixtures {
     authenticatedPage: Page;

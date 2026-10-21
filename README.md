@@ -1,6 +1,6 @@
-# Shoppingo
+# Tandra
 
-[![PR checks](https://github.com/igor-siergiej/shoppingo/actions/workflows/pr.yml/badge.svg)](https://github.com/igor-siergiej/shoppingo/actions/workflows/pr.yml)
+[![PR checks](https://github.com/igor-siergiej/tandra/actions/workflows/pr.yml/badge.svg)](https://github.com/igor-siergiej/tandra/actions/workflows/pr.yml)
 
 A shared shopping-list PWA built around how people actually shop: plan from
 recipes, or just add things to a list — either way the list is one tap away in
@@ -10,7 +10,7 @@ the shop, works offline, and stays in sync with whoever you share it with.
 **Marketing site:** https://tandra.uk
 
 <p align="center">
-  <img src="docs/images/lists.png" alt="Shoppingo lists screen" width="195" />
+  <img src="docs/images/lists.png" alt="Tandra lists screen" width="195" />
   <img src="docs/images/list-items.png" alt="Items inside a shopping list" width="195" />
   <img src="docs/images/recipes.png" alt="Recipe library" width="195" />
   <img src="docs/images/discover.png" alt="Discover public recipes" width="195" />
@@ -41,7 +41,7 @@ Diagram of packages, runtime services, homelab deployment and external APIs:
 (open in excalidraw.com or the VS Code Excalidraw extension).
 
 Bun-workspace monorepo — `packages/web`, `packages/api`, `packages/types`
-(shared interfaces and the Zod request schemas, `@shoppingo/types/schemas`).
+(shared interfaces and the Zod request schemas, `@tandra/types/schemas`).
 
 - **web** — React 19 + TypeScript + Vite. Tailwind + Radix/shadcn UI, React
   Query for server state, React Router, react-hook-form + Zod for forms,
@@ -110,7 +110,7 @@ required value).
 | `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` | no | Web Push |
 | `OPENSEARCH_URL` | no | Discover search index; unset = Discover off |
 | `PUBLIC_DISCOVER_ORIGINS` | no | CORS allow-list for `/api/public/discover/*` |
-| `DISCOVERY_ADMIN_USER_IDS` | no | shoppingo (Better Auth) user ids allowed to moderate Discover |
+| `DISCOVERY_ADMIN_USER_IDS` | no | tandra (Better Auth) user ids allowed to moderate Discover |
 | `WIKIBOOKS_USER_AGENT` | no | User-Agent for `discover:ingest` |
 
 Web: runtime `packages/web/public/config.json` (optional `analytics`; cached in
@@ -179,8 +179,8 @@ It uses the api's `CONNECTION_URI` / `DATABASE_NAME` / `BETTER_AUTH_SECRET` /
 bun run lint                                       # Biome
 bunx tsc -p packages/api/tsconfig.json --noEmit    # API types
 bunx tsc -p packages/web/tsconfig.app.json --noEmit # web types
-bun run --filter @shoppingo/api test               # Bun runner; 90 % coverage gate
-bun run --filter @shoppingo/web test               # Vitest component tests
+bun run --filter @tandra/api test               # Bun runner; 90 % coverage gate
+bun run --filter @tandra/web test               # Vitest component tests
 bun run test:e2e                                   # Playwright; needs the dev stack
 bun run load:local                                 # k6 (manual; see scripts/load)
 ```
@@ -189,7 +189,7 @@ bun run load:local                                 # k6 (manual; see scripts/loa
   function coverage on the api lcov via `scripts/check-coverage.js`. Web
   component tests use Vitest with no coverage gate.
 - **e2e** — Playwright starts web (`:4000`) and an e2e api (`:4001`,
-  database `shoppingo_e2e`) itself, but needs Mongo and the object store
+  database `tandra_e2e`) itself, but needs Mongo and the object store
   running. Global setup seeds two accounts (`testuser`, `otheruser`; see
   `e2e/mocks/data/users.ts`) and specs sign in through the real
   `/api/auth` (`e2e/auth.ts`). Projects: `chromium` (functional), `mobile-visual` and
@@ -203,7 +203,7 @@ bun run load:local                                 # k6 (manual; see scripts/loa
 Bug reports, feature requests and PRs welcome — start with
 [CONTRIBUTING.md](./CONTRIBUTING.md) for the dev setup, commit format and PR
 flow. The
-[`good first issue`](https://github.com/igor-siergiej/shoppingo/issues?q=is%3Aopen+label%3A%22good+first+issue%22)
+[`good first issue`](https://github.com/igor-siergiej/tandra/issues?q=is%3Aopen+label%3A%22good+first+issue%22)
 label picks out small, contained starting points.
 
 ## CI/CD
@@ -220,17 +220,16 @@ label picks out small, contained starting points.
   from `Release-Notes:` trailers) → `publish-images.sh` from the
   [`utils`](https://github.com/igor-siergiej/utils) submodule
   (`.github/workflows-utils`) builds `Dockerfile.api` / `Dockerfile.web` and
-  pushes `igurusama/imapps:shoppingo-{api,web}-<version>` and `-latest` to
+  pushes `igurusama/imapps:tandra-{api,web}-<version>` and `-latest` to
   Docker Hub → two `curl` POSTs to the Dokploy deploy webhooks
   (`DEPLOY_WEB_URL`, `DEPLOY_API_URL`), authenticated with a Cloudflare Access
   service token.
 - **Production** runs on the `foundry` homelab: Dokploy swarm apps
-  `shoppingo-web` and `shoppingo-api` in the `apps` project, on
+  `tandra-web` and `tandra-api` in the `apps` project, on
   `dokploy-network` with the shared `mongodb`, `rustfs` and `opensearch`
   containers. Traefik routes `app.tandra.uk` (`/api/*` to the api,
   everything else to web). It arrives through the Cloudflare tunnel; the zone
-  has no Access apps (the app does its own auth). The `tandra.uk` apex is the landing site on CloudFront. The old app host
-  `shoppingo-app.imapps.uk` still reaches `shoppingo-web`, whose nginx 301s it to `app.tandra.uk`.
+  has no Access apps (the app does its own auth). The `tandra.uk` apex is the landing site on CloudFront.
   Gatus checks `/` and `/api/health`;
   Prometheus scrapes `/api/metrics`. The authoritative map is
   `docs/homelab.md` in the `foundry` repo. Production env values live in
@@ -246,7 +245,7 @@ PR flow: [CONTRIBUTING.md](CONTRIBUTING.md). Agent/architecture reference:
 ## Decisions
 
 - **Auth is built into the API.** Better Auth runs inside the api at
-  `/api/auth/*` with an httpOnly same-origin session cookie, so shoppingo is one
+  `/api/auth/*` with an httpOnly same-origin session cookie, so tandra is one
   deployable and Mongo is its only dependency for sign-in.
 - **Clean architecture in the API.** Handlers depend on domain services, not on
   MongoDB or a specific image provider — swapping either is a change in

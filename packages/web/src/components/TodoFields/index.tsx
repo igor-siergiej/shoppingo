@@ -1,4 +1,4 @@
-import type { Label as LabelType, Recurrence } from '@shoppingo/types';
+import type { Label as LabelType, Recurrence } from '@tandra/types';
 import { DueDateField } from '../DueDateField';
 import { LabelSelect } from '../LabelSelect';
 import { RecurrenceField } from '../RecurrenceField';

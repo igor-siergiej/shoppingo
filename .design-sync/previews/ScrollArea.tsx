@@ -1,4 +1,4 @@
-import { ScrollArea } from '@shoppingo/web';
+import { ScrollArea } from '@tandra/web';
 
 const items = [
     'Milk', 'Eggs', 'Sourdough bread', 'Baby spinach', 'Cherry tomatoes',

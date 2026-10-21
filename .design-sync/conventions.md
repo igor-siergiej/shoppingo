@@ -1,7 +1,7 @@
 # IMapps UI — how to build with it
 
 A shadcn/ui component library built with **Tailwind CSS v4** utility classes over
-CSS-variable design tokens. Components are imported from `window.Shoppingo.*` and render
+CSS-variable design tokens. Components are imported from `window.Tandra.*` and render
 real, shippable React.
 
 **The base is unthemed** — neutral monochrome tokens (black/white/grey). Brand it by
@@ -10,8 +10,8 @@ wrapping any subtree in a **theme class**; the components never change, only the
 ## Theming — wrap a subtree in a theme class
 
 ```tsx
-<div className="theme-shoppingo">
-  {/* everything here uses the Shoppingo brand: green primary, warm surfaces, Montserrat */}
+<div className="theme-tandra">
+  {/* everything here uses the Tandra brand: green primary, warm surfaces, Montserrat */}
 </div>
 ```
 
@@ -20,7 +20,7 @@ Available themes (each sets colors + font for its subtree):
 | Class | Look |
 |---|---|
 | *(none)* | Neutral — monochrome, system font. The unthemed default. |
-| `theme-shoppingo` | Green primary, warm cream surfaces, Montserrat |
+| `theme-tandra` | Green primary, warm cream surfaces, Montserrat |
 | `theme-jewellery` | Violet primary, cool blue-grey surfaces, Delius |
 | `theme-rosegold` | Warm pink-gold primary, serif |
 | `theme-ocean` | Teal/cyan primary, sans |
@@ -60,9 +60,9 @@ CSS-variable equivalents for inline styles: `var(--primary)`, `var(--muted-foreg
 ## Idiomatic snippet
 
 ```tsx
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter, Button } from 'window.Shoppingo';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter, Button } from 'window.Tandra';
 
-<div className="theme-shoppingo">
+<div className="theme-tandra">
   <Card className="w-80">
     <CardHeader>
       <CardTitle>Groceries</CardTitle>

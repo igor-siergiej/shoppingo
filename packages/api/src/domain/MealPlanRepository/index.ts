@@ -1,4 +1,4 @@
-import type { MealPlanEntry } from '@shoppingo/types';
+import type { MealPlanEntry } from '@tandra/types';
 
 export interface MealPlanRepository {
     ensureIndexes(): Promise<void>;

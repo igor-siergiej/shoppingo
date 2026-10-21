@@ -1,4 +1,4 @@
-import { Checkbox, Label } from '@shoppingo/web';
+import { Checkbox, Label } from '@tandra/web';
 
 export const States = () => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>

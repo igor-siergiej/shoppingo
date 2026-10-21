@@ -1,6 +1,6 @@
 'use client';
 
-import type { Item, Recipe } from '@shoppingo/types';
+import type { Item, Recipe } from '@tandra/types';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, BookOpen, Plus } from 'lucide-react';
 import { useState } from 'react';

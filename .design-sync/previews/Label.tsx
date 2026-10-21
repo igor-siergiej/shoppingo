@@ -1,4 +1,4 @@
-import { Input, Label } from '@shoppingo/web';
+import { Input, Label } from '@tandra/web';
 
 export const WithInput = () => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6, width: 280 }}>

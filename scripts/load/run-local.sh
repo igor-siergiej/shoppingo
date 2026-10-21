@@ -7,7 +7,7 @@ ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 HERE="$ROOT/scripts/load"
 API_PORT="${API_PORT:-4101}"
 MONGO_CONTAINER="${MONGO_CONTAINER:-dev-mongodb}"
-DB_NAME="shoppingo_k6"
+DB_NAME="tandra_k6"
 RUN_DIR="$HERE/results/$(date +%Y%m%d-%H%M%S)"
 
 # Mongo connection: explicit override, else the dev connection string from .env, else the CI default.
@@ -25,7 +25,7 @@ PIDS=()
 cleanup() {
     set +e
     for pid in "${PIDS[@]}"; do kill "$pid" 2>/dev/null; done
-    docker rm -f shoppingo-k6 >/dev/null 2>&1
+    docker rm -f tandra-k6 >/dev/null 2>&1
     docker exec "$MONGO_CONTAINER" sh -c \
         "mongosh -u \"\$MONGO_INITDB_ROOT_USERNAME\" -p \"\$MONGO_INITDB_ROOT_PASSWORD\" --authenticationDatabase admin --quiet $DB_NAME --eval 'db.dropDatabase()'" \
         >/dev/null 2>&1 && echo "dropped throwaway database $DB_NAME"
@@ -37,7 +37,7 @@ trap cleanup EXIT
     PORT="$API_PORT" \
     BETTER_AUTH_SECRET=k6-load-better-auth-secret-not-for-prod BETTER_AUTH_URL=http://localhost:4000 \
     CONNECTION_URI="$MONGO_URI" DATABASE_NAME="$DB_NAME" \
-    BUCKET_ENDPOINT=localhost:9000 BUCKET_NAME=shoppingo BUCKET_ACCESS_KEY=rustfsadmin BUCKET_SECRET_KEY=rustfsadmin \
+    BUCKET_ENDPOINT=localhost:9000 BUCKET_NAME=tandra BUCKET_ACCESS_KEY=rustfsadmin BUCKET_SECRET_KEY=rustfsadmin \
     OPENSEARCH_URL= bun src/index.ts) >"$RUN_DIR/api.log" 2>&1 &
 PIDS+=($!)
 
@@ -49,7 +49,7 @@ curl -sf "http://localhost:$API_PORT/api/health" >/dev/null || { echo "API did n
 
 # Container CPU (Mongo + k6 itself) every 5s, to tell API-bound from Mongo-bound from generator-bound.
 (while true; do
-    docker stats --no-stream --format "$(date +%s),{{.Name}},{{.CPUPerc}}" "$MONGO_CONTAINER" shoppingo-k6 2>/dev/null || true
+    docker stats --no-stream --format "$(date +%s),{{.Name}},{{.CPUPerc}}" "$MONGO_CONTAINER" tandra-k6 2>/dev/null || true
     sleep 5
 done) >"$RUN_DIR/container-cpu.csv" &
 PIDS+=($!)
@@ -62,12 +62,12 @@ done
 
 echo "results: $RUN_DIR"
 status=0
-docker run --rm --name shoppingo-k6 --network host \
+docker run --rm --name tandra-k6 --network host \
     -v "$HERE:/scripts:ro" -v "$RUN_DIR:/results" "${ENV_ARGS[@]}" \
     grafana/k6:latest run --quiet /scripts/k6-capacity.js || status=$?
 
 echo "--- container CPU while running (peak %, from $RUN_DIR/container-cpu.csv) ---"
-for name in "$MONGO_CONTAINER" shoppingo-k6; do
+for name in "$MONGO_CONTAINER" tandra-k6; do
     awk -F, -v n="$name" '$2==n { gsub("%","",$3); if ($3+0 > m) m=$3+0 } END { printf "%s peak %.0f%% (100%% = 1 core)\n", n, m }' "$RUN_DIR/container-cpu.csv"
 done
 exit "$status"

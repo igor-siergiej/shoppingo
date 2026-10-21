@@ -1,4 +1,4 @@
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@shoppingo/web';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@tandra/web';
 
 export const Open = () => (
     <div style={{ padding: 24, minHeight: 300, width: 260 }}>

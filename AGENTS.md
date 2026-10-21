@@ -1,4 +1,4 @@
-# Shoppingo - Agent Context
+# Tandra - Agent Context
 
 ## Goal
 
@@ -7,7 +7,7 @@ Give a household one shared place to do the shopping together, so everyone stays
 Use this goal to judge and prioritise work: favour changes that serve it, and question tasks that don't.
 
 ## Project Overview
-Shoppingo is a collaborative shopping-list, recipe and calendar app (PWA) with a React frontend and a Hono API running on Bun. The project uses a monorepo structure managed with Bun workspaces.
+Tandra is a collaborative shopping-list, recipe and calendar app (PWA) with a React frontend and a Hono API running on Bun. The project uses a monorepo structure managed with Bun workspaces.
 
 ## Architecture
 - **Frontend**: React 19 + TypeScript + Vite + Tailwind CSS + shadcn/ui + PWA (vite-plugin-pwa)
@@ -20,7 +20,7 @@ Shoppingo is a collaborative shopping-list, recipe and calendar app (PWA) with a
 
 ## Project Structure
 ```
-shoppingo/
+tandra/
 ├── packages/
 │   ├── api/          # Backend API (Hono + MongoDB)
 │   ├── web/          # Frontend React app
@@ -48,8 +48,8 @@ Run these from the root directory:
 - `bun run tsc --noEmit` - Type-check without emitting (run from root or per package)
 
 ### Testing
-- `bun run --filter @shoppingo/api test` - Run API tests (Bun native test runner). CI also enforces 90% line and function coverage via `scripts/check-coverage.js` on the lcov report (bun's own `coverageThreshold` is per file, so it can't express a global gate)
-- `bun run --filter @shoppingo/web test` - Run web component tests (Vitest). No coverage gate: the web package has no coverage provider installed and the e2e suite is the main safety net for UI; add `@vitest/coverage-v8` and a threshold if that changes
+- `bun run --filter @tandra/api test` - Run API tests (Bun native test runner). CI also enforces 90% line and function coverage via `scripts/check-coverage.js` on the lcov report (bun's own `coverageThreshold` is per file, so it can't express a global gate)
+- `bun run --filter @tandra/web test` - Run web component tests (Vitest). No coverage gate: the web package has no coverage provider installed and the e2e suite is the main safety net for UI; add `@vitest/coverage-v8` and a threshold if that changes
 - `bun run load:local` - On-demand k6 API capacity test against a throwaway local API/DB with a mock auth verifier (not in CI; see `scripts/load/README.md`)
 - API and script tests use Bun's native runner: import from `bun:test`. The API `test` scripts pass `--isolate`, so `mock.module`/`vi.mock` and spies on shared singletons (e.g. `config`) can't leak into other files; script tests (`bun run test:scripts`) aren't isolated, so prefer injecting dependencies there. Web tests use Vitest (`vitest`).
 - `bun run tsc --noEmit` does not actually type-check (the tsconfigs only hold project references), so rely on the editor or run `tsc -p` against a concrete tsconfig when touching types
@@ -67,7 +67,7 @@ Clean architecture with:
 - `domain/` - Business logic and repository interfaces (ListService, RecipeService, TodoService, MealPlanService, FriendService, ImageService, DiscoveryService, NotificationService, AuthorizationService, ItemCategoryService, SharedMembers, ...)
 - `infrastructure/` - External integrations: `Mongo*Repository` classes, `BetterAuth` (auth config mounted at `/api/auth/*`), `BucketStore` (S3-compatible object store via `@imapps/api-utils` `ObjectStoreConnection`), `Fal*` clients (FalLlmClient plus the image/tag/substitute/category/parser wrappers), `OpenSearchDiscoveryIndex`, `WebPushSender`, `HttpPageFetcher`/`HttpImageFetcher` (SSRF-guarded via `safeFetch`), `imageProcessor`
 - `interfaces/` - Hono handlers (ListHandlers, RecipeHandlers, TodoHandlers, MealPlanHandlers, ImageHandlers, DiscoveryHandlers, ...)
-- `routes/` - API route definitions (every mutating route with a JSON body is wired to a Zod schema from `@shoppingo/types/schemas`; `routes/validation.test.ts` enforces it)
+- `routes/` - API route definitions (every mutating route with a JSON body is wired to a Zod schema from `@tandra/types/schemas`; `routes/validation.test.ts` enforces it)
 - `middleware/` - Hono middleware (auth, validateJson, aiRateLimit, notifyListChanged)
 - `dependencies/` - DI container setup
 - `config/` - Configuration management
@@ -105,7 +105,7 @@ Common TypeScript interfaces and types shared between frontend and backend.
 2. **Code style**: The project uses **Biome** for linting and formatting (not ESLint)
 3. **Testing**: API tests run on Bun's test runner, web tests on Vitest, browser tests on Playwright (`e2e/`)
 4. **Linting before commits**: **IMPORTANT** - Run `bun run lint:fix` to fix all linting issues before committing
-5. **Building**: Use `bun run --filter @shoppingo/web build` for production build
+5. **Building**: Use `bun run --filter @tandra/web build` for production build
 6. **Commit messages**: Must follow Conventional Commits (enforced by commitlint + Husky)
 7. **Versioning**: Automated via semantic-release on main branch merges
 8. **Release notes**: Every user-visible change adds a `Release-Notes:` trailer to its commit body (see below)
@@ -148,12 +148,12 @@ Rules:
 **Claude must perform these checks before creating any commit:**
 1. **Linting**: Run `bun run lint:fix` to auto-fix all Biome linting issues
 2. **Type check**: Run `bun run tsc --noEmit` to verify no TypeScript errors
-3. **Tests**: Run `bun run --filter @shoppingo/api test` to verify all API tests pass
-4. **Builds**: Verify `bun run --filter @shoppingo/web build` and `bun run --filter @shoppingo/api build` succeed
+3. **Tests**: Run `bun run --filter @tandra/api test` to verify all API tests pass
+4. **Builds**: Verify `bun run --filter @tandra/web build` and `bun run --filter @tandra/api build` succeed
 5. **Git status**: Ensure no untracked files are accidentally committed (except `.env` configs)
 
 ## Useful Commands for Claude
-- Check project status: `bun run lint` and `bun run --filter @shoppingo/api test`
+- Check project status: `bun run lint` and `bun run --filter @tandra/api test`
 - Fix linting: `bun run lint:fix` (run before every commit)
 - Type check: `bun run tsc --noEmit`
 - Start development: `bun run start` (or separate services as needed)
@@ -166,16 +166,15 @@ The project uses shared packages published to GitHub Packages (migration to publ
 - Registry configured via `.bunfig.toml` (requires `NODE_AUTH_TOKEN` env var)
 
 ## Deployment & Infrastructure
-Production runs as Dokploy swarm apps (`shoppingo-web`, `shoppingo-api`) on the `foundry` homelab, behind the Cloudflare tunnel:
+Production runs as Dokploy swarm apps (`tandra-web`, `tandra-api`) on the `foundry` homelab, behind the Cloudflare tunnel:
 - **App**: `https://app.tandra.uk` (Traefik: `/api/*` to the api, rest to web). Auth is built into the api at `/api/auth/*` (same-origin session cookie)
-- **Old app hosts**: `shoppingo-app.imapps.uk` 301s to `app.tandra.uk` from `packages/web/nginx.conf`, which also serves a service worker that retires the old install. The `tandra.uk` apex served the app until it moved to `app.tandra.uk`; the landing site's edge function now redirects its old app paths
-- **Landing site**: `https://tandra.uk` (separate `shoppingo-site` repo, CloudFront)
+- **Landing site**: `https://tandra.uk` (separate `tandra-site` repo, CloudFront)
 - See the README "CI/CD" section and `docs/homelab.md` in the `foundry` repo for the full map
 
 ## CI/CD Pipeline (`.github/workflows/ci-cd.yml`)
 Jobs run in sequence: **lint → test → release → build-publish**
 1. **lint**: Biome linting + TypeScript type check (`bun run tsc --noEmit`)
-2. **test**: `bun run --filter @shoppingo/api test`
+2. **test**: `bun run --filter @tandra/api test`
 3. **release**: semantic-release for automated versioning and changelog
 4. **build-publish**: Docker image build and push to container registry
 

@@ -25,11 +25,11 @@ describe('loadConfig', () => {
         const config = await loadConfig();
 
         expect(config).toEqual({ analytics: { host: 'https://stats.example.com' } });
-        expect(localStorage.getItem('shoppingo:config')).toContain('https://stats.example.com');
+        expect(localStorage.getItem('tandra:config')).toContain('https://stats.example.com');
     });
 
     it('falls back to the cached config when offline instead of throwing', async () => {
-        localStorage.setItem('shoppingo:config', JSON.stringify({ analytics: { host: 'https://cached.example.com' } }));
+        localStorage.setItem('tandra:config', JSON.stringify({ analytics: { host: 'https://cached.example.com' } }));
         mockFetch(() => Promise.reject(new Error('network error')));
 
         const config = await loadConfig();

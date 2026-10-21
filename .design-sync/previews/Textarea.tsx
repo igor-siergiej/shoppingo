@@ -1,4 +1,4 @@
-import { Textarea } from '@shoppingo/web';
+import { Textarea } from '@tandra/web';
 
 export const Default = () => (
     <div style={{ width: 320 }}>

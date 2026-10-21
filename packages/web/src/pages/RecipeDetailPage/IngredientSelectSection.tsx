@@ -1,7 +1,7 @@
 'use client';
 
-import type { ListResponse, Recipe } from '@shoppingo/types';
-import { ListType } from '@shoppingo/types';
+import type { ListResponse, Recipe } from '@tandra/types';
+import { ListType } from '@tandra/types';
 import { useState } from 'react';
 import { IngredientSelectRow } from '../../components/IngredientSelectRow';
 import { PortionsStepper } from '../../components/PortionsStepper';

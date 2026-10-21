@@ -1,4 +1,4 @@
-import { Alert, AlertDescription, AlertTitle } from '@shoppingo/web';
+import { Alert, AlertDescription, AlertTitle } from '@tandra/web';
 
 export const Default = () => (
     <Alert style={{ maxWidth: 420 }}>

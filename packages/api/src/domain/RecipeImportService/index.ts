@@ -1,5 +1,5 @@
 import type { Logger } from '@imapps/api-utils';
-import type { RecipeImportResult } from '@shoppingo/types';
+import type { RecipeImportResult } from '@tandra/types';
 import * as cheerio from 'cheerio';
 
 import type { IdGenerator } from '../IdGenerator';

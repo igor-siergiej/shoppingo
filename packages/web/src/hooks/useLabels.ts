@@ -1,4 +1,4 @@
-import type { Label } from '@shoppingo/types';
+import type { Label } from '@tandra/types';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getLabelsQuery } from '../api';
 import { useUser } from '../auth';

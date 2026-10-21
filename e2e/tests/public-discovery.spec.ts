@@ -18,11 +18,11 @@ test.describe('Public discover API', () => {
         // falls back to "*" (default in selfhost / dev). Both satisfy the
         // marketing-site integration, so the smoke check accepts either.
         const res = await request.get('/api/public/discover/recipes', {
-            headers: { Origin: 'https://shoppingo.imapps.uk' },
+            headers: { Origin: 'https://tandra.uk' },
         });
         expect(res.status()).toBe(200);
         const allowOrigin = res.headers()['access-control-allow-origin'];
-        expect(['https://shoppingo.imapps.uk', '*']).toContain(allowOrigin);
+        expect(['https://tandra.uk', '*']).toContain(allowOrigin);
     });
 
     test('@smoke /api/public/discover/recipes:badslug returns 404, not 200 + SPA shell', async ({ request }) => {

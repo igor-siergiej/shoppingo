@@ -1,4 +1,4 @@
-import type { User } from '@shoppingo/types';
+import type { User } from '@tandra/types';
 
 // Seeded into Better Auth by global-setup with these exact ids (Mongo ObjectIds, like real accounts),
 // so specs can reference a user's id without asking the api first.

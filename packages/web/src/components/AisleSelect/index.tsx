@@ -1,4 +1,4 @@
-import { ITEM_CATEGORIES } from '@shoppingo/types';
+import { ITEM_CATEGORIES } from '@tandra/types';
 
 import { CATEGORY_LABELS } from '../../utils/itemCategories';
 import { Label } from '../ui/label';

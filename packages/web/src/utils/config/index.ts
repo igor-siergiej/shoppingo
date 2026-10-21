@@ -1,6 +1,6 @@
 import type { AppConfig, ConfigState } from './types';
 
-const CONFIG_STORAGE_KEY = 'shoppingo:config';
+const CONFIG_STORAGE_KEY = 'tandra:config';
 
 const configState: ConfigState = {
     config: null,

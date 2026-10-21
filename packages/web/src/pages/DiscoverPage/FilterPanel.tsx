@@ -1,4 +1,4 @@
-import type { DiscoveryFacetBucket, DiscoveryFacets, RecipeDifficulty } from '@shoppingo/types';
+import type { DiscoveryFacetBucket, DiscoveryFacets, RecipeDifficulty } from '@tandra/types';
 import type { ReactNode } from 'react';
 import type { DiscoverySearch, DiscoveryTimeFilter } from '../../hooks/useDiscoverySearch';
 

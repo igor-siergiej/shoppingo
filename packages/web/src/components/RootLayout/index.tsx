@@ -9,7 +9,6 @@ import Appbar from '../Appbar';
 import { Layout } from '../Layout';
 import NetworkStatusAlert from '../NetworkStatusAlert';
 import RouteChangeTracker from '../RouteChangeTracker';
-import SiteMoveBanner from '../SiteMoveBanner';
 
 interface RootLayoutProps {
     children?: ReactNode;
@@ -33,7 +32,6 @@ export const RootLayout = ({ children, showLayout = true }: RootLayoutProps) => 
             {/* App pages only: the bare login/register/sign-up pages are where the guest CTA leads. */}
             <Appbar actions={showLayout ? <GuestSignUpCta /> : undefined} />
             <NetworkStatusAlert />
-            <SiteMoveBanner />
             {showLayout ? (
                 <Layout>{content}</Layout>
             ) : (

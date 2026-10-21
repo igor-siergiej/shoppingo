@@ -1,4 +1,4 @@
-import type { DiscoveryEstimatedField, DiscoveryRecipeSummary, RecipeDifficulty } from '@shoppingo/types';
+import type { DiscoveryEstimatedField, DiscoveryRecipeSummary, RecipeDifficulty } from '@tandra/types';
 import { Clock, Flame, Gauge, type ListChecks } from 'lucide-react';
 import { MetaChip, optionalServingsChip, optionalTimeChip } from '../RecipeCard';
 

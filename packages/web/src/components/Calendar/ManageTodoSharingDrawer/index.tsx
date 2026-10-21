@@ -1,4 +1,4 @@
-import type { User } from '@shoppingo/types';
+import type { User } from '@tandra/types';
 import { useEffect, useState } from 'react';
 import { useFriends } from '../../../hooks/useFriends';
 import { FriendPicker } from '../../FriendPicker';

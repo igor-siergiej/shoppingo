@@ -1,4 +1,4 @@
-import type { Todo } from '@shoppingo/types';
+import type { Todo } from '@tandra/types';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { type CreateTodoBody, getTodosQuery, type UpdateTodoBody } from '../api';
 import { useUser } from '../auth';

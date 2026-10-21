@@ -1,5 +1,5 @@
 import { APIError } from '@imapps/api-utils/hono';
-import type { Ingredient, Recipe, RecipeDifficulty } from '@shoppingo/types';
+import type { Ingredient, Recipe, RecipeDifficulty } from '@tandra/types';
 import type { Context } from 'hono';
 import { dependencyContainer } from '../../dependencies/container';
 import { DependencyToken } from '../../dependencies/types';

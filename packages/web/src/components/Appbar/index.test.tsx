@@ -10,7 +10,7 @@ vi.mock('../../data/release-notes.json', () => ({
     ],
 }));
 
-const STORAGE_KEY = 'shoppingo:lastSeenVersion';
+const STORAGE_KEY = 'tandra:lastSeenVersion';
 
 describe('Appbar', () => {
     beforeEach(() => {

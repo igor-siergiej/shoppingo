@@ -2,7 +2,7 @@ import { apiCreateRecipe } from '../api-helpers';
 import { expect, test } from '../fixtures';
 import { mockSubstitutes } from '../mocks/ai';
 
-// Coverage for shoppingo-ingredient-substitution-hints: a small per-ingredient action reveals
+// Coverage for tandra-ingredient-substitution-hints: a small per-ingredient action reveals
 // AI-generated substitute suggestions inline, with no dedicated substitutes view.
 test.describe('Ingredient substitute suggestions', () => {
     test('reveals substitutes for one ingredient without opening a dedicated view', async ({ authenticatedPage }) => {

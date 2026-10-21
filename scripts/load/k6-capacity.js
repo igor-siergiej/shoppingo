@@ -1,5 +1,5 @@
 /**
- * k6 capacity test for the shoppingo API. See scripts/load/README.md.
+ * k6 capacity test for the tandra API. See scripts/load/README.md.
  *
  * Open-model stepped ramp: the arrival rate (user sessions/s) climbs through STEPS, each held for
  * STEP_DURATION. Every request is tagged with its step, so the summary shows p95 latency and error
@@ -227,8 +227,8 @@ const readMetrics = () => {
 };
 
 const aiCounters = (text) => ({
-    forbiddenRoutes: sumMetric(text, 'shoppingo_api_http_requests_total', FORBIDDEN_ROUTE),
-    imagesGenerated: sumMetric(text, 'shoppingo_images_generated_total'),
+    forbiddenRoutes: sumMetric(text, 'tandra_api_http_requests_total', FORBIDDEN_ROUTE),
+    imagesGenerated: sumMetric(text, 'tandra_images_generated_total'),
 });
 
 export function setup() {
@@ -335,14 +335,14 @@ let lastSample = null;
 export function sampler() {
     const text = readMetrics();
     if (text) {
-        const cpu = sumMetric(text, 'shoppingo_api_process_cpu_seconds_total');
+        const cpu = sumMetric(text, 'tandra_api_process_cpu_seconds_total');
         const now = Date.now();
         const step = currentStep();
         if (lastSample && now > lastSample.at) {
             apiCpu.add((cpu - lastSample.cpu) / ((now - lastSample.at) / 1000), { step });
         }
         lastSample = { cpu, at: now };
-        const lag = sumMetric(text, 'shoppingo_api_nodejs_eventloop_lag_p99_seconds');
+        const lag = sumMetric(text, 'tandra_api_nodejs_eventloop_lag_p99_seconds');
         if (lag > 0) apiLag.add(lag * 1000, { step });
     }
     sleep(SAMPLE_EVERY);
@@ -414,7 +414,7 @@ export function handleSummary(data) {
 
     const lines = [
         '',
-        `shoppingo API capacity (auth: built-in Better Auth, target: ${BASE_URL})`,
+        `tandra API capacity (auth: built-in Better Auth, target: ${BASE_URL})`,
         `budget: p95 < ${P95_MS} ms and error rate < ${(ERROR_RATE * 100).toFixed(1)}%; fixtures: ${USERS} users x (${LISTS_PER_USER} lists x ${ITEMS_PER_LIST} items + ${RECIPES_PER_USER} recipes) + ${BACKGROUND_LISTS} background lists + ${BACKGROUND_RECIPES} background recipes`,
         '',
         'step  sess/s(t)  req/s    p50 ms   p95 ms   p99 ms   err %   lost  api cores  lag p99 ms  verdict',

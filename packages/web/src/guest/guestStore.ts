@@ -1,4 +1,4 @@
-import { type ItemCategory, ListType } from '@shoppingo/types';
+import { type ItemCategory, ListType } from '@tandra/types';
 import { type DBSchema, type IDBPDatabase, openDB } from 'idb';
 
 // Local-only store for guest sessions: lists and items are persisted in
@@ -31,7 +31,7 @@ interface GuestDB extends DBSchema {
     items: { key: string; value: GuestItem; indexes: { 'by-list': string } };
 }
 
-const DB_NAME = 'shoppingo-guest';
+const DB_NAME = 'tandra-guest';
 const LISTS_STORE = 'lists';
 const ITEMS_STORE = 'items';
 

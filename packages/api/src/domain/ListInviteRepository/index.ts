@@ -1,4 +1,4 @@
-import type { ListInvite } from '@shoppingo/types';
+import type { ListInvite } from '@tandra/types';
 
 /** Persistence for /api/lists/invites. Mongo collection `listInvites`; the random token is the document id. */
 export interface ListInviteRepository {

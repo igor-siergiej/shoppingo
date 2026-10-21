@@ -1,5 +1,5 @@
-import type { ListResponse } from '@shoppingo/types';
-import { ListType } from '@shoppingo/types';
+import type { ListResponse } from '@tandra/types';
+import { ListType } from '@tandra/types';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';

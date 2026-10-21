@@ -1,4 +1,4 @@
-import type { Todo } from '@shoppingo/types';
+import type { Todo } from '@tandra/types';
 
 export interface TodoRepository {
     ensureIndexes(): Promise<void>;

@@ -1,4 +1,4 @@
-import type { ItemCategory } from '@shoppingo/types';
+import type { ItemCategory } from '@tandra/types';
 
 export interface ItemCategoryRepository {
     ensureIndexes(): Promise<void>;

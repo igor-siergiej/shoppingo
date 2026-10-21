@@ -1,7 +1,7 @@
 'use client';
 
-import type { Item } from '@shoppingo/types';
-import { ListType } from '@shoppingo/types';
+import type { Item } from '@tandra/types';
+import { ListType } from '@tandra/types';
 import { useQueryClient } from '@tanstack/react-query';
 import {
     CheckCheck,
@@ -48,7 +48,7 @@ interface ToolBarProps {
     onAddItems?: (items: Array<SpokenItem>) => Promise<void>;
     onAddIngredient?: (name: string, quantity?: number, unit?: string) => Promise<void>;
     onAddTodo?: (body: import('../../api').CreateTodoBody) => Promise<void>;
-    labels?: import('@shoppingo/types').Label[];
+    labels?: import('@tandra/types').Label[];
     prefillTodoDate?: Date;
     handleGoBack?: () => void;
     onManageRecipeUsers?: () => void;

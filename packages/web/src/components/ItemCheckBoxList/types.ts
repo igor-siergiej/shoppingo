@@ -1,4 +1,4 @@
-import type { Item, ListType } from '@shoppingo/types';
+import type { Item, ListType } from '@tandra/types';
 
 export interface ItemCheckBoxListProps {
     items: Array<Item>;

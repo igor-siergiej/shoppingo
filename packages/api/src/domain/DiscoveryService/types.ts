@@ -3,7 +3,7 @@ import type {
     DiscoveryRecipeSummary,
     DiscoverySearchQuery,
     DiscoverySearchResult,
-} from '@shoppingo/types';
+} from '@tandra/types';
 
 /** A search query after validation: defaults applied, every list present, paging bounded. */
 export type NormalizedDiscoveryQuery = Required<

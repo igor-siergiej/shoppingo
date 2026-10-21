@@ -3,7 +3,7 @@ import { Hono } from 'hono';
 
 import { csrfForFormPosts } from './csrf';
 
-const ORIGINS = ['http://localhost:4000', 'https://shoppingo-app.imapps.uk'];
+const ORIGINS = ['http://localhost:4000', 'https://app.tandra.uk'];
 
 /**
  * The CSRF wrapper is the guard that cookie-authenticated mutating routes depend on. It has

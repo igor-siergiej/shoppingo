@@ -1,4 +1,4 @@
-import { ITEM_CATEGORIES, type Item, type ItemCategory } from '@shoppingo/types';
+import { ITEM_CATEGORIES, type Item, type ItemCategory } from '@tandra/types';
 
 export const CATEGORY_LABELS: Record<ItemCategory, string> = {
     produce: 'Produce',

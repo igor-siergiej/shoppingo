@@ -24,7 +24,7 @@ import {
     updateMealPlanBody,
     updateRecipeBody,
     updateTodoBody,
-} from '@shoppingo/types/schemas';
+} from '@tandra/types/schemas';
 import type { Context, Next } from 'hono';
 import { Hono } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
@@ -97,7 +97,7 @@ export const createRoutes = (): Hono<Vars> => {
         c.json(
             {
                 status: 'healthy',
-                service: 'shoppingo-api',
+                service: 'tandra-api',
                 timestamp: new Date().toISOString(),
             },
             200

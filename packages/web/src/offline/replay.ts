@@ -1,4 +1,4 @@
-import type { ItemCategory } from '@shoppingo/types';
+import type { ItemCategory } from '@tandra/types';
 import {
     addItem,
     addList,

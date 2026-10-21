@@ -1,6 +1,6 @@
 # WebMCP tools
 
-Shoppingo registers three [WebMCP](https://developer.chrome.com/docs/ai/webmcp) tools so a browser agent (for
+Tandra registers three [WebMCP](https://developer.chrome.com/docs/ai/webmcp) tools so a browser agent (for
 example Gemini in Chrome) can act on the signed-in user's lists. Registration lives in
 `packages/web/src/webmcp/registerTools.ts` and runs from `useWebMcpTools` in `RootLayout`.
 
@@ -20,24 +20,21 @@ WebMCP is an origin trial in Chrome 149+. Register `https://app.tandra.uk` for t
 web image with the token:
 
 ```
-VITE_WEBMCP_OT_TOKEN=<token> bun run --filter @shoppingo/web build
+VITE_WEBMCP_OT_TOKEN=<token> bun run --filter @tandra/web build
 ```
 
 The token is injected as an `origin-trial` meta tag **only in production builds** (`__IS_PROD__`). Dev builds and
 builds without the variable add nothing, and browsers without WebMCP are unaffected.
 
-> Trial tokens are per origin. The app moved from `https://shoppingo.imapps.uk` to
-> `https://shoppingo-app.imapps.uk` (#82), then to `https://tandra.uk` and then to
-> `https://app.tandra.uk`; the old hosts only serve the landing site or a redirect, so a token
-> issued for any of them has no effect and must be replaced by one for `https://app.tandra.uk`.
+> Trial tokens are per origin: the token must be issued for `https://app.tandra.uk`.
 
 ## Verifying manually
 
 1. Chrome 149+ with Gemini in Chrome. For local testing without a token enable
    `chrome://flags/#enable-webmcp-testing` and relaunch.
-2. Sign in to shoppingo and open DevTools > WebMCP (or run `document.modelContext.getTools()` in the console):
+2. Sign in to tandra and open DevTools > WebMCP (or run `document.modelContext.getTools()` in the console):
    the three tools should be listed; they disappear after logging out.
-3. In Gemini in Chrome, on the shoppingo tab ask: "What lists do I have?" (`getLists`), then
+3. In Gemini in Chrome, on the tandra tab ask: "What lists do I have?" (`getLists`), then
    "Add 2 litres of milk and a loaf of bread to my Groceries list" (`addItemsToList`), then
    "Add the ingredients for my Pasta recipe for 4 to Groceries" (`addRecipeToList`).
 4. Confirm the items appear on the list; the agent should ask for confirmation before the two

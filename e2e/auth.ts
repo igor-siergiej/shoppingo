@@ -1,5 +1,5 @@
 import type { Browser, Page } from '@playwright/test';
-import type { User } from '@shoppingo/types';
+import type { User } from '@tandra/types';
 
 import { MOCK_USER, MOCK_USER_2, PASSWORDS } from './mocks/data/users';
 

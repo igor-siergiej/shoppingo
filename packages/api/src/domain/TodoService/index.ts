@@ -1,5 +1,5 @@
 import type { Logger } from '@imapps/api-utils';
-import type { Recurrence, Todo, User } from '@shoppingo/types';
+import type { Recurrence, Todo, User } from '@tandra/types';
 
 import type { FriendService } from '../FriendService';
 import type { IdGenerator } from '../IdGenerator';

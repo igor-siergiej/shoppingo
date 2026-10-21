@@ -1,4 +1,4 @@
-import type { Item, ListType } from '@shoppingo/types';
+import type { Item, ListType } from '@tandra/types';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { track } from '../utils/analytics';
 import { logger } from '../utils/logger';

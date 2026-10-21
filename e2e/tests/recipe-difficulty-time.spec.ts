@@ -2,7 +2,7 @@ import { apiCreateRecipe } from '../api-helpers';
 import { expect, test } from '../fixtures';
 import { mockRecipeImport } from '../mocks/ai';
 
-// Coverage for shoppingo-recipe-difficulty-time: prep time, cook time, servings and difficulty
+// Coverage for tandra-recipe-difficulty-time: prep time, cook time, servings and difficulty
 // are editable on manual creation and on Recipe Detail, and prefilled (parsed) from an import.
 test.describe('Recipe prep time, cook time, servings and difficulty', () => {
     test('can be entered manually when creating a recipe and show on Recipe Detail', async ({ authenticatedPage }) => {

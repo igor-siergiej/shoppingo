@@ -1,4 +1,4 @@
-import { Button, Label, Popover, PopoverContent, PopoverTrigger } from '@shoppingo/web';
+import { Button, Label, Popover, PopoverContent, PopoverTrigger } from '@tandra/web';
 
 export const Open = () => (
     <div style={{ padding: 24, minHeight: 260 }}>

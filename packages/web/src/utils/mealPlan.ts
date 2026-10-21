@@ -1,4 +1,4 @@
-import type { Ingredient, MealPlanEntry, Recipe } from '@shoppingo/types';
+import type { Ingredient, MealPlanEntry, Recipe } from '@tandra/types';
 import { addDays, format, startOfWeek } from 'date-fns';
 import { scaleIngredients } from './convertUnits';
 

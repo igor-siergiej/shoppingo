@@ -1,4 +1,4 @@
-import type { Recipe } from '@shoppingo/types';
+import type { Recipe } from '@tandra/types';
 import { describe, expect, it } from 'vitest';
 import { aiTagPollInterval } from './aiTagPoll';
 

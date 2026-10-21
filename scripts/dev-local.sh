@@ -6,8 +6,8 @@
 #
 # A fresh clone reaches a logged-in list in four commands:
 #
-#   git clone https://github.com/igor-siergiej/shoppingo
-#   cd shoppingo
+#   git clone https://github.com/igor-siergiej/tandra
+#   cd tandra
 #   bun install
 #   bun run dev:local            # web on http://localhost:4000
 #
@@ -67,7 +67,7 @@ for _ in $(seq 1 30); do
     sleep 0.5
 done
 if ! curl -sf "http://127.0.0.1:9000/health/ready" >/dev/null; then
-    echo "RustFS did not come up; see docker logs shoppingo-selfhost-rustfs-1" >&2
+    echo "RustFS did not come up; see docker logs tandra-selfhost-rustfs-1" >&2
     exit 1
 fi
 
@@ -80,7 +80,7 @@ echo "==> Starting api on :${API_PORT} (logs: $HERE/logs/api.log)"
             BETTER_AUTH_SECRET="${BETTER_AUTH_SECRET:-dev-local-better-auth-secret-not-for-prod}" \
             BETTER_AUTH_URL="http://localhost:${WEB_PORT}" \
             BUCKET_ENDPOINT="localhost:9000" \
-        bun run --filter @shoppingo/api start
+        bun run --filter @tandra/api start
 ) >"$HERE/logs/api.log" 2>&1 &
 API_PID=$!
 for _ in $(seq 1 60); do

@@ -1,4 +1,4 @@
-import type { Label as LabelType } from '@shoppingo/types';
+import type { Label as LabelType } from '@tandra/types';
 import { Label } from '../ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 

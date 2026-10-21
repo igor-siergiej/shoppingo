@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
-import type { Ingredient, Recipe, User } from '@shoppingo/types';
+import type { Ingredient, Recipe, User } from '@tandra/types';
 import { RecipeService } from './index';
 
 class MockRepository {

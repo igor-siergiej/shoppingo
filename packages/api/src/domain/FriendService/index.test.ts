@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import type { Friendship, PairingCode } from '@shoppingo/types';
+import type { Friendship, PairingCode } from '@tandra/types';
 import { FriendService } from './index';
 
 class MockRepo {

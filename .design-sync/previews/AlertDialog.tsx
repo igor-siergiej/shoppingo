@@ -7,7 +7,7 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
-} from '@shoppingo/web';
+} from '@tandra/web';
 
 export const Confirm = () => (
     <AlertDialog open>

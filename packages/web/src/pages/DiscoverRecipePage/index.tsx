@@ -1,4 +1,4 @@
-import type { DiscoveryRecipe, DiscoveryRecipeSummary, Ingredient } from '@shoppingo/types';
+import type { DiscoveryRecipe, DiscoveryRecipeSummary, Ingredient } from '@tandra/types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AlertTriangle, ArrowLeft, Check, ExternalLink, Plus } from 'lucide-react';
 import { Link, useNavigate, useParams } from 'react-router-dom';

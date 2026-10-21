@@ -1,4 +1,4 @@
-# Contributing to Shoppingo
+# Contributing to Tandra
 
 Thanks for taking a look. This document gets a new contributor to a green test
 run quickly and points at the deeper reference material in
@@ -9,8 +9,8 @@ run quickly and points at the deeper reference material in
 You need **Bun 1.x** and **Docker** (for Mongo and RustFS, the S3-compatible object store).
 
 ```bash
-git clone https://github.com/igor-siergiej/shoppingo
-cd shoppingo
+git clone https://github.com/igor-siergiej/tandra
+cd tandra
 bun install
 cp .env.example .env
 bun run dev:local                  # mongo + rustfs + web (:4000) + api (:4001)
@@ -37,8 +37,8 @@ Run these from the repo root before opening a PR:
 bun run lint                                       # Biome (not ESLint)
 bunx tsc -p packages/api/tsconfig.json --noEmit    # API types
 bunx tsc -p packages/web/tsconfig.app.json --noEmit # web types
-bun run --filter @shoppingo/api test               # Bun runner; 90% coverage gate
-bun run --filter @shoppingo/web test               # Vitest component tests
+bun run --filter @tandra/api test               # Bun runner; 90% coverage gate
+bun run --filter @tandra/web test               # Vitest component tests
 ```
 
 End-to-end tests use Playwright:
@@ -73,7 +73,7 @@ bun run test:e2e --grep "@smoke"  # smoke subset; safe to run against any deploy
 
 ## Picking a first issue
 
-Browse issues labelled [`good first issue`](https://github.com/igor-siergiej/shoppingo/issues?q=is%3Aopen+label%3A%22good+first+issue%22) — they're curated to be small, contained, and instructive
+Browse issues labelled [`good first issue`](https://github.com/igor-siergiej/tandra/issues?q=is%3Aopen+label%3A%22good+first+issue%22) — they're curated to be small, contained, and instructive
 about one slice of the project.
 
 ## Pull request flow
@@ -92,15 +92,15 @@ about one slice of the project.
 There's no published Gantt chart, but the maintainer triages publicly:
 
 - **Open issues** — what people have already asked for. Filter by the
-  [`good first issue`](https://github.com/igor-siergiej/shoppingo/issues?q=is%3Aopen+label%3A%22good+first+issue%22)
+  [`good first issue`](https://github.com/igor-siergiej/tandra/issues?q=is%3Aopen+label%3A%22good+first+issue%22)
   label for small, contained starting points, or by
-  [`enhancement`](https://github.com/igor-siergiej/shoppingo/issues?q=is%3Aopen+label%3Aenhancement)
+  [`enhancement`](https://github.com/igor-siergiej/tandra/issues?q=is%3Aopen+label%3Aenhancement)
   to see what's planned.
 - **Milestones** — issues grouped by target release on the
-  [milestones page](https://github.com/igor-siergiej/shoppingo/milestones).
+  [milestones page](https://github.com/igor-siergiej/tandra/milestones).
 - **Discussions** — proposals, design questions and "is anyone working on
   this?" threads live in
-  [GitHub Discussions](https://github.com/igor-siergiej/shoppingo/discussions)
+  [GitHub Discussions](https://github.com/igor-siergiej/tandra/discussions)
   so the maintainer can group related ideas before promoting any to issues.
 - **Project board** — the maintainer's internal kanban board is private; if
   something isn't on the issue or milestones view above, it's not yet been
@@ -118,4 +118,4 @@ problem you're trying to solve.
   [`SECURITY.md`](./SECURITY.md) (GitHub private vulnerability reporting is
   enabled on this repo). Don't open a public issue for anything sensitive.
 - General questions, ideas, "before I write a PR…" — open a thread in
-  [GitHub Discussions](https://github.com/igor-siergiej/shoppingo/discussions).
+  [GitHub Discussions](https://github.com/igor-siergiej/tandra/discussions).

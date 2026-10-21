@@ -1,4 +1,4 @@
-import type { RecipeDifficulty } from '@shoppingo/types';
+import type { RecipeDifficulty } from '@tandra/types';
 import { TimeField } from '../TimeField';
 import { Label } from '../ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';

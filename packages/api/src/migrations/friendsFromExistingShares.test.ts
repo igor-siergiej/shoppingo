@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import type { Friendship } from '@shoppingo/types';
+import type { Friendship } from '@tandra/types';
 
 import { migrateFriendsFromExistingShares, pairsFromItems } from './friendsFromExistingShares';
 

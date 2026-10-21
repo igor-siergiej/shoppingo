@@ -1,4 +1,4 @@
-import type { ListResponse } from '@shoppingo/types';
+import type { ListResponse } from '@tandra/types';
 import { useEffect, useId, useState } from 'react';
 import { Button } from '../../components/ui/button';
 import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from '../../components/ui/drawer';

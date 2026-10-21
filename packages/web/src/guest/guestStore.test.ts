@@ -1,5 +1,5 @@
 import 'fake-indexeddb/auto';
-import { ListType } from '@shoppingo/types';
+import { ListType } from '@tandra/types';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { guestStore } from './guestStore';
 

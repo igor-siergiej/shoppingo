@@ -1,4 +1,4 @@
-import type { DiscoverySearchResult } from '@shoppingo/types';
+import type { DiscoverySearchResult } from '@tandra/types';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';

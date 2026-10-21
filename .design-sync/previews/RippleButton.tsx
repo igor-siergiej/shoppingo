@@ -1,4 +1,4 @@
-import { RippleButton } from '@shoppingo/web';
+import { RippleButton } from '@tandra/web';
 
 export const Variants = () => (
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center' }}>

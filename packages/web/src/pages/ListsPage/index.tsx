@@ -1,4 +1,4 @@
-import type { ListType } from '@shoppingo/types';
+import type { ListType } from '@tandra/types';
 import { useQuery } from '@tanstack/react-query';
 import { AlertTriangle, ListPlus } from 'lucide-react';
 import { useEffect } from 'react';

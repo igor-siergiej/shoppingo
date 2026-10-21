@@ -1,4 +1,4 @@
-import type { DiscoveryRecipe } from '@shoppingo/types';
+import type { DiscoveryRecipe } from '@tandra/types';
 
 const wiki = (title: string) => `https://en.wikibooks.org/wiki/Cookbook:${title.replace(/ /g, '_')}`;
 

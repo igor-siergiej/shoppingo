@@ -1,4 +1,4 @@
-import type { User } from '@shoppingo/types';
+import type { User } from '@tandra/types';
 
 /** Anything that has an owner and a member list: lists, recipes, todos. */
 export interface Owned {

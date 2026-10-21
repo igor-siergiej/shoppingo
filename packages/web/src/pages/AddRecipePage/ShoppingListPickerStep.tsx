@@ -1,4 +1,4 @@
-import type { ListResponse } from '@shoppingo/types';
+import type { ListResponse } from '@tandra/types';
 import { ShoppingListItemPicker } from './ShoppingListItemPicker';
 import { ShoppingListPicker } from './ShoppingListPicker';
 

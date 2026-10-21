@@ -1,4 +1,4 @@
-import { Button, Card, CardAction, CardDescription, CardHeader, CardTitle } from '@shoppingo/web';
+import { Button, Card, CardAction, CardDescription, CardHeader, CardTitle } from '@tandra/web';
 
 export const WithAction = () => (
     <Card style={{ width: 320 }}>

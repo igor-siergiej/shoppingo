@@ -1,4 +1,4 @@
-# design-sync notes — @shoppingo/web
+# design-sync notes — @tandra/web
 
 Package-shape sync of the shadcn/ui primitives in `packages/web/src/components/ui`.
 This is an **app**, not a published component library — synth-entry mode (no `dist/`).
@@ -6,8 +6,8 @@ This is an **app**, not a published component library — synth-entry mode (no `
 ## Repo-specific setup (needed on every fresh clone)
 
 - **Self-package symlink.** Bun does not self-link the workspace package, but the converter
-  must resolve `@shoppingo/web`. Recreate before building:
-  `ln -sfn ../.. packages/web/node_modules/@shoppingo/web`
+  must resolve `@tandra/web`. Recreate before building:
+  `ln -sfn ../.. packages/web/node_modules/@tandra/web`
 - **`--node-modules ./packages/web/node_modules`** — react/react-dom resolve there (bun keeps
   them web-local, not hoisted to repo root). The self-symlink above also lives there.
 - **Build command:** `bash .design-sync/build-css.sh` (this is `cfg.buildCmd`). It compiles
@@ -37,19 +37,19 @@ This is an **app**, not a published component library — synth-entry mode (no `
   It mirrors `src/index.css` (imports, `@theme inline`, shimmer keyframes, base layer) but with
   neutral `:root`/`.dark` values and an explicit `@source "../src/components/ui/**"`.
 - **Themes = scoped `.theme-*` blocks** in `packages/web/.design-sync-theme/themes/*.css`,
-  shipped into the bundle via `cfg.tokensPkg` (`@shoppingo/web`) + `cfg.tokensGlob`
+  shipped into the bundle via `cfg.tokensPkg` (`@tandra/web`) + `cfg.tokensGlob`
   (`.design-sync-theme/themes/*.css`) → copied to `tokens/`, `@import`ed by `styles.css`.
   A design brands itself by wrapping a subtree in `<div class="theme-<name>">`.
   Dark variant selectors: `.dark .theme-x, .theme-x.dark`.
-- **Themes shipped:** `shoppingo` (green/Montserrat) + `jewellery` (violet/Delius) are
+- **Themes shipped:** `tandra` (green/Montserrat) + `jewellery` (violet/Delius) are
   generated verbatim from each app's `src/index.css` `:root`/`.dark` by the scratch script
-  `gen-theme.mjs`; `rosegold` + `ocean` are hue-rotated variants of shoppingo via `rotate.mjs`.
+  `gen-theme.mjs`; `rosegold` + `ocean` are hue-rotated variants of tandra via `rotate.mjs`.
   Both generator scripts live in scratch (not committed) — the generated `theme-*.css` ARE
   committed under `.design-sync-theme/themes/`. To add a theme: drop another `.theme-x.css`
   there (any tool), rebuild; `tokensGlob` picks it up automatically.
 - **`cfg.tokensPkg` is required for `tokensGlob`** — the glob is resolved relative to that
   package's dir (the self-symlink), so `tokensGlob` alone (no `tokensPkg`) silently copies nothing.
-- **Fonts:** Montserrat (shoppingo) + Delius (jewellery) self-hosted under `.design-sync-fonts/`,
+- **Fonts:** Montserrat (tandra) + Delius (jewellery) self-hosted under `.design-sync-fonts/`,
   both wired via `cfg.extraFonts` (array). rosegold/ocean use system fonts (serif / system-ui).
 
 ## Component surface

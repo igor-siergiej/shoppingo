@@ -1,4 +1,4 @@
-import type { DiscoveryEstimatedField, Ingredient } from '@shoppingo/types';
+import type { DiscoveryEstimatedField, Ingredient } from '@tandra/types';
 
 import type { RecipeEstimate, RecipeEstimator } from '../../domain/WikibooksIngest/types';
 import type { FalLlmClient } from '../FalLlmClient';

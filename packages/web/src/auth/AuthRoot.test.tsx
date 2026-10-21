@@ -51,7 +51,7 @@ describe('AuthRoot sign-out', () => {
     });
 
     it('finishes the pending sign-out once the server is reachable, then checks the session', async () => {
-        localStorage.setItem('shoppingo:sign-out-pending', '1');
+        localStorage.setItem('tandra:sign-out-pending', '1');
         signOut.mockResolvedValue({ data: { success: true }, error: null });
         const getSession = vi.fn(async () => new Response('null', { status: 200 }));
         vi.stubGlobal('fetch', getSession);
@@ -61,6 +61,6 @@ describe('AuthRoot sign-out', () => {
         await screen.findByText('signed out');
         expect(signOut).toHaveBeenCalledTimes(1);
         await waitFor(() => expect(getSession).toHaveBeenCalledTimes(1));
-        expect(localStorage.getItem('shoppingo:sign-out-pending')).toBeNull();
+        expect(localStorage.getItem('tandra:sign-out-pending')).toBeNull();
     });
 });

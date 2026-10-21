@@ -1,6 +1,6 @@
 import { expect, test } from '../fixtures';
 
-const LAST_SEEN_KEY = 'shoppingo:lastSeenVersion';
+const LAST_SEEN_KEY = 'tandra:lastSeenVersion';
 
 test.describe("What's new", () => {
     // Not @smoke: it needs a signed-in account, which only exists in the local e2e database.

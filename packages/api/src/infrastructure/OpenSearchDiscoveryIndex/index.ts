@@ -7,7 +7,7 @@ import type {
     DiscoveryRecipeSummary,
     DiscoverySearchResult,
     DiscoveryTimeBucket,
-} from '@shoppingo/types';
+} from '@tandra/types';
 
 import type { DiscoveryIndex, NormalizedDiscoveryQuery } from '../../domain/DiscoveryService/types';
 import { toIndexDocument, toSummary } from './document';

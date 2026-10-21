@@ -1,4 +1,4 @@
-import type { Ingredient, Recipe } from '@shoppingo/types';
+import type { Ingredient, Recipe } from '@tandra/types';
 import { useEffect, useState } from 'react';
 import IngredientItem from '../../components/IngredientItem';
 

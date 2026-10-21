@@ -1,4 +1,4 @@
-import type { Todo } from '@shoppingo/types';
+import type { Todo } from '@tandra/types';
 import { addDays } from 'date-fns';
 import type { DayTodoItem } from '../components/Calendar/DayTodoList';
 import { type DayDot, dayKey } from '../components/Calendar/MonthGrid';

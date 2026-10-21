@@ -1,5 +1,5 @@
 import type { Logger } from '@imapps/api-utils';
-import type { Label } from '@shoppingo/types';
+import type { Label } from '@tandra/types';
 import type { IdGenerator } from '../IdGenerator';
 
 import type { LabelRepository } from '../LabelRepository';

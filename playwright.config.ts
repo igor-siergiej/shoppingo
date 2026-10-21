@@ -73,7 +73,7 @@ export default defineConfig({
             reuseExistingServer: !process.env.CI,
         },
         {
-            command: 'bun run --filter @shoppingo/api start:e2e',
+            command: 'bun run --filter @tandra/api start:e2e',
             url: 'http://localhost:4001/api/health',
             reuseExistingServer: false,
             env: {
@@ -82,16 +82,16 @@ export default defineConfig({
                 BETTER_AUTH_SECRET: 'e2e-better-auth-secret-not-for-prod-32+',
                 BETTER_AUTH_URL: 'http://localhost:4000',
                 CONNECTION_URI: E2E_MONGO_URI,
-                DATABASE_NAME: 'shoppingo_e2e',
+                DATABASE_NAME: 'tandra_e2e',
                 BUCKET_ENDPOINT: 'localhost:9000',
-                BUCKET_NAME: 'shoppingo',
+                BUCKET_NAME: 'tandra',
                 BUCKET_ACCESS_KEY: 'rustfsadmin',
                 BUCKET_SECRET_KEY: 'rustfsadmin',
                 // Only the dedicated e2e search engine, never a developer's OPENSEARCH_URL from .env. Empty = discovery off.
                 OPENSEARCH_URL: process.env.E2E_OPENSEARCH_URL ?? '',
                 // The public read endpoint echoes the allow-listed origin in Access-Control-Allow-Origin.
                 // Without an allow-list the middleware falls back to "*"; the test asserts the echo path.
-                PUBLIC_DISCOVER_ORIGINS: 'https://shoppingo.imapps.uk',
+                PUBLIC_DISCOVER_ORIGINS: 'https://tandra.uk',
             },
         },
     ],

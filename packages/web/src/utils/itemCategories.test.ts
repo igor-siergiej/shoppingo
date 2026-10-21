@@ -1,4 +1,4 @@
-import type { Item } from '@shoppingo/types';
+import type { Item } from '@tandra/types';
 import { describe, expect, it } from 'vitest';
 import { groupByCategory } from './itemCategories';
 

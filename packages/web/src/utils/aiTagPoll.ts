@@ -1,4 +1,4 @@
-import type { Recipe } from '@shoppingo/types';
+import type { Recipe } from '@tandra/types';
 
 const TAGGING_WINDOW_MS = 60_000;
 const TAGGING_POLL_MS = 3000;

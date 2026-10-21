@@ -1,7 +1,7 @@
 import { expect, test } from '../fixtures';
 import { mockRecipeImport } from '../mocks/ai';
 
-// Regression coverage for shoppingo-recipe-import-title-autofocus: the Recipe Title
+// Regression coverage for tandra-recipe-import-title-autofocus: the Recipe Title
 // field's autoFocus used to fire unconditionally, popping the mobile keyboard and
 // scrolling straight back to the top of the form right after a URL import had just
 // populated it below — hiding the imported content the user came to look at.
