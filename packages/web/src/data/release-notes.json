@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.115.0",
+    "date": "2026-10-21",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "You can now sign in with Google, and link Google to an existing account from Settings so you can always get back in."
+      }
+    ]
+  },
+  {
     "version": "1.114.0",
     "date": "2026-10-21",
     "notes": [

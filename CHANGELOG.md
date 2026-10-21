@@ -1,3 +1,10 @@
+# [1.115.0](https://github.com/igor-siergiej/shoppingo/compare/v1.114.0...v1.115.0) (2026-10-21)
+
+
+### Features
+
+* **web:** sign in with Google ([#281](https://github.com/igor-siergiej/shoppingo/issues/281)) ([c492fa5](https://github.com/igor-siergiej/shoppingo/commit/c492fa55dec66d6e436a7a07b4640c71e7f95961)), closes [#146](https://github.com/igor-siergiej/shoppingo/issues/146)
+
 # [1.114.0](https://github.com/igor-siergiej/shoppingo/compare/v1.113.1...v1.114.0) (2026-10-21)
 
 
