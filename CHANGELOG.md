@@ -1,3 +1,10 @@
+## [1.113.1](https://github.com/igor-siergiej/shoppingo/compare/v1.113.0...v1.113.1) (2026-10-21)
+
+
+### Bug Fixes
+
+* **web:** only accept usernames the sign-in server accepts ([#280](https://github.com/igor-siergiej/shoppingo/issues/280)) ([b508db8](https://github.com/igor-siergiej/shoppingo/commit/b508db88a32fc9785dd5295786a80024f944fd58)), closes [#145](https://github.com/igor-siergiej/shoppingo/issues/145)
+
 # [1.113.0](https://github.com/igor-siergiej/shoppingo/compare/v1.112.0...v1.113.0) (2026-10-21)
 
 

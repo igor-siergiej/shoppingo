@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.113.1",
+    "date": "2026-10-21",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "When you choose a username, the sign-up form now tells you straight away that it can only use letters, numbers, underscores and dots."
+      }
+    ]
+  },
+  {
     "version": "1.113.0",
     "date": "2026-10-21",
     "notes": [
