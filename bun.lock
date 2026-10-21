@@ -29,7 +29,7 @@
     },
     "packages/api": {
       "name": "@shoppingo/api",
-      "version": "1.114.0",
+      "version": "1.115.0",
       "dependencies": {
         "@better-auth/mongo-adapter": "1.7.12",
         "@imapps/api-utils": "0.6.0",
@@ -54,7 +54,7 @@
     },
     "packages/types": {
       "name": "@shoppingo/types",
-      "version": "1.114.0",
+      "version": "1.115.0",
       "dependencies": {
         "date-fns": "^4.1.0",
         "zod": "^4.1.11",
@@ -62,10 +62,9 @@
     },
     "packages/web": {
       "name": "@shoppingo/web",
-      "version": "1.114.0",
+      "version": "1.115.0",
       "dependencies": {
         "@hookform/resolvers": "^5.2.2",
-        "@imapps/web-utils": "0.5.1",
         "@radix-ui/react-alert-dialog": "^1.1.15",
         "@radix-ui/react-checkbox": "^1.3.2",
         "@radix-ui/react-dialog": "^1.1.14",
@@ -488,8 +487,6 @@
     "@imapps/biome-config": ["@imapps/biome-config@0.5.1", "", { "peerDependencies": { "@biomejs/biome": "^2.0.0" } }, "sha512-SrGHvSi7HvXDyiPdc5o4e2sLtOfXawtpm56vO+bbtcI+MiILUG91ylNsHEeftJSM0iOUEqZSEwvJvWgwjbCocw=="],
 
     "@imapps/dev-scripts": ["@imapps/dev-scripts@0.1.0", "", { "bin": { "fallow-audit": "bin/fallow-audit.sh" } }, "sha512-FpacCF4XlHTFF/5BmjQWBxrn1sIZCKvZkkJgJqaCw6s8V0WAjOmc0MIb8UQpFNXgxNmHStIvXrOSAf+frreeGA=="],
-
-    "@imapps/web-utils": ["@imapps/web-utils@0.5.1", "", { "peerDependencies": { "react": ">=18.0.0", "react-router-dom": ">=6.0.0" } }, "sha512-f8TwIKq06onX5pn8jIFmu6vu3Wqhf/M6kMaLEMUgfdxsCpXBUDgKIFRdaCM4oZ0vjTSH6Ru+pf6ZYToTb+qdVg=="],
 
     "@img/colour": ["@img/colour@1.1.0", "", {}, "sha512-Td76q7j57o/tLVdgS746cYARfSyxk8iEfRxewL9h4OMzYhbW4TAcppl0mT4eyqXddh6L/jwoM75mo7ixa/pCeQ=="],
 

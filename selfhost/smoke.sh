@@ -3,6 +3,7 @@
 # - brings everything up
 # - waits until /api/health returns 200
 # - confirms the web SPA loads
+# - signs up a throwaway user through the built-in auth and reads the session back
 # - leaves the stack running on success, tears down on failure
 #
 # Run from this directory: `./smoke.sh`
@@ -58,3 +59,21 @@ if [[ "$home_code" != "200" ]]; then
     exit 1
 fi
 echo "✅ /  → 200"
+
+# Built-in sign-in (Better Auth): create a throwaway account, then prove the session cookie works.
+JAR="$(mktemp)"
+SMOKE_USER="smoke_$(date +%s)"
+signup_code="$(curl -s -o /dev/null -w '%{http_code}' -c "$JAR" \
+    -H 'Content-Type: application/json' -H "Origin: http://localhost:${WEB_PORT}" \
+    -d "{\"email\":\"${SMOKE_USER}@users.invalid\",\"name\":\"${SMOKE_USER}\",\"username\":\"${SMOKE_USER}\",\"password\":\"smoke-password-123\"}" \
+    "http://localhost:${WEB_PORT}/api/auth/sign-up/email")"
+if [[ "$signup_code" != "200" ]]; then
+    echo "❌ /api/auth/sign-up/email returned $signup_code, expected 200 (BETTER_AUTH_URL must be http://localhost:${WEB_PORT})" >&2
+    exit 1
+fi
+if ! curl -sf -b "$JAR" "http://localhost:${WEB_PORT}/api/auth/get-session" | grep -q "\"username\":\"${SMOKE_USER}\""; then
+    echo "❌ session cookie from sign-up was not accepted by /api/auth/get-session" >&2
+    exit 1
+fi
+rm -f "$JAR"
+echo "✅ sign-up + session → ok (${SMOKE_USER})"

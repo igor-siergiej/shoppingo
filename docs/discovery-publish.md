@@ -46,7 +46,7 @@ of their own recipe shows "Your public recipe" with Unpublish, which works witho
 - **Moderation.** `POST /api/discover/recipes/:id/report` (any signed-in user, optional reason up to 500 characters; one
   report per person per recipe, a repeat replaces the reason) stores into `discoveryReports`. Admins read them with
   `GET /api/discover/reports` (grouped per recipe with counts and reasons, reporters not named) and remove a recipe with
-  `DELETE /api/discover/recipes/:id`. **Who may call these:** the kivo user ids in `DISCOVERY_ADMIN_USER_IDS`
+  `DELETE /api/discover/recipes/:id`. **Who may call these:** the shoppingo (Better Auth) user ids in `DISCOVERY_ADMIN_USER_IDS`
   (comma-separated). Unset means nobody. Everyone else, including the recipe's own publisher, gets 403. Delisting removes
   the document from Mongo and the index and clears its publication and reports. It is refused for Wikibooks recipes (400):
   the next ingest would bring them straight back. There is no admin UI; the endpoints are for `curl`/a future screen.

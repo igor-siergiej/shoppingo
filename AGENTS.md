@@ -65,7 +65,7 @@ Environment variables are in `.env` file (development values).
 ## API Structure (`packages/api/`)
 Clean architecture with:
 - `domain/` - Business logic and repository interfaces (ListService, RecipeService, TodoService, MealPlanService, FriendService, ImageService, DiscoveryService, NotificationService, AuthorizationService, ItemCategoryService, SharedMembers, ...)
-- `infrastructure/` - External integrations: `Mongo*Repository` classes, `HttpAuthClient`, `BucketStore` (S3-compatible object store via `@imapps/api-utils` `ObjectStoreConnection`), `Fal*` clients (FalLlmClient plus the image/tag/substitute/category/parser wrappers), `OpenSearchDiscoveryIndex`, `WebPushSender`, `HttpPageFetcher`/`HttpImageFetcher` (SSRF-guarded via `safeFetch`), `imageProcessor`
+- `infrastructure/` - External integrations: `Mongo*Repository` classes, `BetterAuth` (auth config mounted at `/api/auth/*`), `BucketStore` (S3-compatible object store via `@imapps/api-utils` `ObjectStoreConnection`), `Fal*` clients (FalLlmClient plus the image/tag/substitute/category/parser wrappers), `OpenSearchDiscoveryIndex`, `WebPushSender`, `HttpPageFetcher`/`HttpImageFetcher` (SSRF-guarded via `safeFetch`), `imageProcessor`
 - `interfaces/` - Hono handlers (ListHandlers, RecipeHandlers, TodoHandlers, MealPlanHandlers, ImageHandlers, DiscoveryHandlers, ...)
 - `routes/` - API route definitions (every mutating route with a JSON body is wired to a Zod schema from `@shoppingo/types/schemas`; `routes/validation.test.ts` enforces it)
 - `middleware/` - Hono middleware (auth, validateJson, aiRateLimit, notifyListChanged)
@@ -95,7 +95,7 @@ Key dependencies:
 - TanStack Query v5 (`@tanstack/react-query`) for data fetching
 - Framer Motion for animations
 - react-hook-form + Zod for form validation
-- `@imapps/web-utils` - Shared utilities for auth, config
+- `better-auth` client (`src/auth/client.ts`) behind the `src/auth` facade
 
 ## Shared Types (`packages/types/`)
 Common TypeScript interfaces and types shared between frontend and backend.
@@ -163,12 +163,11 @@ Rules:
 ## Shared Utilities Integration
 The project uses shared packages published to GitHub Packages (migration to public npm in progress):
 - API package uses `@igor-siergiej/api-utils` for database connections, dependency injection, and logging
-- Web package uses `@igor-siergiej/web-utils` for auth, config loading
 - Registry configured via `.bunfig.toml` (requires `NODE_AUTH_TOKEN` env var)
 
 ## Deployment & Infrastructure
 Production runs as Dokploy swarm apps (`shoppingo-web`, `shoppingo-api`) on the `foundry` homelab, behind the Cloudflare tunnel:
-- **App**: `https://app.tandra.uk` (Traefik: `/api/*` to the api, rest to web). Auth is kivo at `https://kivo.tandra.uk` (same site as the app, which kivo's `SameSite=Strict` refresh cookie needs)
+- **App**: `https://app.tandra.uk` (Traefik: `/api/*` to the api, rest to web). Auth is built into the api at `/api/auth/*` (same-origin session cookie)
 - **Old app hosts**: `shoppingo-app.imapps.uk` 301s to `app.tandra.uk` from `packages/web/nginx.conf`, which also serves a service worker that retires the old install. The `tandra.uk` apex served the app until it moved to `app.tandra.uk`; the landing site's edge function now redirects its old app paths
 - **Landing site**: `https://tandra.uk` (separate `shoppingo-site` repo, CloudFront)
 - See the README "CI/CD" section and `docs/homelab.md` in the `foundry` repo for the full map
@@ -181,9 +180,10 @@ Jobs run in sequence: **lint → test → release → build-publish**
 4. **build-publish**: Docker image build and push to container registry
 
 ## Related Services
-- **Authentication**: Uses `kivo` service (port 3008) for user authentication
-  - `AUTH_URL` must be `https://...` (the config rejects any non-https value at boot, so a future migration to plaintext is impossible by construction)
-  - The web app holds the access token in module memory (see `packages/web/src/auth/accessTokenStore.ts` + `storagePatches.ts`); it is not in `localStorage` / `sessionStorage`
-- **Shared Utilities**: Depends on `@igor-siergiej/api-utils` and `@igor-siergiej/web-utils`
+- **Authentication**: Built into the api with Better Auth (`packages/api/src/infrastructure/BetterAuth`, mounted at `/api/auth/*`)
+  - Username + password (argon2id), optional Google via `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET`; no email
+  - Session is an httpOnly same-origin cookie; `BETTER_AUTH_SECRET` and `BETTER_AUTH_URL` are required
+  - Admin password reset: `bun run auth:reset-password <username>`
+- **Shared Utilities**: Depends on `@igor-siergiej/api-utils`
 - **GitOps Deployment**: Managed via `argonaut` Kubernetes GitOps repository
-- See `../kivo/CLAUDE.md`, `../im-apps-utils/CLAUDE.md`, and `../argonaut/CLAUDE.md` for related service documentation
+- See `../im-apps-utils/CLAUDE.md` and `../argonaut/CLAUDE.md` for related service documentation

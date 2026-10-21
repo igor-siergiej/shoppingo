@@ -52,19 +52,6 @@ services:
       rc bucket create --ignore-existing local/${BUCKET_NAME:-shoppingo}"
     restart: "no"
 
-  kivo:
-    image: igurusama/imapps:kivo-latest
-    restart: unless-stopped
-    environment:
-      PORT: "3008"
-    networks:
-      - internal
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3008/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   api:
     image: igurusama/imapps:shoppingo-api-latest
     restart: unless-stopped
@@ -73,11 +60,8 @@ services:
         condition: service_healthy
       rustfs-init:
         condition: service_completed_successfully
-      kivo:
-        condition: service_healthy
     environment:
       PORT: "4001"
-      AUTH_URL: "http://kivo:3008"
       # Built-in sign-in (Better Auth). The secret signs session cookies; the URL is the public
       # origin of the web app, not the api container.
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?set BETTER_AUTH_SECRET in selfhost/.env (openssl rand -base64 32)}

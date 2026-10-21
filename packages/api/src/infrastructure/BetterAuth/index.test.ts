@@ -78,7 +78,7 @@ describe('createAuth', () => {
         await expect(auth.api.signInEmail({ body: { email, password: 'password123' } })).rejects.toThrow();
     });
 
-    it('verifies a kivo-style bcrypt hash (legacy kivo users)', async () => {
+    it('verifies a legacy bcrypt hash', async () => {
         const { auth } = makeAuth();
         const ctx = await auth.$context;
         expect(

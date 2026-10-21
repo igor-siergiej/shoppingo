@@ -48,7 +48,7 @@ Reuse these instead of hand-rolling `page.route`/`addInitScript` stubs in a spec
 - `ai.ts` — `mockRecipeImport`, `mockSubstitutes`, `mockSpokenItemsParse`, `mockRecipeCoverGeneration`, `mockRateLimited`. Each takes `{ ok: body }` or `{ status, error }`, plus optional `delayMs` to hold a loading state.
 - `speech.ts` — `installFakeSpeech(page, script)` where script is a transcript, an error (`not-allowed`, `no-speech`, ...) or `unsupported`. Call before `goto`.
 - `push.ts` — `installFakePush(page, { permission, requestResult, subscribed, vapidPublicKey })` fakes `Notification`, `PushManager`, the service-worker `ready` registration and the push API endpoints.
-- `auth.ts` — token and Kivo auth routes (used by the `authenticatedPage` fixture).
+- `auth.ts` — signs in through the real Better Auth `/api/auth` routes (used by the `authenticatedPage` fixture).
 
 ## Discover specs and OpenSearch
 

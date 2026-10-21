@@ -8,7 +8,7 @@ describe('returningUserCookie', () => {
         );
     });
 
-    it.each(['localhost', 'tandra.uk', 'www.tandra.uk', 'kivo.imapps.uk', 'tandra.example.com'])(
+    it.each(['localhost', 'tandra.uk', 'www.tandra.uk', 'shoppingo.imapps.uk', 'tandra.example.com'])(
         'sets nothing on %s',
         (host) => {
             expect(returningUserCookie(host)).toBeNull();

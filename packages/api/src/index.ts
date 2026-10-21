@@ -18,11 +18,10 @@ import { createRoutes } from './routes';
 const port = config.get('port');
 
 const mountBetterAuth = (app: ReturnType<typeof createApp>) => {
-    if (!config.get('betterAuthSecret')) return;
     const auth = dependencyContainer.resolve(DependencyToken.Auth);
     // The public origin Better Auth is configured for is the app's own origin (self-hosts included), so
     // multipart uploads from it must pass the form-post origin check too.
-    const publicOrigin = new URL(config.get('betterAuthUrl') as string).origin;
+    const publicOrigin = new URL(config.get('betterAuthUrl')).origin;
     app.use('/api/*', csrfForFormPosts([...allowedOrigins, publicOrigin]));
     app.on(['GET', 'POST'], '/api/auth/*', (c) => auth.handler(c.req.raw));
 };
@@ -62,8 +61,6 @@ export const onStartup = async () => {
         // Better Auth session cookie. Mounted on GET + POST so `/api/auth/get-session` (HEAD/GET)
         // and the form POSTs land on the same handler. `c.req.raw` is passed through — Hono does
         // not consume the body before reaching this point, so a full sign-up round-trip works.
-        // Optional today: `BETTER_AUTH_SECRET` not being set skips the mount so the api boots
-        // and keeps authenticating through kivo bearer tokens (Task 9 will remove that path).
         mountBetterAuth(app);
 
         logger.info('Starting API server - connecting to database and object store');

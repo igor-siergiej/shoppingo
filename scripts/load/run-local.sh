@@ -1,12 +1,11 @@
 #!/bin/bash
-# Self-contained capacity run: throwaway API + mock kivo + throwaway Mongo database, k6 in Docker.
-# Nothing here touches staging, production, kivo, fal.ai or any real database. See README.md.
+# Self-contained capacity run: throwaway API (built-in Better Auth) + throwaway Mongo database, k6 in Docker.
+# Nothing here touches staging, production, fal.ai or any real database. See README.md.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 HERE="$ROOT/scripts/load"
 API_PORT="${API_PORT:-4101}"
-KIVO_PORT="${MOCK_KIVO_PORT:-3199}"
 MONGO_CONTAINER="${MONGO_CONTAINER:-dev-mongodb}"
 DB_NAME="shoppingo_k6"
 RUN_DIR="$HERE/results/$(date +%Y%m%d-%H%M%S)"
@@ -33,12 +32,10 @@ cleanup() {
 }
 trap cleanup EXIT
 
-(cd "$ROOT" && MOCK_KIVO_PORT="$KIVO_PORT" bun scripts/load/mock-kivo.ts) >"$RUN_DIR/mock-kivo.log" 2>&1 &
-PIDS+=($!)
-
 # env -i: the API gets only what is listed here, so a developer's FAL_KEY etc. can never reach it.
 (cd "$ROOT/packages/api" && env -i PATH="$PATH" HOME="$HOME" \
-    PORT="$API_PORT" AUTH_URL="http://localhost:$KIVO_PORT" \
+    PORT="$API_PORT" \
+    BETTER_AUTH_SECRET=k6-load-better-auth-secret-not-for-prod BETTER_AUTH_URL=http://localhost:4000 \
     CONNECTION_URI="$MONGO_URI" DATABASE_NAME="$DB_NAME" \
     BUCKET_ENDPOINT=localhost:9000 BUCKET_NAME=shoppingo BUCKET_ACCESS_KEY=rustfsadmin BUCKET_SECRET_KEY=rustfsadmin \
     OPENSEARCH_URL= bun src/index.ts) >"$RUN_DIR/api.log" 2>&1 &

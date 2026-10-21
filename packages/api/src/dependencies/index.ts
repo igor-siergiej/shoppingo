@@ -85,15 +85,11 @@ const googleConfig = (): { clientId: string; clientSecret: string } | undefined 
 };
 
 const buildBetterAuth = () => {
-    const secret = config.get('betterAuthSecret');
-    if (!secret) throw new Error('BETTER_AUTH_SECRET must be set');
-    const baseURL = config.get('betterAuthUrl');
-    if (!baseURL) throw new Error('BETTER_AUTH_URL must be set');
     const db = new MongoClient(config.get('connectionUri')).db(config.get('databaseName'));
     return createAuth({
         database: mongodbAdapter(db, { transaction: false }),
-        secret,
-        baseURL,
+        secret: config.get('betterAuthSecret'),
+        baseURL: config.get('betterAuthUrl'),
         trustedOrigins: allowedOrigins,
         google: googleConfig(),
     });
@@ -112,10 +108,7 @@ export const registerDepdendencies = () => {
     // Better Auth — owns the embedded username/password + Google flow mounted at /api/auth/*.
     // The api-utils Mongo connection hides its `Db`, so we open a fresh MongoClient against the
     // same connectionUri/databaseName (the driver connects lazily). `transaction: false` because
-    // the local dev mongo is a standalone without a replica set; prod is a single node today,
-    // and Task 9 (kivo removal) is the natural place to revisit when prod mongo gains
-    // transactions. Skipped entirely while BETTER_AUTH_SECRET is unset — the api boots and
-    // continues to accept kivo bearer tokens only, matching today's prod until the env lands.
+    // the local dev mongo is a standalone without a replica set; prod is a single node today.
     register(DependencyToken.Auth, () => buildBetterAuth());
     // Domain services using factory classes
     register(

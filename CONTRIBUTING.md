@@ -13,7 +13,7 @@ git clone https://github.com/igor-siergiej/shoppingo
 cd shoppingo
 bun install
 cp .env.example .env
-bun run dev:local                  # mongo + rustfs + mock-kivo + web (:4000) + api (:4001)
+bun run dev:local                  # mongo + rustfs + web (:4000) + api (:4001)
 ```
 
 Open <http://localhost:4000> and register a new account (3–50 character
@@ -21,15 +21,13 @@ username of letters, digits, `_` or `.`; 8+ character password). Accounts live
 in your local Mongo; sign-in is built into the api (Better Auth), configured by
 `BETTER_AUTH_SECRET` / `BETTER_AUTH_URL` in `.env`.
 
-`dev:local` still starts a mock kivo on `127.0.0.1:3099` for the api's legacy
-bearer fallback; the web no longer talks to it (it goes away with jott #147).
-The script refuses to run with `NODE_ENV=production`.
+`dev:local` refuses to run with `NODE_ENV=production`.
 
-The full self-host stack (web + api + mongo + rustfs + kivo from published
+The full self-host stack (web + api + mongo + rustfs from published
 images) lives in `selfhost/docker-compose.yml`; a single
 `docker compose up -d` from there is also a valid end-to-end run.
 `dev:local` is the developer ergonomics path — it skips the published web/api
-images, uses HMR via Vite, and skips pulling kivo.
+images and uses HMR via Vite.
 
 ## Verifying your change
 

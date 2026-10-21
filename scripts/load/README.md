@@ -13,7 +13,7 @@ STEPS=100,200,300 STEP_DURATION=20s bun run load:local
 | Piece | What it is |
 |---|---|
 | API | `packages/api` on `:4101`, started with `env -i` (no `FAL_KEY`, no OpenSearch, nothing from `.env` except the Mongo URI) |
-| Auth | `mock-kivo.ts` on `:3199` stands in for kivo's `/verify` (same idea as `e2e/global-setup.ts`) |
+| Auth | the throwaway API's own Better Auth (`BETTER_AUTH_SECRET`/`BETTER_AUTH_URL` set); k6 `setup()` signs each fixture user up via `POST /api/auth/sign-up/email` and sends the returned session cookie on every call |
 | Database | throwaway `shoppingo_k6` on the local dev Mongo; dropped on exit. The runner refuses non-localhost Mongo URIs |
 | k6 | `grafana/k6` in Docker with `--network host`; no local k6 install |
 
@@ -29,10 +29,7 @@ Output lands in `scripts/load/results/<timestamp>/` (gitignored): `report.txt`, 
 
 ## Auth: what the number includes
 
-Auth is **always the isolated mock verifier**, so reported numbers exclude kivo. Why that is the useful number:
-
-- `authenticate` caches a positive `/verify` result for 30 s per token (max 1000 entries), so kivo sees roughly one request per active user per 30 s, not one per API call.
-- kivo's own limiter (`checkGlobalRateLimit`) allows 55 requests/min per client IP. shoppingo forwards `X-Forwarded-For`, so real users have separate buckets, but a load generator on one IP does not. A real-kivo run would measure that limit, not shoppingo.
+Auth is the API's built-in Better Auth: each sign-up uses a distinct `X-Forwarded-For` so the sign-up rate limiter (3 per 10 s per IP) doesn't throttle setup, and every scenario request carries a real session cookie, so session lookup cost is included in the numbers.
 
 ## Zero AI spend
 
@@ -40,7 +37,7 @@ The script never calls `/api/recipes/import`, `/image/generate` or `/api/recipes
 
 ## Targets
 
-`BASE_URL` may only be `localhost`, `127.0.0.1` or `host.docker.internal`; anything else aborts. There is no staging deployment of shoppingo or kivo, and production must never be load tested. Everything runs against a throwaway API and database.
+`BASE_URL` may only be `localhost`, `127.0.0.1` or `host.docker.internal`; anything else aborts. There is no staging deployment of shoppingo, and production must never be load tested. Everything runs against a throwaway API and database.
 
 ## CI
 
@@ -78,10 +75,8 @@ What this says:
 3. **Lost updates are fixed.** Item edits used to be read-modify-write on the whole list document, so concurrent edits to one list overwrote each other (a toggle or delete got a 404 for an item the same session had just added; up to 1300 per step). Every such write is now a compare-and-swap on a `revision` counter (`ListService.modifyList`, `ListRepository.replaceIfUnchanged`): a write that lost the race re-reads and retries, up to 8 times, then answers 503. `lost` is 0 at every step. The price shows only past the cap: queueing stretches the read-to-write window, and 64 requests (of tens of thousands) hit 503 in the overloaded steps. `ListService/concurrency.test.ts` reproduces the race deterministically.
 4. **Recipe indexes remove the Mongo scan but this harness cannot show a latency win.** Query plan on 5000 recipes: `users.id` goes from a full collection scan (5000 documents, 7 ms) to an index fetch (50 documents, 1 ms); `id` lookups from 5000 documents to 1. End to end, the two recipe rows above differ by less than the run-to-run noise, because the API thread saturates before Mongo does. The scan cost grows linearly with the collection, so the index is insurance against growth rather than a measured speed-up today.
 5. **The ~100 ms p95 in the recipe-read rows is host contention, not recipe cost.** The first version of this note blamed the recipe endpoints. The same session mix (recipe reads, recipe indexes, compare-and-swap list writes) on a GitHub runner in the `Load` workflow gives p95 1-3 ms on every route at 150 sessions/s, so the local gap came from other work on the shared box. Benchmark on a quiet host, or use the `Load` run, before drawing conclusions from small differences.
-6. kivo is out of these numbers by construction (see above).
 
 ## Not done yet
 
-- **Real-kivo run.** There is no non-production kivo, so it is not possible without hitting production auth; kivo's 55/min/IP limit would also dominate the result.
 - **Recipe writes.** `MongoRecipeRepository.update` replaces the whole document, which is likely (not measured) the same lost-update pattern as lists were when it races `addUser` / `removeUser` / `setCoverImageKey`. The k6 session does not write recipes.
 - **Prometheus/Grafana panel on the tank host.** The local runs read the same `/api/metrics` series via the sampler scenario; attach the Grafana panel for a run's time window if the API is ever load tested in a deployed environment.

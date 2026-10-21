@@ -59,7 +59,7 @@ export interface Friendship {
     id: string;
     /** Canonical sorted pair key — userIds[0] < userIds[1] lexicographically. */
     userIds: [string, string];
-    /** {id, username} snapshots for display without a kivo roundtrip. */
+    /** {id, username} snapshots for display without a user lookup. */
     users: [User, User];
     createdAt: Date;
 }
