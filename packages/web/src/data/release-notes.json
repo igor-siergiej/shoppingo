@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.113.0",
+    "date": "2026-10-21",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Shoppingo is now called Tandra: the new name shows across the app, and your lists, recipes and settings are unchanged."
+      }
+    ]
+  },
+  {
     "version": "1.112.0",
     "date": "2026-10-21",
     "notes": [

@@ -1,3 +1,10 @@
+# [1.113.0](https://github.com/igor-siergiej/shoppingo/compare/v1.112.0...v1.113.0) (2026-10-21)
+
+
+### Features
+
+* show the Tandra name across the app ([#277](https://github.com/igor-siergiej/shoppingo/issues/277)) ([752e585](https://github.com/igor-siergiej/shoppingo/commit/752e58540148093eeb234d004c810b9f7bd40151))
+
 # [1.112.0](https://github.com/igor-siergiej/shoppingo/compare/v1.111.0...v1.112.0) (2026-10-21)
 
 
