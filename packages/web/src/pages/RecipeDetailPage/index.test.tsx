@@ -5,7 +5,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import RecipeDetailPage from './index';
 
-vi.mock('@imapps/web-utils', () => ({
+vi.mock('../../auth', () => ({
     useUser: () => ({ user: { id: 'user-1', username: 'testuser' } }),
 }));
 

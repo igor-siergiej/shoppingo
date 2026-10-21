@@ -5,7 +5,7 @@ import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('../offline/drainer', () => ({ drainOutbox: vi.fn().mockResolvedValue(undefined) }));
-vi.mock('@imapps/web-utils', () => ({ useUser: () => ({ user: { id: 'user-1', username: 'me' } }) }));
+vi.mock('../auth', () => ({ useUser: () => ({ user: { id: 'user-1', username: 'me' } }) }));
 
 import { outboxStore } from '../offline/outboxStore';
 import { useLabels } from './useLabels';

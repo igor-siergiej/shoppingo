@@ -9,7 +9,7 @@ vi.mock('@tanstack/react-query', () => ({
     useQueryClient: () => ({ invalidateQueries: vi.fn() }),
 }));
 
-vi.mock('@imapps/web-utils', () => ({
+vi.mock('../../../auth', () => ({
     useUser: () => ({ user: { id: 'user-1' } }),
 }));
 

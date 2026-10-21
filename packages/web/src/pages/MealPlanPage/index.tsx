@@ -1,4 +1,3 @@
-import { useUser } from '@imapps/web-utils';
 import type { MealPlanEntry, Recipe } from '@shoppingo/types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { addDays, format } from 'date-fns';
@@ -12,6 +11,7 @@ import {
     getRecipesQuery,
     updateMealPlanEntry,
 } from '../../api';
+import { useUser } from '../../auth';
 import ToolBar from '../../components/ToolBar';
 import { Button } from '../../components/ui/button';
 import { buildShoppingRows, dayKey, type ShoppingRow, weekDays, weekStart } from '../../utils/mealPlan';

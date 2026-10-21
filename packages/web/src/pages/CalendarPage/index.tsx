@@ -1,7 +1,7 @@
-import { useUser } from '@imapps/web-utils';
 import { addMonths, endOfMonth, startOfMonth } from 'date-fns';
 import { useEffect, useMemo, useState } from 'react';
 import type { CreateTodoBody } from '../../api';
+import { useUser } from '../../auth';
 import { EditTodoDrawer } from '../../components/Calendar/EditTodoDrawer';
 import { InboxDrawer } from '../../components/Calendar/InboxDrawer';
 import { ManageTodoSharingDrawer } from '../../components/Calendar/ManageTodoSharingDrawer';

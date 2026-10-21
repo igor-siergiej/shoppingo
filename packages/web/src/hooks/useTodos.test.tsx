@@ -7,7 +7,7 @@ import * as api from '../api';
 import { outboxStore } from '../offline/outboxStore';
 import { useTodos } from './useTodos';
 
-vi.mock('@imapps/web-utils', () => ({
+vi.mock('../auth', () => ({
     useUser: () => ({ user: { id: 'user-1', username: 'testuser' } }),
 }));
 

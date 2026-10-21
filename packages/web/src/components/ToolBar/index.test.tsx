@@ -11,7 +11,7 @@ const { mockLogout, mockNavigate, mockUseToolBarState, mockHandleGoBack, mockUse
     mockUseLocation: vi.fn(() => ({ pathname: '/lists' })),
 }));
 
-vi.mock('@imapps/web-utils', () => ({
+vi.mock('../../auth', () => ({
     useAuth: () => ({
         logout: mockLogout,
     }),

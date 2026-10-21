@@ -1,11 +1,11 @@
 'use client';
 
-import { useUser } from '@imapps/web-utils';
 import type { Item, Recipe } from '@shoppingo/types';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, BookOpen, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { addItemsBulk, getRecipesQuery } from '../../../api';
+import { useUser } from '../../../auth';
 import { Button } from '../../../components/ui/button';
 import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from '../../../components/ui/drawer';
 import { RippleButton } from '../../../components/ui/ripple';

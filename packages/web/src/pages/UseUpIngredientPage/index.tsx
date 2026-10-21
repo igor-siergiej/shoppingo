@@ -1,8 +1,8 @@
-import { useUser } from '@imapps/web-utils';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getRecipesQuery } from '../../api';
+import { useUser } from '../../auth';
 import { PinnedSearchField } from '../../components/PinnedSearchField';
 import ToolBar from '../../components/ToolBar';
 import { useIngredientWasteSearch } from '../../hooks/useIngredientWasteSearch';
