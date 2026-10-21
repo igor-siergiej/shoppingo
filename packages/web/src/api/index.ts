@@ -16,7 +16,6 @@ import type {
     Todo,
     User,
 } from '@shoppingo/types';
-import { getAccessToken } from '../auth/accessTokenStore';
 import {
     foldPendingItems,
     foldPendingLabels,
@@ -119,7 +118,7 @@ export const addItem = async (
         }),
     });
 
-    void fetch(`/api/image/${encodeURIComponent(itemName)}`, { method: 'GET', headers: authHeaders() }).catch(() => {});
+    void fetch(`/api/image/${encodeURIComponent(itemName)}`).catch(() => {});
 
     return result;
 };
@@ -349,19 +348,8 @@ export const suggestIngredientSubstitutes = async (
     });
 };
 
-// Raw-fetch endpoints (blob download, multipart upload) bypass makeRequest, so they have
-// to attach the bearer token themselves.
-const authHeaders = (): Record<string, string> => {
-    // The token lives in the web-utils in-memory store; not in DOM storage.
-    const accessToken = getAccessToken();
-    return accessToken ? { Authorization: `Bearer ${accessToken}` } : {};
-};
-
 export const importRecipeImage = async (imageUrl: string, signal?: AbortSignal): Promise<File> => {
-    const headers = authHeaders();
-
     const response = await fetch(`/api/recipes/import/image?url=${encodeURIComponent(imageUrl)}`, {
-        headers,
         ...(signal && { signal }),
     });
     if (!response.ok) {
@@ -451,11 +439,8 @@ export const uploadRecipeImage = async (recipeId: string, file: File): Promise<{
     const formData = new FormData();
     formData.append('image', file);
 
-    const headers = authHeaders();
-
     const response = await fetch(`/api/recipes/${encodeURIComponent(recipeId)}/image/upload`, {
         method: 'POST',
-        headers,
         body: formData,
     });
 

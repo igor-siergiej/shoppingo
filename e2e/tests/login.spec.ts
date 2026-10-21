@@ -1,9 +1,6 @@
-import { expect, test } from '@playwright/test';
-import { mockAuthRoutes } from '../mocks/auth';
+import { expect, test } from '../fixtures';
 
 test('login navigates to homepage', async ({ page }) => {
-    await mockAuthRoutes(page);
-
     await page.goto('/login');
     await expect(page.getByText('Login to your account', { exact: true })).toBeVisible();
 

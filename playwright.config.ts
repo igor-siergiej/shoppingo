@@ -4,7 +4,6 @@ import { resolveMongoUri } from './e2e/mongo-uri';
 
 config();
 
-const E2E_KIVO_PORT = 3099;
 const E2E_MONGO_URI = resolveMongoUri();
 
 // Live smoke checks (e.g. kanban-cli e2e live) inject a deployed URL via
@@ -79,7 +78,9 @@ export default defineConfig({
             reuseExistingServer: false,
             env: {
                 PORT: '4001',
-                AUTH_URL: `http://localhost:${E2E_KIVO_PORT}`,
+                // Fixed test values, never a developer's .env: e2e signs in through these.
+                BETTER_AUTH_SECRET: 'e2e-better-auth-secret-not-for-prod-32+',
+                BETTER_AUTH_URL: 'http://localhost:4000',
                 CONNECTION_URI: E2E_MONGO_URI,
                 DATABASE_NAME: 'shoppingo_e2e',
                 BUCKET_ENDPOINT: 'localhost:9000',

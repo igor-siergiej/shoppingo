@@ -53,7 +53,11 @@ export const createAuth = ({ database, secret, baseURL, trustedOrigins, google }
             : {},
         plugins: [username({ minUsernameLength: USERNAME_MIN_LENGTH, maxUsernameLength: USERNAME_MAX_LENGTH })],
         rateLimit: { enabled: true, customRules: { '/sign-in/username': { window: 60, max: 10 } } },
-        advanced: { ipAddress: { ipAddressHeaders: ['x-forwarded-for'] } },
+        // Rate limits are per client IP. Behind Cloudflare → cloudflared → Traefik, X-Forwarded-For only
+        // holds the tunnel's address (Traefik trusts no upstream), so every user would share one bucket;
+        // Cloudflare's CF-Connecting-IP is the real client. Without Cloudflare (dev, e2e, self-hosts) it is
+        // absent and X-Forwarded-For is used.
+        advanced: { ipAddress: { ipAddressHeaders: ['cf-connecting-ip', 'x-forwarded-for'] } },
         hooks: {
             before: createAuthMiddleware(async (ctx) => {
                 rejectEmailSignIn(ctx.path);

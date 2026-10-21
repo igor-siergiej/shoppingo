@@ -2,9 +2,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock the config module so analytics can resolve getConfig().
 const configState: {
-    value: { AUTH_URL: string; analytics?: { host?: string; websiteId?: string; enabled?: boolean } } | null;
+    value: { analytics?: { host?: string; websiteId?: string; enabled?: boolean } } | null;
 } = {
-    value: { AUTH_URL: 'https://kivo.imapps.uk' },
+    value: {},
 };
 
 vi.mock('./config', () => ({
@@ -18,7 +18,7 @@ const { page, track, identify, startReplay, stopReplay } = await import('./analy
 
 describe('analytics', () => {
     beforeEach(() => {
-        configState.value = { AUTH_URL: 'https://kivo.imapps.uk' };
+        configState.value = {};
         delete window.umami;
         document.head.innerHTML = '';
     });
@@ -28,14 +28,13 @@ describe('analytics', () => {
     });
 
     it('is a no-op when analytics config is missing', () => {
-        configState.value = { AUTH_URL: 'https://kivo.imapps.uk' };
+        configState.value = {};
         expect(() => track('item_added', { source: 'typed' })).not.toThrow();
         expect(document.querySelector('script[data-website-id]')).toBeNull();
     });
 
     it('is a no-op when analytics.enabled is false', () => {
         configState.value = {
-            AUTH_URL: 'https://kivo.imapps.uk',
             analytics: { host: 'https://analytics.imapps.uk', websiteId: 'abc', enabled: false },
         };
         track('item_added');
@@ -44,7 +43,6 @@ describe('analytics', () => {
 
     it('rejects non-http(s) hosts without injecting the script', () => {
         configState.value = {
-            AUTH_URL: 'https://kivo.imapps.uk',
             analytics: { host: 'javascript:alert(1)', websiteId: 'abc' },
         };
         track('item_added');
@@ -53,7 +51,6 @@ describe('analytics', () => {
 
     it('injects the script once and forwards subsequent events', () => {
         configState.value = {
-            AUTH_URL: 'https://kivo.imapps.uk',
             analytics: { host: 'https://analytics.imapps.uk', websiteId: 'site-1' },
         };
         const calls: Array<[string, unknown]> = [];
@@ -70,7 +67,6 @@ describe('analytics', () => {
 
     it('page() routes a name through track()', () => {
         configState.value = {
-            AUTH_URL: 'https://kivo.imapps.uk',
             analytics: { host: 'https://analytics.imapps.uk', websiteId: 'site-1' },
         };
         const calls: Array<[string, unknown]> = [];
@@ -82,7 +78,6 @@ describe('analytics', () => {
 
     it('identify() forwards to window.umami.identify', () => {
         configState.value = {
-            AUTH_URL: 'https://kivo.imapps.uk',
             analytics: { host: 'https://analytics.imapps.uk', websiteId: 'site-1' },
         };
         const identifyMock = vi.fn();
@@ -94,7 +89,6 @@ describe('analytics', () => {
 
     it('startReplay/stopReplay are no-ops when the tracker lacks the methods', () => {
         configState.value = {
-            AUTH_URL: 'https://kivo.imapps.uk',
             analytics: { host: 'https://analytics.imapps.uk', websiteId: 'site-1' },
         };
         window.umami = { track: vi.fn(), identify: vi.fn() };

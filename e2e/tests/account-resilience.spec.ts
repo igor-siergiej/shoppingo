@@ -1,17 +1,12 @@
 import type { Page } from '@playwright/test';
 import { apiCreateList } from '../api-helpers';
-import { expect, mockAuthRoutes, test } from '../fixtures';
-import { MOCK_USER_2 } from '../mocks/data/users';
+import { expect, test } from '../fixtures';
 import { installFakePush } from '../mocks/push';
 
 test.describe.configure({ timeout: 20000 });
 
 test.describe('Sign in failures', () => {
     test('wrong credentials show the server message and stay on the login page', async ({ page, loginPage }) => {
-        await mockAuthRoutes(page);
-        await page.route('http://localhost:3008/login', (route) =>
-            route.fulfill({ status: 401, json: { error: 'Invalid username or password' } })
-        );
         await loginPage.goto();
 
         await loginPage.login('testuser', 'wrongpassword1');
@@ -20,38 +15,28 @@ test.describe('Sign in failures', () => {
         await expect(page).toHaveURL(/\/login$/);
     });
 
-    test('an unknown user gets the same treatment', async ({ page, loginPage }) => {
-        await mockAuthRoutes(page);
-        await page.route('http://localhost:3008/login', (route) =>
-            route.fulfill({ status: 404, json: { error: 'User not found' } })
-        );
+    test('an unknown user gets the same message, so usernames cannot be probed', async ({ page, loginPage }) => {
         await loginPage.goto();
 
         await loginPage.login('nobody', 'password123');
 
-        await expect(page.getByText('User not found')).toBeVisible();
+        await expect(page.getByText('Invalid username or password')).toBeVisible();
         await expect(page).toHaveURL(/\/login$/);
     });
 
-    test('registering a taken username shows the server message', async ({ page, registerPage }) => {
-        await mockAuthRoutes(page);
-        await page.route('http://localhost:3008/register', (route) =>
-            route.fulfill({ status: 409, json: { error: 'Username already taken' } })
-        );
+    test('registering a taken username says so', async ({ page, registerPage }) => {
         await registerPage.goto();
 
-        await registerPage.register('testuser', 'password123', 'password123');
+        await registerPage.register('TestUser', 'password123', 'password123');
 
-        await expect(page.getByText('Username already taken')).toBeVisible();
+        await expect(page.getByText('That username is taken')).toBeVisible();
         await expect(page).toHaveURL(/\/register$/);
     });
 
     test('password rules are explained before anything is sent', async ({ page, registerPage }) => {
-        await mockAuthRoutes(page);
         let registerCalls = 0;
-        await page.route('http://localhost:3008/register', (route) => {
-            registerCalls++;
-            return route.fulfill({ status: 200, json: {} });
+        page.on('request', (req) => {
+            if (req.url().includes('/api/auth/sign-up')) registerCalls++;
         });
         await registerPage.goto();
 
@@ -81,7 +66,6 @@ test.describe('Session', () => {
     }) => {
         await page.goto('/recipes');
         await page.waitForURL(/\/login$/);
-        await mockAuthRoutes(page);
 
         await loginPage.login('testuser', 'password123');
 
@@ -89,12 +73,9 @@ test.describe('Session', () => {
         await expect(page.getByRole('button', { name: 'Menu' })).toBeVisible();
     });
 
-    test('when the token can no longer be refreshed the user is sent to login', async ({ authenticatedPage }) => {
+    test('when the session is gone the user is sent to login', async ({ authenticatedPage }) => {
         await authenticatedPage.route('**/api/lists/user/**', (route) =>
-            route.fulfill({ status: 401, json: { error: 'Token expired' } })
-        );
-        await authenticatedPage.route('http://localhost:3008/refresh', (route) =>
-            route.fulfill({ status: 401, json: { error: 'Refresh token expired' } })
+            route.fulfill({ status: 401, json: { error: 'Unauthorized' } })
         );
 
         await authenticatedPage.goto('/');
@@ -113,7 +94,6 @@ test.describe('Session', () => {
         await authenticatedPage.getByRole('button', { name: 'Log out' }).click();
         await authenticatedPage.waitForURL(/\/login$/);
 
-        await mockAuthRoutes(authenticatedPage, MOCK_USER_2);
         await loginPage.login('otheruser', 'password123');
         await authenticatedPage.waitForURL('/');
 

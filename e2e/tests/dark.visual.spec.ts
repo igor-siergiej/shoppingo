@@ -1,5 +1,5 @@
 import { apiAddItem, apiCreateList, apiCreateRecipe, apiCreateTodo } from '../api-helpers';
-import { expect, mockAuthRoutes, test } from '../fixtures';
+import { expect, test } from '../fixtures';
 import { settle } from './visual-helpers';
 
 test.describe('Dark theme visual regression', () => {
@@ -8,7 +8,6 @@ test.describe('Dark theme visual regression', () => {
     });
 
     test('login', async ({ page, loginPage }) => {
-        await mockAuthRoutes(page);
         await loginPage.goto();
         await expect(loginPage.heading).toBeVisible();
         await expect(page.locator('html')).toHaveClass(/dark/);

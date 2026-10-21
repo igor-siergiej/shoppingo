@@ -91,6 +91,8 @@ echo "==> Starting api on :${API_PORT} (logs: $HERE/logs/api.log)"
         env NODE_ENV=development \
             PORT="$API_PORT" \
             AUTH_URL="http://localhost:${KIVO_PORT}" \
+            BETTER_AUTH_SECRET="${BETTER_AUTH_SECRET:-dev-local-better-auth-secret-not-for-prod}" \
+            BETTER_AUTH_URL="http://localhost:${WEB_PORT}" \
             BUCKET_ENDPOINT="localhost:9000" \
         bun run --filter @shoppingo/api start
 ) >"$HERE/logs/api.log" 2>&1 &

@@ -6,24 +6,15 @@ import {
     apiGetList,
     apiRemoveListMemberAsOtherUser,
 } from '../api-helpers';
+import { openPageAs } from '../auth';
 import { expireFriendCodes, seedFriendship } from '../db-helpers';
-import { expect, mockAuthRoutes, test } from '../fixtures';
-import { MOCK_TOKEN_2 } from '../mocks/auth';
+import { expect, test } from '../fixtures';
 import { MOCK_USER, MOCK_USER_2 } from '../mocks/data/users';
 
 test.describe.configure({ timeout: 30_000 });
 
 // A second signed-in user in their own browser context.
-const asSecondUser = async (browser: Browser): Promise<Page> => {
-    const context = await browser.newContext();
-    const page = await context.newPage();
-    await mockAuthRoutes(page, MOCK_USER_2);
-    await page.route(/\/api\/image\//, (route) =>
-        route.fulfill({ status: 200, contentType: 'image/gif', body: Buffer.from('GIF89a', 'ascii') })
-    );
-    await page.addInitScript((token) => localStorage.setItem('accessToken', token), MOCK_TOKEN_2);
-    return page;
-};
+const asSecondUser = (browser: Browser): Promise<Page> => openPageAs(browser, MOCK_USER_2);
 
 const generateCode = async (page: Page): Promise<string> => {
     await page.goto('/friends');

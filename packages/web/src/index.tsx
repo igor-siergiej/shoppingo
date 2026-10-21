@@ -1,9 +1,5 @@
 import './index.css';
 
-// MUST be the first import that touches the auth subsystem: it patches DOM storage so the access
-// token lives in module memory, not in window.localStorage. See auth/storagePatches.ts.
-import './auth/storagePatches';
-
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React, { Suspense } from 'react';
 import ReactDOM from 'react-dom/client';

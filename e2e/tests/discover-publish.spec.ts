@@ -1,9 +1,9 @@
 import type { Browser, Page } from '@playwright/test';
 import { apiCreateRecipe } from '../api-helpers';
+import { openPageAs } from '../auth';
 import { E2E_OPENSEARCH_URL, seedDiscoveryLibrary } from '../db-helpers';
 import { DISCOVERY_FIXTURES } from '../discovery-fixtures';
-import { expect, mockAuthRoutes, test } from '../fixtures';
-import { MOCK_TOKEN_2 } from '../mocks/auth';
+import { expect, test } from '../fixtures';
 import { MOCK_USER_2 } from '../mocks/data/users';
 
 test.skip(!E2E_OPENSEARCH_URL, 'needs E2E_OPENSEARCH_URL (a dedicated OpenSearch for e2e)');
@@ -16,16 +16,7 @@ test.afterEach(async () => {
 });
 
 // A second signed-in user in their own browser context.
-const asSecondUser = async (browser: Browser): Promise<Page> => {
-    const context = await browser.newContext();
-    const page = await context.newPage();
-    await mockAuthRoutes(page, MOCK_USER_2);
-    await page.route(/\/api\/image\//, (route) =>
-        route.fulfill({ status: 200, contentType: 'image/gif', body: Buffer.from('GIF89a', 'ascii') })
-    );
-    await page.addInitScript((token) => localStorage.setItem('accessToken', token), MOCK_TOKEN_2);
-    return page;
-};
+const asSecondUser = (browser: Browser): Promise<Page> => openPageAs(browser, MOCK_USER_2);
 
 const ownRecipe = () =>
     apiCreateRecipe(TITLE, [{ name: 'red lentils', quantity: 250, unit: 'g' }, { name: 'onion' }], [], {

@@ -1,10 +1,9 @@
-import { tryRefreshToken, useAuth } from '@imapps/web-utils';
 import { useQueryClient } from '@tanstack/react-query';
 import { AnimatePresence, motion } from 'motion/react';
 import type React from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getAuthConfig } from '../../config/auth';
+import { useAuth } from '../../auth';
 import { usePWA } from '../../hooks/usePWA';
 import { onIntentsDiscarded, startDrainer } from '../../offline/drainer';
 import { outboxStore } from '../../offline/outboxStore';
@@ -15,38 +14,20 @@ interface AppInitializerProps {
 }
 
 const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
-    const [isReady, setIsReady] = useState(false);
     const [timeoutReached, setTimeoutReached] = useState(false);
-    const { login, logout } = useAuth();
+    const { isAuthenticated, isLoading, logout } = useAuth();
     const navigate = useNavigate();
     const { isUpdating } = usePWA();
     const queryClient = useQueryClient();
+    // Read inside the event handler without re-subscribing on every session change.
+    const isAuthenticatedRef = useRef(isAuthenticated);
+    isAuthenticatedRef.current = isAuthenticated;
 
     useEffect(() => {
+        if (!isLoading) return;
         const timer = setTimeout(() => setTimeoutReached(true), 10000);
-        const config = getAuthConfig();
-
-        const initializeAuth = async () => {
-            try {
-                const newToken = await tryRefreshToken(config);
-                if (newToken) {
-                    login(newToken);
-                } else {
-                    logout();
-                }
-            } catch (error) {
-                console.warn('Token refresh failed during initialization', error);
-                logout();
-            } finally {
-                clearTimeout(timer);
-                setIsReady(true);
-            }
-        };
-
-        initializeAuth();
-
         return () => clearTimeout(timer);
-    }, [login, logout]);
+    }, [isLoading]);
 
     useEffect(() => {
         let stop = () => {};
@@ -59,8 +40,11 @@ const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
     useEffect(() => onIntentsDiscarded(() => void queryClient.invalidateQueries()), [queryClient]);
 
     useEffect(() => {
+        // A 401 from the api means the session cookie expired or was revoked. Guests also get 401s
+        // from account-only endpoints; they have no session to lose, so they stay where they are.
         const handleSessionExpired = () => {
-            logout();
+            if (!isAuthenticatedRef.current) return;
+            void logout();
             const { pathname, search, hash } = window.location;
             navigate('/login', { state: { from: { pathname, search, hash } } });
         };
@@ -76,7 +60,7 @@ const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
         <AnimatePresence mode="wait">
             {isUpdating ? (
                 <LoadingPage key="updating" />
-            ) : !isReady ? (
+            ) : isLoading ? (
                 <LoadingPage key="loading" timeoutReached={timeoutReached} />
             ) : (
                 <motion.div

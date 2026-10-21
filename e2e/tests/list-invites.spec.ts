@@ -1,11 +1,11 @@
+import { MOCK_USER, MOCK_USER_2, sessionHeaders } from '../auth';
 import { expect, test } from '../fixtures';
-import { MOCK_TOKEN, MOCK_TOKEN_2 } from '../mocks/auth';
 
-const authA = { Authorization: `Bearer ${MOCK_TOKEN}` };
-const authB = { Authorization: `Bearer ${MOCK_TOKEN_2}` };
+const authA = () => sessionHeaders(MOCK_USER);
+const authB = () => sessionHeaders(MOCK_USER_2);
 
 // End-to-end for shoppingo-invite-links. The e2e suite uses two fixture users
-// (`testuser` and `otheruser`) backed by the local mock kivo. The web side
+// (`testuser` and `otheruser`) seeded into Better Auth by global-setup. The web side
 // (the /invite/:token page) is exercised separately in unit tests; here we
 // exercise the API contract that the web client uses.
 test.describe('List invite API', () => {
@@ -21,7 +21,7 @@ test.describe('List invite API', () => {
         // and the body needs `dateAdded` (the addList handler is typed).
         const created = await request.put('/api/lists', {
             data: { title: 'Invite Test List', dateAdded: new Date().toISOString(), listType: 'shopping' },
-            headers: authA,
+            headers: await authA(),
         });
         if (!created.ok()) {
             const status = created.status();
@@ -30,11 +30,13 @@ test.describe('List invite API', () => {
         }
         const { title } = (await created.json()) as { title: string };
 
-        const issued = await request.post(`/api/lists/${encodeURIComponent(title)}/invites`, { headers: authA });
+        const issued = await request.post(`/api/lists/${encodeURIComponent(title)}/invites`, {
+            headers: await authA(),
+        });
         expect(issued.status()).toBe(201);
         const { token, ownerId } = (await issued.json()) as { token: string; ownerId: string };
         expect(token).toBeTruthy();
-        expect(ownerId).toBe('user-testuser');
+        expect(ownerId).toBe(MOCK_USER.id);
 
         // Public preview carries the owner's username and an expiry.
         const preview = await request.get(`/api/lists/invites/${token}`);
@@ -48,17 +50,16 @@ test.describe('List invite API', () => {
         expect(previewBody.ownerUsername).toBe('testuser');
         expect(previewBody.isClosed).toBe(false);
 
-        // B is the second fixture user; the redeem runs as `other` by sending
-        // MOCK_TOKEN_2 directly. The fixture `request` context shares the
-        // default testuser token, so we override Authorization per request.
+        // B is the second fixture user; the redeem runs as `otheruser` by sending
+        // their session cookie on this request only.
         const claimed = await request.post(`/api/lists/invites/${token}/redeem`, {
-            headers: authB,
+            headers: await authB(),
         });
         expect(claimed.status()).toBe(200);
 
         // A second redeem by anyone is a 410.
         const second = await request.post(`/api/lists/invites/${token}/redeem`, {
-            headers: authB,
+            headers: await authB(),
             failOnStatusCode: false,
         });
         expect(second.status()).toBe(410);
@@ -69,14 +70,16 @@ test.describe('List invite API', () => {
     }) => {
         const created = await request.put('/api/lists', {
             data: { title: 'Revocable List', dateAdded: new Date().toISOString(), listType: 'shopping' },
-            headers: authA,
+            headers: await authA(),
         });
         const { title } = (await created.json()) as { title: string };
 
-        const issued = await request.post(`/api/lists/${encodeURIComponent(title)}/invites`, { headers: authA });
+        const issued = await request.post(`/api/lists/${encodeURIComponent(title)}/invites`, {
+            headers: await authA(),
+        });
         const { token } = (await issued.json()) as { token: string };
 
-        const revoked = await request.delete(`/api/lists/invites/${token}`, { headers: authA });
+        const revoked = await request.delete(`/api/lists/invites/${token}`, { headers: await authA() });
         expect(revoked.status()).toBe(204);
 
         const preview = await request.get(`/api/lists/invites/${token}`);

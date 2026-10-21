@@ -1,6 +1,4 @@
-import { getStorageItem } from '@imapps/web-utils';
 import { useEffect, useState } from 'react';
-import { getAuthConfig } from '../config/auth';
 
 export interface UseItemImageReturn {
     imageBlobUrl: string | null;
@@ -11,14 +9,6 @@ export interface UseItemImageReturn {
 }
 
 const buildImageUrl = (itemName: string): string => `/api/image/${encodeURIComponent(itemName)}`;
-
-const buildHeaders = (accessToken: string | null): Record<string, string> => {
-    const headers: Record<string, string> = {};
-    if (accessToken) {
-        headers.Authorization = `Bearer ${accessToken}`;
-    }
-    return headers;
-};
 
 const handleImageResponse = async (
     response: Response,
@@ -50,16 +40,7 @@ export function useItemImage(itemName: string): UseItemImageReturn {
 
         const fetchImage = async () => {
             try {
-                const authConfig = getAuthConfig();
-                const accessToken = getStorageItem(
-                    authConfig.accessTokenKey || 'accessToken',
-                    authConfig.storageType || 'localStorage'
-                );
-
-                const response = await fetch(buildImageUrl(itemName), {
-                    method: 'GET',
-                    headers: buildHeaders(accessToken),
-                });
+                const response = await fetch(buildImageUrl(itemName));
 
                 if (!isMounted) return;
 

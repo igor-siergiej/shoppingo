@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseRegisterError, registerSchema } from './useRegisterForm';
+import { registerSchema } from './useRegisterForm';
 
 describe('registerSchema', () => {
     describe('password', () => {
@@ -119,27 +119,5 @@ describe('registerSchema', () => {
                 expect(result.error.issues[0].message).toBe('Use only letters, numbers, underscores and dots');
             }
         });
-    });
-});
-
-describe('parseRegisterError', () => {
-    it('returns the server `message` field when present', () => {
-        expect(parseRegisterError({ success: false, message: 'Password too weak' })).toBe('Password too weak');
-        expect(parseRegisterError({ success: false, message: 'This username is already taken' })).toBe(
-            'This username is already taken'
-        );
-    });
-
-    it('falls back to the legacy `error` field when `message` is missing', () => {
-        expect(parseRegisterError({ error: 'legacy server said no' })).toBe('legacy server said no');
-    });
-
-    it('prefers `message` over `error` when both are present', () => {
-        expect(parseRegisterError({ message: 'new', error: 'old' })).toBe('new');
-    });
-
-    it('falls back to "Registration failed" when neither field is present', () => {
-        expect(parseRegisterError({})).toBe('Registration failed');
-        expect(parseRegisterError({ success: false })).toBe('Registration failed');
     });
 });

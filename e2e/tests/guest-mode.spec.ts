@@ -1,4 +1,4 @@
-import { expect, mockAuthRoutes, test } from '../fixtures';
+import { expect, test } from '../fixtures';
 
 // Guest mode lets a stranger try Shoppingo without an account. Their lists
 // and items live in IndexedDB only, so the flow can only be exercised with
@@ -162,8 +162,6 @@ test.describe('Guest mode', () => {
         // hits the mocked server, and a reload — well past the 8s default.
         test.setTimeout(30_000);
 
-        await mockAuthRoutes(page);
-
         await page.goto('/login');
 
         // Land in guest mode via the new entry point.
@@ -222,7 +220,7 @@ test.describe('Guest mode', () => {
         // migration must read the guest data back from IndexedDB itself.
         await page.reload();
 
-        await page.getByLabel('Username').fill('testuser');
+        await page.getByLabel('Username').fill(`guest${Date.now()}`);
         await page.getByLabel('Password', { exact: true }).fill('password123');
         await page.getByLabel('Repeat Password').fill('password123');
         await page.getByRole('button', { name: /create account/i }).click();

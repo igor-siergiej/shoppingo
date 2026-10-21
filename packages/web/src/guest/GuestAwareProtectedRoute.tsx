@@ -43,16 +43,17 @@ export const RequireAuth = ({ children }: { children: ReactNode }) => {
 };
 
 // Deep-link entry point (`/try`) so the landing site can drop a visitor
-// straight into guest mode. Signed-in users just go to their lists. The
-// redirect waits for the flag to land: navigating first would hit the
-// guard at `/` while the visitor is still logged out and bounce to /login.
+// straight into guest mode. Signed-in users just go to their lists, so it
+// waits for the session check before deciding. The redirect also waits for
+// the guest flag to land: navigating first would hit the guard at `/` while
+// the visitor is still logged out and bounce to /login.
 export const GuestEntryRoute = () => {
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, isLoading } = useAuth();
     const { isGuest, enterGuestMode } = useGuest();
 
     useEffect(() => {
-        if (!isAuthenticated && !isGuest) enterGuestMode();
-    }, [isAuthenticated, isGuest, enterGuestMode]);
+        if (!isLoading && !isAuthenticated && !isGuest) enterGuestMode();
+    }, [isLoading, isAuthenticated, isGuest, enterGuestMode]);
 
     if (isAuthenticated || isGuest) return <Navigate to="/" replace />;
     return <LoadingPage />;

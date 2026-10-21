@@ -9,13 +9,15 @@ const configState: ConfigState = {
     error: null,
 };
 
+// Missing, unparsable and non-object cache entries all mean "no cached config".
+// fallow-ignore-next-line complexity
 const readCachedConfig = (): AppConfig | null => {
     const raw = getStorageItem(CONFIG_STORAGE_KEY, 'localStorage');
     if (!raw) return null;
 
     try {
         const cached = JSON.parse(raw);
-        return cached.AUTH_URL ? (cached as AppConfig) : null;
+        return cached && typeof cached === 'object' ? (cached as AppConfig) : null;
     } catch {
         return null;
     }
@@ -23,6 +25,7 @@ const readCachedConfig = (): AppConfig | null => {
 
 // Config rarely changes, so a stale cached copy is preferable to blocking
 // launch entirely when the network fetch fails while offline.
+// fallow-ignore-next-line complexity
 export const loadConfig = async (): Promise<AppConfig> => {
     configState.isLoading = true;
     configState.error = null;
@@ -35,11 +38,6 @@ export const loadConfig = async (): Promise<AppConfig> => {
         }
 
         const configData = await response.json();
-
-        if (!configData.AUTH_URL) {
-            throw new Error('AUTH_URL is required in config.json');
-        }
-
         configState.config = configData as AppConfig;
         configState.isLoading = false;
         setStorageItem(CONFIG_STORAGE_KEY, JSON.stringify(configState.config), 'localStorage');

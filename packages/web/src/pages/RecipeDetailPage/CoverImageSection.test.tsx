@@ -11,14 +11,6 @@ vi.mock('../../api', () => ({
     uploadRecipeImage: (...args: unknown[]) => uploadRecipeImage(...args),
 }));
 
-vi.mock('@imapps/web-utils', () => ({
-    getStorageItem: () => 'token',
-}));
-
-vi.mock('../../config/auth', () => ({
-    getAuthConfig: () => ({ accessTokenKey: 'accessToken', storageType: 'localStorage' }),
-}));
-
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
 import { CoverImageSection } from './CoverImageSection';

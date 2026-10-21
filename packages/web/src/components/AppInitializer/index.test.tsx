@@ -1,28 +1,15 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, render, screen } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import AppInitializer from './index';
 
-vi.mock('@imapps/web-utils', () => ({
-    useAuth: vi.fn(),
-    tryRefreshToken: vi.fn(),
-}));
+const authState = { isAuthenticated: false, isLoading: true, logout: vi.fn(async () => {}) };
 
-vi.mock('../../config/auth', () => ({
-    getAuthConfig: vi.fn().mockReturnValue({}),
-}));
+vi.mock('../../auth', () => ({ useAuth: () => authState }));
 
 vi.mock('../../hooks/usePWA', () => ({
-    usePWA: vi.fn(() => ({
-        canInstall: false,
-        isInstalled: false,
-        hasUpdate: false,
-        isUpdating: false,
-        installApp: vi.fn(),
-        updateApp: vi.fn(),
-        dismissUpdate: vi.fn(),
-    })),
+    usePWA: vi.fn(() => ({ isUpdating: false })),
 }));
 
 vi.mock('../../offline/outboxStore', () => ({
@@ -34,95 +21,74 @@ vi.mock('../../offline/drainer', () => ({
     onIntentsDiscarded: vi.fn().mockReturnValue(() => {}),
 }));
 
-import { tryRefreshToken, useAuth } from '@imapps/web-utils';
-
-const mockLogin = vi.fn();
-const mockLogout = vi.fn();
-
-const renderWithRouter = (component: React.ReactElement) => {
-    return render(
+const renderApp = () =>
+    render(
         <QueryClientProvider client={new QueryClient()}>
-            <BrowserRouter>{component}</BrowserRouter>
+            <MemoryRouter initialEntries={['/lists']}>
+                <Routes>
+                    <Route path="/lists" element={<AppInitializer>Test Content</AppInitializer>} />
+                    <Route path="/login" element={<p>Login screen</p>} />
+                </Routes>
+            </MemoryRouter>
         </QueryClientProvider>
     );
-};
 
 describe('AppInitializer', () => {
     beforeEach(() => {
         vi.useFakeTimers();
-        vi.clearAllMocks();
-        (useAuth as any).mockReturnValue({ login: mockLogin, logout: mockLogout });
+        Object.assign(authState, { isAuthenticated: false, isLoading: true });
+        authState.logout.mockClear();
     });
 
     afterEach(() => {
         vi.useRealTimers();
     });
 
-    it('renders children when initialization is complete', async () => {
-        (tryRefreshToken as any).mockResolvedValue('token');
-
-        renderWithRouter(<AppInitializer>Test Content</AppInitializer>);
-
-        await act(async () => {
-            await vi.runAllTimersAsync();
-        });
-
-        expect(screen.getByText('Test Content')).toBeInTheDocument();
-    });
-
-    it('shows loading spinner while initializing', () => {
-        (tryRefreshToken as any).mockImplementation(() => new Promise(() => {}));
-
-        renderWithRouter(<AppInitializer>Test Content</AppInitializer>);
-
+    it('shows the loader while the session check is in flight', () => {
+        renderApp();
         expect(document.querySelector('.loader')).toBeInTheDocument();
         expect(screen.queryByText('Test Content')).not.toBeInTheDocument();
     });
 
-    it('does not show timeout message initially', () => {
-        (tryRefreshToken as any).mockImplementation(() => new Promise(() => {}));
-
-        renderWithRouter(<AppInitializer>Test Content</AppInitializer>);
-
-        expect(screen.queryByText('Taking longer than expected...')).not.toBeInTheDocument();
+    it('renders the app once the session check has settled', () => {
+        Object.assign(authState, { isAuthenticated: true, isLoading: false });
+        renderApp();
+        expect(screen.getByText('Test Content')).toBeInTheDocument();
     });
 
-    it('shows timeout message after 10 seconds', async () => {
-        (tryRefreshToken as any).mockImplementation(() => new Promise(() => {}));
-
-        renderWithRouter(<AppInitializer>Test Content</AppInitializer>);
+    it('offers recovery steps when the session check takes over 10 seconds', async () => {
+        renderApp();
+        expect(screen.queryByText('Taking longer than expected...')).not.toBeInTheDocument();
 
         await act(async () => {
             vi.advanceTimersByTime(10000);
         });
 
         expect(screen.getByText('Taking longer than expected...')).toBeInTheDocument();
-    });
-
-    it('shows recovery suggestions when timeout reached', async () => {
-        (tryRefreshToken as any).mockImplementation(() => new Promise(() => {}));
-
-        renderWithRouter(<AppInitializer>Test Content</AppInitializer>);
-
-        await act(async () => {
-            vi.advanceTimersByTime(10000);
-        });
-
         expect(screen.getByText('Hard refresh (Ctrl+F5)')).toBeInTheDocument();
-        expect(screen.getByText('Clear browser data')).toBeInTheDocument();
-        expect(screen.getByText('Reinstall the app')).toBeInTheDocument();
     });
 
-    it('clears timeout when initialization completes', async () => {
-        const clearTimeoutSpy = vi.spyOn(global, 'clearTimeout');
-        (tryRefreshToken as any).mockResolvedValue('token');
-
-        renderWithRouter(<AppInitializer>Test Content</AppInitializer>);
+    it('signs out and goes to login when a signed-in session expires', async () => {
+        Object.assign(authState, { isAuthenticated: true, isLoading: false });
+        renderApp();
 
         await act(async () => {
-            await vi.runAllTimersAsync();
+            window.dispatchEvent(new CustomEvent('auth:session-expired'));
         });
 
-        expect(clearTimeoutSpy).toHaveBeenCalled();
+        expect(authState.logout).toHaveBeenCalledTimes(1);
+        expect(screen.getByText('Login screen')).toBeInTheDocument();
+    });
+
+    it('leaves a guest in place when an account-only request is refused', async () => {
+        Object.assign(authState, { isAuthenticated: false, isLoading: false });
+        renderApp();
+
+        await act(async () => {
+            window.dispatchEvent(new CustomEvent('auth:session-expired'));
+        });
+
+        expect(authState.logout).not.toHaveBeenCalled();
+        expect(screen.getByText('Test Content')).toBeInTheDocument();
     });
 });

@@ -1,5 +1,4 @@
 export interface AppConfig {
-    AUTH_URL: string;
     /**
      * Self-hosted Umami analytics. Per jott #72. The web app is a no-op
      * tracker when `enabled` is `false` or the fields are missing — the

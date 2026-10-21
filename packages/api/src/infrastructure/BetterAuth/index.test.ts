@@ -94,4 +94,28 @@ describe('createAuth', () => {
         const withGoogle = makeAuth({ clientId: 'id', clientSecret: 'secret' });
         expect((await withGoogle.auth.$context).socialProviders.map((p) => p.id)).toEqual(['google']);
     });
+
+    it('rate-limits sign-in per Cloudflare client IP, not per tunnel address', async () => {
+        const { auth } = makeAuth();
+        // In prod X-Forwarded-For is always the tunnel's address; only CF-Connecting-IP tells clients apart.
+        const attempt = (clientIp: string) =>
+            auth.handler(
+                new Request('http://localhost:4000/api/auth/sign-in/username', {
+                    method: 'POST',
+                    headers: {
+                        'content-type': 'application/json',
+                        origin: 'http://localhost:4000',
+                        'x-forwarded-for': '172.18.0.5',
+                        'cf-connecting-ip': clientIp,
+                    },
+                    body: JSON.stringify({ username: 'nobody', password: 'wrong-password' }),
+                })
+            );
+
+        const attacker = [];
+        for (let i = 0; i < 11; i++) attacker.push((await attempt('203.0.113.7')).status);
+        expect(attacker.at(-1)).toBe(429);
+
+        expect((await attempt('198.51.100.20')).status).toBe(401);
+    });
 });

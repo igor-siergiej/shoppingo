@@ -108,12 +108,6 @@ jobs:
         env:
           CONNECTION_URI: mongodb://devuser:devpassword@localhost:27017/shoppingo_e2e?authSource=admin
           E2E_OPENSEARCH_URL: http://localhost:9200
-          # Better Auth env so the api resolves DependencyToken.Auth during e2e boot. The
-          # e2e mockAuthRoutes still supplies kivo bearer tokens, so the auth handler
-          # exercises both code paths. The secret is a non-secret test value; CI never
-          # touches production secrets.
-          BETTER_AUTH_SECRET: ci-better-auth-secret-not-for-prod-32+
-          BETTER_AUTH_URL: http://localhost:4001
       - uses: actions/upload-artifact@v4
         if: always()
         with:

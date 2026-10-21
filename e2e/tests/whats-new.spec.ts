@@ -3,7 +3,8 @@ import { expect, test } from '../fixtures';
 const LAST_SEEN_KEY = 'shoppingo:lastSeenVersion';
 
 test.describe("What's new", () => {
-    test('@smoke opens the release notes from the version in the app bar', async ({ authenticatedPage }) => {
+    // Not @smoke: it needs a signed-in account, which only exists in the local e2e database.
+    test('opens the release notes from the version in the app bar', async ({ authenticatedPage }) => {
         await authenticatedPage.goto('/');
         await authenticatedPage.getByRole('button', { name: /what's new/i }).click();
 

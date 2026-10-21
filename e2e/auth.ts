@@ -1,0 +1,65 @@
+import type { Browser, Page } from '@playwright/test';
+import type { User } from '@shoppingo/types';
+
+import { MOCK_USER, MOCK_USER_2, PASSWORDS } from './mocks/data/users';
+
+export const API_BASE = 'http://localhost:4001';
+const WEB_ORIGIN = 'http://localhost:4000';
+
+// Better Auth rate-limits sign-in/sign-up per client IP (read from X-Forwarded-For). Every request in a
+// test run comes from the same machine, so give each its own address or the suite trips the limit.
+let ipCounter = 0;
+const nextClientIp = () => {
+    ipCounter++;
+    return `10.${(ipCounter >> 16) & 255}.${(ipCounter >> 8) & 255}.${ipCounter & 255}`;
+};
+
+/** Routes the page's own sign-in/sign-up calls through a fresh client address each time. */
+export const spreadAuthRateLimit = (page: Page) =>
+    page.route('**/api/auth/**', (route) =>
+        route.continue({ headers: { ...route.request().headers(), 'x-forwarded-for': nextClientIp() } })
+    );
+
+/** Signs `user` in against the api and returns the session cookie as `name=value`. */
+export const signInCookie = async (user: User = MOCK_USER): Promise<{ name: string; value: string }> => {
+    const res = await fetch(`${API_BASE}/api/auth/sign-in/username`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Origin: WEB_ORIGIN, 'X-Forwarded-For': nextClientIp() },
+        body: JSON.stringify({ username: user.username, password: PASSWORDS[user.username] }),
+    });
+    if (!res.ok) throw new Error(`sign-in as ${user.username} failed: ${res.status} ${await res.text()}`);
+    const cookie = res.headers
+        .getSetCookie()
+        .map((line) => line.split(';')[0])
+        .find((pair) => pair.startsWith('better-auth.session_token='));
+    if (!cookie) throw new Error(`sign-in as ${user.username} set no session cookie`);
+    const separator = cookie.indexOf('=');
+    return { name: cookie.slice(0, separator), value: cookie.slice(separator + 1) };
+};
+
+/** Gives the page's browser context a signed-in session for `user`. */
+export const signInAs = async (page: Page, user: User = MOCK_USER): Promise<void> => {
+    const { name, value } = await signInCookie(user);
+    await page.context().addCookies([{ name, value, domain: 'localhost', path: '/', httpOnly: true, sameSite: 'Lax' }]);
+};
+
+/** A fresh browser context signed in as `user`, with images stubbed (they are never under test). */
+export const openPageAs = async (browser: Browser, user: User): Promise<Page> => {
+    const page = await (await browser.newContext()).newPage();
+    await signInAs(page, user);
+    await page.route(/\/api\/image\//, (route) =>
+        route.fulfill({ status: 200, contentType: 'image/gif', body: Buffer.from('GIF89a', 'ascii') })
+    );
+    return page;
+};
+
+const sessions = new Map<string, Promise<{ name: string; value: string }>>();
+
+/** Headers for a direct api call as `user`; one session per user per worker. */
+export const sessionHeaders = async (user: User = MOCK_USER): Promise<Record<string, string>> => {
+    if (!sessions.has(user.id)) sessions.set(user.id, signInCookie(user));
+    const { name, value } = await (sessions.get(user.id) as Promise<{ name: string; value: string }>);
+    return { 'Content-Type': 'application/json', Origin: WEB_ORIGIN, Cookie: `${name}=${value}` };
+};
+
+export { MOCK_USER, MOCK_USER_2 };

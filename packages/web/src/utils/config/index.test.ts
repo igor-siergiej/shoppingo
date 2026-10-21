@@ -18,23 +18,23 @@ describe('loadConfig', () => {
         mockFetch(() =>
             Promise.resolve({
                 ok: true,
-                json: () => Promise.resolve({ AUTH_URL: 'https://auth.example.com' }),
+                json: () => Promise.resolve({ analytics: { host: 'https://stats.example.com' } }),
             } as Response)
         );
 
         const config = await loadConfig();
 
-        expect(config).toEqual({ AUTH_URL: 'https://auth.example.com' });
-        expect(localStorage.getItem('shoppingo:config')).toContain('https://auth.example.com');
+        expect(config).toEqual({ analytics: { host: 'https://stats.example.com' } });
+        expect(localStorage.getItem('shoppingo:config')).toContain('https://stats.example.com');
     });
 
     it('falls back to the cached config when offline instead of throwing', async () => {
-        localStorage.setItem('shoppingo:config', JSON.stringify({ AUTH_URL: 'https://cached.example.com' }));
+        localStorage.setItem('shoppingo:config', JSON.stringify({ analytics: { host: 'https://cached.example.com' } }));
         mockFetch(() => Promise.reject(new Error('network error')));
 
         const config = await loadConfig();
 
-        expect(config).toEqual({ AUTH_URL: 'https://cached.example.com' });
+        expect(config).toEqual({ analytics: { host: 'https://cached.example.com' } });
     });
 
     it('throws when the fetch fails and there is no cached config', async () => {

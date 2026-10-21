@@ -1,40 +1,8 @@
-import { getStorageItem } from '@imapps/web-utils';
-import { refreshSession } from '../../auth/refreshSession';
-import { getAuthConfig } from '../../config/auth';
 import { logger } from '../../utils/logger';
 import type { MakeRequestProps } from '../types';
 
-// Helper function to execute a request with the given token
-const executeRequest = async (
-    pathname: string,
-    method: string,
-    body: string | undefined,
-    token: string | null,
-    queryParams?: Record<string, string>,
-    signal?: AbortSignal
-) => {
-    let url = pathname;
-
-    if (queryParams) {
-        const searchParams = new URLSearchParams(queryParams);
-        url = `${pathname}?${searchParams.toString()}`;
-    }
-
-    const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-    };
-
-    if (token) {
-        headers.Authorization = `Bearer ${token}`;
-    }
-
-    return await fetch(url, {
-        method: method,
-        headers: headers,
-        body: body,
-        signal: signal,
-    });
-};
+const buildUrl = (pathname: string, queryParams?: Record<string, string>) =>
+    queryParams ? `${pathname}?${new URLSearchParams(queryParams).toString()}` : pathname;
 
 // Parse error message from response, handling both ok and error responses
 const parseErrorMessage = async (response: Response): Promise<string> => {
@@ -50,28 +18,7 @@ const parseErrorMessage = async (response: Response): Promise<string> => {
     return errorMessage;
 };
 
-// Handle 401 token refresh and retry
-const refreshAndRetry = async (
-    pathname: string,
-    method: string,
-    body: string | undefined,
-    queryParams?: Record<string, string>,
-    signal?: AbortSignal
-): Promise<Response> => {
-    logger.info('Token expired, attempting to refresh');
-    const newToken = await refreshSession();
-
-    if (newToken) {
-        logger.info('Token refreshed successfully, retrying request');
-        return await executeRequest(pathname, method, body, newToken, queryParams, signal);
-    } else {
-        logger.warn('Token refresh failed, session expired');
-        window.dispatchEvent(new CustomEvent('auth:session-expired'));
-        throw new Error('Session expired. Please log in again.');
-    }
-};
-
-// One request, one refresh-and-retry on 401, then response/error mapping; splitting it would scatter the flow.
+// One request, then response/error mapping; splitting it would scatter the flow.
 // fallow-ignore-next-line complexity
 export const makeRequest = async ({
     pathname,
@@ -81,18 +28,18 @@ export const makeRequest = async ({
     queryParams,
     signal,
 }: MakeRequestProps) => {
-    const authConfig = getAuthConfig();
-
     try {
-        const accessToken = getStorageItem(
-            authConfig.accessTokenKey || 'accessToken',
-            authConfig.storageType || 'localStorage'
-        );
+        // The session cookie is same-origin, so fetch attaches it without any header from us.
+        const response = await fetch(buildUrl(pathname, queryParams), {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body,
+            signal,
+        });
 
-        let response = await executeRequest(pathname, method, body, accessToken, queryParams, signal);
-
-        if (response.status === 401 && accessToken) {
-            response = await refreshAndRetry(pathname, method, body, queryParams, signal);
+        if (response.status === 401) {
+            // Better Auth slides the session on use, so a 401 means it is gone: no refresh to try.
+            window.dispatchEvent(new CustomEvent('auth:session-expired'));
         }
 
         if (response.ok) {
