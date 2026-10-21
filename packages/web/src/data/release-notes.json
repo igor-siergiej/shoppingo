@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.114.0",
+    "date": "2026-10-21",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Tandra now handles sign-in itself. You'll be asked to sign in once more; your username and password are unchanged."
+      }
+    ]
+  },
+  {
     "version": "1.113.1",
     "date": "2026-10-21",
     "notes": [

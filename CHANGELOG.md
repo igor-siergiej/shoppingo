@@ -1,3 +1,10 @@
+# [1.114.0](https://github.com/igor-siergiej/shoppingo/compare/v1.113.1...v1.114.0) (2026-10-21)
+
+
+### Features
+
+* **web:** sign in with shoppingo's own accounts ([#279](https://github.com/igor-siergiej/shoppingo/issues/279)) ([ccb9c50](https://github.com/igor-siergiej/shoppingo/commit/ccb9c50c08e37a55f071f45e073c5b0ba1014049)), closes [#145](https://github.com/igor-siergiej/shoppingo/issues/145) [#146](https://github.com/igor-siergiej/shoppingo/issues/146)
+
 ## [1.113.1](https://github.com/igor-siergiej/shoppingo/compare/v1.113.0...v1.113.1) (2026-10-21)
 
 
