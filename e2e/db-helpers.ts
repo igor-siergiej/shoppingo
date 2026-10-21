@@ -58,6 +58,9 @@ async function reindexDiscovery(): Promise<void> {
             BUCKET_NAME: 'tandra',
             BUCKET_ACCESS_KEY: 'rustfsadmin',
             BUCKET_SECRET_KEY: 'rustfsadmin',
+            // The API config requires these even though reindexing never touches auth.
+            BETTER_AUTH_SECRET: 'e2e-better-auth-secret-not-for-prod-32+',
+            BETTER_AUTH_URL: 'http://localhost:4000',
         },
     });
 }
