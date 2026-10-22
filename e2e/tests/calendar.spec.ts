@@ -100,7 +100,7 @@ test.describe('Calendar page', () => {
         await expect(authenticatedPage.getByText('Week Schedule Me')).toBeVisible();
     });
 
-    test('complete single todo: checkbox toggles line-through', async ({ authenticatedPage }) => {
+    test('complete single todo: checkbox draws the strike', async ({ authenticatedPage }) => {
         await apiCreateTodo({ title: 'Completable Task', dueDate: todayKey });
 
         await authenticatedPage.goto('/calendar');
@@ -111,7 +111,7 @@ test.describe('Calendar page', () => {
         const listItem = authenticatedPage.locator('li').filter({ hasText: 'Completable Task' });
         await listItem.getByRole('checkbox').click();
 
-        await expect(listItem.locator('.line-through')).toBeVisible();
+        await expect(listItem.getByTestId('strike-drawn')).toHaveAttribute('data-struck', 'true');
     });
 
     test('recurring isolation: completing today does not mark tomorrow', async ({ authenticatedPage }) => {
@@ -130,7 +130,7 @@ test.describe('Calendar page', () => {
         // Complete today's occurrence
         const todayItem = authenticatedPage.locator('li').filter({ hasText: 'Daily Recur' });
         await todayItem.getByRole('checkbox').click();
-        await expect(todayItem.locator('.line-through')).toBeVisible();
+        await expect(todayItem.getByTestId('strike-drawn')).toHaveAttribute('data-struck', 'true');
 
         // Navigate to tomorrow's cell
         await authenticatedPage.getByTestId(`day-${tomorrowKey}`).click();
@@ -138,7 +138,7 @@ test.describe('Calendar page', () => {
         // Tomorrow's occurrence should exist but NOT be done
         const tomorrowItem = authenticatedPage.locator('li').filter({ hasText: 'Daily Recur' });
         await expect(tomorrowItem).toBeVisible();
-        await expect(tomorrowItem.locator('.line-through')).not.toBeVisible();
+        await expect(tomorrowItem.getByTestId('strike-drawn')).toHaveAttribute('data-struck', 'false');
     });
 
     test('labels: filter chip dims non-matching todos and keeps matches visible', async ({ authenticatedPage }) => {

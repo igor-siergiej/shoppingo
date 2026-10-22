@@ -1,4 +1,4 @@
-import { apiAddItem, apiCreateList } from '../api-helpers';
+import { apiAddItem, apiCreateList, apiUpdateItem } from '../api-helpers';
 import { expect, test } from '../fixtures';
 import { settle } from './visual-helpers';
 
@@ -22,5 +22,16 @@ test.describe('Items page visual regression', () => {
         await expect(authenticatedPage.getByText('Bread')).toBeVisible();
         await settle(authenticatedPage);
         await expect(authenticatedPage).toHaveScreenshot('items-populated.png');
+    });
+
+    test('checked item', async ({ authenticatedPage }) => {
+        await apiCreateList(LIST_TITLE);
+        await apiAddItem(LIST_TITLE, 'Milk');
+        await apiAddItem(LIST_TITLE, 'Bread');
+        await apiUpdateItem(LIST_TITLE, 'Bread', { isSelected: true });
+        await authenticatedPage.goto(`/list/${LIST_TITLE}`);
+        await expect(authenticatedPage.getByText('Bread')).toBeVisible();
+        await settle(authenticatedPage);
+        await expect(authenticatedPage).toHaveScreenshot('items-checked.png');
     });
 });

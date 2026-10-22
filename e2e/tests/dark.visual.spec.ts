@@ -1,4 +1,4 @@
-import { apiAddItem, apiCreateList, apiCreateRecipe, apiCreateTodo } from '../api-helpers';
+import { apiAddItem, apiCreateList, apiCreateRecipe, apiCreateTodo, apiUpdateItem } from '../api-helpers';
 import { expect, test } from '../fixtures';
 import { settle } from './visual-helpers';
 
@@ -44,6 +44,29 @@ test.describe('Dark theme visual regression', () => {
         await expect(authenticatedPage.getByText('Morning standup')).toBeVisible();
         await settle(authenticatedPage);
         await expect(authenticatedPage).toHaveScreenshot('dark-calendar.png');
+    });
+
+    test('checked item and todo', async ({ authenticatedPage }) => {
+        await apiCreateList('Groceries');
+        await apiAddItem('Groceries', 'Milk');
+        await apiAddItem('Groceries', 'Bread');
+        await apiUpdateItem('Groceries', 'Bread', { isSelected: true });
+        await authenticatedPage.goto('/list/Groceries');
+        await expect(authenticatedPage.getByText('Bread')).toBeVisible();
+        await settle(authenticatedPage);
+        await expect(authenticatedPage).toHaveScreenshot('dark-items-checked.png');
+
+        // The fixed clock also freezes Framer's frame loop, so a drawing stroke would be captured mid-draw;
+        // reduced motion makes it appear instantly.
+        await authenticatedPage.emulateMedia({ reducedMotion: 'reduce' });
+        await authenticatedPage.clock.setFixedTime(new Date('2026-03-15T09:00:00'));
+        await apiCreateTodo({ title: 'Anytime chore', dueDate: '2026-03-15' });
+        await authenticatedPage.goto('/calendar');
+        const todo = authenticatedPage.locator('li').filter({ hasText: 'Anytime chore' });
+        await todo.getByRole('checkbox').click();
+        await expect(todo.getByTestId('strike-drawn')).toHaveAttribute('data-struck', 'true');
+        await settle(authenticatedPage);
+        await expect(authenticatedPage).toHaveScreenshot('dark-calendar-todo-done.png');
     });
 
     test('recipes', async ({ authenticatedPage }) => {
