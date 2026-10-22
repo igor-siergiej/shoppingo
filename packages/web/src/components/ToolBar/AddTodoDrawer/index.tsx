@@ -31,7 +31,8 @@ const buildTodoBody = ({ title, dueDate, userIds, ...rest }: BuildTodoBodyArgs):
     const body: CreateTodoBody = { title, ...rest };
     // Serialize the picked Date as a tz-agnostic day so the server-side reminder can't drift it.
     if (dueDate !== undefined) body.dueDate = isoDay(dueDate);
-    if (userIds !== undefined && userIds.length > 0) body.userIds = userIds;
+    // Sent even when empty: the API reads a missing list as "share with every friend".
+    if (userIds !== undefined) body.userIds = userIds;
     return body;
 };
 

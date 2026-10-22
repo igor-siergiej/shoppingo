@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { apiCreateTodo, apiCreateTodoAsOtherUser, apiGetTodos } from '../api-helpers';
+import { apiCreateTodo, apiCreateTodoAsOtherUser, apiGetTodos, apiGetTodosAsOtherUser } from '../api-helpers';
 import { seedFriendship } from '../db-helpers';
 import { expect, test } from '../fixtures';
 import { MOCK_USER, MOCK_USER_2 } from '../mocks/data/users';
@@ -245,5 +245,29 @@ test.describe('Calendar: todos shared with me', () => {
 
         await authenticatedPage.reload();
         await expect(authenticatedPage.getByText('Their Todo')).toBeVisible();
+    });
+});
+
+test.describe('Calendar: sharing a new todo', () => {
+    const addTodo = async (page: Page, title: string, shareWithFriend: boolean) => {
+        await seedFriendship(MOCK_USER, MOCK_USER_2);
+        await page.goto('/calendar');
+        await page.getByTestId('add-todo-trigger').click();
+        await page.getByLabel('Title').fill(title);
+        const friendSwitch = page.getByRole('switch');
+        await expect(friendSwitch).toBeChecked();
+        if (!shareWithFriend) await friendSwitch.click();
+        await page.getByRole('button', { name: 'Add Todo' }).click();
+        await expect.poll(async () => (await apiGetTodos()).some((t) => t.title === title)).toBe(true);
+    };
+
+    test('with every friend switched off, the todo stays private', async ({ authenticatedPage }) => {
+        await addTodo(authenticatedPage, 'Private Todo', false);
+        expect((await apiGetTodosAsOtherUser()).map((t) => t.title)).not.toContain('Private Todo');
+    });
+
+    test('with the picker left as seeded, the todo is shared with the friend', async ({ authenticatedPage }) => {
+        await addTodo(authenticatedPage, 'Shared Todo', true);
+        expect((await apiGetTodosAsOtherUser()).map((t) => t.title)).toContain('Shared Todo');
     });
 });
