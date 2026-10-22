@@ -2,7 +2,13 @@
   "extends": ["@imapps/biome-config/base"],
   "files": {
     "experimentalScannerIgnores": [".github/workflows-utils"],
-    "includes": ["**", "!.design-sync", "!packages/web/.design-sync-fonts", "!packages/web/.design-sync-theme"]
+    "includes": [
+      "**",
+      "!.design-sync",
+      "!packages/web/.design-sync-fonts",
+      "!packages/web/.design-sync-theme",
+      "!e2e/mocks/data/umami-tracker.js"
+    ]
   },
   "linter": {
     "rules": {

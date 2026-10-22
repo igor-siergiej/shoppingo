@@ -42,7 +42,8 @@
     "**/dist/**",
     "**/coverage/**",
     "scripts/**",
-    "**/scripts/**"
+    "**/scripts/**",
+    "e2e/mocks/data/umami-tracker.js"
   ],
   "ignoreUnresolvedImports": ["bun:test", "virtual:pwa-register/react"],
   "ignoreExports": [

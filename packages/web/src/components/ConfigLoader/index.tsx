@@ -1,6 +1,7 @@
 import type React from 'react';
 import { useEffect, useState } from 'react';
 
+import { loadTracker } from '../../utils/analytics';
 import { loadConfig } from '../../utils/config';
 import ErrorPage from '../ErrorPage';
 import LoadingPage from '../LoadingPage';
@@ -17,6 +18,7 @@ const ConfigLoader: React.FC<ConfigLoaderProps> = ({ children }) => {
         const initializeConfig = async () => {
             try {
                 await loadConfig();
+                loadTracker();
                 setIsLoading(false);
             } catch (err) {
                 const errorMessage = err instanceof Error ? err.message : 'Failed to load configuration';

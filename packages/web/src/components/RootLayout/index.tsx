@@ -8,7 +8,6 @@ import { recordInAppNavigation } from '../../utils/navigationHistory';
 import Appbar from '../Appbar';
 import { Layout } from '../Layout';
 import NetworkStatusAlert from '../NetworkStatusAlert';
-import RouteChangeTracker from '../RouteChangeTracker';
 
 interface RootLayoutProps {
     children?: ReactNode;
@@ -27,8 +26,6 @@ export const RootLayout = ({ children, showLayout = true }: RootLayoutProps) => 
 
     return (
         <div className="min-h-screen bg-background flex flex-col pt-14 md:pt-16">
-            {/* Inside the router: every route renders exactly one RootLayout. */}
-            <RouteChangeTracker />
             {/* App pages only: the bare login/register/sign-up pages are where the guest CTA leads. */}
             <Appbar actions={showLayout ? <GuestSignUpCta /> : undefined} />
             <NetworkStatusAlert />

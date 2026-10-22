@@ -1,11 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { identify, loadTracker, startReplay, stopReplay, track } from './analytics';
 
 // Mock the config module so analytics can resolve getConfig().
-const configState: {
-    value: { analytics?: { host?: string; websiteId?: string; enabled?: boolean } } | null;
-} = {
-    value: {},
-};
+const configState = vi.hoisted(() => ({
+    value: {} as { analytics?: { host?: string; websiteId?: string; enabled?: boolean } } | null,
+}));
 
 vi.mock('./config', () => ({
     getConfig: () => {
@@ -13,8 +12,6 @@ vi.mock('./config', () => ({
         return configState.value;
     },
 }));
-
-const { page, track, identify, startReplay, stopReplay } = await import('./analytics');
 
 describe('analytics', () => {
     beforeEach(() => {
@@ -49,12 +46,33 @@ describe('analytics', () => {
         expect(document.querySelector('script[data-website-id]')).toBeNull();
     });
 
-    it('injects the script once and forwards subsequent events', () => {
+    // Must run before any other test injects: the injected flag is module state.
+    it('loads the tracker without claiming window.umami, so the real tracker can install itself', () => {
+        configState.value = {
+            analytics: { host: 'https://app.tandra.uk/pulse/', websiteId: 'site-1' },
+        };
+
+        loadTracker();
+
+        const script = document.querySelector<HTMLScriptElement>('script[data-website-id="site-1"]');
+        expect(script?.src).toBe('https://app.tandra.uk/pulse/p.js');
+        expect(window.umami).toBeUndefined();
+
+        // Umami's tracker only defines its API when window.umami is unset.
+        const sent: Array<[string, unknown]> = [];
+        window.umami ??= { track: (e, d) => sent.push([e, d]), identify: vi.fn() };
+        script?.dispatchEvent(new Event('load'));
+
+        track('item_added', { source: 'typed', count: 1 });
+        expect(sent).toEqual([['item_added', { source: 'typed', count: 1 }]]);
+    });
+
+    it('forwards events to the loaded tracker', () => {
         configState.value = {
             analytics: { host: 'https://analytics.imapps.uk', websiteId: 'site-1' },
         };
         const calls: Array<[string, unknown]> = [];
-        window.umami = { track: (e, d) => calls.push([e, d]) };
+        window.umami = { track: (e, d) => calls.push([e, d]), identify: vi.fn() };
 
         track('item_added', { source: 'typed', count: 1 });
         track('list_cleared');
@@ -63,17 +81,6 @@ describe('analytics', () => {
             ['item_added', { source: 'typed', count: 1 }],
             ['list_cleared', undefined],
         ]);
-    });
-
-    it('page() routes a name through track()', () => {
-        configState.value = {
-            analytics: { host: 'https://analytics.imapps.uk', websiteId: 'site-1' },
-        };
-        const calls: Array<[string, unknown]> = [];
-        window.umami = { track: (e, d) => calls.push([e, d]) };
-
-        page('/list/weekly');
-        expect(calls[0][0]).toBe('page_view');
     });
 
     it('identify() forwards to window.umami.identify', () => {
