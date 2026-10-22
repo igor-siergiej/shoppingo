@@ -64,3 +64,35 @@ describe('AuthRoot sign-out', () => {
         expect(localStorage.getItem('tandra:sign-out-pending')).toBeNull();
     });
 });
+
+describe('AuthRoot returning to the foreground', () => {
+    beforeEach(() => localStorage.clear());
+    afterEach(() => vi.unstubAllGlobals());
+
+    it('picks up a session made in another tab (Google sign-in) when the app is shown again', async () => {
+        const getSession = vi.fn(async () => new Response('null', { status: 200 }));
+        vi.stubGlobal('fetch', getSession);
+        launch();
+        await screen.findByText('signed out');
+
+        getSession.mockImplementation(signedIn());
+        act(() => {
+            document.dispatchEvent(new Event('visibilitychange'));
+        });
+
+        await screen.findByText('signed in');
+    });
+
+    it('stops asking once signed in', async () => {
+        const getSession = signedIn();
+        vi.stubGlobal('fetch', getSession);
+        launch();
+        await screen.findByText('signed in');
+
+        act(() => {
+            document.dispatchEvent(new Event('visibilitychange'));
+        });
+
+        expect(getSession).toHaveBeenCalledTimes(1);
+    });
+});
