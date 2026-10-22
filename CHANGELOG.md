@@ -1,3 +1,10 @@
+## [2.0.2](https://github.com/igor-siergiej/tandra/compare/v2.0.1...v2.0.2) (2026-10-22)
+
+
+### Bug Fixes
+
+* **web:** analytics tracker records events and loads same-origin ([#285](https://github.com/igor-siergiej/tandra/issues/285)) ([ef7888d](https://github.com/igor-siergiej/tandra/commit/ef7888d94ae6278b362bf841790243f11489e129)), closes [#138](https://github.com/igor-siergiej/tandra/issues/138)
+
 ## [2.0.1](https://github.com/igor-siergiej/tandra/compare/v2.0.0...v2.0.1) (2026-10-22)
 
 

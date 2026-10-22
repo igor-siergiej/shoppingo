@@ -1,5 +1,15 @@
 [
   {
+    "version": "2.0.2",
+    "date": "2026-10-22",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Tandra no longer asks for permission to see devices on your local network, and anonymous usage stats now work for everyone, not just on our home network."
+      }
+    ]
+  },
+  {
     "version": "2.0.1",
     "date": "2026-10-22",
     "notes": [
