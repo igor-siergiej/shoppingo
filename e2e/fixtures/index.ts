@@ -24,7 +24,20 @@ interface Fixtures {
     discoverPage: DiscoverPage;
 }
 
-export const test = base.extend<Fixtures>({
+interface Options {
+    /** Let the Umami tracker send. Off by default so e2e traffic, including the nightly @smoke run against production, stays out of Umami. */
+    trackAnalytics: boolean;
+}
+
+export const test = base.extend<Fixtures & Options>({
+    trackAnalytics: [false, { option: true }],
+
+    // Umami's tracker checks this flag before every send. Set on each document load, so a spec's localStorage.clear() can't undo it.
+    context: async ({ context, trackAnalytics }, use) => {
+        if (!trackAnalytics) await context.addInitScript(() => localStorage.setItem('umami.disabled', '1'));
+        await use(context);
+    },
+
     // Every page spreads its sign-in/sign-up calls over distinct client addresses (see e2e/auth.ts).
     page: async ({ page }, use) => {
         await spreadAuthRateLimit(page);
