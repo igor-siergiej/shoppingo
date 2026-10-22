@@ -5,6 +5,7 @@ import { motion } from 'motion/react';
 import { Card, CardContent } from '../../../components/ui/card';
 import { Label } from '../../../components/ui/label';
 import { Skeleton } from '../../../components/ui/skeleton';
+import { HandDrawnStrike } from '../../HandDrawnStrike';
 import { QuantityBadge } from '../QuantityBadge';
 
 const PENDING_MARKER_DELAY_S = 0.8;
@@ -101,17 +102,7 @@ export const ItemCheckBoxCard = ({
                     <Label
                         className={`flex-1 cursor-pointer text-base transition-all duration-300 ${isSelected ? 'text-muted-foreground' : 'text-foreground'}`}
                     >
-                        <span className="relative inline-block">
-                            {item.name}
-                            {isSelected && (
-                                <motion.div
-                                    className="absolute left-0 right-0 top-1/2 h-[2px] bg-muted-foreground/60"
-                                    initial={{ scaleX: 0, originX: 0 }}
-                                    animate={{ scaleX: 1 }}
-                                    transition={{ duration: 0.3, ease: 'easeOut' }}
-                                />
-                            )}
-                        </span>
+                        <HandDrawnStrike struck={isSelected}>{item.name}</HandDrawnStrike>
                     </Label>
 
                     {isPending && (

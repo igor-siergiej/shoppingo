@@ -1,5 +1,6 @@
 import type { Label, User } from '@tandra/types';
 import { Users } from 'lucide-react';
+import { HandDrawnStrike } from '../../HandDrawnStrike';
 import { Checkbox } from '../../ui/checkbox';
 import { SwipeableRow } from '../SwipeableRow';
 
@@ -54,7 +55,7 @@ const ShareButton = ({ title, isShared, onClick }: ShareButtonProps) => (
 const rowClassFor = (dimmed?: boolean): string =>
     `flex items-center gap-3 rounded-lg bg-muted/40 px-3 py-2 transition-opacity ${dimmed ? 'opacity-40' : ''}`;
 
-const titleClassFor = (done: boolean): string => `flex-1 text-left ${done ? 'line-through text-muted-foreground' : ''}`;
+const titleClassFor = (done: boolean): string => `flex-1 text-left ${done ? 'text-muted-foreground' : ''}`;
 
 const canManageSharing = (item: DayTodoItem, currentUserId: string | undefined, hasHandler: boolean): boolean =>
     hasHandler && item.ownerId === currentUserId;
@@ -70,7 +71,7 @@ const TodoTitle = ({ item, onEdit }: { item: DayTodoItem; onEdit?: (todoId: stri
             className={titleClassFor(item.done)}
             onClick={() => onEdit?.(item.todoId)}
         >
-            {item.title}
+            <HandDrawnStrike struck={item.done}>{item.title}</HandDrawnStrike>
         </button>
         {item.overdue && (
             <span className="shrink-0 rounded-full bg-destructive/10 px-2 py-0.5 text-xs font-medium text-destructive">

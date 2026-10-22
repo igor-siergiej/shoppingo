@@ -54,8 +54,26 @@ test.describe('Items page', () => {
         await authenticatedPage.goto(`/list/${LIST_TITLE}`);
         await expect(authenticatedPage.getByText('Milk')).toBeVisible();
 
+        const strike = authenticatedPage.getByRole('button').filter({ hasText: 'Milk' }).getByTestId('strike-drawn');
+        await expect(strike).toHaveAttribute('data-struck', 'false');
+
         await authenticatedPage.getByText('Milk').click();
-        await expect(authenticatedPage.getByText('Milk')).toBeVisible();
+        await expect(strike).toHaveAttribute('data-struck', 'true');
+
+        await authenticatedPage.getByText('Milk').click();
+        await expect(strike).toHaveAttribute('data-struck', 'false');
+    });
+
+    test('an already-checked item shows the finished strike without replaying it', async ({ authenticatedPage }) => {
+        await apiCreateList(LIST_TITLE);
+        await apiAddItem(LIST_TITLE, 'Milk');
+        await apiUpdateItem(LIST_TITLE, 'Milk', { isSelected: true });
+        await authenticatedPage.goto(`/list/${LIST_TITLE}`);
+
+        const strike = authenticatedPage.getByRole('button').filter({ hasText: 'Milk' }).getByTestId('strike-drawn');
+        await expect(strike).toHaveAttribute('data-struck', 'true');
+        // Sampled straight after mount: a replaying draw would still be near opacity 0 here.
+        expect(await strike.locator('path').evaluate((path) => getComputedStyle(path).opacity)).toBe('1');
     });
 
     test('can clear all items', async ({ authenticatedPage }) => {
