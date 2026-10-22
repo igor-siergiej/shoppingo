@@ -199,6 +199,13 @@ export const apiGetTodos = () =>
         }>
     >('/api/todos');
 
+/** Todos visible to the second mock user (owned by or shared with them). */
+export async function apiGetTodosAsOtherUser() {
+    const res = await fetch(`${API_BASE}/api/todos`, { headers: await sessionHeaders(MOCK_USER_2) });
+    if (!res.ok) throw new Error(`apiGetTodosAsOtherUser failed: ${await res.text()}`);
+    return res.json() as Promise<Array<{ id: string; title: string }>>;
+}
+
 /** Creates a todo owned by the second mock user and shared with the given user ids (they must be friends). */
 export async function apiCreateTodoAsOtherUser(body: { title: string; dueDate: string }, sharedWith: Array<string>) {
     const res = await fetch(`${API_BASE}/api/todos`, {

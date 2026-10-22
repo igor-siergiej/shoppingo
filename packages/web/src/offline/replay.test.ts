@@ -1,7 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { addRecipe, updateRecipe } = vi.hoisted(() => ({ addRecipe: vi.fn(), updateRecipe: vi.fn() }));
-vi.mock('../api', () => ({ addRecipe, updateRecipe }));
+const { addRecipe, updateRecipe, createTodo } = vi.hoisted(() => ({
+    addRecipe: vi.fn(),
+    updateRecipe: vi.fn(),
+    createTodo: vi.fn(),
+}));
+vi.mock('../api', () => ({ addRecipe, updateRecipe, createTodo }));
 
 import type { OutboxIntent } from './outboxStore';
 import { replayIntent } from './replay';
@@ -71,5 +75,19 @@ describe('replayIntent recipe.update', () => {
             undefined,
             ['vegan']
         );
+    });
+});
+
+describe('replayIntent todo.create', () => {
+    it('keeps an empty share list so the todo is not shared with every friend', async () => {
+        await replayIntent({
+            ...createIntent({}),
+            entityType: 'todo',
+            op: 'todo.create',
+            targetId: 't1',
+            payload: { title: 'Private', ownerId: 'u1', userIds: [] },
+        } as OutboxIntent);
+
+        expect(createTodo).toHaveBeenCalledWith({ title: 'Private', ownerId: 'u1', userIds: [] }, 't1');
     });
 });
