@@ -50,34 +50,28 @@ const injectScript = (host: string, websiteId: string): void => {
     document.head.appendChild(script);
 };
 
-const isEnabled = (): boolean => {
-    if (typeof window === 'undefined') return false;
+const HTTP_PROTOCOLS: Record<string, true> = { 'http:': true, 'https:': true };
+
+/** The tracker settings when analytics is on and the host is http(s); otherwise null. */
+// One guard per config field; each is covered in analytics.test.ts.
+// fallow-ignore-next-line complexity
+const trackerConfig = (): { host: string; websiteId: string } | null => {
     try {
         const a = getConfig().analytics;
-        if (!a || a.enabled === false) return false;
-        if (!a.host || !a.websiteId) return false;
-        try {
-            const proto = new URL(a.host).protocol;
-            return proto === 'http:' || proto === 'https:';
-        } catch {
-            return false;
-        }
+        if (a?.enabled === false || !a?.host || !a.websiteId) return null;
+        return HTTP_PROTOCOLS[new URL(a.host).protocol] ? { host: a.host, websiteId: a.websiteId } : null;
     } catch {
-        return false;
+        // Config not loaded yet, or a malformed host.
+        return null;
     }
 };
 
 const ensureInjected = (): boolean => {
     if (injected) return true;
-    if (!isEnabled()) return false;
-    try {
-        const a = getConfig().analytics;
-        if (!a) return false;
-        injectScript(a.host, a.websiteId);
-        return true;
-    } catch {
-        return false;
-    }
+    const c = trackerConfig();
+    if (!c) return false;
+    injectScript(c.host, c.websiteId);
+    return true;
 };
 
 /**
