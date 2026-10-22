@@ -1,5 +1,15 @@
 [
   {
+    "version": "2.1.0",
+    "date": "2026-10-22",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Anonymous usage stats now include where people tap and how far they scroll (no page content), and no longer record usernames."
+      }
+    ]
+  },
+  {
     "version": "2.0.2",
     "date": "2026-10-22",
     "notes": [

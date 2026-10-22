@@ -1,3 +1,10 @@
+# [2.1.0](https://github.com/igor-siergiej/tandra/compare/v2.0.2...v2.1.0) (2026-10-22)
+
+
+### Features
+
+* **web:** load Umami's heatmap recorder; stop sending usernames ([#287](https://github.com/igor-siergiej/tandra/issues/287)) ([5fbd8b9](https://github.com/igor-siergiej/tandra/commit/5fbd8b9619ca8dd000165b027bc9d610a0b4a65f)), closes [#138](https://github.com/igor-siergiej/tandra/issues/138)
+
 ## [2.0.2](https://github.com/igor-siergiej/tandra/compare/v2.0.1...v2.0.2) (2026-10-22)
 
 
