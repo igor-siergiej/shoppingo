@@ -5,6 +5,8 @@ import { ANALYTICS_WEBSITE_ID, mockAnalytics } from '../mocks/analytics';
 const LIST_TITLE = 'Groceries';
 
 test.describe('Analytics', () => {
+    test.use({ trackAnalytics: true });
+
     test('the real tracker records the page view and item_added with its source', async ({ authenticatedPage }) => {
         const hits = await mockAnalytics(authenticatedPage);
         await apiCreateList(LIST_TITLE);

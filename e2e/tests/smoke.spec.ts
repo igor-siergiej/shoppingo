@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../fixtures';
 
 // Read-only, no auth/mocking required — safe to run against any deployed
 // environment (including production) as a post-deploy sanity check that the
