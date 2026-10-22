@@ -101,6 +101,19 @@ export const AuthRoot = ({ children }: { children: ReactNode }) => {
         void start().finally(() => setIsLoading(false));
     }, [refresh]);
 
+    const signedIn = Boolean(session.user) || session.needsUsername;
+    useEffect(() => {
+        if (signedIn) return;
+        // An installed PWA can come back to the foreground from a Google sign-in without reloading (the
+        // callback set the cookie in another tab), so ask again rather than keep showing /login.
+        const recheck = () => {
+            if (document.visibilityState !== 'visible') return;
+            void finishPendingSignOut().then((finished) => finished && refresh());
+        };
+        document.addEventListener('visibilitychange', recheck);
+        return () => document.removeEventListener('visibilitychange', recheck);
+    }, [signedIn, refresh]);
+
     const value = useMemo(() => ({ session, isLoading, refresh, logout }), [session, isLoading, refresh, logout]);
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
