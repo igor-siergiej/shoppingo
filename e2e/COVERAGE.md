@@ -16,6 +16,7 @@ Mocks for AI, speech and push live in `e2e/mocks` (see `e2e/README.md`).
 | Settings: unit system | `preferred-units.spec.ts` | `more-screens.visual.spec.ts` |
 | Settings: voice keep-listening | `voice-keep-listening.spec.ts` | |
 | What's new panel | `whats-new.spec.ts` | not captured (content changes every release) |
+| Analytics: real Umami tracker loads from the runtime config, sends the page view and `item_added` | `analytics.spec.ts` | |
 
 ## Lists and items
 
