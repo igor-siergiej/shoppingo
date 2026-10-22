@@ -12,6 +12,12 @@
  * installs `window.umami` if nothing else has, so this module must never
  * define it. The tracker also records page views itself (it patches
  * history.pushState), so `loadTracker()` only makes sure the script is loaded.
+ *
+ * Once the tracker has loaded, `<host>/recorder.js` follows. It records click
+ * positions and scroll depth for Umami's heatmaps (and replay, if the website
+ * settings ever turn it on). It sends nothing until the tracker has a session,
+ * and is not loaded at all for visitors who opted out via Umami's own
+ * `localStorage['umami.disabled']` flag.
  */
 import { getConfig } from './config';
 
@@ -32,22 +38,36 @@ declare global {
 let injected = false;
 let injectStarted = false;
 
+const appendScript = (src: string, websiteId: string, onLoad?: () => void): void => {
+    const script = document.createElement('script');
+    script.async = true;
+    script.defer = true;
+    script.dataset.websiteId = websiteId;
+    script.src = src;
+    if (onLoad) script.addEventListener('load', onLoad);
+    document.head.appendChild(script);
+};
+
+const optedOut = (): boolean => {
+    try {
+        return Boolean(localStorage.getItem('umami.disabled'));
+    } catch {
+        return false;
+    }
+};
+
 const injectScript = (host: string, websiteId: string): void => {
     if (injected || injectStarted) return;
     if (typeof document === 'undefined') return;
 
     injectStarted = true;
-    const script = document.createElement('script');
-    script.async = true;
-    script.defer = true;
-    script.dataset.websiteId = websiteId;
-    script.src = `${host.replace(/\/$/, '')}/p.js`;
+    const base = host.replace(/\/$/, '');
     // Never pre-define window.umami: the tracker skips installing its API when
     // the global already exists, which would silently drop every event.
-    script.addEventListener('load', () => {
+    appendScript(`${base}/p.js`, websiteId, () => {
         injected = true;
+        if (!optedOut()) appendScript(`${base}/recorder.js`, websiteId);
     });
-    document.head.appendChild(script);
 };
 
 const HTTP_PROTOCOLS: Record<string, true> = { 'http:': true, 'https:': true };

@@ -20,8 +20,9 @@ export interface CollectedHit {
 
 /**
  * Enables analytics the way production does (same-origin `/pulse`), serves the real Umami
- * tracker for `/pulse/p.js`, and records what it posts to `/pulse/p`. No request reaches Umami.
- * Call before the first navigation.
+ * tracker for `/pulse/p.js`, and records what it posts to `/pulse/p`. The heatmap recorder
+ * (`/pulse/recorder.js`, 190 KB of rrweb) is served empty; it is not under test here.
+ * No request reaches Umami. Call before the first navigation.
  */
 export const mockAnalytics = async (page: Page): Promise<Array<CollectedHit>> => {
     const hits: Array<CollectedHit> = [];
@@ -34,6 +35,9 @@ export const mockAnalytics = async (page: Page): Promise<Array<CollectedHit>> =>
     });
     await page.route('**/pulse/p.js', (route) =>
         route.fulfill({ contentType: 'application/javascript', body: TRACKER })
+    );
+    await page.route('**/pulse/recorder.js', (route) =>
+        route.fulfill({ contentType: 'application/javascript', body: '' })
     );
     await page.route('**/pulse/p', async (route) => {
         hits.push(route.request().postDataJSON() as CollectedHit);
