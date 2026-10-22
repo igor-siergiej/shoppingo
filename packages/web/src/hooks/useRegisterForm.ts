@@ -65,7 +65,7 @@ export const useRegisterForm = () => {
             if (error) throw new Error(authErrorMessage(error, 'Registration failed'));
 
             const user = await refreshSession();
-            track('sign_up_completed', { username: data.username });
+            track('sign_up_completed');
             logger.info('Registration successful', { username: data.username });
 
             // The most common path here is a guest who just clicked "Sign up to

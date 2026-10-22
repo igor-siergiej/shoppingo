@@ -65,6 +65,11 @@ describe('analytics', () => {
 
         track('item_added', { source: 'typed', count: 1 });
         expect(sent).toEqual([['item_added', { source: 'typed', count: 1 }]]);
+
+        // The heatmap recorder follows the tracker, never before it: it needs the tracker's session.
+        const recorder = document.querySelector<HTMLScriptElement>('script[src$="/recorder.js"]');
+        expect(recorder?.src).toBe('https://app.tandra.uk/pulse/recorder.js');
+        expect(recorder?.dataset.websiteId).toBe('site-1');
     });
 
     it('forwards events to the loaded tracker', () => {
@@ -101,5 +106,25 @@ describe('analytics', () => {
         window.umami = { track: vi.fn(), identify: vi.fn() };
         expect(() => startReplay()).not.toThrow();
         expect(() => stopReplay()).not.toThrow();
+    });
+});
+
+describe('analytics opt-out', () => {
+    afterEach(() => {
+        localStorage.clear();
+        document.head.innerHTML = '';
+    });
+
+    it('skips the heatmap recorder when the visitor opted out via umami.disabled', async () => {
+        // Fresh module: the injected flags are module state and the suite above already injected.
+        vi.resetModules();
+        const fresh = await import('./analytics');
+        configState.value = { analytics: { host: 'https://app.tandra.uk/pulse', websiteId: 'site-1' } };
+        localStorage.setItem('umami.disabled', '1');
+
+        fresh.loadTracker();
+        document.querySelector('script[src$="/p.js"]')?.dispatchEvent(new Event('load'));
+
+        expect(document.querySelector('script[src$="/recorder.js"]')).toBeNull();
     });
 });
