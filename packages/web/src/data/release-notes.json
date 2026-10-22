@@ -1,5 +1,15 @@
 [
   {
+    "version": "2.2.0",
+    "date": "2026-10-22",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Ticking off a shopping item or a todo now draws a hand-drawn green line through it, just like on the Tandra website."
+      }
+    ]
+  },
+  {
     "version": "2.1.0",
     "date": "2026-10-22",
     "notes": [

@@ -1,3 +1,10 @@
+# [2.2.0](https://github.com/igor-siergiej/tandra/compare/v2.1.0...v2.2.0) (2026-10-22)
+
+
+### Features
+
+* **web:** hand-drawn check-off strike on items and todos ([#288](https://github.com/igor-siergiej/tandra/issues/288)) ([d2907da](https://github.com/igor-siergiej/tandra/commit/d2907da2db327aa6e2140a7a333c24587a114b27))
+
 # [2.1.0](https://github.com/igor-siergiej/tandra/compare/v2.0.2...v2.1.0) (2026-10-22)
 
 
