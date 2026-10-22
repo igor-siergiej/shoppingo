@@ -1,5 +1,15 @@
 [
   {
+    "version": "2.2.1",
+    "date": "2026-10-22",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Todos you create with every friend switched off now stay private instead of being shared with all your friends."
+      }
+    ]
+  },
+  {
     "version": "2.2.0",
     "date": "2026-10-22",
     "notes": [

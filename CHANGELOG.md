@@ -1,3 +1,10 @@
+## [2.2.1](https://github.com/igor-siergiej/tandra/compare/v2.2.0...v2.2.1) (2026-10-22)
+
+
+### Bug Fixes
+
+* **web:** keep todos private when no friends are selected ([#289](https://github.com/igor-siergiej/tandra/issues/289)) ([e18ade1](https://github.com/igor-siergiej/tandra/commit/e18ade1a51206670ce32d0836fdb1a691fe53115))
+
 # [2.2.0](https://github.com/igor-siergiej/tandra/compare/v2.1.0...v2.2.0) (2026-10-22)
 
 
