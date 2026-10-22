@@ -1,3 +1,10 @@
+## [2.0.1](https://github.com/igor-siergiej/tandra/compare/v2.0.0...v2.0.1) (2026-10-22)
+
+
+### Bug Fixes
+
+* **web:** finish Google sign-in when the app resumes on the login page ([#284](https://github.com/igor-siergiej/tandra/issues/284)) ([f19de06](https://github.com/igor-siergiej/tandra/commit/f19de063078f3e414c1e7342e76ddb49da2995f0))
+
 # [2.0.0](https://github.com/igor-siergiej/tandra/compare/v1.115.0...v2.0.0) (2026-10-21)
 
 

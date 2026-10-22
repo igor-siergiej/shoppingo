@@ -1,5 +1,15 @@
 [
   {
+    "version": "2.0.1",
+    "date": "2026-10-22",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "Signing in with Google now takes you straight into the app instead of back to the login page."
+      }
+    ]
+  },
+  {
     "version": "2.0.0",
     "date": "2026-10-21",
     "notes": [
