@@ -255,18 +255,19 @@ test.describe('Calendar: sharing a new todo', () => {
         await page.getByTestId('add-todo-trigger').click();
         await page.getByLabel('Title').fill(title);
         const friendSwitch = page.getByRole('switch');
-        await expect(friendSwitch).toBeChecked();
-        if (!shareWithFriend) await friendSwitch.click();
+        // New todos start private: no friend is switched on until the user picks one.
+        await expect(friendSwitch).not.toBeChecked();
+        if (shareWithFriend) await friendSwitch.click();
         await page.getByRole('button', { name: 'Add Todo' }).click();
         await expect.poll(async () => (await apiGetTodos()).some((t) => t.title === title)).toBe(true);
     };
 
-    test('with every friend switched off, the todo stays private', async ({ authenticatedPage }) => {
+    test('with the picker left untouched, the todo stays private', async ({ authenticatedPage }) => {
         await addTodo(authenticatedPage, 'Private Todo', false);
         expect((await apiGetTodosAsOtherUser()).map((t) => t.title)).not.toContain('Private Todo');
     });
 
-    test('with the picker left as seeded, the todo is shared with the friend', async ({ authenticatedPage }) => {
+    test('with a friend switched on, the todo is shared with them', async ({ authenticatedPage }) => {
         await addTodo(authenticatedPage, 'Shared Todo', true);
         expect((await apiGetTodosAsOtherUser()).map((t) => t.title)).toContain('Shared Todo');
     });
