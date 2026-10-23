@@ -1,6 +1,6 @@
 import type { ListType } from '@tandra/types';
 import { ListType as ListTypeEnum } from '@tandra/types';
-import { Clock, ImageOff, Loader2 } from 'lucide-react';
+import { Circle, CircleCheck, Clock, ImageOff, Loader2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Card, CardContent } from '../../../components/ui/card';
 import { Label } from '../../../components/ui/label';
@@ -21,6 +21,8 @@ interface ItemCheckBoxCardItem {
 interface ItemCheckBoxCardProps {
     item: ItemCheckBoxCardItem;
     listType: ListType;
+    /** False swaps the item image for a plain check circle (guest lists). */
+    showImage?: boolean;
     imageBlobUrl: string | null;
     hasLoadedImage: boolean;
     hasImageError: boolean;
@@ -36,6 +38,7 @@ interface ItemCheckBoxCardProps {
 export const ItemCheckBoxCard = ({
     item,
     listType,
+    showImage = true,
     imageBlobUrl,
     hasLoadedImage,
     hasImageError,
@@ -65,39 +68,55 @@ export const ItemCheckBoxCard = ({
         >
             <CardContent className="flex items-center justify-between p-0.5">
                 <div className="flex items-center gap-4 flex-1">
-                    {/* Item Icon */}
-                    <div className="relative h-12 w-12 shrink-0 flex items-center justify-center">
-                        {imageBlobUrl && (
-                            <img
-                                src={imageBlobUrl}
-                                alt={item.name}
-                                className={`h-12 w-12 rounded-full object-cover border ${hasLoadedImage && !hasImageError ? 'opacity-100' : 'opacity-0'}`}
-                                onLoad={onImageLoad}
-                                onError={onImageError}
-                            />
-                        )}
+                    {showImage ? (
+                        <div className="relative h-12 w-12 shrink-0 flex items-center justify-center">
+                            {imageBlobUrl && (
+                                <img
+                                    src={imageBlobUrl}
+                                    alt={item.name}
+                                    className={`h-12 w-12 rounded-full object-cover border ${hasLoadedImage && !hasImageError ? 'opacity-100' : 'opacity-0'}`}
+                                    onLoad={onImageLoad}
+                                    onError={onImageError}
+                                />
+                            )}
 
-                        {!hasLoadedImage && !hasImageError && (
-                            <Skeleton className="absolute inset-0 h-12 w-12 rounded-full border" />
-                        )}
+                            {!hasLoadedImage && !hasImageError && (
+                                <Skeleton className="absolute inset-0 h-12 w-12 rounded-full border" />
+                            )}
 
-                        {isLoading && (
-                            <motion.div
-                                className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm rounded-full"
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                transition={{ duration: 0.15 }}
-                            >
+                            {isLoading && (
+                                <motion.div
+                                    className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm rounded-full"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ duration: 0.15 }}
+                                >
+                                    <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                                </motion.div>
+                            )}
+
+                            {hasImageError && (
+                                <div className="absolute inset-0 h-12 w-12 rounded-full border flex items-center justify-center bg-muted/20 text-muted-foreground">
+                                    <ImageOff className="h-5 w-5" />
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        // Same row height as the image slot so guest and signed-in lists line up.
+                        <div
+                            className="h-12 w-10 shrink-0 flex items-center justify-center"
+                            data-testid="item-check"
+                            aria-hidden="true"
+                        >
+                            {isLoading ? (
                                 <Loader2 className="h-5 w-5 animate-spin text-primary" />
-                            </motion.div>
-                        )}
-
-                        {hasImageError && (
-                            <div className="absolute inset-0 h-12 w-12 rounded-full border flex items-center justify-center bg-muted/20 text-muted-foreground">
-                                <ImageOff className="h-5 w-5" />
-                            </div>
-                        )}
-                    </div>
+                            ) : isSelected ? (
+                                <CircleCheck className="h-6 w-6 text-primary" />
+                            ) : (
+                                <Circle className="h-6 w-6 text-muted-foreground" />
+                            )}
+                        </div>
+                    )}
 
                     <Label
                         className={`flex-1 cursor-pointer text-base transition-all duration-300 ${isSelected ? 'text-muted-foreground' : 'text-foreground'}`}

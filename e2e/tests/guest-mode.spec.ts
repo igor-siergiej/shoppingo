@@ -154,6 +154,34 @@ test.describe('Guest mode', () => {
         await expect(page.getByText('No lists yet')).toBeVisible();
     });
 
+    // Guests can't generate item images (the API needs a session to pay for one), so their
+    // lists are a plain checklist rather than a column of broken-image icons.
+    test('guest list items render as a plain checklist without fetching images', async ({ page }) => {
+        const imageRequests: string[] = [];
+        page.on('request', (request) => {
+            if (request.url().includes('/api/image/')) imageRequests.push(request.url());
+        });
+
+        await page.goto('/try');
+        await page.waitForURL((url) => url.pathname === '/');
+        await expect(page.getByText('No lists yet')).toBeVisible();
+        await page.locator('button[class*="border-primary"]').first().click();
+        await page.getByLabel('List Name').fill('Plain');
+        await page.getByRole('button', { name: 'Add List' }).click();
+        await page.getByRole('button', { name: 'Plain' }).click();
+        await page.waitForURL(/\/list\/[^/]+$/);
+        await expect(page.getByText('No items yet')).toBeVisible();
+
+        await page.locator('button[class*="border-primary"]').first().click();
+        await page.getByPlaceholder('Enter item name...').fill('Pencils');
+        await page.getByRole('button', { name: 'Add Item' }).click();
+
+        const row = page.getByRole('button', { name: 'Pencils', exact: true });
+        await expect(row.getByTestId('item-check')).toBeVisible();
+        await expect(row.locator('img')).toHaveCount(0);
+        expect(imageRequests).toEqual([]);
+    });
+
     // Not @smoke: registration would hit the real auth service on a live run.
     test('try-it → create list → open it from the lists page → add items → sign up → list survives reload', async ({
         page,

@@ -138,6 +138,7 @@ const ItemsPage = () => {
                                 listTitle={listTitle}
                                 listType={listType}
                                 groupByAisle={groupByAisle && listType === ListTypeEnum.SHOPPING}
+                                showImages={!isGuest}
                             />
                         </>
                     )}
