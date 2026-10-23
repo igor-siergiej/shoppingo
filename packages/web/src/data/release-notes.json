@@ -1,5 +1,15 @@
 [
   {
+    "version": "2.4.0",
+    "date": "2026-10-23",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Tandra now notes when a new account is created, so we can see how many people are joining."
+      }
+    ]
+  },
+  {
     "version": "2.3.2",
     "date": "2026-10-23",
     "notes": [

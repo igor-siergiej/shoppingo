@@ -1,3 +1,10 @@
+# [2.4.0](https://github.com/igor-siergiej/tandra/compare/v2.3.2...v2.4.0) (2026-10-23)
+
+
+### Features
+
+* **api:** log new user registrations ([#295](https://github.com/igor-siergiej/tandra/issues/295)) ([34a3ac5](https://github.com/igor-siergiej/tandra/commit/34a3ac5a295aacb3a19ffc2911c130e9307e31ad))
+
 ## [2.3.2](https://github.com/igor-siergiej/tandra/compare/v2.3.1...v2.3.2) (2026-10-23)
 
 
