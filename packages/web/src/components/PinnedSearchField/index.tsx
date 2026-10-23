@@ -24,7 +24,7 @@ export const PinnedSearchField = ({ value, onChange, placeholder, name, autoFocu
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
                 placeholder={placeholder}
-                className="pl-9 pr-9 [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
+                className="pl-9 pr-9"
                 name={name}
                 autoComplete="off"
                 inputMode="search"
