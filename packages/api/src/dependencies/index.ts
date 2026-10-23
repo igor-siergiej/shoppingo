@@ -92,6 +92,7 @@ const buildBetterAuth = () => {
         baseURL: config.get('betterAuthUrl'),
         trustedOrigins: allowedOrigins,
         google: googleConfig(),
+        logger: dependencyContainer.resolve(DependencyToken.Logger),
     });
 };
 
