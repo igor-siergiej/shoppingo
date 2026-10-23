@@ -1,3 +1,10 @@
+## [2.3.2](https://github.com/igor-siergiej/tandra/compare/v2.3.1...v2.3.2) (2026-10-23)
+
+
+### Bug Fixes
+
+* **web:** hide the browser's blue clear button on search-type fields ([#294](https://github.com/igor-siergiej/tandra/issues/294)) ([96c3aa5](https://github.com/igor-siergiej/tandra/commit/96c3aa5fd7cd191b19fe49f26560709fa3fdcae5))
+
 ## [2.3.1](https://github.com/igor-siergiej/tandra/compare/v2.3.0...v2.3.1) (2026-10-23)
 
 
