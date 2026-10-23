@@ -1,3 +1,4 @@
+import type { Logger } from '@imapps/api-utils';
 import { type BetterAuthOptions, betterAuth } from 'better-auth';
 import { APIError, createAuthMiddleware } from 'better-auth/api';
 import { username } from 'better-auth/plugins';
@@ -28,9 +29,10 @@ export interface AuthOptions {
     baseURL: string;
     trustedOrigins: Array<string>;
     google?: { clientId: string; clientSecret: string };
+    logger?: Logger;
 }
 
-export const createAuth = ({ database, secret, baseURL, trustedOrigins, google }: AuthOptions) =>
+export const createAuth = ({ database, secret, baseURL, trustedOrigins, google, logger }: AuthOptions) =>
     betterAuth({
         database,
         secret,
@@ -54,6 +56,21 @@ export const createAuth = ({ database, secret, baseURL, trustedOrigins, google }
         // Cloudflare's CF-Connecting-IP is the real client. Without Cloudflare (dev, e2e, self-hosts) it is
         // absent and X-Forwarded-For is used.
         advanced: { ipAddress: { ipAddressHeaders: ['cf-connecting-ip', 'x-forwarded-for'] } },
+        databaseHooks: {
+            user: {
+                create: {
+                    // Fires once per new user row: password sign-up or a first Google sign-in (the only
+                    // other user-creating flow configured here); ordinary sign-ins never reach it.
+                    after: async (user, ctx) => {
+                        logger?.info('User registered', {
+                            userId: user.id,
+                            username: user.username,
+                            method: ctx?.path === '/sign-up/email' ? 'password' : 'google',
+                        });
+                    },
+                },
+            },
+        },
         hooks: {
             before: createAuthMiddleware(async (ctx) => {
                 rejectEmailSignIn(ctx.path);

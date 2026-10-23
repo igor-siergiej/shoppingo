@@ -1,11 +1,12 @@
-import { describe, expect, it } from 'bun:test';
+import { describe, expect, it, mock } from 'bun:test';
+import type { Logger } from '@imapps/api-utils';
 import { memoryAdapter } from 'better-auth/adapters/memory';
 
 import { type AuthOptions, createAuth } from './index';
 
 type AuthDatabase = AuthOptions['database'];
 
-const makeAuth = (google?: { clientId: string; clientSecret: string }) => {
+const makeAuth = (google?: { clientId: string; clientSecret: string }, logger?: Logger) => {
     const db = {
         user: [],
         session: [],
@@ -20,6 +21,7 @@ const makeAuth = (google?: { clientId: string; clientSecret: string }) => {
         baseURL: 'http://localhost:4000',
         trustedOrigins: ['http://localhost:4000'],
         google,
+        logger,
     });
     return { auth, db };
 };
@@ -61,6 +63,21 @@ describe('createAuth', () => {
         await expect(
             auth.api.signUpEmail({ body: { email: 'a@b.c', name: 'x', password: 'password123' } })
         ).rejects.toThrow();
+    });
+
+    it('logs a registration once, not on later sign-ins', async () => {
+        const info = mock();
+        const { auth } = makeAuth(undefined, { info } as unknown as Logger);
+        const { user } = await auth.api.signUpEmail({
+            body: { email: 'x@y.z', name: 'x', password: 'password123', username: 'Carol' },
+        });
+        await auth.api.signInUsername({ body: { username: 'carol', password: 'password123' } });
+        expect(info).toHaveBeenCalledTimes(1);
+        expect(info).toHaveBeenCalledWith('User registered', {
+            userId: user.id,
+            username: 'carol',
+            method: 'password',
+        });
     });
 
     it('signs in by username with an argon2id hash and refuses /sign-in/email', async () => {
