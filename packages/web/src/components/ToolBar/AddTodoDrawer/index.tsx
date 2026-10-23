@@ -143,7 +143,8 @@ export const AddTodoDrawer = ({ open, onOpenChange, onAdd, labels, prefillDate }
                         />
                         <div className="space-y-2">
                             <Label>Share with friends</Label>
-                            <FriendPicker value={shareWith} onChange={setShareWith} seedAllByDefault />
+                            {/* No seeding: a todo is private until the user picks who to share it with. */}
+                            <FriendPicker value={shareWith} onChange={setShareWith} />
                         </div>
                     </div>
                     <DrawerFooter className="flex-none">

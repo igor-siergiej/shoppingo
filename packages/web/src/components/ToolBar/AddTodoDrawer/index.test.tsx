@@ -36,7 +36,7 @@ describe('AddTodoDrawer', () => {
         );
     });
 
-    it('seeds and submits friend ids to share with', async () => {
+    const withFriends = () =>
         vi.mocked(useFriends).mockReturnValue({
             friends: [
                 { id: 'f1', username: 'alice' },
@@ -45,31 +45,25 @@ describe('AddTodoDrawer', () => {
             isLoading: false,
         } as ReturnType<typeof useFriends>);
 
-        const onAdd = vi.fn().mockResolvedValue(undefined);
-        render(<AddTodoDrawer open onOpenChange={noop} onAdd={onAdd} labels={[]} />);
-        fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Buy milk' } });
-        fireEvent.click(screen.getByRole('button', { name: 'Add Todo' }));
-        await waitFor(() => expect(onAdd).toHaveBeenCalledWith(expect.objectContaining({ userIds: ['f1', 'f2'] })));
-    });
-
-    it('submits an empty share list when every seeded friend is switched off', async () => {
-        vi.mocked(useFriends).mockReturnValue({
-            friends: [
-                { id: 'f1', username: 'alice' },
-                { id: 'f2', username: 'bob' },
-            ],
-            isLoading: false,
-        } as ReturnType<typeof useFriends>);
-
+    it('keeps a todo private when the friend picker is left untouched', async () => {
+        withFriends();
         const onAdd = vi.fn().mockResolvedValue(undefined);
         render(<AddTodoDrawer open onOpenChange={noop} onAdd={onAdd} labels={[]} />);
         const switches = await screen.findAllByRole('switch');
-        await waitFor(() => {
-            for (const s of switches) expect(s).toBeChecked();
-        });
-        for (const s of switches) fireEvent.click(s);
+        for (const s of switches) expect(s).not.toBeChecked();
         fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Private' } });
         fireEvent.click(screen.getByRole('button', { name: 'Add Todo' }));
         await waitFor(() => expect(onAdd).toHaveBeenCalledWith(expect.objectContaining({ userIds: [] })));
+    });
+
+    it('submits only the friends switched on', async () => {
+        withFriends();
+        const onAdd = vi.fn().mockResolvedValue(undefined);
+        render(<AddTodoDrawer open onOpenChange={noop} onAdd={onAdd} labels={[]} />);
+        const [alice] = await screen.findAllByRole('switch');
+        fireEvent.click(alice);
+        fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Buy milk' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Add Todo' }));
+        await waitFor(() => expect(onAdd).toHaveBeenCalledWith(expect.objectContaining({ userIds: ['f1'] })));
     });
 });
