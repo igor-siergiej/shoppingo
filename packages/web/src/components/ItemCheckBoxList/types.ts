@@ -5,4 +5,6 @@ export interface ItemCheckBoxListProps {
     listTitle: string;
     listType: ListType;
     groupByAisle?: boolean;
+    /** False renders a plain checklist and fetches no item images (guests can't generate them). */
+    showImages?: boolean;
 }

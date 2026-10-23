@@ -74,6 +74,16 @@ describe('ItemCheckBoxCard', () => {
         expect(img).toHaveAttribute('src', 'blob:mock-url');
     });
 
+    it('shows a plain check instead of the image slot when images are off, even after an image error', () => {
+        render(
+            <ItemCheckBoxCard {...defaultProps} showImage={false} imageBlobUrl="blob:mock-url" hasImageError={true} />
+        );
+
+        expect(screen.getByTestId('item-check')).toBeInTheDocument();
+        expect(screen.queryByRole('img')).not.toBeInTheDocument();
+        expect(screen.queryByAltText('Milk')).not.toBeInTheDocument();
+    });
+
     it('shows selected state styling', () => {
         const { container } = render(<ItemCheckBoxCard {...defaultProps} isSelected={true} />);
 

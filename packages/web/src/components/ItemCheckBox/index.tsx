@@ -26,18 +26,21 @@ interface ItemCheckBoxProps {
     item: Item;
     listTitle: string;
     listType: ListType;
+    showImage: boolean;
 }
 
 // One row: swipe, edit drawer and mutations share state, so they stay in one component.
 // fallow-ignore-next-line complexity
-const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
+const ItemCheckBox = ({ item, listTitle, listType, showImage }: ItemCheckBoxProps) => {
     const [isDeleting, setIsDeleting] = useState(false);
     const drawerInputRef = useRef<HTMLInputElement>(null);
     const itemNameId = useId();
     const itemQuantityId = useId();
     const itemUnitId = useId();
 
-    const { imageBlobUrl, hasLoadedImage, hasImageError, onImageLoad, onImageError } = useItemImage(item.name);
+    const { imageBlobUrl, hasLoadedImage, hasImageError, onImageLoad, onImageError } = useItemImage(
+        showImage ? item.name : null
+    );
     const { toggleMutation, deleteMutation, updateNameMutation, updateQuantityMutation, updateCategoryMutation } =
         useItemMutations(listTitle, item.id);
     const drawerState = useItemEditDrawer();
@@ -128,6 +131,7 @@ const ItemCheckBox = ({ item, listTitle, listType }: ItemCheckBoxProps) => {
                         <ItemCheckBoxCard
                             item={item}
                             listType={listType}
+                            showImage={showImage}
                             imageBlobUrl={imageBlobUrl}
                             hasLoadedImage={hasLoadedImage}
                             hasImageError={hasImageError}

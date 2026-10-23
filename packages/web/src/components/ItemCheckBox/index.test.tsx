@@ -100,7 +100,7 @@ describe('ItemCheckBox', () => {
     });
 
     it('renders item card', () => {
-        render(<ItemCheckBox item={mockItem} listTitle="Shopping" listType={ListTypeEnum.SHOPPING} />);
+        render(<ItemCheckBox item={mockItem} listTitle="Shopping" listType={ListTypeEnum.SHOPPING} showImage />);
 
         expect(screen.getByTestId('item-card')).toBeInTheDocument();
         expect(screen.getByText('Milk')).toBeInTheDocument();
@@ -114,7 +114,7 @@ describe('ItemCheckBox', () => {
             toggleMutation: { isLoading: false, mutate: toggleMock },
         });
 
-        render(<ItemCheckBox item={mockItem} listTitle="Shopping" listType={ListTypeEnum.SHOPPING} />);
+        render(<ItemCheckBox item={mockItem} listTitle="Shopping" listType={ListTypeEnum.SHOPPING} showImage />);
 
         const card = screen.getByTestId('item-card');
         await user.click(card);
@@ -128,7 +128,7 @@ describe('ItemCheckBox', () => {
             isOpen: true,
         });
 
-        render(<ItemCheckBox item={mockItem} listTitle="Shopping" listType={ListTypeEnum.SHOPPING} />);
+        render(<ItemCheckBox item={mockItem} listTitle="Shopping" listType={ListTypeEnum.SHOPPING} showImage />);
 
         expect(screen.getByPlaceholderText('Quantity')).toBeInTheDocument();
     });
@@ -140,7 +140,7 @@ describe('ItemCheckBox', () => {
             values: { name: '', quantity: '', unit: '' },
         });
 
-        render(<ItemCheckBox item={mockItem} listTitle="Shopping" listType={ListTypeEnum.SHOPPING} />);
+        render(<ItemCheckBox item={mockItem} listTitle="Shopping" listType={ListTypeEnum.SHOPPING} showImage />);
 
         const saveButton = screen.getByRole('button', { name: /save changes/i });
         expect(saveButton).toBeDisabled();

@@ -6,9 +6,21 @@ import type { ItemCheckBoxListProps } from './types';
 
 const selectedLast = (a: Item, b: Item) => (a.isSelected === b.isSelected ? 0 : a.isSelected ? -1 : 1);
 
-const ItemCheckBoxList = ({ items, listTitle, listType, groupByAisle = false }: ItemCheckBoxListProps) => {
+const ItemCheckBoxList = ({
+    items,
+    listTitle,
+    listType,
+    groupByAisle = false,
+    showImages = true,
+}: ItemCheckBoxListProps) => {
     const renderItem = (item: Item) => (
-        <ItemCheckBox item={item} listTitle={listTitle} listType={listType} key={item.id || item.name} />
+        <ItemCheckBox
+            item={item}
+            listTitle={listTitle}
+            listType={listType}
+            showImage={showImages}
+            key={item.id || item.name}
+        />
     );
 
     if (!groupByAisle) {

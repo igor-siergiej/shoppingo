@@ -37,6 +37,14 @@ describe('useItemImage', () => {
         });
     });
 
+    it('does not fetch when the item name is null', () => {
+        // The effect calls fetch synchronously when it runs, so no wait is needed to observe it.
+        const { result } = renderHook(() => useItemImage(null));
+
+        expect(global.fetch).not.toHaveBeenCalled();
+        expect(result.current.hasImageError).toBe(false);
+    });
+
     it('creates object URL from blob response', async () => {
         const mockBlob = new Blob(['test'], { type: 'image/png' });
         (global.fetch as any).mockResolvedValueOnce({

@@ -29,12 +29,14 @@ const handleImageResponse = async (
     return url;
 };
 
-export function useItemImage(itemName: string): UseItemImageReturn {
+/** `itemName` null skips the fetch entirely (rows that show no image, e.g. guest lists). */
+export function useItemImage(itemName: string | null): UseItemImageReturn {
     const [hasLoadedImage, setHasLoadedImage] = useState(false);
     const [hasImageError, setHasImageError] = useState(false);
     const [imageBlobUrl, setImageBlobUrl] = useState<string | null>(null);
 
     useEffect(() => {
+        if (itemName === null) return;
         let isMounted = true;
         let currentBlobUrl: string | null = null;
 
