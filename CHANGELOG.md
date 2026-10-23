@@ -1,3 +1,10 @@
+## [2.3.1](https://github.com/igor-siergiej/tandra/compare/v2.3.0...v2.3.1) (2026-10-23)
+
+
+### Bug Fixes
+
+* **web:** new todos start private instead of shared with every friend ([#293](https://github.com/igor-siergiej/tandra/issues/293)) ([6e012a5](https://github.com/igor-siergiej/tandra/commit/6e012a5d48f3928770bf54329b5068f2229188c3)), closes [#289](https://github.com/igor-siergiej/tandra/issues/289) [#289](https://github.com/igor-siergiej/tandra/issues/289)
+
 # [2.3.0](https://github.com/igor-siergiej/tandra/compare/v2.2.3...v2.3.0) (2026-10-23)
 
 
