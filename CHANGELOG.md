@@ -1,3 +1,10 @@
+## [2.2.2](https://github.com/igor-siergiej/tandra/compare/v2.2.1...v2.2.2) (2026-10-23)
+
+
+### Bug Fixes
+
+* **api:** resolve the signed-in user on the item image route ([#290](https://github.com/igor-siergiej/tandra/issues/290)) ([222e31b](https://github.com/igor-siergiej/tandra/commit/222e31b349c47892ceb6f3b8366ae4f767930bdd)), closes [#271](https://github.com/igor-siergiej/tandra/issues/271)
+
 ## [2.2.1](https://github.com/igor-siergiej/tandra/compare/v2.2.0...v2.2.1) (2026-10-22)
 
 
