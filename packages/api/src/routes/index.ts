@@ -81,7 +81,7 @@ import {
 } from '../interfaces/RecipeHandlers';
 import { completeTodo, createTodo, deleteTodo, getTodos, updateTodo } from '../interfaces/TodoHandlers';
 import { aiRateLimit } from '../middleware/aiRateLimit';
-import { authenticate, softAuthenticate } from '../middleware/auth';
+import { authenticate, optionalAuthenticate } from '../middleware/auth';
 import { notifyListChanged } from '../middleware/notifyListChanged';
 import { publicDiscoverCors } from '../middleware/publicDiscoverCors';
 import { validateJson } from '../middleware/validate';
@@ -151,31 +151,14 @@ export const createRoutes = (): Hono<Vars> => {
     router.post('/api/lists/:title/socket-ticket', authenticate, issueListSocketTicket);
     router.get('/api/ws/lists/:title', connectListSocket);
 
-    // Better Auth sets its own session cookie name (defaults to `better-auth.session_token`).
-    // Resolved lazily through the DI container on each request (its first lookup resolves the
-    // Auth singleton; subsequent calls hit the cached container entry).
-    const betterAuthSessionCookieName = async (): Promise<string | undefined> =>
-        (await dependencyContainer.resolve(DependencyToken.Auth).$context).authCookies?.sessionToken?.name;
-
-    const hasAnyAuthCredential = async (c: Context<Vars>): Promise<boolean> => {
-        const cookieName = await betterAuthSessionCookieName();
-        const cookieHeader = c.req.header('cookie') ?? '';
-        return cookieName ? cookieHeader.includes(`${cookieName}=`) : false;
-    };
-
     const conditionalImageAuth = async (c: Context<Vars>, next: Next) => {
         const name = c.req.param('name');
         if (name.startsWith('recipe-upload/') || name.startsWith('discovery-image/')) {
             return authenticate(c, next);
         }
-        // Cached item images stay public; a session cookie, when sent, only identifies who is
-        // paying for a generation. softAuthenticate avoids 401 (it just resolves the user when
-        // one is present).
-        if (!(await hasAnyAuthCredential(c))) {
-            return next();
-        }
-        await softAuthenticate(c);
-        return next();
+        // Cached item images stay public; a session, when present, identifies who is paying for
+        // a generation (ImageService refuses to generate without one).
+        return optionalAuthenticate(c, next);
     };
 
     router.get('/api/image/:name', conditionalImageAuth, getImage);
