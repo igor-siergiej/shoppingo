@@ -1,3 +1,10 @@
+# [2.3.0](https://github.com/igor-siergiej/tandra/compare/v2.2.3...v2.3.0) (2026-10-23)
+
+
+### Features
+
+* **web:** guests get a plain checklist instead of item images ([#292](https://github.com/igor-siergiej/tandra/issues/292)) ([07d4909](https://github.com/igor-siergiej/tandra/commit/07d49095ce91d8b85d2f3b50799c31fd16bbcf21))
+
 ## [2.2.3](https://github.com/igor-siergiej/tandra/compare/v2.2.2...v2.2.3) (2026-10-23)
 
 

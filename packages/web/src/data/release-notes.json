@@ -1,5 +1,15 @@
 [
   {
+    "version": "2.3.0",
+    "date": "2026-10-23",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Lists you try out without an account are now a clean checklist instead of rows of missing pictures."
+      }
+    ]
+  },
+  {
     "version": "2.2.3",
     "date": "2026-10-23",
     "notes": [
