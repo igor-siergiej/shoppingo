@@ -57,10 +57,12 @@ export const authenticate = async (c: Context<AuthVariables>, next: Next) => {
     return next();
 };
 
-// Used by callers (e.g. `conditionalImageAuth` in routes/index.ts) that want to identify the
-// user when a session is present without ever returning 401.
-export const softAuthenticate = async (c: Context<AuthVariables>): Promise<AuthUser | undefined> => {
-    const fromSession = await resolveBetterAuthSession(c);
-    if (fromSession instanceof Response) return undefined;
-    return fromSession;
+// For public routes where a signed-in caller unlocks more (e.g. `conditionalImageAuth` in
+// routes/index.ts): sets `user` when a usable session is present, never rejects the request.
+export const optionalAuthenticate = async (c: Context<AuthVariables>, next: Next) => {
+    const sessionUser = await resolveBetterAuthSession(c);
+    if (sessionUser && !(sessionUser instanceof Response)) {
+        c.set('user', sessionUser);
+    }
+    return next();
 };

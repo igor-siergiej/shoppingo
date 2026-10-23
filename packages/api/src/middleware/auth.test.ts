@@ -3,7 +3,7 @@ import { memoryAdapter } from 'better-auth/adapters/memory';
 import type { Context } from 'hono';
 
 import { type Auth, createAuth } from '../infrastructure/BetterAuth';
-import { __setAuthGetterForTests, authenticate } from './auth';
+import { __setAuthGetterForTests, authenticate, optionalAuthenticate } from './auth';
 
 type AuthVars = { Variables: { user: { id: string; username: string } } };
 
@@ -141,5 +141,31 @@ describe('authenticate middleware with Better Auth session', () => {
         expect(result?.status).toBe(401);
         expect(await result?.json()).toEqual({ error: 'Unauthorized' });
         expect(mockNext).not.toHaveBeenCalled();
+    });
+
+    // The public item-image route relies on this to know who pays for a generation; without the
+    // user on the context, ImageService answers 401 for every uncached name.
+    it('optionalAuthenticate sets the user when a session cookie is present', async () => {
+        const { auth } = buildAuth();
+        __setAuthGetterForTests(() => auth);
+        const { cookieHeader, userId, username } = await signUpAndGetCookie(auth);
+
+        const ctx = createMockContext({}, { cookie: cookieHeader });
+        await optionalAuthenticate(ctx, mockNext);
+
+        expect(ctx.set).toHaveBeenCalledWith('user', { id: userId, username });
+        expect(mockNext).toHaveBeenCalled();
+    });
+
+    it('optionalAuthenticate lets an anonymous request through without a user', async () => {
+        const { auth } = buildAuth();
+        __setAuthGetterForTests(() => auth);
+
+        const ctx = createMockContext({});
+        const result = await optionalAuthenticate(ctx, mockNext);
+
+        expect(result).toBeUndefined();
+        expect(ctx.set).not.toHaveBeenCalled();
+        expect(mockNext).toHaveBeenCalled();
     });
 });
