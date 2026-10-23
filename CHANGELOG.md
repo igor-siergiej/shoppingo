@@ -1,3 +1,10 @@
+## [2.2.3](https://github.com/igor-siergiej/tandra/compare/v2.2.2...v2.2.3) (2026-10-23)
+
+
+### Bug Fixes
+
+* **web:** actually send the security headers from nginx ([#291](https://github.com/igor-siergiej/tandra/issues/291)) ([a2c09c5](https://github.com/igor-siergiej/tandra/commit/a2c09c5c1b31f51d5cc964d5055ae6446445220d)), closes [#118](https://github.com/igor-siergiej/tandra/issues/118)
+
 ## [2.2.2](https://github.com/igor-siergiej/tandra/compare/v2.2.1...v2.2.2) (2026-10-23)
 
 
