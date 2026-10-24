@@ -22,7 +22,7 @@ export const LoginForm: React.FC = () => {
         (googleError && oauthErrorMessage(googleError, "Couldn't sign in with Google. Please try again."));
 
     const handleTryIt = () => {
-        enterGuestMode();
+        enterGuestMode('login_page');
         navigate('/');
     };
 

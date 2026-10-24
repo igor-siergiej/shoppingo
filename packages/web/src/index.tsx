@@ -18,8 +18,13 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import { UnitSystemProvider } from './contexts/UnitSystemContext';
 import { GuestAwareProtectedRoute, GuestEntryRoute, RequireAuth } from './guest/GuestAwareProtectedRoute';
 import { GuestProvider } from './guest/GuestContext';
+import { installPreviewApi } from './heatmapPreview/installPreviewApi';
+import { isHeatmapPreview } from './heatmapPreview/isHeatmapPreview';
 import { applyManifestForTheme } from './utils/applyManifestForTheme';
 import { installWebMcpOriginTrialToken } from './webmcp/originTrial';
+
+// Before anything fetches: inside the analytics dashboard's frame the pages read placeholder data.
+if (isHeatmapPreview) installPreviewApi();
 
 applyManifestForTheme();
 installWebMcpOriginTrialToken(import.meta.env.VITE_WEBMCP_OT_TOKEN, __IS_PROD__);

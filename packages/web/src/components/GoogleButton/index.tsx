@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { authClient } from '../../auth/client';
+import { track } from '../../utils/analytics';
 import { logger } from '../../utils/logger';
 import { useAuthFeatures } from '../../utils/useAiFeatures';
 import { Button } from '../ui/button';
@@ -39,6 +40,7 @@ export const GoogleButton = () => {
     const handleClick = async () => {
         setRedirecting(true);
         setFailed(false);
+        track('google_sign_in_started');
         try {
             const { error } = await authClient.signIn.social({
                 provider: 'google',

@@ -8,6 +8,7 @@ import { useTheme } from '../../../contexts/ThemeContext';
 import { useGuest } from '../../../guest/GuestContext';
 import { usePushNotifications } from '../../../hooks/usePushNotifications';
 import { usePWA } from '../../../hooks/usePWA';
+import { track } from '../../../utils/analytics';
 
 export interface HamburgerMenuProps {
     onClose: () => void;
@@ -184,6 +185,7 @@ export const HamburgerMenu = ({ onClose, onLogout }: HamburgerMenuProps) => {
                         <Button
                             variant="outline"
                             onClick={() => {
+                                track('signup_prompt_action', { prompt: 'menu', action: 'register' });
                                 onClose();
                                 navigate('/register');
                             }}

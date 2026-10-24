@@ -15,6 +15,7 @@ import { Label } from '../../components/ui/label';
 import { useMigration } from '../../guest/useMigration';
 import { usernameField } from '../../hooks/authSchemas';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
+import { track } from '../../utils/analytics';
 import { logger } from '../../utils/logger';
 
 const chooseUsernameSchema = z.object({ username: usernameField });
@@ -75,6 +76,8 @@ const ChooseUsernamePage = () => {
                 return;
             }
             const signedIn = await refreshSession();
+            // A first-time Google user only becomes a full account here, so this is their sign-up.
+            track('sign_up_completed', { method: 'google' });
             await migrateAfterAuth(signedIn);
             navigate('/', { replace: true });
         } catch (error) {

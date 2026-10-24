@@ -18,6 +18,7 @@ describe('analytics', () => {
         configState.value = {};
         delete window.umami;
         document.head.innerHTML = '';
+        localStorage.clear();
     });
 
     afterEach(() => {
@@ -47,12 +48,14 @@ describe('analytics', () => {
     });
 
     // Must run before any other test injects: the injected flag is module state.
-    it('loads the tracker without claiming window.umami, so the real tracker can install itself', () => {
+    it('loads the tracker without claiming window.umami, and sends events fired while it loaded', () => {
         configState.value = {
             analytics: { host: 'https://app.tandra.uk/pulse/', websiteId: 'site-1' },
         };
 
         loadTracker();
+        // `/try` enters guest mode on first load, before the script is in.
+        track('guest_mode_entered', { entry: 'try_link' });
 
         const script = document.querySelector<HTMLScriptElement>('script[data-website-id="site-1"]');
         expect(script?.src).toBe('https://app.tandra.uk/pulse/p.js');
@@ -64,7 +67,10 @@ describe('analytics', () => {
         script?.dispatchEvent(new Event('load'));
 
         track('item_added', { source: 'typed', count: 1 });
-        expect(sent).toEqual([['item_added', { source: 'typed', count: 1 }]]);
+        expect(sent).toEqual([
+            ['guest_mode_entered', { entry: 'try_link', isGuest: false }],
+            ['item_added', { source: 'typed', count: 1, isGuest: false }],
+        ]);
 
         // The heatmap recorder follows the tracker, never before it: it needs the tracker's session.
         const recorder = document.querySelector<HTMLScriptElement>('script[src$="/recorder.js"]');
@@ -80,11 +86,12 @@ describe('analytics', () => {
         window.umami = { track: (e, d) => calls.push([e, d]), identify: vi.fn() };
 
         track('item_added', { source: 'typed', count: 1 });
+        localStorage.setItem('tandra:guest-mode', '1');
         track('list_cleared');
 
         expect(calls).toEqual([
-            ['item_added', { source: 'typed', count: 1 }],
-            ['list_cleared', undefined],
+            ['item_added', { source: 'typed', count: 1, isGuest: false }],
+            ['list_cleared', { isGuest: true }],
         ]);
     });
 
@@ -126,5 +133,40 @@ describe('analytics opt-out', () => {
         document.querySelector('script[src$="/p.js"]')?.dispatchEvent(new Event('load'));
 
         expect(document.querySelector('script[src$="/recorder.js"]')).toBeNull();
+    });
+});
+
+describe('analytics list-path redaction', () => {
+    const originalFetch = window.fetch;
+
+    afterEach(() => {
+        window.fetch = originalFetch;
+        document.head.innerHTML = '';
+    });
+
+    it('rewrites list paths in what the tracker and recorder send, and leaves every other request alone', async () => {
+        // Fresh module: injection runs once per module instance, and the suites above already injected.
+        vi.resetModules();
+        const fresh = await import('./analytics');
+        const sent = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => new Response('{}'));
+        window.fetch = sent;
+        configState.value = { analytics: { host: 'https://app.tandra.uk/pulse/', websiteId: 'site-1' } };
+        fresh.loadTracker();
+
+        const view = JSON.stringify({
+            payload: { url: '/list/Mum%27s%2070th/l-1', referrer: '/list/l-2?x=1', title: 'Tandra' },
+        });
+        const clicks = JSON.stringify({ payload: { events: [{ url: 'https://app.tandra.uk/list/l-3' }] } });
+        await fetch('https://app.tandra.uk/pulse/p', { method: 'POST', body: view, keepalive: true });
+        await fetch('https://app.tandra.uk/pulse/api/record', { method: 'POST', body: clicks });
+        await fetch('/api/lists/l-1/items', { method: 'PUT', body: '{"path":"/list/l-1"}' });
+
+        const bodies = sent.mock.calls.map(([, init]) => init?.body);
+        expect(bodies).toEqual([
+            JSON.stringify({ payload: { url: '/list/:list', referrer: '/list/:list?x=1', title: 'Tandra' } }),
+            JSON.stringify({ payload: { events: [{ url: 'https://app.tandra.uk/list/:list' }] } }),
+            '{"path":"/list/l-1"}',
+        ]);
+        expect(sent.mock.calls[0][1]?.keepalive).toBe(true);
     });
 });
