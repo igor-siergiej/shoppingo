@@ -104,7 +104,7 @@ export const useItemPageMutations = (listTitle?: string) => {
         },
         onSuccess: (_data, _variables, context) => {
             const count = context?.previousData?.items?.length ?? 0;
-            track('list_cleared', { list: listTitle ?? 'unknown', count });
+            track('list_cleared', { count });
         },
         onError: (_err, _variables, context) => {
             logger.warn('Failed to clear all items', { listTitle });

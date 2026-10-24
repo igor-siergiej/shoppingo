@@ -23,11 +23,11 @@ const UseUpIngredientPage = () => {
     const matches = useIngredientWasteSearch(allRecipes, query);
 
     // Fire one search event per non-empty query. Debounced to keep the
-    // event count reasonable as the user types.
+    // event count reasonable as the user types. Only the result count is sent:
+    // the search text is the user's own and stays out of analytics.
     useEffect(() => {
-        const term = query.trim();
-        if (term.length < 2) return;
-        const t = setTimeout(() => track('useup_search', { term, results: matches.length }), 400);
+        if (query.trim().length < 2) return;
+        const t = setTimeout(() => track('useup_search', { results: matches.length }), 400);
         return () => clearTimeout(t);
     }, [query, matches.length]);
 
@@ -40,7 +40,7 @@ const UseUpIngredientPage = () => {
                         query={query}
                         matches={matches}
                         onSelect={(recipeId) => {
-                            track('useup_recipe_opened', { recipeId, term: query.trim() });
+                            track('useup_recipe_opened', { recipeId });
                             navigate(`/recipes/${recipeId}`);
                         }}
                     />

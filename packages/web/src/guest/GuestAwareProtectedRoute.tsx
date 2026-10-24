@@ -34,6 +34,7 @@ export const RequireAuth = ({ children }: { children: ReactNode }) => {
     const { isAuthenticated } = useAuth();
     const { needsUsername } = useUser();
     const { isGuest } = useGuest();
+    const location = useLocation();
 
     if (needsUsername) return <Navigate to="/choose-username" replace />;
 
@@ -42,7 +43,11 @@ export const RequireAuth = ({ children }: { children: ReactNode }) => {
     }
 
     if (isGuest) {
-        return <Navigate to="/signup-cta" state={{ reason: 'auth-required' }} replace />;
+        // The route's first segment (`recipes`, `discover`, `calendar`, ...) names the locked feature without
+        // carrying ids, so the prompt can report which feature sends guests to sign up. Every account-only
+        // route has one; `/` is never behind this guard.
+        const feature = location.pathname.split('/')[1];
+        return <Navigate to="/signup-cta" state={{ reason: 'auth-required', feature }} replace />;
     }
 
     // Not logged in and not in guest mode: defer to the existing behaviour so
@@ -60,7 +65,7 @@ export const GuestEntryRoute = () => {
     const { isGuest, enterGuestMode } = useGuest();
 
     useEffect(() => {
-        if (!isLoading && !isAuthenticated && !isGuest) enterGuestMode();
+        if (!isLoading && !isAuthenticated && !isGuest) enterGuestMode('try_link');
     }, [isLoading, isAuthenticated, isGuest, enterGuestMode]);
 
     if (isAuthenticated || isGuest) return <Navigate to="/" replace />;
