@@ -1,5 +1,6 @@
 {
   "ignorePatterns": [
+    ".github/workflows-utils/**",
     "**/*.test.ts",
     "packages/api/src/test-setup.ts",
     "**/*.test.tsx",

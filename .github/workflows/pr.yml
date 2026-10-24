@@ -16,7 +16,11 @@ jobs:
       contents: read
       packages: read
     steps:
+      # The utils submodule holds a second biome.json and its own package tree. Checking it out here
+      # keeps CI's lint and dead-code results identical to a developer's, who has it cloned locally.
       - uses: actions/checkout@v6
+        with:
+          submodules: recursive
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version-file: package.json
@@ -57,7 +61,10 @@ jobs:
       - run: bun install
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GH_TOKEN }}
-      - run: bun run tsc --noEmit
+      # `bun run tsc --noEmit` type-checks nothing: the root tsconfig holds only project
+      # references. This gate runs a real check and fails on any type error the baseline
+      # does not already contain.
+      - run: bun run typecheck
       - run: bun run --filter @tandra/api test --coverage --coverage-reporter=text --coverage-reporter=lcov
         env:
           OPENSEARCH_TEST_URL: http://localhost:9200
@@ -161,9 +168,11 @@ jobs:
     permissions:
       contents: read
     steps:
+      # Submodules checked out so the analyzer sees the same tree a developer has.
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          submodules: recursive
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version-file: package.json

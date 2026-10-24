@@ -2,7 +2,7 @@ node_modules
 .yarn
 .git
 build
-tsconfig.tsbuildinfo
+*.tsbuildinfo
 .yarn/releases/
 .pnp.*
 .vscode

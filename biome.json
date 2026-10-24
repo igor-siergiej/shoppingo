@@ -1,10 +1,10 @@
 {
   "extends": ["@imapps/biome-config/base"],
   "files": {
-    "experimentalScannerIgnores": [".github/workflows-utils"],
     "includes": [
       "**",
       "!.design-sync",
+      "!.github/workflows-utils",
       "!packages/web/.design-sync-fonts",
       "!packages/web/.design-sync-theme",
       "!e2e/mocks/data/umami-tracker.js"

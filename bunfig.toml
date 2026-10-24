@@ -1,0 +1,14 @@
+# Bun's test runner, scoped to the packages whose tests actually run under Bun.
+#
+# Without a root, a bare `bun test` in the repo root collects every file that looks
+# like a test: the Playwright specs in `e2e/` and the Vitest specs in `packages/web/`.
+# Neither runner can execute them, so the run fails with hundreds of errors that say
+# nothing about the repo — a trap for anyone (or any agent) trying to run the tests.
+#
+# `root` scopes the collection to the API package, and `preload` loads the API's
+# test setup, which the package's own `bunfig.toml` would otherwise provide. The
+# scripts under `scripts/` and `packages/api/scripts` are run by path
+# (`bun run test:scripts`), which resolves relative to the working directory.
+[test]
+root = "./packages/api"
+preload = ["./packages/api/src/test-setup.ts"]
