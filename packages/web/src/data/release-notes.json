@@ -1,5 +1,15 @@
 [
   {
+    "version": "2.6.1",
+    "date": "2026-10-24",
+    "notes": [
+      {
+        "type": "fix",
+        "text": "The app's font is now served by Tandra itself, so opening the app no longer contacts Google."
+      }
+    ]
+  },
+  {
     "version": "2.6.0",
     "date": "2026-10-24",
     "notes": [

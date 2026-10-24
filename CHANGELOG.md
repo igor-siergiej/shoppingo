@@ -1,3 +1,10 @@
+## [2.6.1](https://github.com/igor-siergiej/tandra/compare/v2.6.0...v2.6.1) (2026-10-24)
+
+
+### Bug Fixes
+
+* **web:** self-host Montserrat and drop Google Fonts from CSP ([#301](https://github.com/igor-siergiej/tandra/issues/301)) ([5ae8ba1](https://github.com/igor-siergiej/tandra/commit/5ae8ba1136060df509e84e4539d4303d6f12d76e))
+
 # [2.6.0](https://github.com/igor-siergiej/tandra/compare/v2.5.0...v2.6.0) (2026-10-24)
 
 
