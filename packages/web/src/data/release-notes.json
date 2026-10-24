@@ -1,5 +1,15 @@
 [
   {
+    "version": "2.5.0",
+    "date": "2026-10-24",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "Usage stats no longer include your list names or what you type into ingredient search."
+      }
+    ]
+  },
+  {
     "version": "2.4.0",
     "date": "2026-10-23",
     "notes": [

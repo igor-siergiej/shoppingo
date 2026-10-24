@@ -1,3 +1,10 @@
+# [2.5.0](https://github.com/igor-siergiej/tandra/compare/v2.4.0...v2.5.0) (2026-10-24)
+
+
+### Features
+
+* **web:** blank-content heatmap previews and privacy-safe guest funnel analytics ([#296](https://github.com/igor-siergiej/tandra/issues/296)) ([59f68ec](https://github.com/igor-siergiej/tandra/commit/59f68ec11d66daf06b6f122e3fcce9c2de0c45fb))
+
 # [2.4.0](https://github.com/igor-siergiej/tandra/compare/v2.3.2...v2.4.0) (2026-10-23)
 
 
