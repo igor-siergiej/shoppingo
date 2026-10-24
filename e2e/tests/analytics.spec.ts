@@ -11,10 +11,12 @@ test.describe('Analytics', () => {
         const hits = await mockAnalytics(authenticatedPage);
         await apiCreateList(LIST_TITLE);
 
+        // A legacy title URL: the list's own name must not reach analytics.
         await authenticatedPage.goto(`/list/${LIST_TITLE}`);
-        await expect
-            .poll(() => hits.filter((h) => !h.payload.name).map((h) => h.payload.website))
-            .toContain(ANALYTICS_WEBSITE_ID);
+        const pageViews = () => hits.filter((h) => !h.payload.name);
+        await expect.poll(() => pageViews().map((h) => h.payload.website)).toContain(ANALYTICS_WEBSITE_ID);
+        expect(pageViews().map((h) => new URL(h.payload.url).pathname)).toContain('/list/:list');
+        expect(JSON.stringify(hits)).not.toContain(LIST_TITLE);
 
         await authenticatedPage.locator('button[class*="border-primary"]').first().click();
         await authenticatedPage.getByPlaceholder('Enter item name...').fill('Eggs');
@@ -23,6 +25,6 @@ test.describe('Analytics', () => {
 
         await expect
             .poll(() => hits.find((h) => h.payload.name === 'item_added')?.payload.data)
-            .toEqual({ source: 'typed', count: 1 });
+            .toEqual({ source: 'typed', count: 1, isGuest: false });
     });
 });
