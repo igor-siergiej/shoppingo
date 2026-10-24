@@ -15,6 +15,7 @@ Overview, configuration, scripts, testing and the deploy flow live in the root
 
 | Doc | Covers |
 | --- | --- |
+| [qa-audit.md](qa-audit.md) | Audit of the quality gates: what was passing without checking anything, and the gates that replaced them |
 | [discovery-search.md](discovery-search.md) | Discover search: Mongo `discoveryRecipes` as system of record, OpenSearch as derived index, index layout, reindex |
 | [discovery-ingest.md](discovery-ingest.md) | Filling the library from the Wikibooks Cookbook (`bun run discover:ingest`) |
 | [discovery-page.md](discovery-page.md) | The `/discover` page: browse, search, preview, copy |

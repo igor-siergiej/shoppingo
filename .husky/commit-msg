@@ -1,0 +1,4 @@
+# Keeps commit messages in the conventional format the release pipeline expects, and
+# makes sure a user-visible change carries the release note the panel will publish.
+bunx commitlint --edit "$1"
+bun run check:release-notes "$1"

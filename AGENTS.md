@@ -45,14 +45,15 @@ Run these from the root directory:
 ### Code Quality
 - `bun run lint` - Run Biome linter across all packages
 - `bun run lint:fix` - Auto-fix Biome linting issues
-- `bun run tsc --noEmit` - Type-check without emitting (run from root or per package)
+- `bun run typecheck` - Type-check the API and web packages (see [Type Checking](#type-checking))
 
 ### Testing
-- `bun run --filter @tandra/api test` - Run API tests (Bun native test runner). CI also enforces 90% line and function coverage via `scripts/check-coverage.js` on the lcov report (bun's own `coverageThreshold` is per file, so it can't express a global gate)
+- `bun run test` - Run the API tests (Bun native test runner). CI also enforces 90% line and function coverage via `scripts/check-coverage.js` on the lcov report (bun's own `coverageThreshold` is per file, so it can't express a global gate)
 - `bun run --filter @tandra/web test` - Run web component tests (Vitest). No coverage gate: the web package has no coverage provider installed and the e2e suite is the main safety net for UI; add `@vitest/coverage-v8` and a threshold if that changes
+- `bun run test:scripts` - Run the script tests (`scripts/` and `packages/api/scripts/`)
 - `bun run load:local` - On-demand k6 API capacity test against a throwaway local API/DB with a mock auth verifier (not in CI; see `scripts/load/README.md`)
 - API and script tests use Bun's native runner: import from `bun:test`. The API `test` scripts pass `--isolate`, so `mock.module`/`vi.mock` and spies on shared singletons (e.g. `config`) can't leak into other files; script tests (`bun run test:scripts`) aren't isolated, so prefer injecting dependencies there. Web tests use Vitest (`vitest`).
-- `bun run tsc --noEmit` does not actually type-check (the tsconfigs only hold project references), so rely on the editor or run `tsc -p` against a concrete tsconfig when touching types
+- The root `bunfig.toml` scopes Bun's test collection to the API package, so a bare `bun test` at the root does not try to run the Playwright specs in `e2e/` or the Vitest specs in `packages/web/` under the wrong runner.
 
 ## Environment Setup
 The project requires:
@@ -140,29 +141,55 @@ Rules:
 - Never hand-edit `release-notes.json` for a new release; it is generated and committed
   by the release job.
 
+The `commit-msg` hook enforces this: a `feat`, `fix` or `perf` commit without the
+trailer is rejected. Run `bun run check:release-notes <file>` to check a message
+without committing. The check reads the trailer with the same parser the release
+notes use, so the two cannot disagree about what counts as one.
+
 ## Pre-commit Hooks (Husky)
-- **pre-commit**: Runs lint-staged on `*.{ts,tsx,json}` files
-- **commit-msg**: Validates commit message format via commitlint
+- **pre-commit**: Runs lint-staged on `*.{ts,tsx,json}` files, then the type-check gate
+- **commit-msg**: Validates commit message format via commitlint, then requires a
+  `Release-Notes:` trailer on a `feat`/`fix`/`perf` commit
+- **pre-push**: Runs `bun run audit` (fallow complexity and duplication audit)
+
+## Type Checking
+`bun run tsc --noEmit` type-checks **nothing**: the root `tsconfig.json` holds only
+project references, so `tsc` finds no files to check. Use the gate instead:
+
+- `bun run typecheck` — type-checks the API and web packages and fails on any type
+  error that is not already in `scripts/typecheck-baseline.json`.
+- `bun run typecheck:update` — rewrites the baseline. Run it only after fixing
+  type errors, never to silence them; the baseline is the record of known debt.
+
+The gate is a ratchet: the repo carries a known backlog of type errors, and the
+baseline records it so a change cannot add to it. Each entry is a `file::code` pair
+with a count, so moving code around does not read as a new error.
 
 ## Code Quality Checklist (Before Committing)
 **Claude must perform these checks before creating any commit:**
-1. **Linting**: Run `bun run lint:fix` to auto-fix all Biome linting issues
-2. **Type check**: Run `bun run tsc --noEmit` to verify no TypeScript errors
-3. **Tests**: Run `bun run --filter @tandra/api test` to verify all API tests pass
-4. **Builds**: Verify `bun run --filter @tandra/web build` and `bun run --filter @tandra/api build` succeed
-5. **Git status**: Ensure no untracked files are accidentally committed (except `.env` configs)
+1. **Verify**: Run `bun run verify` — lint, type-check, and every unit test suite.
+   This is the single command that tells you the change is good; it stops at the
+   first failure and says what to do about it. `bun run verify:fast` runs just lint
+   and the type-check.
+2. **Linting**: Run `bun run lint:fix` to auto-fix all Biome linting issues
+3. **Type check**: Run `bun run typecheck` to verify no new TypeScript errors
+4. **Tests**: Run `bun run --filter @tandra/api test` to verify all API tests pass
+5. **Builds**: Verify `bun run --filter @tandra/web build` and `bun run --filter @tandra/api build` succeed
+6. **Git status**: Ensure no untracked files are accidentally committed (except `.env` configs)
 
 ## Useful Commands for Claude
+- **Check the whole change**: `bun run verify` — lint, type-check, and every unit test suite. Start here
+- **Quick check**: `bun run verify:fast` — lint and type-check only
 - Check project status: `bun run lint` and `bun run --filter @tandra/api test`
 - Fix linting: `bun run lint:fix` (run before every commit)
-- Type check: `bun run tsc --noEmit`
+- Type check: `bun run typecheck` (see [Type Checking](#type-checking))
 - Start development: `bun run start` (or separate services as needed)
 - File structure: Main code in `packages/api/src/` and `packages/web/src/`
 - Types: Check `packages/types/` for shared interfaces
 
 ## Shared Utilities Integration
 The project uses shared packages published to GitHub Packages (migration to public npm in progress):
-- API package uses `@igor-siergiej/api-utils` for database connections, dependency injection, and logging
+- API package uses `@imapps/api-utils` for database connections, dependency injection, and logging
 - Registry configured via `.bunfig.toml` (requires `NODE_AUTH_TOKEN` env var)
 
 ## Deployment & Infrastructure
@@ -171,18 +198,31 @@ Production runs as Dokploy swarm apps (`tandra-web`, `tandra-api`) on the `found
 - **Landing site**: `https://tandra.uk` (separate `tandra-site` repo, CloudFront)
 - See the README "CI/CD" section and `docs/homelab.md` in the `foundry` repo for the full map
 
-## CI/CD Pipeline (`.github/workflows/ci-cd.yml`)
-Jobs run in sequence: **lint → test → release → build-publish**
-1. **lint**: Biome linting + TypeScript type check (`bun run tsc --noEmit`)
-2. **test**: `bun run --filter @tandra/api test`
-3. **release**: semantic-release for automated versioning and changelog
-4. **build-publish**: Docker image build and push to container registry
+## CI/CD Pipeline
+Three workflows under `.github/workflows/`:
+
+**`pr.yml`** (every pull request) — the merge gates:
+1. **lint**: Biome linting (`bun run lint`) + the e2e suite's own type check (`bun run tsc:e2e`)
+2. **test**: the type-check gate (`bun run typecheck`), the API tests with a 90% coverage threshold, the web tests, and the script tests
+3. **e2e**: Playwright suite, including visual regression, against seeded Mongo and OpenSearch
+4. **report**: publishes the Playwright report and links it from a sticky PR comment
+5. **fallow-deadcode**: dead-code analysis (blocking)
+6. **semgrep**: security pattern scan
+
+**`cd.yml`** (push to `main`) — **release** (semantic-release), **build-publish**
+(Docker images), **deploy** (webhooks).
+
+**`load.yml`** (pull request, API paths only) — k6 capacity test. Informational; it
+cannot block a merge.
+
+The `lint` and `fallow-deadcode` jobs check out the `utils` submodule so their
+results match what a developer sees locally.
 
 ## Related Services
 - **Authentication**: Built into the api with Better Auth (`packages/api/src/infrastructure/BetterAuth`, mounted at `/api/auth/*`)
   - Username + password (argon2id), optional Google via `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET`; no email
   - Session is an httpOnly same-origin cookie; `BETTER_AUTH_SECRET` and `BETTER_AUTH_URL` are required
   - Admin password reset: `bun run auth:reset-password <username>`
-- **Shared Utilities**: Depends on `@igor-siergiej/api-utils`
+- **Shared Utilities**: Depends on `@imapps/api-utils`
 - **GitOps Deployment**: Managed via `argonaut` Kubernetes GitOps repository
 - See `../im-apps-utils/CLAUDE.md` and `../argonaut/CLAUDE.md` for related service documentation

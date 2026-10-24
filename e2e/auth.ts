@@ -8,9 +8,17 @@ const WEB_ORIGIN = 'http://localhost:4000';
 
 // Better Auth rate-limits sign-in/sign-up per client IP (read from X-Forwarded-For). Every request in a
 // test run comes from the same machine, so give each its own address or the suite trips the limit.
-let ipCounter = 0;
+//
+// The counter lives on globalThis, not in a module variable: Playwright gives each spec file its own
+// module registry, so a module-level counter restarts at zero in every file and the suite hands the same
+// addresses out again. The limit is 10 sign-ins per address per minute, so by the eleventh file every
+// sign-in failed with 429 and the rest of the suite fell over. globalThis is shared by every spec file
+// in the worker, so the addresses stay unique for the whole run.
+const counterKey = Symbol.for('tandra.e2e.ipCounter');
+const globalCounter = globalThis as unknown as Record<symbol, number>;
 const nextClientIp = () => {
-    ipCounter++;
+    globalCounter[counterKey] = (globalCounter[counterKey] ?? 0) + 1;
+    const ipCounter = globalCounter[counterKey];
     return `10.${(ipCounter >> 16) & 255}.${(ipCounter >> 8) & 255}.${ipCounter & 255}`;
 };
 
