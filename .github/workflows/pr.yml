@@ -73,9 +73,19 @@ jobs:
       - name: Check coverage threshold (90% lines and functions)
         run: bun scripts/check-coverage.js packages/api/coverage/lcov.info 90
 
-  e2e:
+  # The suite is ~15 min serial (one worker: every authenticated test wipes the
+  # shared e2e database), so it is split across runners instead. Each shard gets
+  # its own Mongo/OpenSearch services and api/web servers, so the isolation the
+  # tests rely on is unchanged. Playwright shards at file granularity here
+  # (fullyParallel is off), balanced by test count.
+  e2e-shard:
+    name: e2e (shard ${{ matrix.shard }}/4)
     runs-on: ubuntu-latest
     needs: lint
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
     permissions:
       contents: read
       packages: read
@@ -110,55 +120,97 @@ jobs:
       - run: bun install
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GH_TOKEN }}
-      - run: bunx playwright install --with-deps chromium
-      - run: bun run test:e2e
+      - id: playwright
+        run: echo "version=$(bun -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+      - id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+      - if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: bunx playwright install --with-deps chromium
+      - if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: bunx playwright install-deps chromium
+      - run: bun run test:e2e --shard=${{ matrix.shard }}/4 --reporter=blob
         env:
           CONNECTION_URI: mongodb://devuser:devpassword@localhost:27017/tandra_e2e?authSource=admin
           E2E_OPENSEARCH_URL: http://localhost:9200
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: playwright-report
-          path: playwright-report/
-          retention-days: 7
+          name: blob-report-${{ matrix.shard }}
+          path: blob-report/
+          retention-days: 1
           if-no-files-found: ignore
 
-  # Publishes the Playwright HTML report (including visual-diff images) to
+  # Single check named `e2e` that passes only if every shard passed, so the
+  # check name stays stable for .kanban-cli.json's checkNamesRequired.
+  e2e:
+    runs-on: ubuntu-latest
+    needs: e2e-shard
+    if: always()
+    steps:
+      - if: needs.e2e-shard.result != 'success'
+        run: |
+          echo "e2e shards: ${{ needs.e2e-shard.result }}"
+          exit 1
+
+  # Merges the shards' blob reports into one Playwright HTML report (also kept
+  # as the `playwright-report` artifact, see e2e/README.md), publishes it to
   # GitHub Pages under pr-<number>/, then links it from a sticky PR comment.
   # keep_files preserves other PRs' report subdirectories on each deploy —
   # without it, actions-gh-pages wipes the branch on every push.
   report:
     runs-on: ubuntu-latest
-    needs: e2e
-    if: always() && needs.e2e.result != 'skipped'
+    needs: e2e-shard
+    if: always() && needs.e2e-shard.result != 'skipped'
     permissions:
       contents: write
+      packages: read
       pull-requests: write
     steps:
+      - uses: actions/checkout@v6
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      - run: bun install
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GH_TOKEN }}
       - id: download
         uses: actions/download-artifact@v4
         continue-on-error: true
         with:
-          name: playwright-report
-          path: playwright-report
-      - uses: peaceiris/actions-gh-pages@v4
+          pattern: blob-report-*
+          path: all-blob-reports
+          merge-multiple: true
+      - id: merge
         if: steps.download.outcome == 'success'
+        run: bunx playwright merge-reports --reporter html ./all-blob-reports
+      - uses: actions/upload-artifact@v4
+        if: steps.merge.outcome == 'success'
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+      - uses: peaceiris/actions-gh-pages@v4
+        if: steps.merge.outcome == 'success'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./playwright-report
           destination_dir: pr-${{ github.event.pull_request.number }}
           keep_files: true
       - uses: marocchino/sticky-pull-request-comment@v2
-        if: steps.download.outcome == 'success'
+        if: steps.merge.outcome == 'success'
         with:
           header: playwright-report
           message: |
             🎭 [Playwright report](https://igor-siergiej.github.io/tandra/pr-${{ github.event.pull_request.number }}/) for commit ${{ github.event.pull_request.head.sha }}
 
   # Blocking merge gate: dead code only. Run the analyzer directly via bunx
-  # (the action hangs on a dead-code invocation). Analysis is <1s; the cost is
-  # bunx's cold npm fetch of fallow (~70s), so cache ~/.bun/install/cache keyed
-  # on the pinned version — cache hit drops the job to ~10s. Whole-repo (not
+  # (the action hangs on a dead-code invocation). Install node_modules first:
+  # without them fallow's resolution crawls (~140s in CI, same result); with
+  # them analysis takes a few seconds. bunx's cold npm fetch of fallow is
+  # cached in ~/.bun/install/cache keyed on the pinned version. Whole-repo (not
   # PR-scoped) so reachability resolves against the full graph; PR-scoped
   # discovery false-positives exports whose only consumer is an unchanged file.
   # The slow informational `fallow audit` was dropped; run it locally.
@@ -167,6 +219,7 @@ jobs:
     needs: lint
     permissions:
       contents: read
+      packages: read
     steps:
       # Submodules checked out so the analyzer sees the same tree a developer has.
       - uses: actions/checkout@v6
@@ -180,12 +233,15 @@ jobs:
         with:
           path: ~/.bun/install/cache
           key: bunx-fallow-2.100.0
+      - run: bun install
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GH_TOKEN }}
       - run: bunx fallow@2.100.0 dead-code
 
   semgrep:
     if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
-    needs: [test, e2e]
+    needs: lint
     permissions:
       contents: read
       security-events: write
