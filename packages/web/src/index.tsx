@@ -1,3 +1,4 @@
+import '@fontsource-variable/montserrat';
 import './index.css';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
