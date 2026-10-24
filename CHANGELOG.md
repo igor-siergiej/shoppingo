@@ -1,3 +1,10 @@
+# [2.6.0](https://github.com/igor-siergiej/tandra/compare/v2.5.0...v2.6.0) (2026-10-24)
+
+
+### Features
+
+* **qa:** make the repo's quality gates actually gate ([#299](https://github.com/igor-siergiej/tandra/issues/299)) ([7ab4e6a](https://github.com/igor-siergiej/tandra/commit/7ab4e6a3dc709fafa4ba5f7bc69201ef8f56cec3))
+
 # [2.5.0](https://github.com/igor-siergiej/tandra/compare/v2.4.0...v2.5.0) (2026-10-24)
 
 

@@ -1,5 +1,15 @@
 [
   {
+    "version": "2.6.0",
+    "date": "2026-10-24",
+    "notes": [
+      {
+        "type": "feature",
+        "text": "The app's own quality checks now catch real problems: type errors, a broken lint setup and a failing end-to-end suite are all found before a change is merged, instead of passing unnoticed."
+      }
+    ]
+  },
+  {
     "version": "2.5.0",
     "date": "2026-10-24",
     "notes": [
