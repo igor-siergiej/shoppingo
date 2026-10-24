@@ -43,7 +43,7 @@ export default defineConfig(({ mode }) => {
                 injectRegister: 'auto',
                 selfDestroying: false,
                 injectManifest: {
-                    globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest}'],
+                    globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest,woff2}'],
                 },
                 manifest: {
                     name: 'Tandra',
