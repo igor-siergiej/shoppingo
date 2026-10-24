@@ -26,6 +26,7 @@ coverage/
 # Playwright E2E
 playwright-report/
 test-results/
+blob-report/
 .auth/
 
 # fallow audit binary (downloaded on demand by scripts/run-fallow.sh)

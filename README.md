@@ -208,13 +208,15 @@ label picks out small, contained starting points.
 
 ## CI/CD
 
-- **`pr.yml`** on every PR: `lint` (Biome + `tsc:e2e`) → `test` (`tsc
-  --noEmit`, api tests with coverage against a real OpenSearch service, web
-  tests, script tests, 90 % gate) and `e2e` (Playwright against Mongo 7 +
-  OpenSearch services; HTML report published to GitHub Pages and linked from
-  a sticky PR comment) → `semgrep`. `fallow-deadcode` runs after `lint`;
-  `.kanban-cli.json` treats `lint`, `test`, `e2e`, `fallow-deadcode` as the
-  required checks.
+- **`pr.yml`** on every PR: `lint` (Biome + `tsc:e2e`), then in parallel
+  `test` (`tsc --noEmit`, api tests with coverage against a real OpenSearch
+  service, web tests, script tests, 90 % gate), `e2e`, `fallow-deadcode` and
+  `semgrep`. Playwright runs as four `e2e-shard` jobs (`--shard=N/4`), each
+  with its own Mongo 7 + OpenSearch services; the `e2e` job passes only if
+  every shard passed, and `report` merges the shards' blob reports into one
+  HTML report (artifact `playwright-report`, published to GitHub Pages and
+  linked from a sticky PR comment). `.kanban-cli.json` treats `lint`,
+  `test`, `e2e`, `fallow-deadcode` as the required checks.
 - **`cd.yml`** on push to `main`: semantic-release (version bump in every
   `package.json`, `CHANGELOG.md`, `packages/web/src/data/release-notes.json`
   from `Release-Notes:` trailers) → `publish-images.sh` from the
